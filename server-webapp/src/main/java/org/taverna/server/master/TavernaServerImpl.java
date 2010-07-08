@@ -228,6 +228,12 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	}
 
 	@Override
+	public RunList listUsersRuns(UriInfo ui) {
+		return new RunList(runStore.listRuns(getPrincipal(), policy), ui
+				.getAbsolutePathBuilder().path("{name}"));
+	}
+
+	@Override
 	public Response submitWorkflow(SCUFL workflow, UriInfo ui)
 			throws NoUpdateException {
 		invokes++;

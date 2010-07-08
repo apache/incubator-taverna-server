@@ -29,6 +29,7 @@ import org.taverna.server.master.rest.TavernaServerListenersREST.Properties;
 import org.taverna.server.master.rest.TavernaServerListenersREST.PropertyDescription;
 import org.taverna.server.master.rest.TavernaServerREST.PermittedListeners;
 import org.taverna.server.master.rest.TavernaServerREST.PermittedWorkflows;
+import org.taverna.server.master.rest.TavernaServerREST.RunList;
 import org.taverna.server.master.rest.TavernaServerREST.ServerDescription;
 import org.taverna.server.master.rest.TavernaServerRunREST.RunDescription;
 
@@ -169,6 +170,12 @@ public class JaxbSanityTest {
 		assertTrue(true);
 	}
 
+	@Test
+	public void testJAXBForRunList() throws Exception {
+		JAXBContext.newInstance(RunList.class).generateSchema(sink);
+		assertTrue(true);
+	}
+
 	/* This test doesn't work. Not sure if it _should_ work either. */
 //	@Test
 //	public void testJAXBForEverythingAtOnce() throws Exception {
@@ -179,7 +186,8 @@ public class JaxbSanityTest {
 //				InputsDescriptor.class, ListenerDescription.class,
 //				Listeners.class, Properties.class, PropertyDescription.class,
 //				PermittedListeners.class, PermittedWorkflows.class,
-//				ServerDescription.class, RunDescription.class, Uri.class);
+//				ServerDescription.class, RunDescription.class, Uri.class,
+//				RunList.class);
 //		c.generateSchema(sink);
 //		assertTrue(true);
 //	}

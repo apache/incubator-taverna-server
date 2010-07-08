@@ -12,6 +12,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
@@ -20,6 +21,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.cxf.jaxrs.ext.Description;
+import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.SCUFL;
 import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.exceptions.NoUpdateException;
@@ -48,6 +50,19 @@ public interface TavernaServerREST {
 	@Produces( { "application/xml", "application/json" })
 	@Description("Produces the description of the service.")
 	public ServerDescription describeService(@Context UriInfo ui);
+
+	/**
+	 * Produces a description of the list of runs.
+	 * 
+	 * @param ui
+	 *            About the URI being accessed.
+	 * @return A description of the list of runs that are available.
+	 */
+	@GET
+	@Path("runs")
+	@Produces( { "application/xml", "application/json" })
+	@Description("Produces a list of all runs visible to the user.")
+	public RunList listUsersRuns(@Context UriInfo ui);
 
 	/**
 	 * Accepts (or not) a request to create a new run executing the given
@@ -236,6 +251,35 @@ public interface TavernaServerREST {
 		 */
 		public PermittedListeners(List<String> listenerTypes) {
 			type = listenerTypes;
+		}
+	}
+
+	/**
+	 * Helper class for describing the workflow runs.
+	 * 
+	 * @author Donal Fellows
+	 */
+	@XmlRootElement
+	@XmlType(name = "")
+	public static class RunList {
+		/** The references to the workflow runs. */
+		@XmlElement
+		public List<RunReference> run;
+
+		/**
+		 * Make an empty list of run references.
+		 */
+		public RunList() {
+			run = new ArrayList<RunReference>();
+		}
+
+		/**
+		 * Make a list of references to workflow runs.
+		 */
+		public RunList(Map<String, TavernaRun> runs, UriBuilder ub) {
+			run = new ArrayList<RunReference>(runs.size());
+			for (String name : runs.keySet())
+				run.add(new RunReference(name, ub));
 		}
 	}
 }
