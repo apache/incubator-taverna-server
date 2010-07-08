@@ -14,9 +14,9 @@
 	<name>Taverna 2 Server Distribution</name>
 	<packaging>pom</packaging>
 	<scm>
-		<connection>scm:svn:http://taverna.googlecode.com/svn/unsorted/taverna-server2/trunk/server</connection>
-		<developerConnection>scm:svn:https://taverna.googlecode.com/svn/unsorted/taverna-server2/trunk/server</developerConnection>
-		<url>http://code.google.com/p/taverna/source/browse/unsorted/taverna-server2/trunk/server</url>
+		<connection>scm:svn:http://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/trunk/server-distribution</connection>
+		<developerConnection>scm:svn:https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/trunk/server-distribution</developerConnection>
+		<url>http://code.google.com/p/taverna/source/browse/taverna/products/uk.org.taverna.server/trunk/server-distribution</url>
 	</scm>
 
 	<dependencies>

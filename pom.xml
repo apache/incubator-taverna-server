@@ -28,9 +28,9 @@
 		</developer>
 	</developers>
 	<scm>
-		<connection>scm:svn:http://taverna.googlecode.com/svn/unsorted/taverna-server2/trunk</connection>
-		<developerConnection>scm:svn:https://taverna.googlecode.com/svn/unsorted/taverna-server2/trunk</developerConnection>
-		<url>http://code.google.com/p/taverna/source/browse/unsorted/taverna-server2/trunk</url>
+		<connection>scm:svn:http://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/trunk</connection>
+		<developerConnection>scm:svn:https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/trunk</developerConnection>
+		<url>http://code.google.com/p/taverna/source/browse/taverna/products/uk.org.taverna.server/trunk</url>
 	</scm>
 	<organization>
 		<name>University of Manchester</name>
@@ -103,7 +103,7 @@
 					<version>2.0</version>
 					<configuration>
 						<autoVersionSubmodules>true</autoVersionSubmodules>
-						<tagBase>https://taverna.googlecode.com/svn/unsorted/taverna-server2/tags</tagBase>
+						<tagBase>https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/tags</tagBase>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -115,7 +115,7 @@
 				<version>2.0</version>
 				<configuration>
 					<autoVersionSubmodules>true</autoVersionSubmodules>
-					<tagBase>https://taverna.googlecode.com/svn/unsorted/taverna-server2/tags</tagBase>
+					<tagBase>https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/tags</tagBase>
 				</configuration>
 			</plugin>
 		</plugins>
