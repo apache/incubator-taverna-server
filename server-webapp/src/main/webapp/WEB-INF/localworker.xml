@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+	<bean id="localworker" class="org.taverna.server.master.localworker.ForkRunFactory"
+			scope="singleton" lazy-init="false" init-method="initFactory"
+			destroy-method="killFactory">
+		<description>
+			The simple policy manager and factory for the baseline
+			localworker case.
+		</description>
+		<property name="defaultLifetime" value="20" />
+		<!--
+			Supported properties: javaBinary:String, extraArguments:String[],
+			serverWorkerJar:String, executeWorkflowScript:String,
+			waitSeconds:int(s), sleepTime:int(ms), defaultLifetime:int(mins)
+		-->
+	</bean>
+
+	<alias name="localworker" alias="policy" />
+	<alias name="localworker" alias="runFactory" />
+	<alias name="localworker" alias="runCatalog" />
+	<alias name="localworker" alias="listenerFactory" />
+</beans>

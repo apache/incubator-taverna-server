@@ -1,0 +1,46 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>uk.org.taverna.server</groupId>
+	<artifactId>server-runinterface</artifactId>
+	<name>RMI interface to Taverna Workflow Runs</name>
+	<version>0.0.1</version>
+	<description>This is the implementation of the RMI interface between the workflow run factory and the web-app service front-end.</description>
+	<parent>
+		<groupId>uk.org.taverna.server</groupId>
+		<artifactId>server</artifactId>
+		<version>2.3-alpha-SNAPSHOT</version>
+		<relativePath>..</relativePath>
+	</parent>
+	<scm>
+		<connection>scm:svn:http://taverna.googlecode.com/svn/unsorted/taverna-server2/trunk/server</connection>
+		<developerConnection>scm:svn:https://taverna.googlecode.com/svn/unsorted/taverna-server2/trunk/server</developerConnection>
+		<url>http://code.google.com/p/taverna/source/browse/unsorted/taverna-server2/trunk/server</url>
+	</scm>
+
+	<build>
+		<finalName>TavernaServer.WorkerRMI.${version}</finalName>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<source>1.6</source>
+						<target>1.6</target>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-eclipse-plugin</artifactId>
+					<configuration>
+						<projectNameTemplate>[artifactId]-[version]</projectNameTemplate>
+						<wtpmanifest>true</wtpmanifest>
+						<wtpapplicationxml>true</wtpapplicationxml>
+						<wtpversion>2.0</wtpversion>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+</project>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+	xmlns:jaxws="http://cxf.apache.org/jaxws" xmlns:cxf="http://cxf.apache.org/core"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+	http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+	http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+	http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd">
+
+	<description>
+		The Taverna Server bean, plus supporting configuration.
+	</description>
+
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-jaxrs-binding.xml" />
+
+	<bean id="tserv" class="org.taverna.server.master.TavernaServerImpl">
+		<property name="policy" ref="policy" />
+		<property name="listenerFactory" ref="listenerFactory" />
+		<property name="runFactory" ref="runFactory" />
+		<property name="runStore" ref="runCatalog" />
+	</bean>
+
+	<!-- <import resource="example.xml"/>-->
+	<import resource="localworker.xml" />
+
+	<jaxws:endpoint id="master_SOAP" implementor="#tserv"
+		address="/soap">
+		<jaxws:features>
+			<cxf:logging />
+		</jaxws:features>
+	</jaxws:endpoint>
+	<jaxrs:server id="root_REST" address="/">
+		<jaxrs:serviceBeans>
+			<ref bean="root_facade" />
+		</jaxrs:serviceBeans>
+		<jaxrs:properties>
+			<entry key="org.apache.cxf.endpoint.private" value="true" />
+		</jaxrs:properties>
+	</jaxrs:server>
+	<jaxrs:server id="master_REST" address="/rest"
+		staticSubresourceResolution="true">
+		<jaxrs:serviceBeans>
+			<ref bean="tserv" />
+		</jaxrs:serviceBeans>
+		<jaxrs:features>
+			<cxf:logging />
+		</jaxrs:features>
+		<jaxrs:providers>
+			<ref bean="ExceptionProvider.BadPropertyValue" />
+			<ref bean="ExceptionProvider.BadStateChange" />
+			<ref bean="ExceptionProvider.FilesystemAccess" />
+			<ref bean="ExceptionProvider.NoCreate" />
+			<ref bean="ExceptionProvider.NoDestroy" />
+			<ref bean="ExceptionProvider.NoListener" />
+			<ref bean="ExceptionProvider.NoUpdate" />
+			<ref bean="ExceptionProvider.UnknownRun" />
+		</jaxrs:providers>
+	</jaxrs:server>
+	<bean id="ExceptionProvider.BadPropertyValue" class="org.taverna.server.master.rest.BadPropertyValueHandler" />
+	<bean id="ExceptionProvider.BadStateChange" class="org.taverna.server.master.rest.BadStateChangeHandler" />
+	<bean id="ExceptionProvider.FilesystemAccess" class="org.taverna.server.master.rest.FilesystemAccessHandler" />
+	<bean id="ExceptionProvider.NoCreate" class="org.taverna.server.master.rest.NoCreateHandler" />
+	<bean id="ExceptionProvider.NoDestroy" class="org.taverna.server.master.rest.NoDestroyHandler" />
+	<bean id="ExceptionProvider.NoListener" class="org.taverna.server.master.rest.NoListenerHandler" />
+	<bean id="ExceptionProvider.NoUpdate" class="org.taverna.server.master.rest.NoUpdateHandler" />
+	<bean id="ExceptionProvider.UnknownRun" class="org.taverna.server.master.rest.UnknownRunHandler" />
+
+	<bean id="root_facade" class="org.taverna.server.master.facade.Facade">
+		<property name="file" value="welcome.html" />
+		<property name="pattern" value="SERVICE_URI/" />
+	</bean>
+
+	<bean id="MBeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
+		<property name="locateExistingServerIfPossible" value="true" />
+	</bean>
+	<context:mbean-export server="MBeanServer"
+		default-domain="${my.domain}" />
+</beans>

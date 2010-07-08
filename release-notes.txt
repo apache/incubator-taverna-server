@@ -1,0 +1,45 @@
+Taverna 2.3alpha Release Notes
+==============================
+
+This is the first release of the new T2 Server. It's missing lots of
+stuff that will be there once there is a final release, so please be a
+bit gentle with it. However we welcome feedback on both the things that
+are there and the things that are not.
+
+Key Features
+------------
+ * Runs arbitrary Taverna 2 workflows
+   * Delegates to T2 Command Line
+ * REST and SOAP interfaces
+   * All functionality available through both interfaces
+ * Manages files for workflows
+   * Make files, read files, delete files
+   * Create subdirectories, list directory contents
+   * Can download a whole directory structure as a ZIP
+ * Tidies up when workflow runs expire
+   * Expiry time fully configurable
+   * Can force immediate deletion of a workflow run
+
+Planned Features
+----------------
+ * Security
+ * Persistence across Server Restarts
+ * Support for Cluster Deployment
+ * Access to Provenance
+ * Workflow Event Listeners
+
+Specific Issues Addressed in This Release
+-----------------------------------------
+See http://www.mygrid.org.uk/dev/issues/browse/TAVSERV
+
+TAVSERV-18: There should be a REST API
+TAVSERV-19: There should be a SOAP API
+TAVSERV-46: Workflow instances start Suspended
+TAVSERV-56: Master: provide access to workflow instances
+TAVSERV-63: Master: spawn a worker
+TAVSERV-65: Worker: overall state model, control and reporting
+TAVSERV-66: Worker: death after life
+TAVSERV-70: Master: act as front end to Workers
+
+Many other issues are partially addressed and will be fully dealt with
+in future releases.

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<version>0.0.1-SNAPSHOT</version>
+	<parent>
+		<artifactId>server</artifactId>
+		<groupId>uk.org.taverna.server</groupId>
+		<version>2.3-alpha-SNAPSHOT</version>
+		<relativePath>..</relativePath>
+	</parent>
+	<groupId>uk.org.taverna.server</groupId>
+	<artifactId>server-distribution</artifactId>
+	<name>Taverna 2 Server Distribution</name>
+	<packaging>pom</packaging>
+	<scm>
+		<connection>scm:svn:http://taverna.googlecode.com/svn/unsorted/taverna-server2/trunk/server</connection>
+		<developerConnection>scm:svn:https://taverna.googlecode.com/svn/unsorted/taverna-server2/trunk/server</developerConnection>
+		<url>http://code.google.com/p/taverna/source/browse/unsorted/taverna-server2/trunk/server</url>
+	</scm>
+
+	<dependencies>
+		<dependency>
+			<groupId>uk.org.taverna.server</groupId>
+			<artifactId>server-webapp</artifactId>
+			<version>2.3.0-SNAPSHOT</version>
+			<type>war</type>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.2-beta-5</version>
+				<configuration>
+					<finalName>TavernaServer-${parent.version}</finalName>
+					<descriptors>
+						<descriptor>src/assemble/dist.xml</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-t2server-distribution</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.2</version>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<!-- Only generate the index, nothing else. -->
+							<report>index</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.7</version>
+				<reportSets>
+					<reportSet />
+				</reportSets>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-changelog-plugin</artifactId>
+				<version>2.2</version>
+				<reportSets>
+					<reportSet />
+				</reportSets>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-changes-plugin</artifactId>
+				<version>2.3</version>
+				<reportSets>
+					<reportSet />
+				</reportSets>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>2.5</version>
+				<reportSets>
+					<reportSet />
+				</reportSets>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<version>2.5</version>
+				<reportSets>
+					<reportSet />
+				</reportSets>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-report-plugin</artifactId>
+				<version>2.5</version>
+				<reportSets>
+					<reportSet />
+				</reportSets>
+			</plugin>
+		</plugins>
+	</reporting>
+</project>
