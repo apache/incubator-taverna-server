@@ -204,9 +204,9 @@ API.</p>
 		<dd>
 		<p>To set the input port, <tt><b>FOO</b></tt>, to have the value <tt><b>BAR</b></tt>,
 		you would PUT a message like this to the URI <tt><b>&lt;RUN_URI&gt;</b>/input/input/<b>FOO</b></tt></p>
-		<blockquote><pre>&lt;t2s:runInput xmlns:t2s=&quot;http://ns.taverna.org.uk/2010/xml/server/&quot;&gt;
-    &lt;t2s:value&gt;<b>BAR</b>&lt;/t2s:value&gt;
-&lt;/t2s:runInput&gt;</pre></blockquote>
+		<blockquote><pre>&lt;t2sr:runInput xmlns:t2sr="http://ns.taverna.org.uk/2010/xml/server/rest/"&gt;
+    &lt;t2sr:value&gt;<b>BAR</b>&lt;/t2sr:value&gt;
+&lt;/t2sr:runInput&gt;</pre></blockquote>
 		</dd>
 
 		<dt><i>Uploading a File for One Input</i></dt>
@@ -215,23 +215,23 @@ API.</p>
 		creating a file on the server. Thus, if you were staging the value BAR
 		to input port FOO by means of a file BOO.TXT then you would first POST
 		this message to <tt><b>&lt;RUN_URI&gt;</b>/wd</tt></p>
-		<blockquote><pre>&lt;t2s:upload xmlns:t2s="http://ns.taverna.org.uk/2010/xml/server/rest/" name="<b>BOO.TXT</b>"&gt;
+		<blockquote><pre>&lt;t2sr:upload xmlns:t2sr="http://ns.taverna.org.uk/2010/xml/server/rest/" name="<b>BOO.TXT</b>"&gt;
     QkFS
-&lt;/t2s:upload&gt;</pre></blockquote>
+&lt;/t2sr:upload&gt;</pre></blockquote>
 		<p>Note that &#x201c;<tt>QkFS</tt>&#x201d; is the base64-encoded
 		form of &#x201c;<tt>BAR</tt>&#x201d;, and that each workflow run has
 		its own working directory into which the uploads are placed; you are
 		never told the name of this working directory. Once you've created the
 		file, you can then set it to be the input for the port by PUTting this
 		message to <tt><b>&lt;RUN_URI&gt;</b>/input/input/<b>FOO</b></tt></p>
-		<blockquote><pre>&lt;t2s:runInput xmlns:t2s="http://ns.taverna.org.uk/2010/xml/server/rest/"&gt;
-    &lt;t2s:file&gt;<b>BOO.TXT</b>&lt;/t2s:file&gt;
-&lt;/t2s:runInput&gt;</pre></blockquote>
+		<blockquote><pre>&lt;t2sr:runInput xmlns:t2sr="http://ns.taverna.org.uk/2010/xml/server/rest/"&gt;
+    &lt;t2sr:file&gt;<b>BOO.TXT</b>&lt;/t2sr:file&gt;
+&lt;/t2sr:runInput&gt;</pre></blockquote>
 		<p>Note the similarity of the final part of this process to the
 		previous method for setting an input.</p>
 		<p>You can also create a directory, e.g., IN, to hold the input
 		files. This is done by POSTing a different message to <tt><b>&lt;RUN_URI&gt;</b>/wd</tt></p>
-		<blockquote><pre>&lt;t2s:mkdir xmlns:t2s="http://ns.taverna.org.uk/2010/xml/server/rest/" name="<b>IN</b>" /&gt;</pre></blockquote>
+		<blockquote><pre>&lt;t2sr:mkdir xmlns:t2sr="http://ns.taverna.org.uk/2010/xml/server/rest/" name="<b>IN</b>" /&gt;</pre></blockquote>
 		<p>With that, you can then create files in the IN subdirectory by
 		sending the <tt>upload</tt> message to <tt><b>&lt;RUN_URI&gt;</b>/wd/IN</tt>
 		and you can use the file as an input by using a name such as <tt>IN/BOO.TXT</tt>.
@@ -288,10 +288,11 @@ API.</p>
 	retrieved from <tt><b>&lt;RUN_URI&gt;</b>/wd/out/<b>FOO.OUT</b></tt>
 	and the result of the GET on <tt><b>&lt;RUN_URI&gt;</b>/wd/out</tt>
 	would look something like this:</p>
-	<blockquote><pre>&lt;t2s:directoryContents xmlns:xlink="http://www.w3.org/1999/xlink"
-        xmlns:t2s="http://ns.taverna.org.uk/2010/xml/server/"&gt;
+	<blockquote><pre>&lt;t2sr:directoryContents xmlns:xlink="http://www.w3.org/1999/xlink"
+        xmlns:t2s="http://ns.taverna.org.uk/2010/xml/server/"
+        xmlns:t2sr="http://ns.taverna.org.uk/2010/xml/server/rest/"&gt;
     &lt;t2s:file xlink:href="<b>&lt;RUN_URI&gt;</b>/wd/out/<b>FOO.OUT</b>"&gt;out/<b>FOO.OUT</b>&lt;/t2s:file&gt;
-&lt;/t2s:directoryContents&gt;</pre></blockquote>
+&lt;/t2sr:directoryContents&gt;</pre></blockquote>
 	</li>
 	<li>
 	<p>The standard output and standard error from the T2 Command Line

@@ -24,7 +24,7 @@ by the service. This simple guide just discusses the REST API.</p>
 	and the workflow (as saved by the Taverna Workbench) is the child
 	element of that.</p>
 	<p>The result of the POST is an HTTP redirect to the location of
-	the created run, <tt>SERVICE_URI/runs/<b>UUID</b></tt> (where <tt><b>UUID</b></tt>
+	the created run, <tt>SERVICE_URI/rest/runs/<b>UUID</b></tt> (where <tt><b>UUID</b></tt>
 	is a unique string that identifies the particular run; this is also the
 	name of the run that you would use in the SOAP interface). Note that
 	the run is not yet actually doing anything.</p>
@@ -37,10 +37,10 @@ by the service. This simple guide just discusses the REST API.</p>
 		<dt><i>Directly Setting the Value of an Input</i></dt>
 		<dd>
 		<p>To set the input port, <tt><b>FOO</b></tt>, to have the value <tt><b>BAR</b></tt>,
-		you would PUT a message like this to the URI <tt>SERVICE_URI/runs/<b>UUID</b>/input/input/<b>FOO</b></tt></p>
-		<blockquote><pre>&lt;t2s:runInput xmlns:t2s=&quot;http://ns.taverna.org.uk/2010/xml/server/&quot;&gt;
-    &lt;t2s:value&gt;<b>BAR</b>&lt;/t2s:value&gt;
-&lt;/t2s:runInput&gt;</pre></blockquote>
+		you would PUT a message like this to the URI <tt>SERVICE_URI/rest/runs/<b>UUID</b>/input/input/<b>FOO</b></tt></p>
+		<blockquote><pre>&lt;t2sr:runInput xmlns:t2sr=&quot;http://ns.taverna.org.uk/2010/xml/server/rest/&quot;&gt;
+    &lt;t2sr:value&gt;<b>BAR</b>&lt;/t2sr:value&gt;
+&lt;/t2sr:runInput&gt;</pre></blockquote>
 		</dd>
 
 		<dt><i>Uploading a File for One Input</i></dt>
@@ -48,26 +48,26 @@ by the service. This simple guide just discusses the REST API.</p>
 		<p>The values for an input port can also be set by means of
 		creating a file on the server. Thus, if you were staging the value BAR
 		to input port FOO by means of a file BOO.TXT then you would first POST
-		this message to <tt>SERVICE_URI/runs/<b>UUID</b>/wd</tt></p>
-		<blockquote><pre>&lt;t2s:upload xmlns:t2s="http://ns.taverna.org.uk/2010/xml/server/rest/" name="<b>BOO.TXT</b>"&gt;
+		this message to <tt>SERVICE_URI/rest/runs/<b>UUID</b>/wd</tt></p>
+		<blockquote><pre>&lt;t2sr:upload xmlns:t2sr="http://ns.taverna.org.uk/2010/xml/server/rest/" name="<b>BOO.TXT</b>"&gt;
     QkFS
-&lt;/t2s:upload&gt;</pre></blockquote>
+&lt;/t2sr:upload&gt;</pre></blockquote>
 		<p>Note that &#x201c;<tt>QkFS</tt>&#x201d; is the base64-encoded
 		form of &#x201c;<tt>BAR</tt>&#x201d;, and that each workflow run has
 		its own working directory into which the uploads are placed; you are
 		never told the name of this working directory.</p>
 		<p>Once you've created the file, you can then set it to be the
-		input for the port by PUTting this message to <tt>SERVICE_URI/runs/<b>UUID</b>/input/input/<b>FOO</b></tt></p>
-		<blockquote><pre>&lt;t2s:runInput xmlns:t2s="http://ns.taverna.org.uk/2010/xml/server/rest/"&gt;
-    &lt;t2s:file&gt;<b>BOO.TXT</b>&lt;/t2s:file&gt;
-&lt;/t2s:runInput&gt;</pre></blockquote>
+		input for the port by PUTting this message to <tt>SERVICE_URI/rest/runs/<b>UUID</b>/input/input/<b>FOO</b></tt></p>
+		<blockquote><pre>&lt;t2sr:runInput xmlns:t2sr="http://ns.taverna.org.uk/2010/xml/server/rest/"&gt;
+    &lt;t2sr:file&gt;<b>BOO.TXT</b>&lt;/t2sr:file&gt;
+&lt;/t2sr:runInput&gt;</pre></blockquote>
 		<p>Note the similarity of the final part of this process to the
 		previous method for setting an input.</p>
 		<p>You can also create a directory, e.g., IN, to hold the input
-		files. This is done by POSTing a different message to <tt>SERVICE_URI/runs/<b>UUID</b>/wd</tt></p>
-		<blockquote><pre>&lt;t2s:mkdir xmlns:t2s="http://ns.taverna.org.uk/2010/xml/server/rest/" name="<b>IN</b>" /&gt;</pre></blockquote>
+		files. This is done by POSTing a different message to <tt>SERVICE_URI/rest/runs/<b>UUID</b>/wd</tt></p>
+		<blockquote><pre>&lt;t2sr:mkdir xmlns:t2sr="http://ns.taverna.org.uk/2010/xml/server/rest/" name="<b>IN</b>" /&gt;</pre></blockquote>
 		<p>With that, you can then create files in the IN subdirectory by
-		sending the <tt>upload</tt> message to <tt>SERVICE_URI/runs/<b>UUID</b>/wd/IN</tt>
+		sending the <tt>upload</tt> message to <tt>SERVICE_URI/rest/runs/<b>UUID</b>/wd/IN</tt>
 		and you can use the file as an input by using a name such as <tt>IN/BOO.TXT</tt>.
 		You can also create sub-subdirectories if required by sending the <tt>mkdir</tt>
 		message to the natural URI of the parent directory, just as sending an
@@ -79,18 +79,18 @@ by the service. This simple guide just discusses the REST API.</p>
 		<p>The final way of setting up the inputs to a workflow is to
 		upload (using the same method as above) a Baclava file (e.g., <tt><b>FOOBAR.BACLAVA</b></tt>)
 		that describes the inputs. This is then set as the provider for <i>all</i>
-		inputs by PUTting the name of the Baclava file (as plain text) to <tt>SERVICE_URI/runs/<b>UUID</b>/input/baclava</tt></p>
+		inputs by PUTting the name of the Baclava file (as plain text) to <tt>SERVICE_URI/rest/runs/<b>UUID</b>/input/baclava</tt></p>
 		</dd>
 	</dl>
 	</li>
 	<li>
 	<p>Now you can start the file running. This is done by using a PUT
-	to set <tt>SERVICE_URI/runs/<b>UUID</b>/status</tt> to the plain text
+	to set <tt>SERVICE_URI/rest/runs/<b>UUID</b>/status</tt> to the plain text
 	value <tt>Operating</tt>.</p>
 	</li>
 	<li>
 	<p>Now you need to poll, waiting for the workflow to finish. To
-	discover the state of a run, you can (at any time) do a GET on <tt>SERVICE_URI/runs/<b>UUID</b>/status</tt>;
+	discover the state of a run, you can (at any time) do a GET on <tt>SERVICE_URI/rest/runs/<b>UUID</b>/status</tt>;
 	when the workflow has finished executing, this will return <tt>Finished</tt>
 	instead of <tt>Operating</tt> (or <tt>Initialized</tt>, the starting
 	state).</p>
@@ -102,7 +102,7 @@ by the service. This simple guide just discusses the REST API.</p>
 	destroyed and all resources (i.e., local files) associated with it
 	cleaned up. By default in this release, this is 20 minutes after
 	initial creation. To see when a particular run is scheduled to be
-	disposed of, do a GET on <tt>SERVICE_URI/runs/<b>UUID</b>/expiry</tt>;
+	disposed of, do a GET on <tt>SERVICE_URI/rest/runs/<b>UUID</b>/expiry</tt>;
 	you may set the time when the run is disposed of by PUTting a new time
 	to that same URI. Note that this includes not just the time when the
 	workflow is executing, but also when the input files are being created
@@ -113,25 +113,26 @@ by the service. This simple guide just discusses the REST API.</p>
 	<li>
 	<p>The outputs from the workflow are files created in the <tt>out</tt>
 	subdirectory of the run's working directory. The contents of the
-	subdirectory can be read by doing a GET on <tt>SERVICE_URI/runs/<b>UUID</b>/wd/out</tt>
+	subdirectory can be read by doing a GET on <tt>SERVICE_URI/rest/runs/<b>UUID</b>/wd/out</tt>
 	which will return an XML document describing the contents of the
 	directory, with links to each of the files within it. Doing a GET on
 	those links will retrieve the actual created files (as uninterpreted
 	binary data).</p>
 	<p>Thus, if a single output <tt><b>FOO.OUT</b></tt> was produced
 	from the workflow, it would be written to the file that can be
-	retrieved from <tt>SERVICE_URI/runs/<b>UUID</b>/wd/out/<b>FOO.OUT</b></tt>
-	and the result of the GET on <tt>SERVICE_URI/runs/<b>UUID</b>/wd/out</tt>
+	retrieved from <tt>SERVICE_URI/rest/runs/<b>UUID</b>/wd/out/<b>FOO.OUT</b></tt>
+	and the result of the GET on <tt>SERVICE_URI/rest/runs/<b>UUID</b>/wd/out</tt>
 	would look something like this:</p>
-	<blockquote><pre>&lt;t2s:directoryContents xmlns:xlink="http://www.w3.org/1999/xlink"
+	<blockquote><pre>&lt;t2sr:directoryContents xmlns:xlink="http://www.w3.org/1999/xlink"
+        xmlns:t2sr="http://ns.taverna.org.uk/2010/xml/server/rest"
         xmlns:t2s="http://ns.taverna.org.uk/2010/xml/server/"&gt;
-    &lt;t2s:file xlink:href="SERVICE_URI/runs/<b>UUID</b>/wd/out/<b>FOO.OUT</b>"&gt;out/<b>FOO.OUT</b>&lt;/t2s:file&gt;
-&lt;/t2s:directoryContents&gt;</pre></blockquote>
+    &lt;t2s:file xlink:href="SERVICE_URI/rest/runs/<b>UUID</b>/wd/out/<b>FOO.OUT</b>"&gt;out/<b>FOO.OUT</b>&lt;/t2s:file&gt;
+&lt;/t2sr:directoryContents&gt;</pre></blockquote>
 	</li>
 	<li>
 	<p>The standard output and standard error from the T2 Command Line
 	Executor subprocess can be read via properties of the special I/O
-	listener. To do that, do a GET on <tt>SERVICE_URI/runs/<b>UUID</b>/listeners/io/properties/<b>stdout</b></tt>
+	listener. To do that, do a GET on <tt>SERVICE_URI/rest/runs/<b>UUID</b>/listeners/io/properties/<b>stdout</b></tt>
 	(or <tt>.../<b>stderr</b></tt>). Once the subprocess has finished
 	executing, the I/O listener will provide a third property containing
 	the exit code of the subprocess, called <tt>exitcode</tt>.</p>
@@ -140,7 +141,7 @@ by the service. This simple guide just discusses the REST API.</p>
 	relied upon.</p>
 	</li>
 	<li>
-	<p>Once you have finished, destroy the run by doing a DELETE on <tt>SERVICE_URI/runs/<b>UUID</b></tt>.
+	<p>Once you have finished, destroy the run by doing a DELETE on <tt>SERVICE_URI/rest/runs/<b>UUID</b></tt>.
 	Once you have done that, none of the resources associated with the run
 	(including both input and output files) will exist any more. If the run
 	is still executing, this will also cause it to be stopped.</p>
