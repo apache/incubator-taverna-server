@@ -30,6 +30,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 import javax.jws.WebService;
 import javax.ws.rs.Path;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Request;
@@ -238,7 +239,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			throws NoUpdateException {
 		invokes++;
 		String name = buildWorkflow(workflow, getPrincipal());
-		return seeOther(ui.getRequestUriBuilder().path("{uuid}").build(name))
+		return seeOther(ui.getAbsolutePathBuilder().path("{uuid}").build(name))
 				.build();
 	}
 
@@ -378,7 +379,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 					throws NoUpdateException {
 				invokes++;
 				policy.permitUpdate(getPrincipal(), run);
-				run.setStatus(Status.valueOf(status));
+				run.setStatus(Status.valueOf(status.trim()));
 				return seeOther(ui.getRequestUri()).build();
 			}
 
@@ -576,7 +577,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		}
 
 		// Nasty! This can have several different responses...
-		@Override
+		// @Override
 		public Response getDirectoryOrFileContents(List<PathSegment> path,
 				UriInfo ui, Request req) throws FilesystemAccessException {
 			invokes++;
@@ -610,6 +611,62 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 				result = new DirectoryContents(ui, ((Directory) de)
 						.getContents());
 			return ok(result).type(v.getMediaType()).build();
+		}
+
+		private boolean matchType(MediaType a, MediaType b) {
+			log.info("comparing " + a.getType() + "/" + a.getSubtype()
+					+ " and " + b.getType() + "/" + b.getSubtype());
+			return (a.isWildcardType() || b.isWildcardType() || a.getType()
+					.equals(b.getType()))
+					&& (a.isWildcardSubtype() || b.isWildcardSubtype() || a
+							.getSubtype().equals(b.getSubtype()));
+		}
+
+		@Override
+		public Response getDirectoryOrFileContents(List<PathSegment> path,
+				UriInfo ui, HttpHeaders headers)
+				throws FilesystemAccessException {
+			invokes++;
+			DirectoryEntry de = getDirEntry(run, path);
+
+			// How did the user want the result?
+			List<Variant> variants;
+			if (de instanceof File)
+				variants = fileVariants;
+			else if (de instanceof Directory)
+				variants = directoryVariants;
+			else
+				throw new FilesystemAccessException("not a directory or file!");
+			MediaType wanted = null;
+			log.info("wanted this " + headers.getAcceptableMediaTypes());
+			// Manual content negotiation!!! Ugh!
+			outer: for (MediaType mt : headers.getAcceptableMediaTypes()) {
+				for (Variant v : variants) {
+					if (matchType(mt, v.getMediaType())) {
+						wanted = v.getMediaType();
+						break outer;
+					}
+				}
+			}
+			if (wanted == null)
+				return notAcceptable(variants).type(TEXT_PLAIN).entity(
+						"Do not know what type of response to produce.")
+						.build();
+
+			// Produce the content to deliver up
+			Object result;
+			if (wanted.equals(APPLICATION_OCTET_STREAM_TYPE))
+				// Only for files...
+				result = ((File) de).getContents();
+			else if (wanted.equals(APPLICATION_ZIP_TYPE))
+				// Only for directories...
+				result = ((Directory) de).getContentsAsZip();
+			else
+				// Only for directories...
+				// XML or JSON; let CXF pick what to do
+				result = new DirectoryContents(ui, ((Directory) de)
+						.getContents());
+			return ok(result).type(wanted).build();
 		}
 
 		@Override

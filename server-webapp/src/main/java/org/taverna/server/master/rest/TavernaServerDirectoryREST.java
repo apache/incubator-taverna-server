@@ -10,8 +10,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.PathSegment;
-import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
@@ -53,7 +53,7 @@ public interface TavernaServerDirectoryREST {
 	 *            The path to the thing to describe.
 	 * @param ui
 	 *            About how this method was called.
-	 * @param req
+	 * @param headers
 	 *            About what the caller was looking for.
 	 * @return An HTTP response containing a description of the named thing.
 	 * @throws FilesystemAccessException
@@ -66,7 +66,7 @@ public interface TavernaServerDirectoryREST {
 	@Description("Gives a description of the named entity in or beneath the working directory of the workflow run (either a Directory or File).")
 	public Response getDirectoryOrFileContents(
 			@PathParam("path") List<PathSegment> path, @Context UriInfo ui,
-			@Context Request req) throws FilesystemAccessException;
+			@Context HttpHeaders headers) throws FilesystemAccessException;
 
 	/**
 	 * Creates a directory in the filesystem beneath the working directory of
