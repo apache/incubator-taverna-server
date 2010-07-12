@@ -71,6 +71,7 @@ import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.interfaces.TavernaSecurityContext;
 import org.taverna.server.master.rest.DirectoryContents;
 import org.taverna.server.master.rest.ListenerDefinition;
 import org.taverna.server.master.rest.MakeOrUpdateDirEntry;
@@ -334,7 +335,12 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			@Override
 			public String getOwner() {
 				invokes++;
-				return run.getSecurityContext().getOwner().getName();
+				// TODO: Not yet really implemented
+				TavernaSecurityContext c = run.getSecurityContext();
+				if (c == null)
+					return "<NOBODY>";
+				Principal owner = c.getOwner();
+				return owner == null ? "<NOBODY>" : owner.getName();
 			}
 
 			@Override
@@ -796,7 +802,12 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	@Override
 	public String getRunOwner(String runName) throws UnknownRunException {
 		invokes++;
-		return getRun(runName).getSecurityContext().getOwner().getName();
+		// TODO: Not yet really implemented
+		TavernaSecurityContext c = getRun(runName).getSecurityContext();
+		if (c == null)
+			return "<NOBODY>";
+		Principal owner = c.getOwner();
+		return owner == null ? "<NOBODY>" : owner.getName();
 	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
