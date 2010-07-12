@@ -4,12 +4,12 @@
 	<groupId>uk.org.taverna.server</groupId>
 	<artifactId>server-runinterface</artifactId>
 	<name>RMI interface to Taverna Workflow Runs</name>
-	<version>2.3a1-SNAPSHOT</version>
+	<version>2.2a1-SNAPSHOT</version>
 	<description>This is the implementation of the RMI interface between the workflow run factory and the web-app service front-end.</description>
 	<parent>
 		<groupId>uk.org.taverna.server</groupId>
 		<artifactId>server</artifactId>
-		<version>2.3a1-SNAPSHOT</version>
+		<version>2.2a1-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<scm>

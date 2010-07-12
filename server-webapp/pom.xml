@@ -3,14 +3,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>uk.org.taverna.server</groupId>
 	<artifactId>server-webapp</artifactId>
-	<version>2.3a1-SNAPSHOT</version>
+	<version>2.2a1-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>Taverna Server WebApp</name>
 	<description>This is the implementation of the web-app that provides the Taverna Server with its SOAP and REST faces. It relies on the worker process to handle the actual launching of workflow runs.</description>
 	<parent>
 		<groupId>uk.org.taverna.server</groupId>
 		<artifactId>server</artifactId>
-		<version>2.3a1-SNAPSHOT</version>
+		<version>2.2a1-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<scm>
