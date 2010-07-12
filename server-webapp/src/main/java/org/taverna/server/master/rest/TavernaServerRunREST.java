@@ -54,8 +54,6 @@ public interface TavernaServerRunREST {
 	/**
 	 * Deletes a workflow run.
 	 * 
-	 * @param ui
-	 *            About the URI used to access this resource.
 	 * @return An HTTP response to the deletion.
 	 * @throws NoUpdateException
 	 *             If the user may see the handle but may not delete it.
@@ -63,7 +61,7 @@ public interface TavernaServerRunREST {
 	@DELETE
 	@Path("/")
 	@Description("Deletes a workflow run.")
-	public Response destroy(@Context UriInfo ui) throws NoUpdateException;
+	public Response destroy() throws NoUpdateException;
 
 	/**
 	 * Returns the workflow document used to create the workflow run.
@@ -94,9 +92,7 @@ public interface TavernaServerRunREST {
 	 * 
 	 * @param expiry
 	 *            When the run will expire.
-	 * @param ui
-	 *            About how this method was called.
-	 * @return An HTTP response to the call.
+	 * @return When the run will actually expire.
 	 * @throws NoUpdateException
 	 *             If the current user is not permitted to manage the lifetime
 	 *             of the run.
@@ -104,9 +100,9 @@ public interface TavernaServerRunREST {
 	@PUT
 	@Path("expiry")
 	@Consumes("text/plain")
+	@Produces("text/plain")
 	@Description("Sets the time when the workflow run becomes eligible for automatic deletion.")
-	public Response setExpiry(String expiry, @Context UriInfo ui)
-			throws NoUpdateException;
+	public String setExpiry(String expiry) throws NoUpdateException;
 
 	/**
 	 * Gets the current status of the workflow run.
@@ -125,9 +121,7 @@ public interface TavernaServerRunREST {
 	 * 
 	 * @param status
 	 *            The new status code.
-	 * @param ui
-	 *            About the URI used to access this resource.
-	 * @return An HTTP response to the setting.
+	 * @return What status the run is actually in.
 	 * @throws NoUpdateException
 	 *             If the current user is not permitted to update the run.
 	 * @throws BadStateChangeException
@@ -136,9 +130,10 @@ public interface TavernaServerRunREST {
 	@PUT
 	@Path("status")
 	@Consumes("text/plain")
+	@Produces("text/plain")
 	@Description("Attempts to update the status of the workflow run.")
-	public Response setStatus(String status, @Context UriInfo ui)
-			throws NoUpdateException, BadStateChangeException;
+	public String setStatus(String status) throws NoUpdateException,
+			BadStateChangeException;
 
 	/**
 	 * Gets the identity of who owns the workflow run.
@@ -197,9 +192,7 @@ public interface TavernaServerRunREST {
 	 *            The Baclava file to use, or empty to make the outputs be
 	 *            written to individual files in the <tt>out</tt> subdirectory
 	 *            of the working directory.
-	 * @param ui
-	 *            About the URI used to access this resource.
-	 * @return HTTP response description.
+	 * @return The Baclava file as actually set.
 	 * @throws NoUpdateException
 	 *             If the current user is not permitted to update the run.
 	 * @throws FilesystemAccessException
@@ -211,10 +204,10 @@ public interface TavernaServerRunREST {
 	@PUT
 	@Path("output")
 	@Consumes("text/plain")
+	@Produces("text/plain")
 	@Description("Sets the Baclava file where output will be written; empty means use multiple simple files in the out directory.")
-	public Response setOutputFile(String filename, @Context UriInfo ui)
-			throws NoUpdateException, FilesystemAccessException,
-			BadStateChangeException;
+	public String setOutputFile(String filename) throws NoUpdateException,
+			FilesystemAccessException, BadStateChangeException;
 
 	/**
 	 * The description of where everything is in a RESTful view of a workflow

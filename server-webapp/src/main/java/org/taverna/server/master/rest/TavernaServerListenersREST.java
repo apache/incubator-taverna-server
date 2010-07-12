@@ -46,9 +46,6 @@ public interface TavernaServerListenersREST {
 	@Description("Get the listeners installed in the workflow run.")
 	public Listeners getDescription(@Context UriInfo ui);
 
-	// return
-	// type
-
 	/**
 	 * Add a new event listener to the named workflow run.
 	 * 
@@ -174,9 +171,7 @@ public interface TavernaServerListenersREST {
 		 * 
 		 * @param value
 		 *            The value to set the property to.
-		 * @param ui
-		 *            About how this method was called.
-		 * @return An HTTP response to the method.
+		 * @return The value of the property after being set.
 		 * @throws NoUpdateException
 		 *             If the user is not permitted to update the run.
 		 * @throws NoListenerException
@@ -185,9 +180,10 @@ public interface TavernaServerListenersREST {
 		@PUT
 		@Path("/")
 		@Consumes("text/plain")
+		@Produces("text/plain")
 		@Description("Set the value of the particular property of an event listener attached to a workflow run.")
-		public Response setValue(String value, @Context UriInfo ui)
-				throws NoUpdateException, NoListenerException;
+		public String setValue(String value) throws NoUpdateException,
+				NoListenerException;
 	}
 
 	/**

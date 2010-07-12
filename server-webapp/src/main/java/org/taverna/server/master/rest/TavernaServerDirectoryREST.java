@@ -100,8 +100,6 @@ public interface TavernaServerDirectoryREST {
 	 * 
 	 * @param path
 	 *            The path to the file or directory.
-	 * @param ui
-	 *            About how this method was called.
 	 * @return An HTTP response to the method.
 	 * @throws NoUpdateException
 	 *             If the user is not permitted to update the run.
@@ -112,6 +110,6 @@ public interface TavernaServerDirectoryREST {
 	@Path("{path:.*}")
 	@Description("Deletes a file or directory that is in or below the working directory of a workflow run.")
 	public Response destroyDirectoryEntry(
-			@PathParam("path") List<PathSegment> path, @Context UriInfo ui)
+			@PathParam("path") List<PathSegment> path)
 			throws NoUpdateException, FilesystemAccessException;
 }

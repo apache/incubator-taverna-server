@@ -10,7 +10,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -63,9 +62,7 @@ public interface TavernaServerInputREST {
 	 * 
 	 * @param filename
 	 *            The filename to set.
-	 * @param ui
-	 *            About the URI used to access this resource.
-	 * @return An HTTP response to the request.
+	 * @return The name of the Baclava file that was actually set.
 	 * @throws NoUpdateException
 	 *             If the user can't update the run.
 	 * @throws BadStateChangeException
@@ -77,10 +74,10 @@ public interface TavernaServerInputREST {
 	@PUT
 	@Path("baclava")
 	@Consumes("text/plain")
+	@Produces("text/plain")
 	@Description("Sets the Baclava file describing the inputs.")
-	public Response setBaclavaFile(String filename, @Context UriInfo ui)
-			throws NoUpdateException, BadStateChangeException,
-			FilesystemAccessException;
+	public String setBaclavaFile(String filename) throws NoUpdateException,
+			BadStateChangeException, FilesystemAccessException;
 
 	/**
 	 * Get what input is set for the specific input.
@@ -105,9 +102,7 @@ public interface TavernaServerInputREST {
 	 *            The name of the input.
 	 * @param inputDescriptor
 	 *            A description of the input
-	 * @param ui
-	 *            About the URI used to access this resource.
-	 * @return A response to the HTTP request.
+	 * @return A description of the input.
 	 * @throws NoUpdateException
 	 *             If the user can't update the run.
 	 * @throws BadStateChangeException
@@ -122,10 +117,10 @@ public interface TavernaServerInputREST {
 	@Path("input/{name}")
 	@Consumes( { "application/xml", "application/json" })
 	@Description("Sets the source for a particular input port.")
-	public Response setInput(@PathParam("name") String name,
-			InDesc inputDescriptor, @Context UriInfo ui)
-			throws NoUpdateException, BadStateChangeException,
-			FilesystemAccessException, BadPropertyValueException;
+	public InDesc setInput(@PathParam("name") String name,
+			InDesc inputDescriptor) throws NoUpdateException,
+			BadStateChangeException, FilesystemAccessException,
+			BadPropertyValueException;
 
 	/**
 	 * A description of the structure of inputs to a Taverna workflow run, done
