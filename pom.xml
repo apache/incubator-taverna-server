@@ -9,6 +9,11 @@
 	<name>Taverna Server</name>
 	<description>Taverna Server is a service that provides execution of Taverna Workflows, provided they do not access the user interface while executing.</description>
 	<url>http://www.taverna.org.uk/</url>
+	<parent>
+		<artifactId>parent</artifactId>
+		<groupId>net.sf.taverna</groupId>
+		<version>0.1.2009-02-12</version>
+	</parent>
 	<issueManagement>
 		<system>JIRA</system>
 		<url>http://www.mygrid.org.uk/dev/issues/browse/TAVSERV</url>
@@ -92,6 +97,15 @@
 		</notifiers>
 	</ciManagement>
 	<repositories>
+		<repository>
+			<id>mygrid-repository</id>
+			<name>myGrid Respository</name>
+			<url>http://www.mygrid.org.uk/maven/repository</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases />
+		</repository>
 	</repositories>
 
 	<build>
