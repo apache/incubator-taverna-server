@@ -3,9 +3,9 @@
     PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
     "http://java.sun.com/dtd/web-app_2_3.dtd">
 
-<web-app id="TAVSERV2.3">
-	<display-name>Taverna Server 2.3.0-alpha: Server Component</display-name>
-	<description>This is the front-end server engine for Taverna Server 2.</description>
+<web-app id="TAVSERV.2REL1">
+	<display-name>Taverna 2 Server release 1</display-name>
+	<description>This is the front-end server engine for Taverna 2 Server.</description>
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>WEB-INF/beans.xml</param-value>
