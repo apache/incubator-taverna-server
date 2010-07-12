@@ -1,5 +1,8 @@
 package org.taverna.server.master.rest;
 
+import static org.taverna.server.master.common.Namespaces.XLINK;
+
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,8 +17,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
@@ -149,9 +152,7 @@ public interface TavernaServerREST {
 		 * References to the runs (known about by the current user) in this
 		 * server.
 		 */
-		@XmlElementWrapper(name = "runs", required = true, nillable = false)
-		@XmlElement(nillable = false)
-		public List<Uri> run;
+		public PointingRunList runs;
 		/**
 		 * Where to go to find out about the maximum number of runs.
 		 */
@@ -184,10 +185,9 @@ public interface TavernaServerREST {
 		 *            The factory for URIs.
 		 */
 		public ServerDescription(Map<String, TavernaRun> ws, UriInfo ui) {
-			run = new ArrayList<Uri>(ws.size());
-			for (Map.Entry<String, TavernaRun> w : ws.entrySet()) {
-				run.add(new Uri(ui, "runs/{uuid}", w.getKey()));
-			}
+			runs = new PointingRunList(ws, ui.getAbsolutePathBuilder().path(
+					"runs/{uuid}"), ui.getAbsolutePathBuilder().path("runs")
+					.build());
 			runLimit = new Uri(ui, "policy/runLimit");
 			permittedWorkflows = new Uri(ui, "policy/permittedWorkflows");
 			permittedListeners = new Uri(ui, "policy/permittedListenerTypes");
@@ -280,6 +280,34 @@ public interface TavernaServerREST {
 			run = new ArrayList<RunReference>(runs.size());
 			for (String name : runs.keySet())
 				run.add(new RunReference(name, ub));
+		}
+	}
+
+	@XmlType(name = "RunList")
+	public static class PointingRunList {
+		/** The reference to the real list of runs. */
+		@XmlAttribute(name = "href", namespace = XLINK)
+		public URI href;
+		/** The references to the workflow runs. */
+		@XmlElement
+		public List<Uri> run;
+
+		/**
+		 * Make an empty list of run references.
+		 */
+		public PointingRunList() {
+			run = new ArrayList<Uri>();
+		}
+
+		/**
+		 * Make a list of references to workflow runs.
+		 */
+		public PointingRunList(Map<String, TavernaRun> runs, UriBuilder ub,
+				URI uri) {
+			run = new ArrayList<Uri>(runs.size());
+			for (String name : runs.keySet())
+				run.add(new Uri(ub.build(name)));
+			href = uri;
 		}
 	}
 }
