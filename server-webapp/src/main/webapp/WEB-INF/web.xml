@@ -4,7 +4,7 @@
     "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app id="TAVSERV.2REL1">
-	<display-name>Taverna 2 Server release 1</display-name>
+	<display-name>Taverna 2 Server release 2</display-name>
 	<description>This is the front-end server engine for Taverna 2 Server.</description>
 	<context-param>
 		<param-name>contextConfigLocation</param-name>

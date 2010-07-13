@@ -1,7 +1,7 @@
-Taverna 2 Server release 1 (alpha) Release Notes
+Taverna 2 Server release 2 (alpha) Release Notes
 ================================================
 
-This is the first release of the new Taverna 2 Server. It's missing lots
+This is the second release of the new Taverna 2 Server. It's missing lots
 of stuff that will be there once there is a final release, so please be a
 bit gentle with it. However we welcome feedback on both the things that
 are there and the things that are not.
