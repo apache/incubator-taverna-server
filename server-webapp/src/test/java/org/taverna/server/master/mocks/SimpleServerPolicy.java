@@ -66,8 +66,6 @@ public class SimpleServerPolicy implements Policy {
 			store.cleanerIntervalUpdated(intervalInSeconds);
 	}
 
-	// TODO Way to manage list of workflows via JMX
-
 	public List<SCUFL> listPermittedWorkflows(Principal p) {
 		return emptyList();
 	}

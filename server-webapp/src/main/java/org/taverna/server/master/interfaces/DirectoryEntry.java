@@ -31,5 +31,5 @@ public interface DirectoryEntry {
 	 *             If the destroy fails for some reason.
 	 */
 	public void destroy() throws FilesystemAccessException;
-	// TODO: Permissions
+	// FIXME: Permissions (or decide not to do anything about them)
 }

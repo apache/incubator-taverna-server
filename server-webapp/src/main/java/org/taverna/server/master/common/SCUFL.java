@@ -17,7 +17,6 @@ public class SCUFL extends Uri {
 	/**
 	 * Literal document.
 	 */
-	// TODO Use the real definition of SCUFL
 	@XmlAnyElement(lax = true)
 	public Element[] content;
 }

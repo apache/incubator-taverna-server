@@ -4,7 +4,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -108,7 +107,7 @@ public class TavernaServerImplTest {
 
 	@Test
 	public void defaults4() {
-		assertNull(server.getPrincipal());
+		assertNotNull(server.getPrincipal());
 	}
 
 	@Test

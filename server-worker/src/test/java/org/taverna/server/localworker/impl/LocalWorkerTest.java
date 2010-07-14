@@ -32,7 +32,6 @@ public class LocalWorkerTest {
 	static class DummyWorker implements Worker {
 		@Override
 		public RemoteListener getDefaultListener() {
-			// TODO Auto-generated method stub
 			return new RemoteListener() {
 				@Override
 				public String getConfiguration() {

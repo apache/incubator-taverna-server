@@ -46,6 +46,7 @@ import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
 
 import org.apache.commons.logging.Log;
+import org.apache.cxf.common.security.SimplePrincipal;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.taverna.server.master.common.DirEntryReference;
@@ -71,7 +72,6 @@ import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.interfaces.TavernaSecurityContext;
 import org.taverna.server.master.rest.DirectoryContents;
 import org.taverna.server.master.rest.ListenerDefinition;
 import org.taverna.server.master.rest.MakeOrUpdateDirEntry;
@@ -335,12 +335,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			@Override
 			public String getOwner() {
 				invokes++;
-				// TODO: Not yet really implemented
-				TavernaSecurityContext c = run.getSecurityContext();
-				if (c == null)
-					return "<NOBODY>";
-				Principal owner = c.getOwner();
-				return owner == null ? "<NOBODY>" : owner.getName();
+				return run.getSecurityContext().getOwner().getName();
 			}
 
 			@Override
@@ -802,12 +797,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	@Override
 	public String getRunOwner(String runName) throws UnknownRunException {
 		invokes++;
-		// TODO: Not yet really implemented
-		TavernaSecurityContext c = getRun(runName).getSecurityContext();
-		if (c == null)
-			return "<NOBODY>";
-		Principal owner = c.getOwner();
-		return owner == null ? "<NOBODY>" : owner.getName();
+		return getRun(runName).getSecurityContext().getOwner().getName();
 	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -1159,13 +1149,29 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	}
 
 	Principal getPrincipal() {
+		Principal p = null;
+		if (jaxwsContext == null && jaxrsContext == null)
+			log.warn("no injected context");
 		try {
-			if (jaxwsContext != null)
-				return jaxwsContext.getUserPrincipal();
-			if (jaxrsContext != null)
-				return jaxrsContext.getUserPrincipal();
+			if (jaxwsContext != null
+					&& jaxwsContext.getMessageContext() != null)
+				p = jaxwsContext.getUserPrincipal();
 		} catch (NullPointerException e) {
+			log.warn("failed to get user principal", e);
 		}
-		return null;
+		if (p == null)
+			try {
+				if (jaxrsContext != null)
+					p = jaxrsContext.getUserPrincipal();
+			} catch (NullPointerException e) {
+				log.warn("failed to get user principal", e);
+			}
+		if (p != null)
+			log.info("service being accessed by " + p.getName());
+		else {
+			log.info("service being accessed by <NOBODY>");
+			p = new SimplePrincipal("<NOBODY>");
+		}
+		return p;
 	}
 }

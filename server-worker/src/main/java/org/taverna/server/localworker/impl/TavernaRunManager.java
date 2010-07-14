@@ -103,10 +103,11 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 		} catch (Exception e) {
 			throw new RemoteException("failed to extract contained workflow", e);
 		}
+		if (creator == null)
+			throw new RemoteException("no creator principal");
 		try {
-			// TODO: Do something properly with creator
-			out.println("Creating run for "
-					+ (creator == null ? "<NOBODY>" : creator.getName()));
+			// FIXME: Do something properly with creator
+			out.println("Creating run for " + creator.getName());
 			return cons.newInstance(command, sw.toString(), workerClass);
 		} catch (InvocationTargetException e) {
 			if (e.getTargetException() instanceof RemoteException)
