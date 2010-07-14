@@ -3,7 +3,7 @@
     PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
     "http://java.sun.com/dtd/web-app_2_3.dtd">
 
-<web-app id="TAVSERV.2REL1">
+<web-app id="TAVSERV-2.R2">
 	<display-name>Taverna 2 Server release 2</display-name>
 	<description>This is the front-end server engine for Taverna 2 Server.</description>
 	<context-param>
@@ -36,4 +36,41 @@
 		<servlet-name>CXFServlet</servlet-name>
 		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
+
+	<security-constraint>
+		<display-name>SSL connection required.</display-name>
+		<web-resource-collection>
+			<web-resource-name>Taverna 2 Server</web-resource-name>
+			<url-pattern>/soap/*</url-pattern>
+			<url-pattern>/soap</url-pattern>
+			<url-pattern>/rest/*</url-pattern>
+			<url-pattern>/rest</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>tavernauser</role-name>
+		</auth-constraint>
+		<user-data-constraint>
+			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+		</user-data-constraint>
+	</security-constraint>
+	<security-constraint>
+		<display-name>Secure but not authenticated</display-name>
+		<web-resource-collection>
+			<web-resource-name>Taverna 2 Server - service descriptions</web-resource-name>
+			<url-pattern>/</url-pattern>
+			<url-pattern>/services</url-pattern>
+			<url-pattern>/soap?wsdl*</url-pattern>
+			<url-pattern>/rest?_wadl*</url-pattern>
+			<http-method>GET</http-method>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>*</role-name>
+		</auth-constraint>
+		<user-data-constraint>
+			<transport-guarantee>INTEGRAL</transport-guarantee>
+		</user-data-constraint>
+	</security-constraint>
+	<login-config>
+		<auth-method>BASIC</auth-method>
+	</login-config>
 </web-app>
