@@ -265,7 +265,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		if (finished)
 			return Finished;
 		try {
-			subprocess.exitValue();
+			exitCode = subprocess.exitValue();
 			finished = true;
 			return Finished;
 		} catch (IllegalThreadStateException e) {

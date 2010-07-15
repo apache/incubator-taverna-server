@@ -19,6 +19,7 @@ import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.common.DirEntryReference.newInstance;
 
 import java.io.StringWriter;
+import java.net.URI;
 import java.security.Principal;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -324,9 +325,13 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 					public Listeners getDescription(UriInfo ui) {
 						List<ListenerDescription> result = new ArrayList<ListenerDescription>();
 						invokes++;
-						for (Listener l : run.getListeners())
-							result.add(new ListenerDescription(l.getName(), l
-									.getType(), l.listProperties(), ui));
+						for (Listener l : run.getListeners()) {
+							URI base = ui.getAbsolutePathBuilder().path(
+									"{name}").build(l.getName());
+							result
+									.add(new ListenerDescription(l,
+											fromUri(base)));
+						}
 						return new Listeners(result);
 					}
 				};
@@ -485,8 +490,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 				@Override
 				public ListenerDescription getDescription(UriInfo ui) {
 					invokes++;
-					return new ListenerDescription(listen.getName(), listen
-							.getType(), listen.listProperties(), ui);
+					return new ListenerDescription(listen, ui
+							.getAbsolutePathBuilder());
 				}
 
 				@Override
@@ -494,9 +499,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 						UriInfo ui) {
 					invokes++;
 					return new TavernaServerListenersREST.Properties(ui
-							.getAbsolutePathBuilder().path(
-									"../../{listener}/properties/{prop}"),
-							listen.getName(), listen.listProperties());
+							.getAbsolutePathBuilder().path("{prop}"), listen
+							.listProperties());
 				}
 
 				@Override

@@ -24,6 +24,7 @@ import org.apache.cxf.jaxrs.ext.Description;
 import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
+import org.taverna.server.master.interfaces.Listener;
 
 /**
  * This represents <i>all</i> the event listeners attached to a workflow run.
@@ -220,29 +221,20 @@ public interface TavernaServerListenersREST {
 		}
 
 		/**
-		 * Make a listener description from the given characterisation.
+		 * Make a listener description that characterizes the given listener.
 		 * 
-		 * @param name
-		 *            The name of the listener.
-		 * @param type
-		 *            The type of the listener.
-		 * @param properties
-		 *            The names of the listener's properties.
-		 * @param ui
-		 *            The factory for URIs.
+		 * @param listener The listener to describe.
+		 * @param ub The factor for URIs.
 		 */
-		public ListenerDescription(String name, String type,
-				String[] properties, UriInfo ui) {
-			this.name = name;
-			this.type = type;
-			this.configuration = new Uri(ui, "{name}/configuration", name);
-			UriBuilder ub = ui.getAbsolutePathBuilder().path(
-					"{name}/properties/{prop}");
-			this.properties = new ArrayList<PropertyDescription>(
-					properties.length);
-			for (String propName : properties)
-				this.properties
-						.add(new PropertyDescription(name, propName, ub));
+		public ListenerDescription(Listener listener, UriBuilder ub) {
+			name = listener.getName();
+			type = listener.getType();
+			configuration = new Uri(ub.clone().path("configuration"));
+			UriBuilder ub2 = ub.clone().path("properties/{prop}");
+			properties = new ArrayList<PropertyDescription>(
+					listener.listProperties().length);
+			for (String propName : listener.listProperties())
+				properties.add(new PropertyDescription(propName, ub2));
 		}
 	}
 
@@ -275,8 +267,8 @@ public interface TavernaServerListenersREST {
 		 * @param ub
 		 *            The factory for URIs.
 		 */
-		PropertyDescription(String listenerName, String propName, UriBuilder ub) {
-			super(ub, "", listenerName, propName);
+		PropertyDescription(String propName, UriBuilder ub) {
+			super(ub, propName);
 			this.name = propName;
 		}
 	}
@@ -338,17 +330,13 @@ public interface TavernaServerListenersREST {
 		 * 
 		 * @param ub
 		 *            The factory for URIs, configured.
-		 * @param listenerName
-		 *            The name of the listeners.
 		 * @param properties
 		 *            The names of the properties.
 		 */
-		public Properties(UriBuilder ub, String listenerName,
-				String[] properties) {
+		public Properties(UriBuilder ub, String[] properties) {
 			property = new ArrayList<PropertyDescription>(properties.length);
 			for (String propName : properties)
-				property
-						.add(new PropertyDescription(listenerName, propName, ub));
+				property.add(new PropertyDescription(propName, ub));
 		}
 	}
 }
