@@ -22,17 +22,18 @@
 		<dependency>
 			<groupId>uk.org.taverna.server</groupId>
 			<artifactId>server-webapp</artifactId>
-			<version>${project.version}</version>
+			<version>${project.parent.version}</version>
 			<type>war</type>
 		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.2-beta-5</version>
 				<configuration>
-					<finalName>TavernaServer-${parent.version}</finalName>
+					<finalName>TavernaServer-${project.parent.version}</finalName>
 					<descriptors>
 						<descriptor>src/assemble/dist.xml</descriptor>
 					</descriptors>
