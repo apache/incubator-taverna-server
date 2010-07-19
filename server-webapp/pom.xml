@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>uk.org.taverna.server</groupId>
 	<artifactId>server-webapp</artifactId>
@@ -60,6 +61,7 @@
 			<groupId>uk.org.taverna.server</groupId>
 			<artifactId>server-runinterface</artifactId>
 			<version>${project.parent.version}</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>uk.org.taverna.server</groupId>
@@ -76,6 +78,16 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>uk.org.taverna.server</groupId>
+				<artifactId>server-runinterface</artifactId>
+				<version>${project.parent.version}</version>
+				<scope>compile</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<build>
 		<finalName>TavernaServer.${project.parent.version}</finalName>
@@ -88,6 +100,16 @@
 					<configuration>
 						<server>deployhost</server>
 						<path>/taverna-server</path>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>2.3.1</version>
+					<configuration>
+						<encoding>US-ASCII</encoding>
+						<source>1.6</source>
+						<target>1.6</target>
 					</configuration>
 				</plugin>
 			</plugins>
