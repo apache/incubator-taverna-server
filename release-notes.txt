@@ -43,6 +43,12 @@ TAVSERV-70: Master: act as front end to Workers
 TAVSERV-78: REST API URI typos on server front page section 2
 TAVSERV-79: REST API URI typos on server front page section 3
 TAVSERV-80: REST API URI typos on server front page section 8
+TAVSERV-81: Path to inputs missing from top level run document
+TAVSERV-83: io listener paths munged
+TAVSERV-84: listeners href incorrect
+TAVSERV-85: no exitcode returned for a finished run
+TAVSERV-87: incorrect listeners enumeration
+TAVSERV-88: documentation omits namespaces on some attributes in example XML
 
 Many other issues are partially addressed and will be fully dealt with
 in future releases.
