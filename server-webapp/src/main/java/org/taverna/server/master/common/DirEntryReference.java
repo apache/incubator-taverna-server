@@ -27,8 +27,10 @@ public abstract class DirEntryReference {
 	/** A link to the entry. */
 	@XmlAttribute(name = "href", namespace = XLINK)
 	public URI link;
-
 	/** The path of the entry. */
+	@XmlAttribute
+	public String name;
+	/** The last, user-displayable part of the name. */
 	@XmlValue
 	public String path;
 
@@ -59,6 +61,7 @@ public abstract class DirEntryReference {
 			DirectoryEntry entry) {
 		DirEntryReference de = (entry instanceof Directory) ? new DirectoryReference()
 				: new FileReference();
+		de.name = entry.getName();
 		String fullname = entry.getFullName();
 		de.path = fullname.startsWith("/") ? fullname.substring(1) : fullname;
 		if (ub != null)
