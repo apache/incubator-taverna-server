@@ -49,7 +49,7 @@ by the service. This simple guide just discusses the REST API.</p>
 		creating a file on the server. Thus, if you were staging the value BAR
 		to input port FOO by means of a file BOO.TXT then you would first POST
 		this message to <tt>SERVICE_URI/rest/runs/<b>UUID</b>/wd</tt></p>
-		<blockquote><pre>&lt;t2sr:upload xmlns:t2sr="http://ns.taverna.org.uk/2010/xml/server/rest/" name="<b>BOO.TXT</b>"&gt;
+		<blockquote><pre>&lt;t2sr:upload xmlns:t2sr="http://ns.taverna.org.uk/2010/xml/server/rest/" t2sr:name="<b>BOO.TXT</b>"&gt;
     QkFS
 &lt;/t2sr:upload&gt;</pre></blockquote>
 		<p>Note that &#x201c;<tt>QkFS</tt>&#x201d; is the base64-encoded
@@ -65,7 +65,7 @@ by the service. This simple guide just discusses the REST API.</p>
 		previous method for setting an input.</p>
 		<p>You can also create a directory, e.g., IN, to hold the input
 		files. This is done by POSTing a different message to <tt>SERVICE_URI/rest/runs/<b>UUID</b>/wd</tt></p>
-		<blockquote><pre>&lt;t2sr:mkdir xmlns:t2sr="http://ns.taverna.org.uk/2010/xml/server/rest/" name="<b>IN</b>" /&gt;</pre></blockquote>
+		<blockquote><pre>&lt;t2sr:mkdir xmlns:t2sr="http://ns.taverna.org.uk/2010/xml/server/rest/" t2sr:name="<b>IN</b>" /&gt;</pre></blockquote>
 		<p>With that, you can then create files in the IN subdirectory by
 		sending the <tt>upload</tt> message to <tt>SERVICE_URI/rest/runs/<b>UUID</b>/wd/IN</tt>
 		and you can use the file as an input by using a name such as <tt>IN/BOO.TXT</tt>.

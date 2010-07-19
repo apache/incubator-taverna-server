@@ -325,14 +325,15 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 					public Listeners getDescription(UriInfo ui) {
 						List<ListenerDescription> result = new ArrayList<ListenerDescription>();
 						invokes++;
+						UriBuilder ub = ui.getAbsolutePathBuilder().path(
+								"{name}");
 						for (Listener l : run.getListeners()) {
-							URI base = ui.getAbsolutePathBuilder().path(
-									"{name}").build(l.getName());
+							URI base = ub.build(l.getName());
 							result
 									.add(new ListenerDescription(l,
 											fromUri(base)));
 						}
-						return new Listeners(result);
+						return new Listeners(result, ub);
 					}
 				};
 			}

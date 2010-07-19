@@ -1,5 +1,8 @@
 package org.taverna.server.master.rest;
 
+import static org.taverna.server.master.common.Namespaces.XLINK;
+
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -196,6 +199,9 @@ public interface TavernaServerListenersREST {
 	@XmlRootElement
 	@XmlType(name = "ListenerDescription")
 	public class ListenerDescription {
+		/** Where this listener is located. */
+		@XmlAttribute(name = "href", namespace = XLINK)
+		public URI location;
 		/** The (arbitrary) name of the event listener. */
 		@XmlAttribute
 		public String name;
@@ -223,16 +229,18 @@ public interface TavernaServerListenersREST {
 		/**
 		 * Make a listener description that characterizes the given listener.
 		 * 
-		 * @param listener The listener to describe.
-		 * @param ub The factor for URIs.
+		 * @param listener
+		 *            The listener to describe.
+		 * @param ub
+		 *            The factor for URIs.
 		 */
 		public ListenerDescription(Listener listener, UriBuilder ub) {
 			name = listener.getName();
 			type = listener.getType();
 			configuration = new Uri(ub.clone().path("configuration"));
 			UriBuilder ub2 = ub.clone().path("properties/{prop}");
-			properties = new ArrayList<PropertyDescription>(
-					listener.listProperties().length);
+			properties = new ArrayList<PropertyDescription>(listener
+					.listProperties().length);
 			for (String propName : listener.listProperties())
 				properties.add(new PropertyDescription(propName, ub2));
 		}
@@ -284,14 +292,14 @@ public interface TavernaServerListenersREST {
 		/**
 		 * The listeners for a workflow run.
 		 */
-		@XmlElement
-		public List<ListenerDescription> description;
+		@XmlElement(name = "listener")
+		public List<ListenerDescription> listener;
 
 		/**
 		 * Make a blank description of listeners.
 		 */
 		public Listeners() {
-			description = new ArrayList<ListenerDescription>();
+			listener = new ArrayList<ListenerDescription>();
 		}
 
 		/**
@@ -300,8 +308,10 @@ public interface TavernaServerListenersREST {
 		 * 
 		 * @param listeners
 		 */
-		public Listeners(List<ListenerDescription> listeners) {
-			description = listeners;
+		public Listeners(List<ListenerDescription> listeners, UriBuilder ub) {
+			listener = listeners;
+			for (ListenerDescription ld : listeners)
+				ld.location = ub.build(ld.name);
 		}
 	}
 

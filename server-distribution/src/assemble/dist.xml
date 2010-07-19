@@ -32,7 +32,7 @@
 -->
 	<fileSets>
 		<fileSet>
-			<directory>${project.basedir}/..</directory>
+			<directory>${project.parent.basedir}</directory>
 			<includes>
 				<include>*.html</include>
 				<include>*.xml</include>
@@ -42,9 +42,10 @@
 				<exclude>pom.xml</exclude>
 			</excludes>
 			<fileMode>0644</fileMode>
+			<outputDirectory>.</outputDirectory>
 		</fileSet>
 		<fileSet>
-			<directory>${project.basedir}/../server-webapp/target</directory>
+			<directory>${project.parent.basedir}/server-webapp/target</directory>
 			<includes>
 				<include>*.war</include>
 			</includes>
