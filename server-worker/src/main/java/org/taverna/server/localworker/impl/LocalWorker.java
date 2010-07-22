@@ -18,6 +18,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,10 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	private String workflow;
 	private File base;
 	private DirectoryDelegate baseDir;
+	/** When did this workflow start running, or <tt>null</tt> for "never/not yet". */
+	public Date start;
+	/** When did this workflow finish running, or <tt>null</tt> for "never/not yet". */
+	public Date finish;
 	RemoteStatus status;
 	String inputBaclava, outputBaclava;
 	Map<String, String> inputFiles;
@@ -104,6 +109,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		if (status != Finished && status != Initialized)
 			try {
 				core.killWorker();
+				if (finish == null)
+					finish = new Date();
 			} catch (Exception e) {
 				out.println("problem when killing worker");
 				e.printStackTrace(out);
@@ -177,8 +184,11 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	@Override
 	public RemoteStatus getStatus() {
 		// only state that can spontaneously change to another
-		if (status == Operating)
+		if (status == Operating) {
 			status = core.getWorkerStatus();
+			if (status == Finished && finish == null)
+				finish = new Date();
+		}
 		return status;
 	}
 
@@ -292,6 +302,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			switch (status) {
 			case Initialized:
 				try {
+					start = new Date();
 					core.initWorker(executeWorkflowCommand, workflow, base,
 							inputBaclava, inputFiles, inputValues,
 							outputBaclava);
@@ -337,6 +348,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			case Stopped:
 				try {
 					core.killWorker();
+					if (finish == null)
+						finish = new Date();
 				} catch (Exception e) {
 					throw new RemoteException("problem killing workflow run", e);
 				}
@@ -345,5 +358,15 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			status = Finished;
 			break;
 		}
+	}
+
+	@Override
+	public Date getFinishTimestamp() {
+		return finish;
+	}
+
+	@Override
+	public Date getStartTimestamp() throws RemoteException {
+		return start;
 	}
 }

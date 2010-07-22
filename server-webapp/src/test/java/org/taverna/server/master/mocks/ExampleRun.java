@@ -255,4 +255,22 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 			checkBadFilename(filename);
 		outputBaclava = filename;
 	}
+
+	@Override
+	public Date getCreationTimestamp() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Date getFinishTimestamp() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Date getStartTimestamp() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

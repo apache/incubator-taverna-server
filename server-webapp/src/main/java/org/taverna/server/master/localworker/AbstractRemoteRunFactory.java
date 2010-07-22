@@ -61,6 +61,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	static Timer timer = new Timer("Taverna.Server.RemoteRunFactory.Timer",
 			true);
 	private int defaultLifetime = 20;
+	private int maxRuns = 5;
 	private TimerTask cleaner;
 	private Map<String, TavernaRun> runs = new HashMap<String, TavernaRun>();
 
@@ -122,8 +123,9 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	public TavernaRun create(Principal creator, SCUFL workflow)
 			throws NoCreateException {
 		try {
+			Date now = new Date();
 			RemoteSingleRun rsr = getRealRun(creator, workflow);
-			return new RemoteRunDelegate(creator, workflow, rsr,
+			return new RemoteRunDelegate(now, creator, workflow, rsr,
 					defaultLifetime);
 		} catch (NoCreateException e) {
 			log.warn("failed to build run instance", e);
@@ -157,7 +159,12 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	@ManagedAttribute(description = "The maximum number of simultaneous runs supported by the server.", currencyTimeLimit = 300)
 	@Override
 	public int getMaxRuns() {
-		return 5;
+		return maxRuns;
+	}
+
+	@ManagedAttribute(description = "The maximum number of simultaneous runs supported by the server.")
+	public void setMaxRuns(int maxRuns) {
+		this.maxRuns = maxRuns;
 	}
 
 	/** @return How many minutes should a workflow live by default? */

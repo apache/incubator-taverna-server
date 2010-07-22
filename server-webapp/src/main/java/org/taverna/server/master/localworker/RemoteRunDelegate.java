@@ -44,13 +44,15 @@ import org.taverna.server.master.interfaces.TavernaSecurityContext;
  * @author Donal Fellows
  */
 public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext {
+	private Date creationInstant;
 	private SCUFL workflow;
 	private Date expiry;
 	private Principal creator;
 	RemoteSingleRun run;
 
-	RemoteRunDelegate(Principal creator, SCUFL workflow, RemoteSingleRun rsr,
-			int defaultLifetime) {
+	RemoteRunDelegate(Date creationInstant, Principal creator, SCUFL workflow,
+			RemoteSingleRun rsr, int defaultLifetime) {
+		this.creationInstant = creationInstant;
 		this.creator = creator;
 		this.workflow = workflow;
 		Calendar c = Calendar.getInstance();
@@ -578,6 +580,31 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext {
 		} catch (RemoteException e) {
 			throw new FilesystemAccessException(
 					"cannot set output baclava file name", e);
+		}
+	}
+
+	@Override
+	public Date getCreationTimestamp() {
+		return creationInstant;
+	}
+
+	@Override
+	public Date getFinishTimestamp() {
+		try {
+			return run.getFinishTimestamp();
+		} catch (RemoteException e) {
+			log.info("failed to get finish timestamp", e);
+			return null;
+		}
+	}
+
+	@Override
+	public Date getStartTimestamp() {
+		try {
+			return run.getStartTimestamp();
+		} catch (RemoteException e) {
+			log.info("failed to get finish timestamp", e);
+			return null;
 		}
 	}
 }

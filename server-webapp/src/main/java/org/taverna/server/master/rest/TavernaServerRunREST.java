@@ -84,7 +84,7 @@ public interface TavernaServerRunREST {
 	@Path("expiry")
 	@Produces("text/plain")
 	@Description("Gives the time when the workflow run becomes eligible for automatic deletion.")
-	public String getExpiry();
+	public String getExpiryTime();
 
 	/**
 	 * Sets the time when the workflow run becomes eligible for automatic
@@ -102,7 +102,40 @@ public interface TavernaServerRunREST {
 	@Consumes("text/plain")
 	@Produces("text/plain")
 	@Description("Sets the time when the workflow run becomes eligible for automatic deletion.")
-	public String setExpiry(String expiry) throws NoUpdateException;
+	public String setExpiryTime(String expiry) throws NoUpdateException;
+
+	/**
+	 * Returns the time when the workflow run was created.
+	 * 
+	 * @return When the run was first submitted to the server.
+	 */
+	@GET
+	@Path("createTime")
+	@Produces("text/plain")
+	@Description("Gives the time when the workflow run was first submitted to the server.")
+	public String getCreateTime();
+
+	/**
+	 * Returns the time when the workflow run was started (through a user-driven state change).
+	 * 
+	 * @return When the run was started, or <tt>null</tt>.
+	 */
+	@GET
+	@Path("startTime")
+	@Produces("text/plain")
+	@Description("Gives the time when the workflow run was started, or an empty string if the run has not yet started.")
+	public String getStartTime();
+
+	/**
+	 * Returns the time when the workflow run was detected to have finished.
+	 * 
+	 * @return When the run finished, or <tt>null</tt>.
+	 */
+	@GET
+	@Path("finishTime")
+	@Produces("text/plain")
+	@Description("Gives the time when the workflow run was first detected as finished, or an empty string if it has not yet finished (including if it has never started).")
+	public String getFinishTime();
 
 	/**
 	 * Gets the current status of the workflow run.
@@ -222,6 +255,12 @@ public interface TavernaServerRunREST {
 		public Expiry expiry;
 		/** The location of the creation workflow description. */
 		public Uri creationWorkflow;
+		/** The location of the creation time property. */
+		public Uri createTime;
+		/** The location of the start time property. */
+		public Uri startTime;
+		/** The location of the finish time property. */
+		public Uri finishTime;
 		/** The location of the status description. */
 		public Uri status;
 		/** The location of the working directory. */
@@ -321,6 +360,9 @@ public interface TavernaServerRunREST {
 			securityContext = new Uri(ui, "owner");
 			inputs = new Uri(ui, "input");
 			output = new Uri(ui, "output");
+			createTime = new Uri(ui, "createTime");
+			startTime = new Uri(ui, "startTime");
+			finishTime = new Uri(ui, "finishTime");
 		}
 	}
 }

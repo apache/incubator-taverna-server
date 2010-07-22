@@ -10,11 +10,13 @@
 			The simple policy manager and factory for the baseline
 			localworker case.
 		</description>
-		<property name="defaultLifetime" value="20" />
+		<property name="defaultLifetime" value="1440" />
+		<property name="maxRuns" value="100" />
 		<!--
 			Supported properties: javaBinary:String, extraArguments:String[],
 			serverWorkerJar:String, executeWorkflowScript:String,
-			waitSeconds:int(s), sleepTime:int(ms), defaultLifetime:int(mins)
+			waitSeconds:int(s), sleepTime:int(ms), defaultLifetime:int(mins),
+			maxRuns:int
 		-->
 	</bean>
 

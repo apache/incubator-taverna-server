@@ -149,4 +149,22 @@ public interface TavernaRun {
 	 *             If the destruction failed.
 	 */
 	public void destroy() throws NoDestroyException;
+
+	/**
+	 * @return When this workflow run was created.
+	 */
+	public Date getCreationTimestamp();
+
+	/**
+	 * @return When this workflow run was started, or <tt>null</tt> if it has
+	 *         never been started.
+	 */
+	public Date getStartTimestamp();
+
+	/**
+	 * @return When this workflow run was found to have finished, or
+	 *         <tt>null</tt> if it has never finished (either still running or
+	 *         never started).
+	 */
+	public Date getFinishTimestamp();
 }

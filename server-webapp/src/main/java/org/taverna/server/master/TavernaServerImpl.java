@@ -345,9 +345,29 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			}
 
 			@Override
-			public String getExpiry() {
+			public String getExpiryTime() {
 				invokes++;
 				return df().format(run.getExpiry());
+			}
+
+			@Override
+			public String getCreateTime() {
+				invokes++;
+				return df().format(run.getCreationTimestamp());
+			}
+
+			@Override
+			public String getFinishTime() {
+				invokes++;
+				Date f = run.getFinishTimestamp();
+				return f==null ? "" : df().format(f);
+			}
+
+			@Override
+			public String getStartTime() {
+				invokes++;
+				Date f = run.getStartTimestamp();
+				return f==null ? "" : df().format(f);
 			}
 
 			@Override
@@ -369,7 +389,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			}
 
 			@Override
-			public String setExpiry(String expiry) throws NoUpdateException {
+			public String setExpiryTime(String expiry) throws NoUpdateException {
 				invokes++;
 				policy.permitDestroy(getPrincipal(), run);
 				try {
@@ -782,6 +802,24 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		TavernaRun w = getRun(runName);
 		policy.permitDestroy(getPrincipal(), w);
 		w.setExpiry(d);
+	}
+
+	@Override
+	public Date getRunCreationTime(String runName) throws UnknownRunException {
+		invokes++;
+		return getRun(runName).getCreationTimestamp();
+	}
+
+	@Override
+	public Date getRunFinishTime(String runName) throws UnknownRunException {
+		invokes++;
+		return getRun(runName).getFinishTimestamp();
+	}
+
+	@Override
+	public Date getRunStartTime(String runName) throws UnknownRunException {
+		invokes++;
+		return getRun(runName).getStartTimestamp();
 	}
 
 	@Override

@@ -296,6 +296,52 @@ public interface TavernaServerSOAP {
 			NoUpdateException;
 
 	/**
+	 * Get the time when the run was created.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @return The moment when the run was created (modulo some internal
+	 *         overhead).
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 */
+	@WebResult(name = "CreationTime")
+	public Date getRunCreationTime(@WebParam(name = "runName") String runName)
+			throws UnknownRunException;
+
+	/**
+	 * Get the time when the run was started.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @return The moment when the run was started (modulo some internal
+	 *         overhead) or <tt>null</tt> to indicate that it has never started.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 */
+	@WebResult(name = "StartTime")
+	public Date getRunStartTime(@WebParam(name = "runName") String runName)
+			throws UnknownRunException;
+
+	/**
+	 * Get the time when the run was detected as having finished.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @return The moment when the run was believed stopped. Note that this may
+	 *         not be when the run <i>actually</i> finished; promptness of
+	 *         detection depends on many factors.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 */
+	@WebResult(name = "FinishTime")
+	public Date getRunFinishTime(@WebParam(name = "runName") String runName)
+			throws UnknownRunException;
+
+	/**
 	 * Get the current status of the run.
 	 * 
 	 * @param runName

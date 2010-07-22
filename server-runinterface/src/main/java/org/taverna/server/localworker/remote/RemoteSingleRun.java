@@ -2,6 +2,7 @@ package org.taverna.server.localworker.remote;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.Date;
 import java.util.List;
 
 public interface RemoteSingleRun extends Remote {
@@ -74,6 +75,19 @@ public interface RemoteSingleRun extends Remote {
 	 */
 	public void setStatus(RemoteStatus s) throws IllegalStateTransitionException,
 			RemoteException;
+
+	/**
+	 * @return When this workflow run was found to have finished, or
+	 *         <tt>null</tt> if it has never finished (either still running or
+	 *         never started).
+	 */
+	public Date getFinishTimestamp() throws RemoteException;
+
+	/**
+	 * @return When this workflow run was started, or <tt>null</tt> if it has
+	 *         never been started.
+	 */
+	public Date getStartTimestamp() throws RemoteException;
 
 	/**
 	 * @return Handle to the main working directory of the run.
