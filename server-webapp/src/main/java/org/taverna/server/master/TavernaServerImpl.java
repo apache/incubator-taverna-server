@@ -54,8 +54,8 @@ import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
 import org.taverna.server.master.common.Namespaces;
 import org.taverna.server.master.common.RunReference;
-import org.taverna.server.master.common.SCUFL;
 import org.taverna.server.master.common.Status;
+import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadPropertyValueException;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
@@ -103,7 +103,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	// CONNECTIONS TO JMX, SPRING AND CXF
 
 	static int invokes;
-	private JAXBContext scuflSerializer;
+	private JAXBContext workflowSerializer;
 	/**
 	 * Whether outgoing exceptions should be logged before being converted to
 	 * responses.
@@ -114,7 +114,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 * @throws JAXBException
 	 */
 	public TavernaServerImpl() throws JAXBException {
-		scuflSerializer = JAXBContext.newInstance(SCUFL.class);
+		workflowSerializer = JAXBContext.newInstance(Workflow.class);
 	}
 
 	/**
@@ -238,7 +238,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	}
 
 	@Override
-	public Response submitWorkflow(SCUFL workflow, UriInfo ui)
+	public Response submitWorkflow(Workflow workflow, UriInfo ui)
 			throws NoUpdateException {
 		invokes++;
 		String name = buildWorkflow(workflow, getPrincipal());
@@ -360,14 +360,14 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			public String getFinishTime() {
 				invokes++;
 				Date f = run.getFinishTimestamp();
-				return f==null ? "" : df().format(f);
+				return f == null ? "" : df().format(f);
 			}
 
 			@Override
 			public String getStartTime() {
 				invokes++;
 				Date f = run.getStartTimestamp();
-				return f==null ? "" : df().format(f);
+				return f == null ? "" : df().format(f);
 			}
 
 			@Override
@@ -377,7 +377,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			}
 
 			@Override
-			public SCUFL getWorkflow() {
+			public Workflow getWorkflow() {
 				invokes++;
 				return run.getWorkflow();
 			}
@@ -753,17 +753,20 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	}
 
 	@Override
-	public RunReference submitWorkflow(SCUFL workflow) throws NoUpdateException {
+	public RunReference submitWorkflow(Workflow workflow)
+			throws NoUpdateException {
 		invokes++;
 		String name = buildWorkflow(workflow, getPrincipal());
 		return new RunReference(name, getRestfulRunReferenceBuilder());
 	}
 
+	private static final Workflow[] WORKFLOW_ARRAY_TYPE = new Workflow[0];
+
 	@Override
-	public SCUFL[] getAllowedWorkflows() {
+	public Workflow[] getAllowedWorkflows() {
 		invokes++;
 		return policy.listPermittedWorkflows(getPrincipal()).toArray(
-				new SCUFL[0]);
+				WORKFLOW_ARRAY_TYPE);
 	}
 
 	@Override
@@ -784,7 +787,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	}
 
 	@Override
-	public SCUFL getRunWorkflow(String runName) throws UnknownRunException {
+	public Workflow getRunWorkflow(String runName) throws UnknownRunException {
 		invokes++;
 		return getRun(runName).getWorkflow();
 	}
@@ -1056,14 +1059,14 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		return isoFormat;
 	}
 
-	private String buildWorkflow(SCUFL workflow, Principal p)
+	private String buildWorkflow(Workflow workflow, Principal p)
 			throws NoCreateException {
 		if (!allowNewWorkflowRuns)
 			throw new NoCreateException("run creation not currently enabled");
 		if (logIncomingWorkflows)
 			try {
 				StringWriter sw = new StringWriter();
-				scuflSerializer.createMarshaller().marshal(workflow, sw);
+				workflowSerializer.createMarshaller().marshal(workflow, sw);
 				log.info(sw);
 			} catch (JAXBException e) {
 				log.warn("problem when logging workflow", e);

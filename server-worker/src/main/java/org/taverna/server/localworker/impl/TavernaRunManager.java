@@ -21,11 +21,14 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.ws.Holder;
 
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 /**
@@ -67,8 +70,8 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	 * @param constructor
 	 *            What constructor to call to instantiate the RMI server object
 	 *            for the run. The constructor <i>must</i> be able to take two
-	 *            strings (the execution command, and the SCUFL document) and a
-	 *            class (the <tt>workerClass</tt> parameter, below) as
+	 *            strings (the execution command, and the workflow document) and
+	 *            a class (the <tt>workerClass</tt> parameter, below) as
 	 *            arguments.
 	 * @param workerClass
 	 *            What class to create to actually manufacture and manage the
@@ -88,27 +91,54 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 		this.workerClass = workerClass;
 	}
 
-	@Override
-	public RemoteSingleRun make(String scufl, Principal creator)
+	/**
+	 * Do the unwrapping of a workflow to extract the contents of the file to
+	 * feed into the Taverna core.
+	 * 
+	 * @param workflow
+	 *            The string containing the workflow to extract.
+	 * @param wfid
+	 *            A place to store the extracted workflow ID.
+	 * @return The extracted workflow description.
+	 * @throws RemoteException
+	 *             If anything goes wrong.
+	 */
+	private String unwrapWorkflow(String workflow, Holder<String> wfid)
 			throws RemoteException {
-		StringReader sr = new StringReader(scufl);
+		StringReader sr = new StringReader(workflow);
 		StringWriter sw = new StringWriter();
 		try {
-			tf.newTransformer()
-					.transform(
-							new DOMSource(unwrapWorkflow(dbf
-									.newDocumentBuilder().parse(
-											new InputSource(sr)))),
-							new StreamResult(sw));
+			Document doc = dbf.newDocumentBuilder().parse(new InputSource(sr));
+			// Try to extract the t2flow's ID.
+			NodeList nl = doc.getElementsByTagNameNS(
+					"http://taverna.sf.net/2008/xml/t2flow", "dataflow");
+			if (nl.getLength() > 0) {
+				Node n = nl.item(0).getAttributes().getNamedItem("id");
+				if (n != null)
+					wfid.value = n.getTextContent();
+			}
+			tf.newTransformer().transform(new DOMSource(unwrapWorkflow(doc)),
+					new StreamResult(sw));
+			return sw.toString();
 		} catch (Exception e) {
 			throw new RemoteException("failed to extract contained workflow", e);
 		}
+	}
+
+	@Override
+	public RemoteSingleRun make(String workflow, Principal creator)
+			throws RemoteException {
 		if (creator == null)
 			throw new RemoteException("no creator principal");
 		try {
-			// FIXME: Do something properly with creator
-			out.println("Creating run for " + creator.getName());
-			return cons.newInstance(command, sw.toString(), workerClass);
+			Holder<String> wfid = new Holder<String>("???");
+			workflow = unwrapWorkflow(workflow, wfid);
+			// TODO: Do something properly with creator
+			out.println("Creating run from workflow <" + wfid.value + "> for <"
+					+ creator.getName() + ">");
+			return cons.newInstance(command, workflow, workerClass);
+		} catch (RemoteException e) {
+			throw e;
 		} catch (InvocationTargetException e) {
 			if (e.getTargetException() instanceof RemoteException)
 				throw (RemoteException) e.getTargetException();

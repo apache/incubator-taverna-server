@@ -12,8 +12,8 @@ import javax.jws.WebService;
 import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
 import org.taverna.server.master.common.RunReference;
-import org.taverna.server.master.common.SCUFL;
 import org.taverna.server.master.common.Status;
+import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadPropertyValueException;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
@@ -39,7 +39,7 @@ public interface TavernaServerSOAP {
 	 * @throws NoUpdateException
 	 */
 	@WebResult(name = "Run")
-	RunReference submitWorkflow(@WebParam(name = "workflow") SCUFL workflow)
+	RunReference submitWorkflow(@WebParam(name = "workflow") Workflow workflow)
 			throws NoUpdateException;
 
 	/**
@@ -65,11 +65,11 @@ public interface TavernaServerSOAP {
 	 * Get the list of allowed workflows. If the list is empty, <i>any</i>
 	 * workflow may be used.
 	 * 
-	 * @return A list of SCUFL workflows.
+	 * @return A list of workflow documents.
 	 */
 	@WebMethod(operationName = "getPermittedWorkflows")
 	@WebResult(name = "PermittedWorkflow")
-	public SCUFL[] getAllowedWorkflows();
+	public Workflow[] getAllowedWorkflows();
 
 	/**
 	 * Get the list of allowed event listeners.
@@ -109,7 +109,7 @@ public interface TavernaServerSOAP {
 	 *             not permitted to see it.
 	 */
 	@WebResult(name = "CreationWorkflow")
-	public SCUFL getRunWorkflow(@WebParam(name = "runName") String runName)
+	public Workflow getRunWorkflow(@WebParam(name = "runName") String runName)
 			throws UnknownRunException;
 
 	/**

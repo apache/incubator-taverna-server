@@ -3,7 +3,7 @@ package org.taverna.server.master.interfaces;
 import java.security.Principal;
 import java.util.List;
 
-import org.taverna.server.master.common.SCUFL;
+import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoDestroyException;
 import org.taverna.server.master.exceptions.NoUpdateException;
@@ -40,7 +40,7 @@ public interface Policy {
 	 * @throws NoCreateException
 	 *             If they may not instantiate it.
 	 */
-	public void permitCreate(Principal user, SCUFL workflow)
+	public void permitCreate(Principal user, Workflow workflow)
 			throws NoCreateException;
 
 	/**
@@ -93,5 +93,5 @@ public interface Policy {
 	 * @return A list of workflows that they may instantiate, or <tt>null</tt>
 	 *         if any workflow may be submitted.
 	 */
-	public List<SCUFL> listPermittedWorkflows(Principal user);
+	public List<Workflow> listPermittedWorkflows(Principal user);
 }

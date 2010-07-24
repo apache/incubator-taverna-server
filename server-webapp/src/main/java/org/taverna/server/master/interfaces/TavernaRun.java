@@ -3,7 +3,7 @@ package org.taverna.server.master.interfaces;
 import java.util.Date;
 import java.util.List;
 
-import org.taverna.server.master.common.SCUFL;
+import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
@@ -18,7 +18,7 @@ public interface TavernaRun {
 	/**
 	 * @return What was this run was create to execute.
 	 */
-	public SCUFL getWorkflow();
+	public Workflow getWorkflow();
 
 	/**
 	 * @return The name of the Baclava file to use for all inputs, or

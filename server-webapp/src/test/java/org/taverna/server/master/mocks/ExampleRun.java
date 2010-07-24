@@ -12,7 +12,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.taverna.server.master.common.SCUFL;
+import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
@@ -26,7 +26,7 @@ import org.taverna.server.master.interfaces.TavernaSecurityContext;
 
 public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	List<Listener> listeners;
-	SCUFL workflow;
+	Workflow workflow;
 	Status status;
 	Date expiry;
 	Principal owner;
@@ -35,7 +35,7 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	java.io.File realRoot;
 	List<Input> inputs;
 
-	public ExampleRun(Principal creator, SCUFL workflow, Date expiry) {
+	public ExampleRun(Principal creator, Workflow workflow, Date expiry) {
 		this.listeners = new ArrayList<Listener>();
 		this.status = Initialized;
 		this.owner = creator;
@@ -76,7 +76,7 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	}
 
 	@Override
-	public SCUFL getWorkflow() {
+	public Workflow getWorkflow() {
 		return workflow;
 	}
 
@@ -110,7 +110,7 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 		}
 
 		@Override
-		public TavernaRun create(Principal creator, SCUFL workflow) {
+		public TavernaRun create(Principal creator, Workflow workflow) {
 			Calendar c = GregorianCalendar.getInstance();
 			c.add(MINUTE, lifetime);
 			return new ExampleRun(creator, workflow, c.getTime());

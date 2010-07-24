@@ -24,7 +24,7 @@ import org.taverna.server.localworker.remote.RemoteInput;
 import org.taverna.server.localworker.remote.RemoteListener;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.localworker.remote.RemoteStatus;
-import org.taverna.server.master.common.SCUFL;
+import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.exceptions.BadPropertyValueException;
 import org.taverna.server.master.exceptions.BadStateChangeException;
@@ -45,12 +45,12 @@ import org.taverna.server.master.interfaces.TavernaSecurityContext;
  */
 public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext {
 	private Date creationInstant;
-	private SCUFL workflow;
+	private Workflow workflow;
 	private Date expiry;
 	private Principal creator;
 	RemoteSingleRun run;
 
-	RemoteRunDelegate(Date creationInstant, Principal creator, SCUFL workflow,
+	RemoteRunDelegate(Date creationInstant, Principal creator, Workflow workflow,
 			RemoteSingleRun rsr, int defaultLifetime) {
 		this.creationInstant = creationInstant;
 		this.creator = creator;
@@ -208,7 +208,7 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext {
 	}
 
 	@Override
-	public SCUFL getWorkflow() {
+	public Workflow getWorkflow() {
 		return workflow;
 	}
 

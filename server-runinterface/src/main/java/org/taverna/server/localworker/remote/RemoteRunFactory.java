@@ -11,13 +11,13 @@ import java.security.Principal;
  */
 public interface RemoteRunFactory extends Remote {
 	/**
-	 * Makes a workflow run that will process a particular SCUFL document.
+	 * Makes a workflow run that will process a particular workflow document.
 	 * 
-	 * @param scufl
+	 * @param workflow
 	 *            The (serialized) workflow to instantiate as a run.
 	 * @return A remote handle for the run.
 	 */
-	public RemoteSingleRun make(String scufl, Principal p)
+	public RemoteSingleRun make(String workflow, Principal p)
 			throws RemoteException;
 
 	/**

@@ -31,7 +31,7 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.web.context.ServletContextAware;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
-import org.taverna.server.master.common.SCUFL;
+import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
 
 /**
@@ -75,7 +75,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		ClassLoader cl = ForkRunFactory.class.getClassLoader();
 		serverWorkerJar = cl.getResource(SUBPROCESS_IMPLEMENTATION_JAR)
 				.getFile();
-		context = JAXBContext.newInstance(SCUFL.class);
+		context = JAXBContext.newInstance(Workflow.class);
 	}
 
 	private void reinitFactory() {
@@ -389,7 +389,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	}
 
 	@Override
-	protected RemoteSingleRun getRealRun(Principal creator, SCUFL workflow)
+	protected RemoteSingleRun getRealRun(Principal creator, Workflow workflow)
 			throws Exception {
 		StringWriter sw = new StringWriter();
 		context.createMarshaller().marshal(workflow, sw);

@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlValue;
  */
 @XmlRootElement
 @XmlType(name = "TavernaRun")
-@XmlSeeAlso( { SCUFL.class, DirEntryReference.class })
+@XmlSeeAlso( { Workflow.class, DirEntryReference.class })
 public class RunReference {
 	/**
 	 * Where to get information about the run. For REST.

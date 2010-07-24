@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.taverna.server.master.common.SCUFL;
+import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoDestroyException;
 import org.taverna.server.master.exceptions.NoUpdateException;
@@ -33,7 +33,7 @@ public class MockPolicy extends SimpleServerPolicy {
 	}
 
 	@Override
-	public List<SCUFL> listPermittedWorkflows(Principal user) {
+	public List<Workflow> listPermittedWorkflows(Principal user) {
 		return Arrays.asList();
 	}
 
@@ -43,7 +43,7 @@ public class MockPolicy extends SimpleServerPolicy {
 	}
 
 	@Override
-	public void permitCreate(Principal user, SCUFL workflow)
+	public void permitCreate(Principal user, Workflow workflow)
 			throws NoCreateException {
 		if (this.exnOnCreate)
 			throw new NoCreateException();

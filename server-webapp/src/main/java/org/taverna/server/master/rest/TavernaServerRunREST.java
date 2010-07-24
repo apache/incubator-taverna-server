@@ -23,8 +23,8 @@ import javax.xml.bind.annotation.XmlValue;
 
 import org.apache.cxf.jaxrs.ext.Description;
 import org.taverna.server.master.common.Namespaces;
-import org.taverna.server.master.common.SCUFL;
 import org.taverna.server.master.common.Uri;
+import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoUpdateException;
@@ -66,13 +66,13 @@ public interface TavernaServerRunREST {
 	/**
 	 * Returns the workflow document used to create the workflow run.
 	 * 
-	 * @return The SCUFL document.
+	 * @return The workflow document.
 	 */
 	@GET
 	@Path("workflow")
 	@Produces( { "application/xml", "application/json" })
 	@Description("Gives the workflow document used to create the workflow run.")
-	public SCUFL getWorkflow();
+	public Workflow getWorkflow();
 
 	/**
 	 * Returns the time when the workflow run becomes eligible for automatic

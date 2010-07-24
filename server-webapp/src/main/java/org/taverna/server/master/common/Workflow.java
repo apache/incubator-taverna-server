@@ -7,13 +7,13 @@ import javax.xml.bind.annotation.XmlType;
 import org.w3c.dom.Element;
 
 /**
- * Encapsulation of a SCUFL document.
+ * Encapsulation of a T2flow document.
  * 
  * @author dkf
  */
-@XmlRootElement(name = "scufl")
-@XmlType(name = "SCUFL")
-public class SCUFL extends Uri {
+@XmlRootElement(name = "workflow")
+@XmlType(name = "Workflow")
+public class Workflow {
 	/**
 	 * Literal document.
 	 */

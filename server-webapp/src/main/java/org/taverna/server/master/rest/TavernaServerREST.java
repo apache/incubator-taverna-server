@@ -25,8 +25,8 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.apache.cxf.jaxrs.ext.Description;
 import org.taverna.server.master.common.RunReference;
-import org.taverna.server.master.common.SCUFL;
 import org.taverna.server.master.common.Uri;
+import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.interfaces.TavernaRun;
@@ -83,7 +83,7 @@ public interface TavernaServerREST {
 	@Path("runs")
 	@Consumes("application/xml")
 	@Description("Accepts (or not) a request to create a new run executing the given workflow.")
-	public Response submitWorkflow(SCUFL workflow, @Context UriInfo ui)
+	public Response submitWorkflow(Workflow workflow, @Context UriInfo ui)
 			throws NoUpdateException;
 
 	/**
@@ -205,14 +205,14 @@ public interface TavernaServerREST {
 	@XmlType(name = "")
 	public static class PermittedWorkflows {
 		/** The workflows that are permitted. */
-		@XmlElement(name = "scufl")
-		public List<SCUFL> workflow;
+		@XmlElement
+		public List<Workflow> workflow;
 
 		/**
 		 * Make an empty list of permitted workflows.
 		 */
 		public PermittedWorkflows() {
-			workflow = new ArrayList<SCUFL>();
+			workflow = new ArrayList<Workflow>();
 		}
 
 		/**
@@ -220,8 +220,11 @@ public interface TavernaServerREST {
 		 * 
 		 * @param permitted
 		 */
-		public PermittedWorkflows(List<SCUFL> permitted) {
-			workflow = permitted;
+		public PermittedWorkflows(List<Workflow> permitted) {
+			if (permitted == null)
+				workflow = new ArrayList<Workflow>();
+			else
+				workflow = new ArrayList<Workflow>(permitted);
 		}
 	}
 

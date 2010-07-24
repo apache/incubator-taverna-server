@@ -183,10 +183,9 @@ API.</p>
 <ol>
 	<li>
 	<p>The client starts by creating a workflow run. This is done by
-	POSTing a wrapped T2flow or SCUFL2 document to the service at the
-	address <tt>http://<b>&lt;SERVER:PORT&gt;</b>/taverna-server/rest/runs</tt></p>
+	POSTing a wrapped T2flow document to the service at the address <tt>http://<b>&lt;SERVER:PORT&gt;</b>/taverna-server/rest/runs</tt></p>
 	<p>The wrapping of the submitted document is a single XML element,
-	<code>scufl</code> in the namespace <code>http://ns.taverna.org.uk/2010/xml/server/</code>,
+	<code>workflow</code> in the namespace <code>http://ns.taverna.org.uk/2010/xml/server/</code>,
 	and the workflow (as saved by the Taverna Workbench) is the child
 	element of that.</p>
 	<p>The result of the POST is an HTTP redirect to the location of

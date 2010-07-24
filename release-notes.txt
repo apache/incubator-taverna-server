@@ -50,6 +50,7 @@ TAVSERV-85: no exitcode returned for a finished run
 TAVSERV-87: incorrect listeners enumeration
 TAVSERV-88: documentation omits namespaces on some attributes in example XML
 TAVSERV-89: directory name is attached to files in directory listings
+TAVSERV-91: Unneccessary XML wrapping
 TAVSERV-92: Timeout must be longer than 20 minutes
 TAVSERV-97: Default limit of five runs is too small
 TAVSERV-99: Must know the date/times for a run

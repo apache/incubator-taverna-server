@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
-import org.taverna.server.master.common.SCUFL;
+import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoDestroyException;
 import org.taverna.server.master.exceptions.NoUpdateException;
@@ -66,7 +66,7 @@ public class SimpleServerPolicy implements Policy {
 			store.cleanerIntervalUpdated(intervalInSeconds);
 	}
 
-	public List<SCUFL> listPermittedWorkflows(Principal p) {
+	public List<Workflow> listPermittedWorkflows(Principal p) {
 		return emptyList();
 	}
 
@@ -77,7 +77,7 @@ public class SimpleServerPolicy implements Policy {
 	}
 
 	@Override
-	public void permitCreate(Principal p, SCUFL workflow)
+	public void permitCreate(Principal p, Workflow workflow)
 			throws NoCreateException {
 		// Only identified users may create
 		if (p == null)

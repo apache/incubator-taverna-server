@@ -26,7 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
-import org.taverna.server.master.common.SCUFL;
+import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoDestroyException;
 import org.taverna.server.master.exceptions.NoListenerException;
@@ -120,7 +120,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	}
 
 	@Override
-	public TavernaRun create(Principal creator, SCUFL workflow)
+	public TavernaRun create(Principal creator, Workflow workflow)
 			throws NoCreateException {
 		try {
 			Date now = new Date();
@@ -148,7 +148,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 *             Just about anything can go wrong...
 	 */
 	protected abstract RemoteSingleRun getRealRun(Principal creator,
-			SCUFL workflow) throws Exception;
+			Workflow workflow) throws Exception;
 
 	/** @return The names of the current runs. */
 	@ManagedAttribute(description = "The names of the current runs.", currencyTimeLimit = 5)
@@ -190,7 +190,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	}
 
 	@Override
-	public List<SCUFL> listPermittedWorkflows(Principal user) {
+	public List<Workflow> listPermittedWorkflows(Principal user) {
 		return emptyList();
 	}
 
@@ -200,7 +200,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	}
 
 	@Override
-	public synchronized void permitCreate(Principal user, SCUFL workflow)
+	public synchronized void permitCreate(Principal user, Workflow workflow)
 			throws NoCreateException {
 		if (runs.size() >= getMaxRuns())
 			throw new NoCreateException("server load exceeded; please wait");
