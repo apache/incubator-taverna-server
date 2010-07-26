@@ -188,11 +188,12 @@ API.</p>
 	<code>workflow</code> in the namespace <code>http://ns.taverna.org.uk/2010/xml/server/</code>,
 	and the workflow (as saved by the Taverna Workbench) is the child
 	element of that.</p>
-	<p>The result of the POST is an HTTP redirect to the location of
-	the created run, hereby denoted the <tt><b>&lt;RUN_URI&gt;</b></tt> (it
-	includes a UUID which you will need to save in order to access the run
-	again, though the list of known UUIDs can be found above). Note that
-	the run is not yet actually doing anything.</p>
+	<p>The result of the POST is an <tt>HTTP 201 Created</tt> that
+	gives the location of the created run (in a <tt>Location</tt> header),
+	hereby denoted the <tt><b>&lt;RUN_URI&gt;</b></tt> (it includes a UUID
+	which you will need to save in order to access the run again, though
+	the list of known UUIDs can be found above). Note that the run is not
+	yet actually doing anything.</p>
 	</li>
 	<li>
 	<p>Next, you need to set up the inputs to the workflow ports. This
