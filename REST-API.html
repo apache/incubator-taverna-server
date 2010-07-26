@@ -1,0 +1,342 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Taverna 2 Server: API of the REST Interface</title>
+</head>
+<body>
+<h1>Taverna 2 Server: API of the REST Interface</h1>
+<h2>Main Server Resource</h2>
+<table border>
+	<thead>
+		<tr>
+			<th>Relative URI</th>
+			<th>Operation</th>
+			<th>Description</th>
+			<th>Response Codes</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr valign="top">
+			<td><tt>/</tt></td>
+			<td>GET</td>
+			<td>Retrieves a description of the server as either XML or JSON
+			(determined by content negotiation) that indicates other locations to
+			find sub-resources.</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<td rowspan="2"><tt>/runs</tt></td>
+			<td>GET</td>
+			<td>Retrieves a list of workflow runs on the server that the
+			current user is allowed to see. The value is returned as either XML
+			or JSON (determined by content negotiation).</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<!-- <td><tt>/runs</tt></td> -->
+			<td>POST</td>
+			<td>Accepts a wrapped t2flow document (as an XML child element
+			of a <tt>t2s:workflow</tt> element) and creates a workflow run from
+			it. The redirect on 202 is to the created workflow run resource.</td>
+			<td><span title="created">201</span>, <span title="failed">403</span></td>
+		</tr>
+		<tr valign="top">
+			<td><tt>/policy/runLimit</tt></td>
+			<td>GET</td>
+			<td>Returns the number of simultaneous workflow runs that the
+			user may create.</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<td><tt>/policy/permittedWorkflows</tt></td>
+			<td>GET</td>
+			<td>Retrieves a description of the workflows that the current
+			user may instantiate as either XML or JSON (determined by content
+			negotiation). If the list is empty, any workflow may be instantiated.</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<td><tt>/policy/permittedListenerTypes</tt></td>
+			<td>GET</td>
+			<td>Retrieves a description of the tpyes of listeners that may
+			be attached to a workflow run by the current user as either XML or
+			JSON (determined by content negotiation).</td>
+			<td><span title="success">200</span></td>
+		</tr>
+	</tbody>
+</table>
+<h2>Workflow Run Resource</h2>
+<p>Each workflow run is a resource that is located at <tt>/runs/{uuid}</tt>
+relative to the main server; all access to resources associated with a
+particular run is subject to user-based access control and hence may
+fail with a <tt>403 Forbidden</tt> response.</p>
+<table border>
+	<thead>
+		<tr>
+			<th>Relative URI</th>
+			<th>Operation</th>
+			<th>Description</th>
+			<th>Response Codes</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr valign="top">
+			<td rowspan="2"><tt>/</tt></td>
+			<td>GET</td>
+			<td>Retrieves a description of the run as either XML or JSON
+			(determined by content negotiation) that indicates other locations to
+			find sub-resources.</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<!-- <td><tt>/</tt></td> -->
+			<td>DELETE</td>
+			<td>Destroys this workflow run, cleaning up all underlying
+			resources associated with it.</td>
+			<td><span title="success">202</span>, <span title="failure">403</span></td>
+		</tr>
+		<tr valign="top">
+			<td><tt>/workflow</tt></td>
+			<td>GET</td>
+			<td>Retrieves a description of the workflow used to create the
+			run as either XML or JSON (determined by content negotiation).</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<td rowspan="2"><tt>/expiry</tt></td>
+			<td>GET</td>
+			<td>Retrieves (as an ISO-8601 timestamp) the moment when the
+			workflow run will expire and become eligible for automatic deletion.</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<!-- <td><tt>/expiry</tt></td> -->
+			<td>PUT</td>
+			<td>Sets the workflow run expiry moment to the given ISO-8601
+			timestamp.</td>
+			<td><span title="success">200</span>, <span title="failure">403</span></td>
+		</tr>
+		<tr valign="top">
+			<td><tt>/createTime</tt></td>
+			<td>GET</td>
+			<td>Retrieves (as an ISO-8601 timestamp) the moment that the
+			workflow run was created.</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<td><tt>/startTime</tt></td>
+			<td>GET</td>
+			<td>Retrieves (as an ISO-8601 timestamp) the moment that the
+			workflow run was first started.</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<td><tt>/finishTime</tt></td>
+			<td>GET</td>
+			<td>Retrieves (as an ISO-8601 timestamp) the moment that the
+			workflow run was discovered to have finished.</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<td rowspan="2"><tt>/status</tt></td>
+			<td>GET</td>
+			<td>Retrieves (as a string) the current status of the workflow,
+			which will be one of these states:
+			<dl>
+				<dt><tt>Initialized</tt></dt>
+				<dd>The workflow run is not yet started. This is initial state,
+				which allows for upload of auxiliary data (e.g., input files).</dd>
+				<dt><tt>Operating</tt></dt>
+				<dd>The workflow run is executing normally.</dd>
+				<dt><tt>Stopped</tt></dt>
+				<dd>The workflow run has been halted and needs to be manually
+				moved back into <tt>Operating</tt> to continue executing.</dd>
+				<dt><tt>Finished</tt></dt>
+				<dd>The workflow run has executed to completion. This is the
+				final state, and allows for retrieving the results.</dd>
+			</dl>
+			</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<!-- <td><tt>/status</tt></td> -->
+			<td>PUT</td>
+			<td>Attempts to set the workflow run's status to the given state
+			value (a string, of the set listed above), returning the state that
+			it was actually set to.</td>
+			<td><span title="success">200</span>, <span title="failure">403</span></td>
+		</tr>
+		<tr valign="top">
+			<td><tt>/owner</tt></td>
+			<td>GET</td>
+			<td>Retrieves the name of the owner of the workflow run.
+			(Whether or not you can see other people's workflow runs is a site
+			policy decision.)</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<td rowspan="3"><tt>/wd{/path...}</tt></td>
+			<td>GET</td>
+			<td>Retrieves the given file (as binary) or lists the given
+			directory's contents, or retrieves a directory's contents (including
+			subdirectories) as a ZIP file. Which is done depends on content
+			negotiation; asking for <tt>application/octet-stream</tt> gets a file
+			contents (only for files), asking for <tt>application/xml</tt> or <tt>application/json</tt>
+			does a listing (only for directories), and asking for <tt>application/zip</tt>
+			retrieves a ZIPped directory.</td>
+			<td><span title="success">200</span>, <span
+				title="can't comply for that path">406</span></td>
+		</tr>
+		<tr valign="top">
+			<!-- <td><tt>/wd{/path...}</tt></td> -->
+			<td>POST</td>
+			<td>Creates or updates the given file, or creates a subdirectory
+			of the given directory, dependent on the nature of the message
+			provided (in XML or JSON); see the WADL schema for details.</td>
+			<td><span title="created">201</span>, <span
+				title="redirect on non-create success">303</span>, <span
+				title="failure">403</span></td>
+		</tr>
+		<tr valign="top">
+			<!-- <td><tt>/wd/{path...}</tt></td> -->
+			<td>DELETE</td>
+			<td>Attempts to delete the file or directory indicated by the
+			path. The working directory may not be deleted by this mechanism; it
+			can only be deleted by deleting the whole workflow run.</td>
+			<td><span title="success">202</span>, <span title="failure">403</span></td>
+		</tr>
+		<tr valign="top">
+			<td><tt>/input</tt></td>
+			<td>GET</td>
+			<td>Retrieves a description of what inputs are known about for
+			this workflow run (as XML or JSON).</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<td rowspan="2"><tt>/input/baclava</tt></td>
+			<td>GET</td>
+			<td>Retrieves a string with the name (relative to the working
+			directory) of the file that contains the baclava document describing
+			inputs for this workflow run. If empty, no baclava document will be
+			used. If not empty, the file <i>must</i> exist when the workflow run
+			is started.</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<!-- <td><tt>/input/baclava</tt></td> -->
+			<td>PUT</td>
+			<td>Sets what baclava file will be the inputs to the workflow
+			run. Overrides individually-specified inputs.</td>
+			<td><span title="success">200</span>, <span title="failure">403</span></td>
+		</tr>
+		<tr valign="top">
+			<td rowspan="2"><tt>/input/input/{name}</tt></td>
+			<td>GET</td>
+			<td>Retrieves a description with either the name (relative to
+			the working directory) of the file that contains the value(s), or the
+			literal plain text input value for the input to this workflow run
+			called <tt>name</tt>.</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<!-- <td><tt>/input/input/{name}</tt></td> -->
+			<td>PUT</td>
+			<td>Sets what literal value or file (relative to the run working
+			directory) that will hold the value(s) for the input to the workflow
+			run called <tt>name</tt>. Overrides the input baclava file setting.
+			See the WADL schema for details.</td>
+			<td><span title="success">200</span>, <span title="failure">403</span></td>
+		</tr>
+		<tr valign="top">
+			<td rowspan="2"><tt>/output</tt></td>
+			<td>GET</td>
+			<td>Retrieves a string with the name (relative to the working
+			directory) of the file that contains the baclava document that will
+			hold the output from this workflow run. If empty, no baclava document
+			will be used. If empty, the outputs will be stored in the directory <tt>out</tt>
+			beneath the run working directory.</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<!-- <td><tt>/output</tt></td> -->
+			<td>PUT</td>
+			<td>Sets what baclava file will hold the outputs from the
+			workflow run.</td>
+			<td><span title="success">200</span>, <span title="failure">403</span></td>
+		</tr>
+		<tr valign="top">
+			<td rowspan="2"><tt>/listeners</tt></td>
+			<td>GET</td>
+			<td>Lists (and identifies the locations of their resources) the
+			listeners attached to this workflow run.</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<!-- <td rowspan="2"><tt>/listeners</tt></td> -->
+			<td>POST</td>
+			<td>Attaches a new listener to this workflow run. See the WADL
+			schema for details of the document to send.</td>
+			<td><span title="created">201</span>, <span title="failure">403</span></td>
+		</tr>
+	</tbody>
+</table>
+<h2>Workflow Run Listener Resource</h2>
+<p>Each workflow run is a resource that is located at <tt>/runs/{uuid}/listeners/{name}</tt>
+relative to the main server, or at <tt>/listeners/{name}</tt> relative
+to the workflow run; all access to resources associated with a
+particular run is subject to user-based access control and hence may
+fail with a <tt>403 Forbidden</tt> response.</p>
+<table border>
+	<thead>
+		<tr>
+			<th>Relative URI</th>
+			<th>Operation</th>
+			<th>Description</th>
+			<th>Response Codes</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr valign="top">
+			<td><tt>/</tt></td>
+			<td>GET</td>
+			<td>Retrieves a description of the listener as either XML or
+			JSON (determined by content negotiation) that indicates other
+			locations to find sub-resources.</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<td><tt>/configuration</tt></td>
+			<td>GET</td>
+			<td>Retrieves a string holding the (non-modifiable)
+			configuration of this listener.</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<td><tt>/properties</tt></td>
+			<td>GET</td>
+			<td>Retrieves a listing of the modifiable properties of this
+			listener (as XML or JSON).</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<td rowspan="2"><tt>/properties/{name}</tt></td>
+			<td>GET</td>
+			<td>Retrieves the string that is the value of the named
+			property.</td>
+			<td><span title="success">200</span></td>
+		</tr>
+		<tr valign="top">
+			<!-- <td><tt>/properties/{name}</tt></td> -->
+			<td>PUT</td>
+			<td>Sets the named property to the provided string value.</td>
+			<td><span title="success">200</span>, <span title="failure">403</span></td>
+		</tr>
+	</tbody>
+</table>
+<p>The current implementation does not permit installing new
+listeners, and comes with a single listener called <tt>io</tt> which
+provides the <tt>stdout</tt>, <tt>stderr</tt> and <tt>exitcode</tt>
+properties, all of which do not permit update.</p>
+</body>
+</html>
