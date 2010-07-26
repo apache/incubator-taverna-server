@@ -44,6 +44,8 @@ TAVSERV-78: REST API URI typos on server front page section 2
 TAVSERV-79: REST API URI typos on server front page section 3
 TAVSERV-80: REST API URI typos on server front page section 8
 TAVSERV-81: Path to inputs missing from top level run document
+TAVSERV-82: REST API documentation does not specify what the return codes for
+            each operation are
 TAVSERV-83: io listener paths munged
 TAVSERV-84: listeners href incorrect
 TAVSERV-85: no exitcode returned for a finished run
