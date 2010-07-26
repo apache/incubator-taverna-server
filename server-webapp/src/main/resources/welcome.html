@@ -23,8 +23,9 @@ by the service. This simple guide just discusses the REST API.</p>
 	<code>workflow</code> in the namespace <code>http://ns.taverna.org.uk/2010/xml/server/</code>,
 	and the workflow (as saved by the Taverna Workbench) is the child
 	element of that.</p>
-	<p>The result of the POST is an HTTP redirect to the location of
-	the created run, <tt>SERVICE_URI/rest/runs/<b>UUID</b></tt> (where <tt><b>UUID</b></tt>
+	<p>The result of the POST is an <tt>HTTP 201 Created</tt> that
+	gives the location of the created run (in a <tt>Location</tt> header),
+	<tt>SERVICE_URI/rest/runs/<b>UUID</b></tt> (where <tt><b>UUID</b></tt>
 	is a unique string that identifies the particular run; this is also the
 	name of the run that you would use in the SOAP interface). Note that
 	the run is not yet actually doing anything.</p>
