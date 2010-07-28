@@ -5,9 +5,16 @@
 <title>Taverna 2 Server: API of the REST Interface</title>
 </head>
 <body>
+<div style="float: right; background: #eeeeee">
+<ul>
+	<li><a href="#main">Main Server</a></li>
+	<li><a href="#run">Workflow Run</a></li>
+	<li><a href="#listener">Run Listener</a></li>
+</ul>
+</div>
 <img
-	src="http://www.taverna.org.uk/pages/wp-content/themes/myGrid-Taverna/library/media/images/taverna-wheel-logo.png"
-	style="float: left" />
+	src="http://www.taverna.org.uk/pages/wp-content/uploads/2010/07/taverna-server-logo.png"
+	style="float: left" width="100" height="100" />
 <h1>Taverna 2 Server: API of the REST Interface</h1>
 <p>Note that schemas in this document are actually pseudo-schemas.
 For example, this shows how the various marks on attributes and elements
@@ -63,7 +70,7 @@ omitted from the pseudoschemas:</p>
 	</tbody>
 </table>
 </blockquote>
-<h2>Main Server Resource</h2>
+<h2><a name="main"></a>Main Server Resource</h2>
 <table border>
 	<thead>
 		<tr>
@@ -162,7 +169,7 @@ omitted from the pseudoschemas:</p>
 		</tr>
 	</tbody>
 </table>
-<h2>Workflow Run Resource</h2>
+<h2><a name="run"></a>Workflow Run Resource</h2>
 <p>Each workflow run is a resource that is located at <tt>/runs/{uuid}</tt>
 relative to the main server; all access to resources associated with a
 particular run is subject to user-based access control and hence may
@@ -421,9 +428,9 @@ fail with a <tt>403 Forbidden</tt> response.</p>
 			called <tt>name</tt>.</p>
 			<p>Result format:</p>
 			<pre>&lt;t2sr:runInput t2sr:name="xsd:string"&gt;
-    &lt;t2sr:file&lt; xsd:string &lt;t2sr:file&lt;
+    &lt;t2sr:file&gt; xsd:string &lt;t2sr:file&gt;
     <b>|</b> 
-    &lt;t2sr:value&lt; xsd:string &lt;t2sr:value&lt;
+    &lt;t2sr:value&gt; xsd:string &lt;t2sr:value&gt;
 &lt;/t2sr:runInput&gt;</pre>
 			<p>Exactly one of <tt>file</tt> and <tt>value</tt> will be
 			present.</p>
@@ -439,9 +446,9 @@ fail with a <tt>403 Forbidden</tt> response.</p>
 			run called <tt>name</tt>. Overrides the input baclava file setting.</p>
 			<p>Input/Result format:</p>
 			<pre>&lt;t2sr:runInput t2sr:name="xsd:string"&gt;
-    &lt;t2sr:file&lt; xsd:string &lt;t2sr:file&lt;
+    &lt;t2sr:file&gt; xsd:string &lt;t2sr:file&gt;
     <b>|</b> 
-    &lt;t2sr:value&lt; xsd:string &lt;t2sr:value&lt;
+    &lt;t2sr:value&gt; xsd:string &lt;t2sr:value&gt;
 &lt;/t2sr:runInput&gt;</pre>
 			<p>Exactly one of <tt>file</tt> and <tt>value</tt> must be
 			present.</p>
@@ -503,7 +510,7 @@ fail with a <tt>403 Forbidden</tt> response.</p>
 		</tr>
 	</tbody>
 </table>
-<h2>Workflow Run Listener Resource</h2>
+<h2><a name="listener"></a>Workflow Run Listener Resource</h2>
 <p>Each workflow run is a resource that is located at <tt>/runs/{uuid}/listeners/{name}</tt>
 relative to the main server, or at <tt>/listeners/{name}</tt> relative
 to the workflow run; all access to resources associated with a
