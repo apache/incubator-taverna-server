@@ -65,6 +65,16 @@
 	</mailingLists>
 	<contributors>
 		<contributor>
+			<name>Rob Haines</name>
+			<organization>The University of Manchester</organization>
+			<organizationUrl>http://www.manchester.ac.uk/</organizationUrl>
+			<timezone>0</timezone>
+			<roles>
+				<role>code review</role>
+				<role>ruby client</role>
+			</roles>
+		</contributor>
+		<contributor>
 			<name>Alexandra Nenadic</name>
 			<organization>The University of Manchester</organization>
 			<organizationUrl>http://www.manchester.ac.uk/</organizationUrl>
@@ -75,6 +85,15 @@
 		</contributor>
 		<contributor>
 			<name>Stian Soiland</name>
+			<organization>The University of Manchester</organization>
+			<organizationUrl>http://www.manchester.ac.uk/</organizationUrl>
+			<timezone>0</timezone>
+			<roles>
+				<role>code review</role>
+			</roles>
+		</contributor>
+		<contributor>
+			<name>Alan Williams</name>
 			<organization>The University of Manchester</organization>
 			<organizationUrl>http://www.manchester.ac.uk/</organizationUrl>
 			<timezone>0</timezone>

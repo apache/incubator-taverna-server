@@ -33,12 +33,12 @@ import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.soap.TavernaServerSOAP;
 
 /**
- * The REST service interface to Taverna Server version 2.3.
+ * The REST service interface to Taverna 2 Server release 2.
  * 
  * @author Donal Fellows
  * @see TavernaServerSOAP
  */
-@Description("This is REST service interface to Taverna Server version 2.3")
+@Description("This is REST service interface to Taverna 2 Server release 2")
 public interface TavernaServerREST {
 	// MASTER API
 

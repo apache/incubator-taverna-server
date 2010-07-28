@@ -23,7 +23,7 @@ import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.rest.TavernaServerREST;
 
 /**
- * The SOAP service interface to Taverna Server version 2.3.
+ * The SOAP service interface to Taverna 2 Server release 2.
  * 
  * @author Donal Fellows
  * @see TavernaServerREST

@@ -187,7 +187,7 @@ fail with a <tt>403 Forbidden</tt> response.</p>
 			<p>Result format:</p>
 			<pre>&lt;t2sr:runDescription&gt;
    &lt;t2sr:expiry xlink:href="xsd:anyURI"&gt;
-       xsd:timestamp
+       xsd:dateTime
    &lt;/t2sr:expiry&gt;
    &lt;t2sr:creationWorkflow xlink:href="xsd:anyURI" /&gt;
    &lt;t2sr:createTime xlink:href="xsd:anyURI" /&gt;
@@ -232,7 +232,7 @@ fail with a <tt>403 Forbidden</tt> response.</p>
 			<p>Retrieves (as an ISO-8601 timestamp) the moment when the
 			workflow run will expire and become eligible for automatic deletion.</p>
 			<p>Result format (plain text):</p>
-			<pre>xsd:timestamp</pre></td>
+			<pre>xsd:dateTime</pre></td>
 			<td><span title="success">200</span></td>
 		</tr>
 		<tr valign="top">
@@ -242,7 +242,7 @@ fail with a <tt>403 Forbidden</tt> response.</p>
 			<p>Sets the workflow run expiry moment to the given ISO-8601
 			timestamp. Responds with the new current timestamp.</p>
 			<p>Input/result format (plain text):</p>
-			<pre>xsd:timestamp</pre></td>
+			<pre>xsd:dateTime</pre></td>
 			<td><span title="success">200</span>, <span title="failure">403</span></td>
 		</tr>
 		<tr valign="top">
@@ -252,7 +252,7 @@ fail with a <tt>403 Forbidden</tt> response.</p>
 			<p>Retrieves (as an ISO-8601 timestamp) the moment that the
 			workflow run was created.</p>
 			<p>Result format (plain text):</p>
-			<pre>xsd:timestamp</pre></td>
+			<pre>xsd:dateTime</pre></td>
 			<td><span title="success">200</span></td>
 		</tr>
 		<tr valign="top">
@@ -262,7 +262,7 @@ fail with a <tt>403 Forbidden</tt> response.</p>
 			<p>Retrieves (as an ISO-8601 timestamp) the moment that the
 			workflow run was first started.</p>
 			<p>Result format (plain text):</p>
-			<pre>xsd:timestamp</pre></td>
+			<pre>xsd:dateTime</pre></td>
 			<td><span title="success">200</span></td>
 		</tr>
 		<tr valign="top">
@@ -272,7 +272,7 @@ fail with a <tt>403 Forbidden</tt> response.</p>
 			<p>Retrieves (as an ISO-8601 timestamp) the moment that the
 			workflow run was discovered to have finished.</p>
 			<p>Result format:</p>
-			<pre></pre></td>
+			<pre>xsd:dateTime</pre></td>
 			<td><span title="success">200</span></td>
 		</tr>
 		<tr valign="top">
