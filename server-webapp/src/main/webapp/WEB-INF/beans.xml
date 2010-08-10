@@ -24,6 +24,7 @@
 		<property name="listenerFactory" ref="listenerFactory" />
 		<property name="runFactory" ref="runFactory" />
 		<property name="runStore" ref="runCatalog" />
+		<property name="stateModel" ref="webapp.state" />
 	</bean>
 
 	<!-- <import resource="example.xml"/>-->
@@ -59,15 +60,38 @@
 			<ref bean="ExceptionProvider.JAXBException" />
 		</jaxrs:providers>
 	</jaxrs:server>
-	<bean id="ExceptionProvider.BadPropertyValue" class="org.taverna.server.master.rest.BadPropertyValueHandler" />
-	<bean id="ExceptionProvider.BadStateChange" class="org.taverna.server.master.rest.BadStateChangeHandler" />
-	<bean id="ExceptionProvider.FilesystemAccess" class="org.taverna.server.master.rest.FilesystemAccessHandler" />
-	<bean id="ExceptionProvider.NoCreate" class="org.taverna.server.master.rest.NoCreateHandler" />
-	<bean id="ExceptionProvider.NoDestroy" class="org.taverna.server.master.rest.NoDestroyHandler" />
-	<bean id="ExceptionProvider.NoListener" class="org.taverna.server.master.rest.NoListenerHandler" />
-	<bean id="ExceptionProvider.NoUpdate" class="org.taverna.server.master.rest.NoUpdateHandler" />
-	<bean id="ExceptionProvider.UnknownRun" class="org.taverna.server.master.rest.UnknownRunHandler" />
-	<bean id="ExceptionProvider.JAXBException" class="org.taverna.server.master.rest.JAXBExceptionHandler" />
+	<bean id="webapp.state" class="org.taverna.server.master.ManagementModel">
+		<property name="logIncomingWorkflows" value="false"/>
+		<property name="allowNewWorkflowRuns" value="true"/>
+		<property name="logOutgoingExceptions" value="false"/>
+	</bean>
+	<bean id="ExceptionProvider.BadPropertyValue" class="org.taverna.server.master.rest.BadPropertyValueHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.BadStateChange" class="org.taverna.server.master.rest.BadStateChangeHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.FilesystemAccess" class="org.taverna.server.master.rest.FilesystemAccessHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.NoCreate" class="org.taverna.server.master.rest.NoCreateHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.NoDestroy" class="org.taverna.server.master.rest.NoDestroyHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.NoListener" class="org.taverna.server.master.rest.NoListenerHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.NoUpdate" class="org.taverna.server.master.rest.NoUpdateHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.UnknownRun" class="org.taverna.server.master.rest.UnknownRunHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.JAXBException" class="org.taverna.server.master.rest.JAXBExceptionHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
 
 	<bean id="root_facade" class="org.taverna.server.master.facade.Facade">
 		<property name="file" value="welcome.html" />

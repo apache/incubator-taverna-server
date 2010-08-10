@@ -72,6 +72,7 @@ public class TavernaServerImplTest {
 	public void wireup() throws Exception {
 		// Wire everything up; ought to be done with Spring, but this works...
 		server = new TavernaServerImpl();
+		server.stateModel = new ManagementModel();
 		server.policy = policy = new MockPolicy();
 		server.runStore = store = new SimpleNonpersistentRunStore();
 		store.setPolicy(policy);

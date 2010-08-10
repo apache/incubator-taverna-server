@@ -4,19 +4,57 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
 
 	<bean id="localworker" class="org.taverna.server.master.localworker.ForkRunFactory"
-			scope="singleton" lazy-init="false" init-method="initFactory"
-			destroy-method="killFactory">
+		scope="singleton" lazy-init="false" init-method="initFactory"
+		destroy-method="killFactory">
 		<description>
 			The simple policy manager and factory for the baseline
 			localworker case.
 		</description>
-		<property name="defaultLifetime" value="1440" />
-		<property name="maxRuns" value="100" />
+		<property name="state" ref="localworker.state" />
+	</bean>
+
+	<bean id="localworker.state" class="org.taverna.server.master.localworker.LocalWorkerState"
+		scope="singleton" lazy-init="false">
+		<description>
+			The state of the simple factory for the baseline
+			localworker.
+		</description>
+		<property name="defaultLifetime" value="1440">
+			<description>How long the run lasts for by default, in seconds.
+			</description>
+		</property>
+		<property name="maxRuns" value="100">
+			<description>The maximum simultaneous number of runs.</description>
+		</property>
+		<property name="extraArgs">
+			<description>Any extra arguments (memory control, etc.) to pass to
+				the spawned subprocesses.</description>
+			<list>
+			</list>
+		</property>
+		<property name="waitSeconds" value="40">
+			<description>An upper bound (in seconds) on the time to wait for a
+				subprocess to start before failing it.</description>
+		</property>
+		<property name="sleepMS" value="1000">
+			<description>The time to wait (in milliseconds) between polling for
+				the subprocess to complete its registration.</description>
+		</property>
 		<!--
-			Supported properties: javaBinary:String, extraArguments:String[],
-			serverWorkerJar:String, executeWorkflowScript:String,
-			waitSeconds:int(s), sleepTime:int(ms), defaultLifetime:int(mins),
-			maxRuns:int
+		<property name="javaBinary">
+			<description>The name of the java executable used to run the server
+				worker. Defaults to the executable used to run the hosting
+				environment.</description>
+		</property>
+		<property name="serverWorkerJar">
+			<description>The full path to the executable JAR file containing the
+				implementation of the server worker.</description>
+		</property>
+		<property name="executeWorkflowScript">
+			<description>The full path to the executeworkflow.sh in either the
+				Taverna 2 Workbench distribution or the Taverna 2 Command Line
+				distribution.</description>
+		</property>
 		-->
 	</bean>
 

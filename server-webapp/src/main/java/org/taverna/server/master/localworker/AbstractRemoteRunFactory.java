@@ -60,10 +60,8 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	public static final int CLEANER_INTERVAL_MS = 30000;
 	static Timer timer = new Timer("Taverna.Server.RemoteRunFactory.Timer",
 			true);
-	private int defaultLifetime = 20;
-	private int maxRuns = 5;
+	public LocalWorkerState state;
 	private TimerTask cleaner;
-	private Map<String, TavernaRun> runs = new HashMap<String, TavernaRun>();
 
 	static {
 		if (getSecurityManager() == null) {
@@ -98,7 +96,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	@Override
 	public List<String> getSupportedListenerTypes() {
 		try {
-			for (TavernaRun r : runs.values())
+			for (TavernaRun r : state.runs.values())
 				return ((RemoteRunDelegate) r).run.getListenerTypes();
 			log.warn("failed to get list of listener types; no runs");
 		} catch (RemoteException e) {
@@ -126,7 +124,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 			Date now = new Date();
 			RemoteSingleRun rsr = getRealRun(creator, workflow);
 			return new RemoteRunDelegate(now, creator, workflow, rsr,
-					defaultLifetime);
+					state.getDefaultLifetime());
 		} catch (NoCreateException e) {
 			log.warn("failed to build run instance", e);
 			throw e;
@@ -153,24 +151,24 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	/** @return The names of the current runs. */
 	@ManagedAttribute(description = "The names of the current runs.", currencyTimeLimit = 5)
 	public String[] getCurrentRunNames() {
-		return runs.keySet().toArray(new String[0]);
+		return state.runs.keySet().toArray(new String[0]);
 	}
 
 	@ManagedAttribute(description = "The maximum number of simultaneous runs supported by the server.", currencyTimeLimit = 300)
 	@Override
 	public int getMaxRuns() {
-		return maxRuns;
+		return state.getMaxRuns();
 	}
 
 	@ManagedAttribute(description = "The maximum number of simultaneous runs supported by the server.")
 	public void setMaxRuns(int maxRuns) {
-		this.maxRuns = maxRuns;
+		state.setMaxRuns(maxRuns);
 	}
 
 	/** @return How many minutes should a workflow live by default? */
 	@ManagedAttribute(description = "How many minutes should a workflow live by default?", currencyTimeLimit = 300)
 	public int getDefaultLifetime() {
-		return defaultLifetime;
+		return state.getDefaultLifetime();
 	}
 
 	/**
@@ -181,7 +179,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 */
 	@ManagedAttribute
 	public void setDefaultLifetime(int defaultLifetime) {
-		this.defaultLifetime = defaultLifetime;
+		state.setDefaultLifetime(defaultLifetime);
 	}
 
 	@Override
@@ -202,7 +200,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	@Override
 	public synchronized void permitCreate(Principal user, Workflow workflow)
 			throws NoCreateException {
-		if (runs.size() >= getMaxRuns())
+		if (state.runs.size() >= getMaxRuns())
 			throw new NoCreateException("server load exceeded; please wait");
 	}
 
@@ -226,7 +224,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	@Override
 	public synchronized TavernaRun getRun(Principal user, Policy p, String uuid)
 			throws UnknownRunException {
-		TavernaRun run = runs.get(uuid);
+		TavernaRun run = state.runs.get(uuid);
 		if (run != null)
 			return run;
 		throw new UnknownRunException();
@@ -236,7 +234,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	public synchronized Map<String, TavernaRun> listRuns(Principal user,
 			Policy p) {
 		Map<String, TavernaRun> result = new HashMap<String, TavernaRun>();
-		for (Map.Entry<String, TavernaRun> namedRun : runs.entrySet()) {
+		for (Map.Entry<String, TavernaRun> namedRun : state.runs.entrySet()) {
 			result.put(namedRun.getKey(), namedRun.getValue());
 		}
 		return result;
@@ -244,18 +242,18 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 
 	@Override
 	public synchronized void registerRun(final String uuid, TavernaRun run) {
-		runs.put(uuid, run);
+		state.runs.put(uuid, run);
 	}
 
 	@Override
 	public synchronized void unregisterRun(String uuid) {
-		runs.remove(uuid);
+		state.runs.remove(uuid);
 	}
 
 	@Override
 	protected synchronized void finalize() {
 		cleaner.cancel();
-		for (TavernaRun run : runs.values()) {
+		for (TavernaRun run : state.runs.values()) {
 			try {
 				run.destroy();
 			} catch (NoDestroyException e) {
@@ -264,7 +262,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	}
 
 	Iterator<TavernaRun> iterator() {
-		return runs.values().iterator();
+		return state.runs.values().iterator();
 	}
 }
 

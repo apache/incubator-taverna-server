@@ -104,11 +104,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 
 	static int invokes;
 	private JAXBContext workflowSerializer;
-	/**
-	 * Whether outgoing exceptions should be logged before being converted to
-	 * responses.
-	 */
-	public static boolean logOutgoingExceptions = false;
+	public ManagementModel stateModel;
 
 	/**
 	 * @throws JAXBException
@@ -138,7 +134,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 */
 	@ManagedAttribute(description = "Whether to write submitted workflows to the log.")
 	public boolean getLogIncomingWorkflows() {
-		return logIncomingWorkflows;
+		return stateModel.getLogIncomingWorkflows();
 	}
 
 	/**
@@ -147,7 +143,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 */
 	@ManagedAttribute(description = "Whether to write submitted workflows to the log.")
 	public void setLogIncomingWorkflows(boolean logIncomingWorkflows) {
-		this.logIncomingWorkflows = logIncomingWorkflows;
+		stateModel.setLogIncomingWorkflows(logIncomingWorkflows);
 	}
 
 	/**
@@ -156,7 +152,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 */
 	@ManagedAttribute(description = "Whether outgoing exceptions should be logged before being converted to responses.")
 	public boolean getLogOutgoingExceptions() {
-		return logOutgoingExceptions;
+		return stateModel.getLogOutgoingExceptions();
 	}
 
 	/**
@@ -166,14 +162,25 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 */
 	@ManagedAttribute(description = "Whether outgoing exceptions should be logged before being converted to responses.")
 	public void setLogOutgoingExceptions(boolean logOutgoing) {
-		logOutgoingExceptions = logOutgoing;
+		stateModel.setLogOutgoingExceptions(logOutgoing);
 	}
 
-	/** Whether we should log all workflows sent to us. */
-	private boolean logIncomingWorkflows;
+	/**
+	 * @return Whether to permit any new workflow runs to be created.
+	 */
+	@ManagedAttribute(description = "Whether to permit any new workflow runs to be created; has no effect on existing runs.")
+	public boolean getAllowNewWorkflowRuns() {
+		return stateModel.getAllowNewWorkflowRuns();
+	}
 
-	/** Whether we allow the creation of new workflow runs. */
-	private boolean allowNewWorkflowRuns = true;
+	/**
+	 * @param allowNewWorkflowRuns
+	 *            Whether to permit any new workflow runs to be created.
+	 */
+	@ManagedAttribute(description = "Whether to permit any new workflow runs to be created; has no effect on existing runs.")
+	public void setAllowNewWorkflowRuns(boolean allowNewWorkflowRuns) {
+		stateModel.setAllowNewWorkflowRuns(allowNewWorkflowRuns);
+	}
 
 	@Resource
 	private WebServiceContext jaxwsContext;
@@ -1061,9 +1068,9 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 
 	private String buildWorkflow(Workflow workflow, Principal p)
 			throws NoCreateException {
-		if (!allowNewWorkflowRuns)
+		if (!stateModel.getAllowNewWorkflowRuns())
 			throw new NoCreateException("run creation not currently enabled");
-		if (logIncomingWorkflows)
+		if (stateModel.getLogIncomingWorkflows())
 			try {
 				StringWriter sw = new StringWriter();
 				workflowSerializer.createMarshaller().marshal(workflow, sw);

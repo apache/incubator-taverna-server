@@ -1,6 +1,5 @@
 package org.taverna.server.master.localworker;
 
-import static java.io.File.separator;
 import static java.lang.System.getProperty;
 import static java.lang.Thread.sleep;
 import static java.util.Arrays.asList;
@@ -42,20 +41,14 @@ import org.taverna.server.master.exceptions.NoCreateException;
 @ManagedResource(objectName = "Taverna:group=Server,name=ForkRunFactory", description = "The factory for simple singleton forked run.")
 public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		ServletContextAware {
-	private String executeWorkflowScript;
-	/**
-	 * The extra arguments to pass to the subprocess.
-	 */
-	protected String[] extraArgs;
+	public void setState(LocalWorkerState state) {
+		this.state = state;
+	}
+
 	private JAXBContext context;
-	private int waitSeconds = 40;
-	private int sleepMS = 1000;
 	private int lastStartupCheckCount;
 	private Integer lastExitCode;
 	private int totalRuns;
-	private String javaBinary = getProperty("java.home") + separator + "bin"
-			+ separator + "java";
-	private String serverWorkerJar;
 	private RemoteRunFactory factory;
 	private Process factoryProcess;
 	private String factoryProcessName;
@@ -72,9 +65,6 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	 *             Shouldn't happen.
 	 */
 	public ForkRunFactory() throws JAXBException {
-		ClassLoader cl = ForkRunFactory.class.getClassLoader();
-		serverWorkerJar = cl.getResource(SUBPROCESS_IMPLEMENTATION_JAR)
-				.getFile();
 		context = JAXBContext.newInstance(Workflow.class);
 	}
 
@@ -92,7 +82,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	/** @return Which java executable to run. */
 	@ManagedAttribute(description = "Which java executable to run.", currencyTimeLimit = 300)
 	public String getJavaBinary() {
-		return javaBinary;
+		return state.getJavaBinary();
 	}
 
 	/**
@@ -101,14 +91,18 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	 */
 	@ManagedAttribute(description = "Which java executable to run.", currencyTimeLimit = 300)
 	public void setJavaBinary(String javaBinary) {
-		this.javaBinary = javaBinary;
+		state.setJavaBinary(javaBinary);
 		reinitFactory();
 	}
+
+	private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
 	/** @return The list of additional arguments used to make a worker process. */
 	@ManagedAttribute(description = "The list of additional arguments used to make a worker process.", currencyTimeLimit = 300)
 	public String[] getExtraArguments() {
-		return extraArgs.clone();
+		if (state.getExtraArgs() == null)
+			return EMPTY_STRING_ARRAY;
+		return state.getExtraArgs().clone();
 	}
 
 	/**
@@ -119,16 +113,19 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	@ManagedAttribute(description = "The list of additional arguments used to make a worker process.", currencyTimeLimit = 300)
 	public void setExtraArguments(String[] firstArguments) {
 		if (firstArguments == null)
-			extraArgs = null;
-		else
-			extraArgs = firstArguments.clone();
+			firstArguments = EMPTY_STRING_ARRAY;
+		state.setExtraArgs(firstArguments.clone());
 		reinitFactory();
 	}
 
 	/** @return The location of the JAR implementing the server worker process. */
 	@ManagedAttribute(description = "The location of the JAR implementing the server worker process.")
 	public String getServerWorkerJar() {
-		return this.serverWorkerJar;
+		if (state.getServerWorkerJar() == null) {
+			setServerWorkerJar(ForkRunFactory.class.getClassLoader()
+					.getResource(SUBPROCESS_IMPLEMENTATION_JAR).getFile());
+		}
+		return state.getServerWorkerJar();
 	}
 
 	/**
@@ -138,14 +135,14 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	 */
 	@ManagedAttribute(description = "The location of the JAR implementing the server worker process.")
 	public void setServerWorkerJar(String serverWorkerJar) {
-		this.serverWorkerJar = serverWorkerJar;
+		state.setServerWorkerJar(serverWorkerJar);
 		reinitFactory();
 	}
 
 	/** @return The script to run to start running a workflow. */
 	@ManagedAttribute(description = "The script to run to start running a workflow.", currencyTimeLimit = 300)
 	public String getExecuteWorkflowScript() {
-		return executeWorkflowScript;
+		return state.getExecuteWorkflowScript();
 	}
 
 	/**
@@ -154,14 +151,14 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	 */
 	@ManagedAttribute(description = "The script to run to start running a workflow.", currencyTimeLimit = 300)
 	public void setExecuteWorkflowScript(String executeWorkflowScript) {
-		this.executeWorkflowScript = executeWorkflowScript;
+		state.setExecuteWorkflowScript(executeWorkflowScript);
 		reinitFactory();
 	}
 
 	/** @return How many seconds to wait for a worker process to register itself. */
 	@ManagedAttribute(description = "How many seconds to wait for a worker process to register itself.", currencyTimeLimit = 300)
 	public int getWaitSeconds() {
-		return waitSeconds;
+		return state.getWaitSeconds();
 	}
 
 	/**
@@ -171,7 +168,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	 */
 	@ManagedAttribute(description = "How many seconds to wait for a worker process to register itself.", currencyTimeLimit = 300)
 	public void setWaitSeconds(int seconds) {
-		this.waitSeconds = seconds;
+		state.setWaitSeconds(seconds);
 	}
 
 	/**
@@ -180,7 +177,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	 */
 	@ManagedAttribute(description = "How many milliseconds to wait between checks to see if a worker process has registered.", currencyTimeLimit = 300)
 	public int getSleepTime() {
-		return sleepMS;
+		return state.getSleepMS();
 	}
 
 	/**
@@ -190,7 +187,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	 */
 	@ManagedAttribute(description = "How many milliseconds to wait between checks to see if a worker process has registered.", currencyTimeLimit = 300)
 	public void setSleepTime(int sleepTime) {
-		sleepMS = sleepTime;
+		state.setSleepMS(sleepTime);
 	}
 
 	/**
@@ -236,13 +233,12 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		if (factory != null)
 			return;
 		// Generate the arguments to use when spawning the subprocess
-		factoryProcessName = "ForkRunFactory." + randomUUID();
-		ProcessBuilder p = new ProcessBuilder(javaBinary);
-		if (extraArgs != null)
-			p.command().addAll(asList(extraArgs));
+		factoryProcessName = state.getFactoryProcessNamePrefix() + randomUUID();
+		ProcessBuilder p = new ProcessBuilder(getJavaBinary());
+		p.command().addAll(asList(getExtraArguments()));
 		p.command().add("-jar");
-		p.command().add(serverWorkerJar);
-		p.command().add(executeWorkflowScript);
+		p.command().add(getServerWorkerJar());
+		p.command().add(getExecuteWorkflowScript());
 		p.command().add(factoryProcessName);
 		p.redirectErrorStream(true);
 		p.directory(new File(getProperty("java.io.tmpdir", ".")));
@@ -257,12 +253,12 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 
 		// Wait for the subprocess to register itself in the RMI registry
 		Calendar deadline = Calendar.getInstance();
-		deadline.add(SECOND, waitSeconds);
+		deadline.add(SECOND, state.getWaitSeconds());
 		Exception lastException = null;
 		lastStartupCheckCount = 0;
 		while (deadline.after(Calendar.getInstance())) {
 			try {
-				sleep(sleepMS);
+				sleep(state.getSleepMS());
 				lastStartupCheckCount++;
 				log.info("about to look up resource called "
 						+ factoryProcessName);
@@ -415,12 +411,12 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 
 	@Override
 	public void setServletContext(ServletContext servletContext) {
-		if (executeWorkflowScript == null && servletContext != null) {
-			executeWorkflowScript = servletContext
-					.getInitParameter("executeWorkflowScript");
-			if (executeWorkflowScript != null)
+		if (state.getExecuteWorkflowScript() == null && servletContext != null) {
+			state.setExecuteWorkflowScript(servletContext
+					.getInitParameter("executeWorkflowScript"));
+			if (state.getExecuteWorkflowScript() != null)
 				log.info("configured executeWorkflowScript from context as "
-						+ executeWorkflowScript);
+						+ state.getExecuteWorkflowScript());
 		}
 	}
 }
