@@ -11,12 +11,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import org.taverna.server.master.ManagementModel;
 import org.taverna.server.master.exceptions.NoCreateException;
 
 @Provider
-public class NoCreateHandler implements ExceptionMapper<NoCreateException> {
-	public ManagementModel managementModel;
+public class NoCreateHandler extends HandlerCore implements
+		ExceptionMapper<NoCreateException> {
 	@Override
 	public Response toResponse(NoCreateException exn) {
 		if (managementModel.getLogOutgoingExceptions())

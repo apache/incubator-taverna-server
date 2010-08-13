@@ -11,12 +11,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import org.taverna.server.master.ManagementModel;
 import org.taverna.server.master.exceptions.NoListenerException;
 
 @Provider
-public class NoListenerHandler implements ExceptionMapper<NoListenerException> {
-	public ManagementModel managementModel;
+public class NoListenerHandler extends HandlerCore implements
+		ExceptionMapper<NoListenerException> {
 	@Override
 	public Response toResponse(NoListenerException exn) {
 		if (managementModel.getLogOutgoingExceptions())

@@ -11,13 +11,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import org.taverna.server.master.ManagementModel;
 import org.taverna.server.master.exceptions.BadPropertyValueException;
 
 @Provider
-public class BadPropertyValueHandler implements
+public class BadPropertyValueHandler extends HandlerCore implements
 		ExceptionMapper<BadPropertyValueException> {
-	public ManagementModel managementModel;
 	@Override
 	public Response toResponse(BadPropertyValueException exn) {
 		if (managementModel.getLogOutgoingExceptions())

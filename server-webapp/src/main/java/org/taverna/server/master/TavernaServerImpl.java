@@ -104,7 +104,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 
 	static int invokes;
 	private JAXBContext workflowSerializer;
-	public ManagementModel stateModel;
+	private ManagementModel stateModel;
+	private boolean logGetPrincipalFailures = true;
 
 	/**
 	 * @throws JAXBException
@@ -134,7 +135,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 */
 	@ManagedAttribute(description = "Whether to write submitted workflows to the log.")
 	public boolean getLogIncomingWorkflows() {
-		return stateModel.getLogIncomingWorkflows();
+		return getStateModel().getLogIncomingWorkflows();
 	}
 
 	/**
@@ -143,7 +144,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 */
 	@ManagedAttribute(description = "Whether to write submitted workflows to the log.")
 	public void setLogIncomingWorkflows(boolean logIncomingWorkflows) {
-		stateModel.setLogIncomingWorkflows(logIncomingWorkflows);
+		getStateModel().setLogIncomingWorkflows(logIncomingWorkflows);
 	}
 
 	/**
@@ -152,7 +153,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 */
 	@ManagedAttribute(description = "Whether outgoing exceptions should be logged before being converted to responses.")
 	public boolean getLogOutgoingExceptions() {
-		return stateModel.getLogOutgoingExceptions();
+		return getStateModel().getLogOutgoingExceptions();
 	}
 
 	/**
@@ -162,7 +163,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 */
 	@ManagedAttribute(description = "Whether outgoing exceptions should be logged before being converted to responses.")
 	public void setLogOutgoingExceptions(boolean logOutgoing) {
-		stateModel.setLogOutgoingExceptions(logOutgoing);
+		getStateModel().setLogOutgoingExceptions(logOutgoing);
 	}
 
 	/**
@@ -170,7 +171,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 */
 	@ManagedAttribute(description = "Whether to permit any new workflow runs to be created; has no effect on existing runs.")
 	public boolean getAllowNewWorkflowRuns() {
-		return stateModel.getAllowNewWorkflowRuns();
+		return getStateModel().getAllowNewWorkflowRuns();
 	}
 
 	/**
@@ -179,7 +180,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 */
 	@ManagedAttribute(description = "Whether to permit any new workflow runs to be created; has no effect on existing runs.")
 	public void setAllowNewWorkflowRuns(boolean allowNewWorkflowRuns) {
-		stateModel.setAllowNewWorkflowRuns(allowNewWorkflowRuns);
+		getStateModel().setAllowNewWorkflowRuns(allowNewWorkflowRuns);
 	}
 
 	@Resource
@@ -1068,9 +1069,9 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 
 	private String buildWorkflow(Workflow workflow, Principal p)
 			throws NoCreateException {
-		if (!stateModel.getAllowNewWorkflowRuns())
+		if (!getStateModel().getAllowNewWorkflowRuns())
 			throw new NoCreateException("run creation not currently enabled");
-		if (stateModel.getLogIncomingWorkflows())
+		if (getStateModel().getLogIncomingWorkflows())
 			try {
 				StringWriter sw = new StringWriter();
 				workflowSerializer.createMarshaller().marshal(workflow, sw);
@@ -1203,28 +1204,50 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 
 	Principal getPrincipal() {
 		Principal p = null;
-		if (jaxwsContext == null && jaxrsContext == null)
+		if (jaxwsContext == null && jaxrsContext == null
+				&& logGetPrincipalFailures)
 			log.warn("no injected context");
 		try {
 			if (jaxwsContext != null
 					&& jaxwsContext.getMessageContext() != null)
 				p = jaxwsContext.getUserPrincipal();
 		} catch (NullPointerException e) {
-			log.warn("failed to get user principal", e);
+			if (logGetPrincipalFailures)
+				log.warn("failed to get user principal", e);
 		}
 		if (p == null)
 			try {
 				if (jaxrsContext != null)
 					p = jaxrsContext.getUserPrincipal();
 			} catch (NullPointerException e) {
-				log.warn("failed to get user principal", e);
+				if (logGetPrincipalFailures)
+					log.warn("failed to get user principal", e);
 			}
 		if (p != null)
 			log.info("service being accessed by " + p.getName());
 		else {
-			log.info("service being accessed by <NOBODY>");
+			if (logGetPrincipalFailures)
+				log.info("service being accessed by <NOBODY>");
 			p = new SimplePrincipal("<NOBODY>");
 		}
 		return p;
+	}
+
+	public void setLogGetPrincipalFailures(boolean logthem) {
+		logGetPrincipalFailures = logthem;
+	}
+
+	/**
+	 * @param stateModel the stateModel to set
+	 */
+	public void setStateModel(ManagementModel stateModel) {
+		this.stateModel = stateModel;
+	}
+
+	/**
+	 * @return the stateModel
+	 */
+	public ManagementModel getStateModel() {
+		return stateModel;
 	}
 }

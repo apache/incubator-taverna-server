@@ -9,11 +9,9 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import javax.xml.bind.JAXBException;
 
-import org.taverna.server.master.ManagementModel;
-
 @Provider
-public class JAXBExceptionHandler implements ExceptionMapper<JAXBException> {
-	public ManagementModel managementModel;
+public class JAXBExceptionHandler extends HandlerCore implements
+		ExceptionMapper<JAXBException> {
 	@Override
 	public Response toResponse(JAXBException exn) {
 		if (managementModel.getLogOutgoingExceptions())

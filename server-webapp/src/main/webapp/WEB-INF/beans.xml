@@ -19,7 +19,7 @@
 	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
 	<import resource="classpath:META-INF/cxf/cxf-extension-jaxrs-binding.xml" />
 
-	<bean id="tserv" class="org.taverna.server.master.TavernaServerImpl">
+	<bean id="webapp" class="org.taverna.server.master.TavernaServerImpl">
 		<property name="policy" ref="policy" />
 		<property name="listenerFactory" ref="listenerFactory" />
 		<property name="runFactory" ref="runFactory" />
@@ -27,10 +27,19 @@
 		<property name="stateModel" ref="webapp.state" />
 	</bean>
 
+	<bean id="webapp.state" class="org.taverna.server.master.ManagementModel"
+		init-method="load">
+		<description>The initial state of the webapp.</description>
+		<property name="logIncomingWorkflows" value="false" />
+		<property name="allowNewWorkflowRuns" value="true" />
+		<property name="logOutgoingExceptions" value="false" />
+		<property name="persistenceManagerFactory" ref="pmf" />
+	</bean>
+
 	<!-- <import resource="example.xml"/>-->
 	<import resource="localworker.xml" />
 
-	<jaxws:endpoint id="master_SOAP" implementor="#tserv"
+	<jaxws:endpoint id="master_SOAP" implementor="#webapp"
 		address="/soap" />
 	<jaxrs:server id="root_REST" address="/">
 		<jaxrs:serviceBeans>
@@ -43,7 +52,7 @@
 	<jaxrs:server id="master_REST" address="/rest"
 		staticSubresourceResolution="true">
 		<jaxrs:serviceBeans>
-			<ref bean="tserv" />
+			<ref bean="webapp" />
 		</jaxrs:serviceBeans>
 		<jaxrs:features>
 			<!-- <cxf:logging /> -->
@@ -60,11 +69,6 @@
 			<ref bean="ExceptionProvider.JAXBException" />
 		</jaxrs:providers>
 	</jaxrs:server>
-	<bean id="webapp.state" class="org.taverna.server.master.ManagementModel">
-		<property name="logIncomingWorkflows" value="false"/>
-		<property name="allowNewWorkflowRuns" value="true"/>
-		<property name="logOutgoingExceptions" value="false"/>
-	</bean>
 	<bean id="ExceptionProvider.BadPropertyValue" class="org.taverna.server.master.rest.BadPropertyValueHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
@@ -91,6 +95,80 @@
 	</bean>
 	<bean id="ExceptionProvider.JAXBException" class="org.taverna.server.master.rest.JAXBExceptionHandler">
 		<property name="managementModel" ref="webapp.state" />
+	</bean>
+
+	<!--
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.DerbyDialect</prop>
+				<prop key="hibernate.hbm2ddl.auto">create</prop>
+			</props>
+		</property>
+		<property name="annotatedClasses">
+			<list>
+			</list>
+		</property>
+	</bean>
+	-->
+    <!--
+    <bean id="pmf"
+        class="org.springframework.orm.jdo.LocalPersistenceManagerFactoryBean">
+        <property name="jdoProperties">
+            <props>
+                <prop key="javax.jdo.PersistenceManagerFactoryClass">
+                	org.jpox.PersistenceManagerFactoryImpl
+                </prop>
+                <prop key="javax.jdo.option.ConnectionURL">
+                	jdbc:derby:tavernaserver;create=true
+                </prop>
+                <prop key="javax.jdo.option.ConnectionDriverName">
+                	org.apache.derby.jdbc.EmbeddedDriver
+                </prop>
+                <prop key="javax.jdo.option.ConnectionUserName">
+                	taverna
+                </prop>
+                <prop key="javax.jdo.option.ConnectionPassword" />
+                <prop key="datanucleus.storeManagerType">
+                	rdbms
+                </prop>
+                <prop key="org.jpox.autoCreateSchema">true</prop>
+                <prop key="org.jpox.validateTables">false</prop>
+                <prop key="org.jpox.validateConstraints">false</prop>
+                <prop key="javax.jdo.option.NontransactionalRead">true</prop>
+            </props>
+        </property>
+    </bean>
+	-->
+	<bean id="pmf" class="org.datanucleus.jdo.JDOPersistenceManagerFactory"
+		destroy-method="close">
+		<property name="connectionFactory" ref="dataSource" />
+		<property name="nontransactionalRead" value="true" />
+		<property name="persistenceProperties">
+			<props>
+				<prop key="datanucleus.storeManagerType">rdbms</prop>
+				<prop key="datanucleus.autoCreateTables">true</prop>
+				<prop key="datanucleus.autoCreateTables">true</prop>
+				<prop key="datanucleus.validateTables">true</prop>
+				<prop key="datanucleus.autoCreateColumns">true</prop>
+				<prop key="datanucleus.autoCreateConstraints">true</prop>
+				<prop key="datanucleus.validateConstraints">true</prop>
+				<prop key="datanucleus.autoCreateSchema">true</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!--
+		TODO: control the location of the database properly, or move to JNDI
+	-->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="org.apache.derby.jdbc.EmbeddedDriver" />
+		<property name="url" value="jdbc:derby:temp/tavernaserver;create=true" />
+		<property name="username" value="taverna" />
+		<property name="password" value="" />
 	</bean>
 
 	<bean id="root_facade" class="org.taverna.server.master.facade.Facade">

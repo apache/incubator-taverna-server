@@ -11,12 +11,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import org.taverna.server.master.ManagementModel;
 import org.taverna.server.master.exceptions.NoDestroyException;
 
 @Provider
-public class NoDestroyHandler implements ExceptionMapper<NoDestroyException> {
-	public ManagementModel managementModel;
+public class NoDestroyHandler extends HandlerCore implements
+		ExceptionMapper<NoDestroyException> {
 	@Override
 	public Response toResponse(NoDestroyException exn) {
 		if (managementModel.getLogOutgoingExceptions())

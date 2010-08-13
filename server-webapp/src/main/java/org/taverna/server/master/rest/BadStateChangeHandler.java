@@ -11,13 +11,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import org.taverna.server.master.ManagementModel;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 
 @Provider
-public class BadStateChangeHandler implements
+public class BadStateChangeHandler extends HandlerCore implements
 		ExceptionMapper<BadStateChangeException> {
-	public ManagementModel managementModel;
 	@Override
 	public Response toResponse(BadStateChangeException exn) {
 		if (managementModel.getLogOutgoingExceptions())

@@ -11,12 +11,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import org.taverna.server.master.ManagementModel;
 import org.taverna.server.master.exceptions.UnknownRunException;
 
 @Provider
-public class UnknownRunHandler implements ExceptionMapper<UnknownRunException> {
-	public ManagementModel managementModel;
+public class UnknownRunHandler extends HandlerCore implements
+		ExceptionMapper<UnknownRunException> {
 	@Override
 	public Response toResponse(UnknownRunException exn) {
 		if (managementModel.getLogOutgoingExceptions())

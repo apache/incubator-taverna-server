@@ -11,12 +11,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import org.taverna.server.master.ManagementModel;
 import org.taverna.server.master.exceptions.NoUpdateException;
 
 @Provider
-public class NoUpdateHandler implements ExceptionMapper<NoUpdateException> {
-	public ManagementModel managementModel;
+public class NoUpdateHandler extends HandlerCore implements
+		ExceptionMapper<NoUpdateException> {
 	@Override
 	public Response toResponse(NoUpdateException exn) {
 		if (managementModel.getLogOutgoingExceptions())
