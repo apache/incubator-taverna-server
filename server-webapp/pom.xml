@@ -22,21 +22,14 @@
 	<repositories>
 		<repository>
 			<id>datanucleus</id>
-			<name>DataNucleus</name>
+			<name>DataNucleus Repository</name>
 			<url>http://www.datanucleus.org/downloads/maven2</url>
 		</repository>
-	<!--
-		<repository>
-			<id>ibiblio</id>
-			<name>ibiblio Archive at UNC Chapel Hill</name>
-			<url>http://www.ibiblio.org/maven</url>
-		</repository>
-	-->
 	</repositories>
 	<pluginRepositories>
 		<pluginRepository>
 			<id>datanucleus</id>
-			<name>DataNucleus</name>
+			<name>DataNucleus Repository</name>
 			<url>http://www.datanucleus.org/downloads/maven2</url>
 		</pluginRepository>
 	</pluginRepositories>
@@ -99,20 +92,13 @@
 			<scope>provided</scope>
 		</dependency>
 		<!--
-		<dependency>
-			<groupId>org.hibernate</groupId>
+			<dependency> <groupId>org.hibernate</groupId>
 			<artifactId>hibernate-annotations</artifactId>
-			<version>3.4.0.GA</version>
-			<type>jar</type>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
+			<version>3.4.0.GA</version> <type>jar</type> <scope>compile</scope>
+			</dependency> <dependency> <groupId>org.hibernate</groupId>
 			<artifactId>hibernate-validator</artifactId>
-			<version>4.0.2.GA</version>
-			<type>jar</type>
-			<scope>compile</scope>
-		</dependency>
+			<version>4.0.2.GA</version> <type>jar</type> <scope>compile</scope>
+			</dependency>
 		-->
 		<dependency>
 			<groupId>org.apache.derby</groupId>
@@ -148,41 +134,12 @@
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-orm</artifactId>
-			<version>2.5.6</version>
-			<type>jar</type>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-jdbc</artifactId>
-			<version>2.5.6</version>
-			<type>jar</type>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.jdo</groupId>
 			<artifactId>jdo2-core</artifactId>
 			<version>2.0</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>org.apache.jdo</groupId>
-			<artifactId>jdo2-enhancer</artifactId>
-			<version>2.0</version>
-			<type>jar</type>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.bcel</groupId>
-			<artifactId>bcel</artifactId>
-			<version>5.2</version>
-			<type>jar</type>
-			<scope>compile</scope>
-		</dependency> -->
 	</dependencies>
 
 	<dependencyManagement>
@@ -196,21 +153,7 @@
 			<dependency>
 				<groupId>asm</groupId>
 				<artifactId>asm</artifactId>
-				<version>2.2.3</version>
-				<type>jar</type>
-				<scope>compile</scope>
-			</dependency>
-			<dependency>
-				<groupId>commons-collections</groupId>
-				<artifactId>commons-collections</artifactId>
-				<version>3.2.1</version>
-				<type>jar</type>
-				<scope>compile</scope>
-			</dependency>
-			<dependency>
-				<groupId>javax.transaction</groupId>
-				<artifactId>jta</artifactId>
-				<version>1.1</version>
+				<version>3.0</version>
 				<type>jar</type>
 				<scope>compile</scope>
 			</dependency>
@@ -220,20 +163,6 @@
 				<version>2.1.13</version>
 				<type>jar</type>
 				<scope>compile</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>1.5.11</version>
-				<type>jar</type>
-				<scope>compile</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.ant</groupId>
-				<artifactId>ant</artifactId>
-				<version>1.8.1</version>
-				<type>jar</type>
-				<scope>provided</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -260,6 +189,40 @@
 						<source>1.6</source>
 						<target>1.6</target>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.datanucleus</groupId>
+					<artifactId>maven-datanucleus-plugin</artifactId>
+					<version>2.1.0-release</version>
+					<configuration>
+						<jdkLogConfiguration>file:${project.basedir}/datanucleus-log.properties</jdkLogConfiguration>
+					</configuration>
+					<dependencies>
+						<dependency>
+							<groupId>org.datanucleus</groupId>
+							<artifactId>datanucleus-enhancer</artifactId>
+							<version>2.1.0-release</version>
+						</dependency>
+						<!--
+							Next three builder dependencies should match main dependencies,
+							but must be declared to avoid problems.
+						-->
+						<dependency>
+							<groupId>org.datanucleus</groupId>
+							<artifactId>datanucleus-core</artifactId>
+							<version>2.1.1</version>
+						</dependency>
+						<dependency>
+							<groupId>org.datanucleus</groupId>
+							<artifactId>datanucleus-rdbms</artifactId>
+							<version>2.1.1</version>
+						</dependency>
+						<dependency>
+							<groupId>asm</groupId>
+							<artifactId>asm</artifactId>
+							<version>3.0</version>
+						</dependency>
+					</dependencies>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -296,7 +259,6 @@
 			<plugin>
 				<groupId>org.datanucleus</groupId>
 				<artifactId>maven-datanucleus-plugin</artifactId>
-				<version>2.1.0-release</version>
 				<configuration>
 					<metadataIncludes>org/taverna/server/master/*.class,org/taverna/server/master/localworker/*.class</metadataIncludes>
 				</configuration>
@@ -309,28 +271,6 @@
 						</goals>
 					</execution>
 				</executions>
-				<dependencies>
-					<dependency>
-						<groupId>org.datanucleus</groupId>
-						<artifactId>datanucleus-enhancer</artifactId>
-						<version>2.1.0-release</version>
-					</dependency>
-					<dependency>
-						<groupId>org.datanucleus</groupId>
-						<artifactId>datanucleus-core</artifactId>
-						<version>2.1.1</version>
-					</dependency>
-					<dependency>
-						<groupId>org.datanucleus</groupId>
-						<artifactId>datanucleus-rdbms</artifactId>
-						<version>2.1.1</version>
-					</dependency>
-					<dependency>
-						<groupId>asm</groupId>
-						<artifactId>asm</artifactId>
-						<version>3.0</version>
-					</dependency>
-				</dependencies>
 			</plugin>
 		</plugins>
 		<resources>

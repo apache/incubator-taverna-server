@@ -52,11 +52,6 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	private RemoteRunFactory factory;
 	private Process factoryProcess;
 	private String factoryProcessName;
-	/**
-	 * The name of the resource that is the implementation of the subprocess
-	 * that this class will fork off.
-	 */
-	public static final String SUBPROCESS_IMPLEMENTATION_JAR = "util/server.worker.jar";
 
 	/**
 	 * Create a factory for remote runs that works by forking off a subprocess.
@@ -95,14 +90,10 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		reinitFactory();
 	}
 
-	private static final String[] EMPTY_STRING_ARRAY = new String[0];
-
 	/** @return The list of additional arguments used to make a worker process. */
 	@ManagedAttribute(description = "The list of additional arguments used to make a worker process.", currencyTimeLimit = 300)
 	public String[] getExtraArguments() {
-		if (state.getExtraArgs() == null)
-			return EMPTY_STRING_ARRAY;
-		return state.getExtraArgs().clone();
+		return state.getExtraArgs();
 	}
 
 	/**
@@ -112,19 +103,13 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	 */
 	@ManagedAttribute(description = "The list of additional arguments used to make a worker process.", currencyTimeLimit = 300)
 	public void setExtraArguments(String[] firstArguments) {
-		if (firstArguments == null)
-			firstArguments = EMPTY_STRING_ARRAY;
-		state.setExtraArgs(firstArguments.clone());
+		state.setExtraArgs(firstArguments);
 		reinitFactory();
 	}
 
 	/** @return The location of the JAR implementing the server worker process. */
 	@ManagedAttribute(description = "The location of the JAR implementing the server worker process.")
 	public String getServerWorkerJar() {
-		if (state.getServerWorkerJar() == null) {
-			setServerWorkerJar(ForkRunFactory.class.getClassLoader()
-					.getResource(SUBPROCESS_IMPLEMENTATION_JAR).getFile());
-		}
 		return state.getServerWorkerJar();
 	}
 
@@ -412,8 +397,8 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	@Override
 	public void setServletContext(ServletContext servletContext) {
 		if (state.getExecuteWorkflowScript() == null && servletContext != null) {
-			state.setExecuteWorkflowScript(servletContext
-					.getInitParameter("executeWorkflowScript"));
+			state.defaultExecuteWorkflowScript = servletContext
+					.getInitParameter("executeWorkflowScript");
 			if (state.getExecuteWorkflowScript() != null)
 				log.info("configured executeWorkflowScript from context as "
 						+ state.getExecuteWorkflowScript());

@@ -40,6 +40,7 @@
 			<description>The time to wait (in milliseconds) between polling for
 				the subprocess to complete its registration.</description>
 		</property>
+		<property name="persistenceManagerFactory" ref="pmf" />
 		<!--
 		<property name="javaBinary">
 			<description>The name of the java executable used to run the server

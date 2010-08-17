@@ -113,35 +113,6 @@
 		</property>
 	</bean>
 	-->
-    <!--
-    <bean id="pmf"
-        class="org.springframework.orm.jdo.LocalPersistenceManagerFactoryBean">
-        <property name="jdoProperties">
-            <props>
-                <prop key="javax.jdo.PersistenceManagerFactoryClass">
-                	org.jpox.PersistenceManagerFactoryImpl
-                </prop>
-                <prop key="javax.jdo.option.ConnectionURL">
-                	jdbc:derby:tavernaserver;create=true
-                </prop>
-                <prop key="javax.jdo.option.ConnectionDriverName">
-                	org.apache.derby.jdbc.EmbeddedDriver
-                </prop>
-                <prop key="javax.jdo.option.ConnectionUserName">
-                	taverna
-                </prop>
-                <prop key="javax.jdo.option.ConnectionPassword" />
-                <prop key="datanucleus.storeManagerType">
-                	rdbms
-                </prop>
-                <prop key="org.jpox.autoCreateSchema">true</prop>
-                <prop key="org.jpox.validateTables">false</prop>
-                <prop key="org.jpox.validateConstraints">false</prop>
-                <prop key="javax.jdo.option.NontransactionalRead">true</prop>
-            </props>
-        </property>
-    </bean>
-	-->
 	<bean id="pmf" class="org.datanucleus.jdo.JDOPersistenceManagerFactory"
 		destroy-method="close">
 		<property name="connectionFactory" ref="dataSource" />
