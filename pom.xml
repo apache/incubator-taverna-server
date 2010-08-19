@@ -14,6 +14,9 @@
 		<groupId>net.sf.taverna</groupId>
 		<version>0.1.2009-02-12</version>
 	</parent>
+	<prerequisites>
+		<maven>2.2</maven>
+	</prerequisites>
 	<issueManagement>
 		<system>JIRA</system>
 		<url>http://www.mygrid.org.uk/dev/issues/browse/TAVSERV</url>
