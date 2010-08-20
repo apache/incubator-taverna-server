@@ -38,29 +38,27 @@
 	</servlet-mapping>
 
 	<security-constraint>
-		<display-name>SSL connection required.</display-name>
+		<display-name>Totally unsecured</display-name>
 		<web-resource-collection>
-			<web-resource-name>Taverna 2 Server</web-resource-name>
-			<url-pattern>/soap/*</url-pattern>
-			<url-pattern>/soap</url-pattern>
-			<url-pattern>/rest/*</url-pattern>
-			<url-pattern>/rest</url-pattern>
+			<web-resource-name>taverna-server-readme</web-resource-name>
+			<description>Taverna 2 Server - README file</description>
+			<url-pattern>/</url-pattern>
+			<http-method>GET</http-method>
+			<http-method>HEAD</http-method>
 		</web-resource-collection>
-		<auth-constraint>
-			<role-name>tavernauser</role-name>
-		</auth-constraint>
 		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+			<transport-guarantee>NONE</transport-guarantee>
 		</user-data-constraint>
 	</security-constraint>
 	<security-constraint>
 		<display-name>Secure but not authenticated</display-name>
 		<web-resource-collection>
-			<web-resource-name>Taverna 2 Server - service descriptions</web-resource-name>
+			<web-resource-name>taverna-server-service-descriptions</web-resource-name>
+			<description>Taverna 2 Server - service descriptions</description>
 			<url-pattern>/</url-pattern>
 			<url-pattern>/services</url-pattern>
-			<url-pattern>/soap?wsdl*</url-pattern>
-			<url-pattern>/rest?_wadl*</url-pattern>
+			<url-pattern>/soap</url-pattern>
+			<url-pattern>/rest</url-pattern>
 			<http-method>GET</http-method>
 		</web-resource-collection>
 		<auth-constraint>
@@ -68,6 +66,30 @@
 		</auth-constraint>
 		<user-data-constraint>
 			<transport-guarantee>INTEGRAL</transport-guarantee>
+		</user-data-constraint>
+	</security-constraint>
+	<security-constraint>
+		<display-name>SSL connection with auth required.</display-name>
+		<web-resource-collection>
+			<web-resource-name>taverna-server-rest-stateless</web-resource-name>
+			<description>Taverna 2 Server; RESTful GET/HEAD</description>
+			<url-pattern>/rest/*</url-pattern>
+			<http-method>GET</http-method>
+			<http-method>HEAD</http-method>
+		</web-resource-collection>
+		<web-resource-collection>
+			<web-resource-name>taverna-server-stateful</web-resource-name>
+			<description>Taverna 2 Server; SOAP and RESTful state update</description>
+			<http-method>POST</http-method>
+			<http-method>PUT</http-method>
+			<http-method>DELETE</http-method>
+		</web-resource-collection>
+		<auth-constraint>
+			<description>All users must be a member of this group to proceed.</description>
+			<role-name>tavernauser</role-name>
+		</auth-constraint>
+		<user-data-constraint>
+			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
 		</user-data-constraint>
 	</security-constraint>
 	<login-config>

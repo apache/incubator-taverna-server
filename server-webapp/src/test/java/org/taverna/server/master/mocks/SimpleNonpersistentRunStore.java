@@ -96,6 +96,17 @@ public class SimpleNonpersistentRunStore implements RunStore {
 	}
 
 	@Override
+	public TavernaRun getRun(String uuid)
+			throws UnknownRunException {
+		synchronized (lock) {
+			TavernaRun w = store.get(uuid);
+			if (w == null)
+				throw new UnknownRunException();
+			return w;
+		}
+	}
+
+	@Override
 	public Map<String, TavernaRun> listRuns(Principal user, Policy p) {
 		HashMap<String, TavernaRun> filtered = new HashMap<String, TavernaRun>();
 		synchronized (lock) {

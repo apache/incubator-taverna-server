@@ -4,13 +4,13 @@ import static java.lang.System.getSecurityManager;
 import static java.lang.System.setProperty;
 import static java.lang.System.setSecurityManager;
 import static java.rmi.registry.LocateRegistry.createRegistry;
-import static java.rmi.registry.LocateRegistry.getRegistry;
 import static java.rmi.registry.Registry.REGISTRY_PORT;
 import static java.util.Collections.emptyList;
 
 import java.lang.ref.WeakReference;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -52,7 +52,53 @@ import org.taverna.server.master.localworker.LocalWorkerState.RemovalFilter;
 public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		RunFactory, Policy, RunStore {
 	static final Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
-	static Registry registry;
+
+	/**
+	 * @return A handle to the current RMI registry.
+	 */
+	protected Registry getRegistry() {
+		try {
+			if (registry != null) {
+				registry.list();
+				return registry;
+			}
+		} catch (RemoteException e) {
+			log.warn("non-functioning existing registry handle", e);
+			registry = null;
+		}
+		try {
+			registry = LocateRegistry.getRegistry(getRegistryHost(),
+					getRegistryPort());
+			registry.list();
+			return registry;
+		} catch (RemoteException e) {
+			log.warn("Failed to get working RMI registry handle.");
+			registry = null;
+			log.warn("Will build new registry, "
+					+ "but service restart ability is at risk.");
+			try {
+				registry = LocateRegistry.createRegistry(getRegistryPort());
+				registry.list();
+				return registry;
+			} catch (RemoteException e2) {
+				log.error(
+						"failed to create local working RMI registry on port "
+								+ getRegistryPort(), e2);
+				log.info("original connection exception", e);
+			}
+		}
+		try {
+			registry = LocateRegistry.createRegistry(REGISTRY_PORT);
+			registry.list();
+			return registry;
+		} catch (RemoteException e) {
+			log.fatal("totally failed to get registry handle, even on fallback!", e);
+			registry = null;
+			throw new RuntimeException("No RMI Registry Available");
+		}
+	}
+
+	private Registry registry;
 	/**
 	 * The name of the resource that describes the default security policy to
 	 * install.
@@ -67,24 +113,44 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	public LocalWorkerState state;
 	private TimerTask cleaner;
 
+	@ManagedAttribute(description = "The host holding the RMI registry to communicate via.")
+	public String getRegistryHost() {
+		return state.getRegistryHost();
+	}
+
+	@ManagedAttribute(description = "The host holding the RMI registry to communicate via.")
+	public void setRegistryHost(String host) {
+		boolean rebuild = false;
+		if (host == null || host.isEmpty()) {
+			host = null;
+			rebuild = (state.getRegistryHost() != null);
+		} else {
+			rebuild = !host.equals(state.getRegistryHost());
+		}
+		state.setRegistryHost(host);
+		if (rebuild) {
+			registry = null;
+		}
+	}
+
+	@ManagedAttribute(description = "The port number of the RMI registry. Should not normally be set.")
+	public int getRegistryPort() {
+		return state.getRegistryPort();
+	}
+
+	@ManagedAttribute(description = "The port number of the RMI registry. Should not normally be set.")
+	public void setRegistryPort(int port) {
+		if (port != state.getRegistryPort())
+			registry = null;
+		state.setRegistryPort(port);
+	}
+
 	static {
 		if (getSecurityManager() == null) {
 			setProperty("java.security.policy", AbstractRemoteRunFactory.class
 					.getClassLoader().getResource(SECURITY_POLICY_FILE)
 					.toExternalForm());
 			setSecurityManager(new RMISecurityManager());
-		}
-		try {
-			registry = getRegistry();
-			registry.list();
-		} catch (RemoteException e) {
-			log.info("failed to get working RMI registry handle; recreating");
-			try {
-				registry = createRegistry(REGISTRY_PORT);
-			} catch (RemoteException e2) {
-				log.error("failed to create RMI registry", e2);
-				log.info("original connection exception", e);
-			}
 		}
 	}
 
@@ -95,6 +161,21 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		cleaner = new AbstractRemoteRunFactoryCleaner(this);
 		timer.scheduleAtFixedRate(cleaner, CLEANER_INTERVAL_MS,
 				CLEANER_INTERVAL_MS);
+		try {
+			registry = LocateRegistry.getRegistry();
+			registry.list();
+		} catch (RemoteException e) {
+			log.warn("Failed to get working RMI registry handle.");
+			log
+					.warn("Will build new registry, but service restart ability is at risk.");
+			try {
+				registry = createRegistry(REGISTRY_PORT);
+				registry.list();
+			} catch (RemoteException e2) {
+				log.error("failed to create working RMI registry", e2);
+				log.info("original connection exception", e);
+			}
+		}
 	}
 
 	@Override
@@ -219,6 +300,9 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	@Override
 	public synchronized void permitCreate(Principal user, Workflow workflow)
 			throws NoCreateException {
+		if (user == null)
+			throw new NoCreateException(
+					"anonymous workflow creation not allowed");
 		if (state.countRuns() >= getMaxRuns())
 			throw new NoCreateException("server load exceeded; please wait");
 	}
@@ -237,11 +321,26 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	@Override
 	public void permitUpdate(Principal user, TavernaRun run)
 			throws NoUpdateException {
-		// Does nothing; all may update
+		Principal owner = run.getSecurityContext().getOwner();
+		if (owner == null)
+			return; // Not owned by anyone; fair game
+		if (user == null)
+			throw new NoUpdateException("who are you?");
+		if (!owner.getName().equals(user.getName()))
+			throw new NoUpdateException("workflow run not owned by you");
 	}
 
 	@Override
 	public synchronized TavernaRun getRun(Principal user, Policy p, String uuid)
+			throws UnknownRunException {
+		TavernaRun run = state.get(uuid);
+		if (run != null)
+			return run;
+		throw new UnknownRunException();
+	}
+
+	@Override
+	public synchronized TavernaRun getRun(String uuid)
 			throws UnknownRunException {
 		TavernaRun run = state.get(uuid);
 		if (run != null)
@@ -310,7 +409,7 @@ class AbstractRemoteRunFactoryCleaner extends TimerTask {
 		// Check to see if anything is needing cleaning; if not, we're done
 		final Date now = new Date();
 		synchronized (f) {
-			f.state.removeWhen(new RemovalFilter(){
+			f.state.removeWhen(new RemovalFilter() {
 				@Override
 				public boolean test(String name, TavernaRun run) {
 					if (run == null)

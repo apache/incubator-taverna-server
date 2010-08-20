@@ -33,6 +33,7 @@
 			<url>http://www.datanucleus.org/downloads/maven2</url>
 		</pluginRepository>
 	</pluginRepositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
@@ -226,6 +227,8 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
+
+		<defaultGoal>package</defaultGoal>
 		<plugins>
 			<plugin>
 				<artifactId>maven-dependency-plugin</artifactId>

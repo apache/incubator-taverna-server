@@ -2,6 +2,7 @@ package org.taverna.server.master.localworker;
 
 import static java.io.File.separator;
 import static java.lang.System.getProperty;
+import static java.rmi.registry.Registry.REGISTRY_PORT;
 import static org.taverna.server.master.localworker.LocalWorkerManagementState.KEY;
 
 import java.util.Collection;
@@ -155,6 +156,8 @@ public class LocalWorkerState {
 	String javaBinary;
 	private static final String DEFAULT_JAVA_BINARY = getProperty("java.home")
 			+ separator + "bin" + separator + "java";
+	String registryHost;
+	int registryPort;
 
 	/**
 	 * @param defaultLifetime
@@ -311,6 +314,41 @@ public class LocalWorkerState {
 		return javaBinary == null ? DEFAULT_JAVA_BINARY : javaBinary;
 	}
 
+	/**
+	 * @param registryHost
+	 *            the registryHost to set
+	 */
+	public void setRegistryHost(String registryHost) {
+		this.registryHost = (registryHost == null ? "" : registryHost);
+		store();
+	}
+
+	/**
+	 * @return the registryHost
+	 */
+	public String getRegistryHost() {
+		load();
+		return registryHost.isEmpty() ? null : registryHost;
+	}
+
+	/**
+	 * @param registryPort
+	 *            the registryPort to set
+	 */
+	public void setRegistryPort(int registryPort) {
+		this.registryPort = ((registryPort < 1 || registryPort > 65534) ? REGISTRY_PORT
+				: registryPort);
+		store();
+	}
+
+	/**
+	 * @return the registryPort
+	 */
+	public int getRegistryPort() {
+		load();
+		return registryPort == 0 ? REGISTRY_PORT : registryPort;
+	}
+
 	// --------------------------------------------------------------
 
 	public interface PerRunCallback<T extends Throwable> {
@@ -451,6 +489,8 @@ public class LocalWorkerState {
 					serverWorkerJar = state.getServerWorkerJar();
 					sleepMS = state.getSleepMS();
 					waitSeconds = state.getWaitSeconds();
+					registryHost = state.getRegistryHost();
+					registryPort = state.getRegistryPort();
 				}
 			}
 		});
@@ -478,6 +518,8 @@ public class LocalWorkerState {
 					state.setServerWorkerJar(serverWorkerJar);
 					state.setSleepMS(sleepMS);
 					state.setWaitSeconds(waitSeconds);
+					state.setRegistryHost(registryHost);
+					state.setRegistryPort(registryPort);
 					state = ctx.persist(state);
 				} else {
 					state.setDefaultLifetime(defaultLifetime);
@@ -489,6 +531,8 @@ public class LocalWorkerState {
 					state.setServerWorkerJar(serverWorkerJar);
 					state.setSleepMS(sleepMS);
 					state.setWaitSeconds(waitSeconds);
+					state.setRegistryHost(registryHost);
+					state.setRegistryPort(registryPort);
 				}
 			}
 		});
@@ -521,6 +565,10 @@ class LocalWorkerManagementState {
 	private String serverWorkerJar;
 	@Persistent
 	private String javaBinary;
+	@Persistent
+	private int registryPort;
+	@Persistent
+	private String registryHost;
 
 	/**
 	 * @param defaultLifetime
@@ -655,6 +703,34 @@ class LocalWorkerManagementState {
 	 */
 	public String getJavaBinary() {
 		return javaBinary;
+	}
+
+	/**
+	 * @param registryPort the registryPort to set
+	 */
+	public void setRegistryPort(int registryPort) {
+		this.registryPort = registryPort;
+	}
+
+	/**
+	 * @return the registryPort
+	 */
+	public int getRegistryPort() {
+		return registryPort;
+	}
+
+	/**
+	 * @param registryHost the registryHost to set
+	 */
+	public void setRegistryHost(String registryHost) {
+		this.registryHost = registryHost;
+	}
+
+	/**
+	 * @return the registryHost
+	 */
+	public String getRegistryHost() {
+		return registryHost;
 	}
 }
 

@@ -248,14 +248,14 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 				log.info("about to look up resource called "
 						+ factoryProcessName);
 				try {
-					registry.list(); // Validate registry connection first
+					getRegistry().list(); // Validate registry connection first
 				} catch (ConnectException ce) {
 					log.warn("connection problems with registry", ce);
 				} catch (ConnectIOException e) {
 					log.warn("connection problems with registry", e);
 				}
-				factory = (RemoteRunFactory) registry
-						.lookup(factoryProcessName);
+				factory = (RemoteRunFactory) getRegistry().lookup(
+						factoryProcessName);
 				log.info("successfully connected to factory subprocess "
 						+ factoryProcessName);
 				return;

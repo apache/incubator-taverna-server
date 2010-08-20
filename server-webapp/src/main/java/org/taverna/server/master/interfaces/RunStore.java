@@ -31,6 +31,18 @@ public interface RunStore {
 			throws UnknownRunException;
 
 	/**
+	 * Obtain the named workflow run.
+	 * 
+	 * @param uuid
+	 *            The handle for the run.
+	 * @return The workflow instance run.
+	 * @throws UnknownRunException
+	 *             If the lookup fails (either because it does not exist or
+	 *             because it is not permitted for the user by the policy).
+	 */
+	public TavernaRun getRun(String uuid) throws UnknownRunException;
+
+	/**
 	 * List the runs that a particular user may access.
 	 * 
 	 * @param user

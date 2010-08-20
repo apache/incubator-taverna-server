@@ -27,7 +27,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.jws.WebService;
@@ -102,10 +101,22 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	// CONNECTIONS TO JMX, SPRING AND CXF
 
+	/**
+	 * Simple count of number of times the service has been invoked. Rate of
+	 * increase is how busy this service is.
+	 */
 	static int invokes;
+	/**
+	 * The XML serialization engine for workflows.
+	 */
 	private JAXBContext workflowSerializer;
+	/** Connection to the persistent state of this service. */
 	private ManagementModel stateModel;
-	private boolean logGetPrincipalFailures = true;
+	/**
+	 * Whether to log failures during pricipal retrieval. Should be normally on
+	 * as it indicates a serious problem, but can be switched off for testing.
+	 */
+	private transient boolean logGetPrincipalFailures = true;
 
 	/**
 	 * @throws JAXBException
@@ -310,7 +321,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 							ListenerDefinition typeAndConfiguration, UriInfo ui)
 							throws NoUpdateException, NoListenerException {
 						invokes++;
-						policy.permitUpdate(getPrincipal(), run);
+						permitUpdate(run);
 						String name = listenerFactory.makeListener(run,
 								typeAndConfiguration.type,
 								typeAndConfiguration.configuration).getName();
@@ -411,7 +422,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			@Override
 			public String setStatus(String status) throws NoUpdateException {
 				invokes++;
-				policy.permitUpdate(getPrincipal(), run);
+				permitUpdate(run);
 				run.setStatus(Status.valueOf(status.trim()));
 				return run.getStatus().toString();
 			}
@@ -449,7 +460,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 							throws NoUpdateException, BadStateChangeException,
 							FilesystemAccessException {
 						invokes++;
-						policy.permitUpdate(getPrincipal(), run);
+						permitUpdate(run);
 						run.setInputBaclavaFile(filename);
 						String i = run.getInputBaclavaFile();
 						return i == null ? "" : i;
@@ -470,7 +481,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 						if (!(ac instanceof InDesc.File || ac instanceof InDesc.Value))
 							throw new BadPropertyValueException(
 									"unknown content type");
-						policy.permitUpdate(getPrincipal(), run);
+						permitUpdate(run);
 						Input i = TavernaServerImpl.getInput(run, name);
 						if (i == null)
 							i = run.makeInput(name);
@@ -495,7 +506,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 					throws NoUpdateException, FilesystemAccessException,
 					BadStateChangeException {
 				invokes++;
-				policy.permitUpdate(getPrincipal(), run);
+				permitUpdate(run);
 				if (filename != null && filename.length() == 0)
 					filename = null;
 				run.setOutputBaclavaFile(filename);
@@ -558,7 +569,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 									throws NoUpdateException,
 									NoListenerException {
 								invokes++;
-								policy.permitUpdate(getPrincipal(), run);
+								permitUpdate(run);
 								listen.setProperty(propertyName, value);
 								return listen.getProperty(propertyName);
 							}
@@ -594,7 +605,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		public Response destroyDirectoryEntry(List<PathSegment> path)
 				throws NoUpdateException, FilesystemAccessException {
 			invokes++;
-			policy.permitUpdate(getPrincipal(), run);
+			permitUpdate(run);
 			getDirEntry(run, path).destroy();
 			return noContent().build();
 		}
@@ -705,7 +716,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 				MakeOrUpdateDirEntry op, UriInfo ui) throws NoUpdateException,
 				FilesystemAccessException {
 			invokes++;
-			policy.permitUpdate(getPrincipal(), run);
+			permitUpdate(run);
 			DirectoryEntry container = getDirEntry(run, parent);
 			if (!(container instanceof Directory))
 				throw new FilesystemAccessException(
@@ -789,7 +800,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			NoUpdateException {
 		invokes++;
 		TavernaRun w = getRun(runName);
-		policy.permitUpdate(getPrincipal(), w);
+		permitUpdate(w);
 		runStore.unregisterRun(runName);
 		w.destroy();
 	}
@@ -844,7 +855,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			throws UnknownRunException, NoUpdateException {
 		invokes++;
 		TavernaRun w = getRun(runName);
-		policy.permitUpdate(getPrincipal(), w);
+		permitUpdate(w);
 		w.setStatus(s);
 	}
 
@@ -881,9 +892,9 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			NoUpdateException, FilesystemAccessException {
 		invokes++;
 		TavernaRun w = getRun(runName);
-		Principal p = getPrincipal();
-		policy.permitUpdate(p, w);
-		Directory dir = getDirectory(w, parent).makeSubdirectory(p, name);
+		permitUpdate(w);
+		Directory dir = getDirectory(w, parent).makeSubdirectory(
+				getPrincipal(), name);
 		return newInstance(null, dir);
 	}
 
@@ -893,9 +904,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			NoUpdateException, FilesystemAccessException {
 		invokes++;
 		TavernaRun w = getRun(runName);
-		Principal p = getPrincipal();
-		policy.permitUpdate(p, w);
-		File f = getDirectory(w, parent).makeEmptyFile(p, name);
+		permitUpdate(w);
+		File f = getDirectory(w, parent).makeEmptyFile(getPrincipal(), name);
 		return newInstance(null, f);
 	}
 
@@ -905,7 +915,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			FilesystemAccessException {
 		invokes++;
 		TavernaRun w = getRun(runName);
-		policy.permitUpdate(getPrincipal(), w);
+		permitUpdate(w);
 		getDirEntry(w, d).destroy();
 	}
 
@@ -922,7 +932,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			FilesystemAccessException {
 		invokes++;
 		TavernaRun w = getRun(runName);
-		policy.permitUpdate(getPrincipal(), w);
+		permitUpdate(w);
 		getFile(w, d).setContents(newContents);
 	}
 
@@ -952,7 +962,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			NoUpdateException, NoListenerException {
 		invokes++;
 		TavernaRun w = getRun(runName);
-		policy.permitUpdate(getPrincipal(), w);
+		permitUpdate(w);
 		return listenerFactory.makeListener(w, listenerType, configuration)
 				.getName();
 	}
@@ -985,7 +995,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			NoUpdateException, NoListenerException {
 		invokes++;
 		TavernaRun w = getRun(runName);
-		policy.permitUpdate(getPrincipal(), w);
+		permitUpdate(w);
 		Listener l = getListener(w, listenerName);
 		try {
 			l.getProperty(propName); // sanity check!
@@ -1016,7 +1026,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			FilesystemAccessException, BadStateChangeException {
 		invokes++;
 		TavernaRun w = getRun(runName);
-		policy.permitUpdate(getPrincipal(), w);
+		permitUpdate(w);
 		w.setInputBaclavaFile(fileName);
 	}
 
@@ -1026,7 +1036,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			FilesystemAccessException, BadStateChangeException {
 		invokes++;
 		TavernaRun w = getRun(runName);
-		policy.permitUpdate(getPrincipal(), w);
+		permitUpdate(w);
 		Input i = getInput(w, portName);
 		if (i == null)
 			i = w.makeInput(portName);
@@ -1039,7 +1049,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			BadStateChangeException {
 		invokes++;
 		TavernaRun w = getRun(runName);
-		policy.permitUpdate(getPrincipal(), w);
+		permitUpdate(w);
 		Input i = getInput(w, portName);
 		if (i == null)
 			i = w.makeInput(portName);
@@ -1052,7 +1062,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			FilesystemAccessException, BadStateChangeException {
 		invokes++;
 		TavernaRun w = getRun(runName);
-		policy.permitUpdate(getPrincipal(), w);
+		permitUpdate(w);
 		w.setOutputBaclavaFile(outputFile);
 	}
 
@@ -1105,12 +1115,9 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	}
 
 	TavernaRun getRun(String runName) throws UnknownRunException {
-		Principal p = getPrincipal();
-		for (Map.Entry<String, TavernaRun> w : runStore.listRuns(p, policy)
-				.entrySet())
-			if (w.getKey().equals(runName))
-				return w.getValue();
-		throw new UnknownRunException();
+		if (isSuperUser())
+			return runStore.getRun(runName);
+		return runStore.getRun(getPrincipal(), policy, runName);
 	}
 
 	static Input getInput(TavernaRun run, String portName) {
@@ -1149,59 +1156,92 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		throw new FilesystemAccessException("not a file");
 	}
 
+	/**
+	 * Get a named directory entry from a workflow run.
+	 * 
+	 * @param run
+	 *            The run whose working directory is to be used as the root of
+	 *            the search.
+	 * @param d
+	 *            The directory reference describing what to look up.
+	 * @return The directory entry whose name is equal to the last part of the
+	 *         path in the directory reference; an empty path will retrieve the
+	 *         working directory handle itself.
+	 * @throws FilesystemAccessException
+	 *             If there is no such entry (or the directory isn't specified
+	 *             or isn't readable).
+	 */
 	private DirectoryEntry getDirEntry(TavernaRun run, DirEntryReference d)
 			throws FilesystemAccessException {
 		Directory dir = run.getWorkingDirectory();
 		DirectoryEntry found = dir;
 		for (String bit : d.path.split("/")) {
-			found = null;
-			if (dir == null)
-				throw new FilesystemAccessException("no such directory entry");
-			for (DirectoryEntry entry : dir.getContents()) {
-				if (entry.getName().equals(bit)) {
-					found = entry;
-					break;
-				}
-			}
-			if (found == null)
-				throw new FilesystemAccessException("no such directory entry");
-			if (found instanceof Directory) {
+			found = getDirEntry(bit, dir);
+			dir = null;
+			if (found instanceof Directory)
 				dir = (Directory) found;
-			} else {
-				dir = null;
-			}
 		}
 		return found;
 	}
 
+	/**
+	 * Get a named directory entry from a workflow run.
+	 * 
+	 * @param run
+	 *            The run whose working directory is to be used as the root of
+	 *            the search.
+	 * @param d
+	 *            The path segments describing what to look up.
+	 * @return The directory entry whose name is equal to the last part of the
+	 *         path; an empty path will retrieve the working directory handle
+	 *         itself.
+	 * @throws FilesystemAccessException
+	 *             If there is no such entry (or the directory isn't specified
+	 *             or isn't readable).
+	 */
 	DirectoryEntry getDirEntry(TavernaRun run, List<PathSegment> d)
 			throws FilesystemAccessException {
 		Directory dir = run.getWorkingDirectory();
 		DirectoryEntry found = dir;
+		// Must be nested loops; avoids problems with %-encoded "/" chars
 		for (PathSegment segment : d)
 			for (String bit : segment.getPath().split("/")) {
-				found = null;
-				if (dir == null)
-					throw new FilesystemAccessException(
-							"no such directory entry");
-				for (DirectoryEntry entry : dir.getContents()) {
-					if (entry.getName().equals(bit)) {
-						found = entry;
-						break;
-					}
-				}
-				if (found == null)
-					throw new FilesystemAccessException(
-							"no such directory entry");
-				if (found instanceof Directory) {
+				found = getDirEntry(bit, dir);
+				dir = null;
+				if (found instanceof Directory)
 					dir = (Directory) found;
-				} else {
-					dir = null;
-				}
 			}
 		return found;
 	}
 
+	/**
+	 * Get a named directory entry from a directory.
+	 * 
+	 * @param name
+	 *            The name of the entry; must be "<tt>/</tt>"-free.
+	 * @param dir
+	 *            The directory to look in.
+	 * @return The directory entry whose name is equal to the given name.
+	 * @throws FilesystemAccessException
+	 *             If there is no such entry (or the directory isn't specified
+	 *             or isn't readable).
+	 */
+	private DirectoryEntry getDirEntry(String name, Directory dir)
+			throws FilesystemAccessException {
+		if (dir == null)
+			throw new FilesystemAccessException("no such directory entry");
+		for (DirectoryEntry entry : dir.getContents())
+			if (entry.getName().equals(name))
+				return entry;
+		throw new FilesystemAccessException("no such directory entry");
+	}
+
+	/**
+	 * Gets the identity of the user currently accessing the webapp, which is
+	 * stored in a thread-safe way in the webapp's container's context.
+	 * 
+	 * @return The identity of the user accessing the webapp.
+	 */
 	Principal getPrincipal() {
 		Principal p = null;
 		if (jaxwsContext == null && jaxrsContext == null
@@ -1233,12 +1273,47 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		return p;
 	}
 
+	public static final String SUPER_ROLE = "tavernasuperuser";
+
+	boolean isSuperUser() {
+		if (jaxwsContext == null && jaxrsContext == null)
+			return false;
+		try {
+			if (jaxwsContext != null)
+				return jaxwsContext.isUserInRole(SUPER_ROLE);
+		} catch (NullPointerException e) {
+			if (logGetPrincipalFailures)
+				log.warn("failed to get user principal", e);
+		}
+		try {
+			if (jaxrsContext != null)
+				return jaxrsContext.isUserInRole(SUPER_ROLE);
+		} catch (NullPointerException e) {
+			if (logGetPrincipalFailures)
+				log.warn("failed to get user principal", e);
+		}
+		return false;
+	}
+
+	void permitUpdate(TavernaRun run) throws NoUpdateException {
+		if (isSuperUser())
+			return; // Superusers are fully authorized to access others things
+		policy.permitUpdate(getPrincipal(), run);
+	}
+
+	void permitDestroy(TavernaRun run) throws NoUpdateException {
+		if (isSuperUser())
+			return; // Superusers are fully authorized to access others things
+		policy.permitDestroy(getPrincipal(), run);
+	}
+
 	public void setLogGetPrincipalFailures(boolean logthem) {
 		logGetPrincipalFailures = logthem;
 	}
 
 	/**
-	 * @param stateModel the stateModel to set
+	 * @param stateModel
+	 *            the stateModel to set
 	 */
 	public void setStateModel(ManagementModel stateModel) {
 		this.stateModel = stateModel;
