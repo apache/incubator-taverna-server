@@ -364,7 +364,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	}
 
 	@Override
-	protected void finalize() {
+	protected void finalize() throws Throwable {
 		killFactory();
 		super.finalize();
 	}

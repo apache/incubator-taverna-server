@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
 
-	<bean id="localworker" class="org.taverna.server.master.localworker.ForkRunFactory"
+	<bean id="localworker.factory" class="org.taverna.server.master.localworker.ForkRunFactory"
 		scope="singleton" lazy-init="false" init-method="initFactory"
 		destroy-method="killFactory">
 		<description>
@@ -59,8 +59,23 @@
 		-->
 	</bean>
 
-	<alias name="localworker" alias="policy" />
-	<alias name="localworker" alias="runFactory" />
-	<alias name="localworker" alias="runCatalog" />
-	<alias name="localworker" alias="listenerFactory" />
+	<bean id="localworker.policy" class="org.taverna.server.master.localworker.PolicyImpl">
+		<description>
+			The implementation of the access control policy
+			supported by the localworker run engine.
+		</description>
+		<property name="state" ref="localworker.state" />
+	</bean>
+	<bean id="localworker.runDB" class="org.taverna.server.master.localworker.RunDatabase">
+		<description>
+			The implementation of the catalog of workflow runs
+			supported by the localworker run engine.
+		</description>
+		<property name="state" ref="localworker.state" />
+	</bean>
+
+	<alias name="localworker.policy" alias="policy" />
+	<alias name="localworker.runDB" alias="runCatalog" />
+	<alias name="localworker.factory" alias="runFactory" />
+	<alias name="localworker.factory" alias="listenerFactory" />
 </beans>
