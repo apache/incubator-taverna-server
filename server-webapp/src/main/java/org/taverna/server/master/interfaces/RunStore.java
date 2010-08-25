@@ -46,7 +46,9 @@ public interface RunStore {
 	 * List the runs that a particular user may access.
 	 * 
 	 * @param user
-	 *            Who wants to do the lookup.
+	 *            Who wants to do the lookup, or <code>null</code> if it is
+	 *            being done "by the system" when the full mapping should be
+	 *            returned.
 	 * @param p
 	 *            The general policy system context.
 	 * @return A mapping from run names to run instances.

@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.jws.WebService;
@@ -59,6 +60,7 @@ import org.taverna.server.master.exceptions.BadPropertyValueException;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoCreateException;
+import org.taverna.server.master.exceptions.NoDestroyException;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.UnknownRunException;
@@ -110,8 +112,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 * The XML serialization engine for workflows.
 	 */
 	private JAXBContext workflowSerializer;
-	/** Connection to the persistent state of this service. */
-	private ManagementModel stateModel;
 	/**
 	 * Whether to log failures during pricipal retrieval. Should be normally on
 	 * as it indicates a serious problem, but can be switched off for testing.
@@ -138,7 +138,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 */
 	@ManagedAttribute(description = "Current number of runs.")
 	public int getCurrentRunCount() {
-		return runStore.listRuns(null, null).size();
+		return runStore.listRuns(null, policy).size();
 	}
 
 	/**
@@ -146,7 +146,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 */
 	@ManagedAttribute(description = "Whether to write submitted workflows to the log.")
 	public boolean getLogIncomingWorkflows() {
-		return getStateModel().getLogIncomingWorkflows();
+		return stateModel.getLogIncomingWorkflows();
 	}
 
 	/**
@@ -155,7 +155,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 */
 	@ManagedAttribute(description = "Whether to write submitted workflows to the log.")
 	public void setLogIncomingWorkflows(boolean logIncomingWorkflows) {
-		getStateModel().setLogIncomingWorkflows(logIncomingWorkflows);
+		stateModel.setLogIncomingWorkflows(logIncomingWorkflows);
 	}
 
 	/**
@@ -164,7 +164,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 */
 	@ManagedAttribute(description = "Whether outgoing exceptions should be logged before being converted to responses.")
 	public boolean getLogOutgoingExceptions() {
-		return getStateModel().getLogOutgoingExceptions();
+		return stateModel.getLogOutgoingExceptions();
 	}
 
 	/**
@@ -174,7 +174,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 */
 	@ManagedAttribute(description = "Whether outgoing exceptions should be logged before being converted to responses.")
 	public void setLogOutgoingExceptions(boolean logOutgoing) {
-		getStateModel().setLogOutgoingExceptions(logOutgoing);
+		stateModel.setLogOutgoingExceptions(logOutgoing);
 	}
 
 	/**
@@ -182,7 +182,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 */
 	@ManagedAttribute(description = "Whether to permit any new workflow runs to be created; has no effect on existing runs.")
 	public boolean getAllowNewWorkflowRuns() {
-		return getStateModel().getAllowNewWorkflowRuns();
+		return stateModel.getAllowNewWorkflowRuns();
 	}
 
 	/**
@@ -191,8 +191,11 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 */
 	@ManagedAttribute(description = "Whether to permit any new workflow runs to be created; has no effect on existing runs.")
 	public void setAllowNewWorkflowRuns(boolean allowNewWorkflowRuns) {
-		getStateModel().setAllowNewWorkflowRuns(allowNewWorkflowRuns);
+		stateModel.setAllowNewWorkflowRuns(allowNewWorkflowRuns);
 	}
+
+	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	// STATE VARIABLES AND SPRING SETTERS
 
 	@Resource
 	private WebServiceContext jaxwsContext;
@@ -200,13 +203,15 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	private SecurityContext jaxrsContext;
 
 	/** Encapsulates the policies applied by this server. */
-	Policy policy;
+	private Policy policy;
 	/** A factory for workflow runs. */
-	RunFactory runFactory;
+	private RunFactory runFactory;
 	/** A storage facility for workflow runs. */
-	RunStore runStore;
+	private RunStore runStore;
 	/** A factory for event listeners to attach to workflow runs. */
-	ListenerFactory listenerFactory;
+	private ListenerFactory listenerFactory;
+	/** Connection to the persistent state of this service. */
+	private ManagementModel stateModel;
 
 	/**
 	 * @param policy
@@ -240,20 +245,26 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		this.runStore = runStore;
 	}
 
+	/**
+	 * @param stateModel
+	 *            The state model engine being installed by Spring.
+	 */
+	public void setStateModel(ManagementModel stateModel) {
+		this.stateModel = stateModel;
+	}
+
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	// REST INTERFACE
 
 	@Override
 	public ServerDescription describeService(UriInfo ui) {
 		invokes++;
-		return new ServerDescription(runStore.listRuns(getPrincipal(), policy),
-				ui);
+		return new ServerDescription(runs(), ui);
 	}
 
 	@Override
 	public RunList listUsersRuns(UriInfo ui) {
-		return new RunList(runStore.listRuns(getPrincipal(), policy), ui
-				.getAbsolutePathBuilder().path("{name}"));
+		return new RunList(runs(), ui.getAbsolutePathBuilder().path("{name}"));
 	}
 
 	@Override
@@ -306,9 +317,11 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			@Override
 			public Response destroy() throws NoUpdateException {
 				invokes++;
-				policy.permitDestroy(getPrincipal(), run);
-				runStore.unregisterRun(runName);
-				run.destroy();
+				try {
+					unregisterRun(runName, run);
+				} catch (UnknownRunException e) {
+					log.fatal("can't happen", e);
+				}
 				return noContent().build();
 			}
 
@@ -321,8 +334,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 							ListenerDefinition typeAndConfiguration, UriInfo ui)
 							throws NoUpdateException, NoListenerException {
 						invokes++;
-						permitUpdate(run);
-						String name = listenerFactory.makeListener(run,
+						String name = makeListener(run,
 								typeAndConfiguration.type,
 								typeAndConfiguration.configuration).getName();
 						return created(
@@ -410,13 +422,12 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			@Override
 			public String setExpiryTime(String expiry) throws NoUpdateException {
 				invokes++;
-				policy.permitDestroy(getPrincipal(), run);
 				try {
-					run.setExpiry(df().parse(expiry.trim()));
+					return df().format(
+							updateExpiry(run, df().parse(expiry.trim())));
 				} catch (ParseException e) {
 					throw new NoUpdateException(e.getMessage(), e);
 				}
-				return df().format(run.getExpiry());
 			}
 
 			@Override
@@ -763,10 +774,9 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	@Override
 	public RunReference[] listRuns() {
 		invokes++;
-		Principal p = getPrincipal();
 		ArrayList<RunReference> ws = new ArrayList<RunReference>();
 		UriBuilder ub = getRestfulRunReferenceBuilder();
-		for (String runName : runStore.listRuns(p, policy).keySet())
+		for (String runName : runs().keySet())
 			ws.add(new RunReference(runName, ub));
 		return ws.toArray(new RunReference[ws.size()]);
 	}
@@ -799,10 +809,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	public void destroyRun(String runName) throws UnknownRunException,
 			NoUpdateException {
 		invokes++;
-		TavernaRun w = getRun(runName);
-		permitUpdate(w);
-		runStore.unregisterRun(runName);
-		w.destroy();
+		unregisterRun(runName, null);
 	}
 
 	@Override
@@ -821,9 +828,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	public void setRunExpiry(String runName, Date d)
 			throws UnknownRunException, NoUpdateException {
 		invokes++;
-		TavernaRun w = getRun(runName);
-		policy.permitDestroy(getPrincipal(), w);
-		w.setExpiry(d);
+		updateExpiry(getRun(runName), d);
 	}
 
 	@Override
@@ -961,9 +966,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			String configuration) throws UnknownRunException,
 			NoUpdateException, NoListenerException {
 		invokes++;
-		TavernaRun w = getRun(runName);
-		permitUpdate(w);
-		return listenerFactory.makeListener(w, listenerType, configuration)
+		return makeListener(getRun(runName), listenerType, configuration)
 				.getName();
 	}
 
@@ -1079,9 +1082,9 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 
 	private String buildWorkflow(Workflow workflow, Principal p)
 			throws NoCreateException {
-		if (!getStateModel().getAllowNewWorkflowRuns())
+		if (!stateModel.getAllowNewWorkflowRuns())
 			throw new NoCreateException("run creation not currently enabled");
-		if (getStateModel().getLogIncomingWorkflows())
+		if (stateModel.getLogIncomingWorkflows())
 			try {
 				StringWriter sw = new StringWriter();
 				workflowSerializer.createMarshaller().marshal(workflow, sw);
@@ -1114,10 +1117,29 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 				"{uuid}");
 	}
 
+	Map<String, TavernaRun> runs() {
+		return runStore.listRuns(getPrincipal(), policy);
+	}
+
 	TavernaRun getRun(String runName) throws UnknownRunException {
 		if (isSuperUser())
 			return runStore.getRun(runName);
 		return runStore.getRun(getPrincipal(), policy, runName);
+	}
+
+	void unregisterRun(String runName, TavernaRun run)
+			throws NoDestroyException, UnknownRunException {
+		if (run == null)
+			run = getRun(runName);
+		policy.permitDestroy(getPrincipal(), run);
+		runStore.unregisterRun(runName);
+		run.destroy();
+	}
+
+	Date updateExpiry(TavernaRun run, Date target) throws NoDestroyException {
+		policy.permitDestroy(getPrincipal(), run);
+		run.setExpiry(target);
+		return run.getExpiry();
 	}
 
 	static Input getInput(TavernaRun run, String portName) {
@@ -1138,6 +1160,12 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			if (l.getName().equals(listenerName))
 				return l;
 		throw new NoListenerException();
+	}
+
+	Listener makeListener(TavernaRun run, String type, String config)
+			throws NoListenerException, NoUpdateException {
+		permitUpdate(run);
+		return listenerFactory.makeListener(run, type, config);
 	}
 
 	private Directory getDirectory(TavernaRun run, DirEntryReference d)
@@ -1273,6 +1301,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		return p;
 	}
 
+	/** The name of the role of the super-user. */
 	public static final String SUPER_ROLE = "tavernasuperuser";
 
 	boolean isSuperUser() {
@@ -1309,20 +1338,5 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 
 	public void setLogGetPrincipalFailures(boolean logthem) {
 		logGetPrincipalFailures = logthem;
-	}
-
-	/**
-	 * @param stateModel
-	 *            the stateModel to set
-	 */
-	public void setStateModel(ManagementModel stateModel) {
-		this.stateModel = stateModel;
-	}
-
-	/**
-	 * @return the stateModel
-	 */
-	public ManagementModel getStateModel() {
-		return stateModel;
 	}
 }

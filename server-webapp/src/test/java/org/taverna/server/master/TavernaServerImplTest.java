@@ -74,11 +74,11 @@ public class TavernaServerImplTest {
 		server = new TavernaServerImpl();
 		server.setLogGetPrincipalFailures(false);
 		server.setStateModel(new ManagementModel());
-		server.policy = policy = new MockPolicy();
-		server.runStore = store = new SimpleNonpersistentRunStore();
+		server.setPolicy(policy = new MockPolicy());
+		server.setRunStore(store = new SimpleNonpersistentRunStore());
 		store.setPolicy(policy);
-		server.runFactory = runFactory = new ExampleRun.Builder(1);
-		server.listenerFactory = lFactory = new SimpleListenerFactory();
+		server.setRunFactory(runFactory = new ExampleRun.Builder(1));
+		server.setListenerFactory(lFactory = new SimpleListenerFactory());
 		lFactory
 				.setBuilders(singletonMap(
 						"foo",
