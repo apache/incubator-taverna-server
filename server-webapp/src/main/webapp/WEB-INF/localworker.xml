@@ -11,6 +11,7 @@
 			localworker case.
 		</description>
 		<property name="state" ref="localworker.state" />
+		<property name="runDB" ref="localworker.runDB" />
 	</bean>
 
 	<bean id="localworker.state" class="org.taverna.server.master.localworker.LocalWorkerState"
@@ -47,10 +48,14 @@
 				worker. Defaults to the executable used to run the hosting
 				environment.</description>
 		</property>
+		-->
+		<!--
 		<property name="serverWorkerJar">
 			<description>The full path to the executable JAR file containing the
 				implementation of the server worker.</description>
 		</property>
+		-->
+		<!--
 		<property name="executeWorkflowScript">
 			<description>The full path to the executeworkflow.sh in either the
 				Taverna 2 Workbench distribution or the Taverna 2 Command Line
@@ -65,13 +70,16 @@
 			supported by the localworker run engine.
 		</description>
 		<property name="state" ref="localworker.state" />
+		<property name="runDB" ref="localworker.runDB" />
 	</bean>
-	<bean id="localworker.runDB" class="org.taverna.server.master.localworker.RunDatabase">
+	<bean id="localworker.runDB" class="org.taverna.server.master.localworker.RunDatabase"
+		destroy-method="shutdown">
 		<description>
 			The implementation of the catalog of workflow runs
 			supported by the localworker run engine.
 		</description>
 		<property name="state" ref="localworker.state" />
+		<property name="persistenceManagerFactory" ref="pmf" />
 	</bean>
 
 	<alias name="localworker.policy" alias="policy" />

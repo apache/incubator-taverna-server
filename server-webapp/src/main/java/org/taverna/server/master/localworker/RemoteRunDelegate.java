@@ -5,6 +5,10 @@ import static org.taverna.server.master.localworker.AbstractRemoteRunFactory.log
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.rmi.MarshalledObject;
 import java.rmi.RemoteException;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -43,15 +47,19 @@ import org.taverna.server.master.interfaces.TavernaSecurityContext;
  * 
  * @author Donal Fellows
  */
-public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext {
+public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext,
+		Serializable {
 	private Date creationInstant;
 	private Workflow workflow;
 	private Date expiry;
-	private Principal creator;
-	RemoteSingleRun run;
+	private transient Principal creator;
+	transient RemoteSingleRun run;
 
-	RemoteRunDelegate(Date creationInstant, Principal creator, Workflow workflow,
-			RemoteSingleRun rsr, int defaultLifetime) {
+	RemoteRunDelegate(Date creationInstant, Principal creator,
+			Workflow workflow, RemoteSingleRun rsr, int defaultLifetime) {
+		if (rsr == null) {
+			throw new IllegalArgumentException("remote run must not be null");
+		}
 		this.creationInstant = creationInstant;
 		this.creator = creator;
 		this.workflow = workflow;
@@ -74,6 +82,15 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext {
 					+ "; not applicable remotely!");
 	}
 
+	public Listener makeListener(String type, String config)
+			throws NoListenerException {
+		try {
+			return new ListenerDelegate(run.makeListener(type, config));
+		} catch (RemoteException e) {
+			throw new NoListenerException("failed to make listener", e);
+		}
+	}
+
 	@Override
 	public void destroy() {
 		try {
@@ -83,7 +100,7 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext {
 		}
 	}
 
-	static class ListenerDelegate implements Listener {
+	private static class ListenerDelegate implements Listener {
 		private RemoteListener r;
 		String conf;
 
@@ -224,7 +241,7 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext {
 		}
 	}
 
-	abstract static class DEDelegate implements DirectoryEntry {
+	private abstract static class DEDelegate implements DirectoryEntry {
 		private RemoteDirectoryEntry entry;
 		private String name;
 
@@ -272,7 +289,8 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext {
 		}
 	}
 
-	static class DirectoryDelegate extends DEDelegate implements Directory {
+	private static class DirectoryDelegate extends DEDelegate implements
+			Directory {
 		private RemoteDirectory rd;
 
 		DirectoryDelegate(RemoteDirectory dir) {
@@ -378,7 +396,7 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext {
 		}
 	}
 
-	static class FileDelegate extends DEDelegate implements File {
+	private static class FileDelegate extends DEDelegate implements File {
 		RemoteFile rf;
 
 		FileDelegate(RemoteFile f) {
@@ -461,7 +479,7 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext {
 					"filename may not refer to parent");
 	}
 
-	class RunInput implements Input {
+	private static class RunInput implements Input {
 		private final RemoteInput i;
 
 		RunInput(RemoteInput remote) {
@@ -606,5 +624,25 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext {
 			log.info("failed to get finish timestamp", e);
 			return null;
 		}
+	}
+
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		out.defaultWriteObject();
+		out.writeUTF(creator.getName());
+		out.writeObject(new MarshalledObject<RemoteSingleRun>(run));
+	}
+
+	@SuppressWarnings("unchecked")
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+		in.defaultReadObject();
+		final String creatorName = in.readUTF();
+		creator = new Principal() {
+			@Override
+			public String getName() {
+				return creatorName;
+			}
+		};
+		run = ((MarshalledObject<RemoteSingleRun>) in.readObject()).get();
 	}
 }

@@ -4,26 +4,16 @@ import static java.io.File.separator;
 import static java.lang.System.getProperty;
 import static java.rmi.registry.Registry.REGISTRY_PORT;
 import static org.taverna.server.master.localworker.LocalWorkerManagementState.KEY;
+import static org.taverna.server.master.localworker.LocalWorkerManagementState.makeInstance;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
-import javax.jdo.Query;
-import javax.jdo.annotations.Key;
 import javax.jdo.annotations.PersistenceAware;
-import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.Value;
 
+import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.common.Status;
-import org.taverna.server.master.exceptions.NoDestroyException;
-import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.localworker.PersistentContext.Action;
 
 /**
  * The persistent state of a local worker factory.
@@ -38,74 +28,18 @@ public class LocalWorkerState {
 	 */
 	public static final String SUBPROCESS_IMPLEMENTATION_JAR = "util/server.worker.jar";
 
-	private interface Action<T extends Throwable> {
-		public void act() throws T;
-	}
-
-	private interface Function<R, T extends Throwable> {
-		public R act() throws T;
-	}
-
-	@PersistenceAware
-	private class PersistentContext {
-		private PersistenceManager pm;
-
-		PersistentContext(PersistenceManagerFactory persistenceManagerFactory) {
-			pm = persistenceManagerFactory.getPersistenceManager();
-		}
-
-		@SuppressWarnings("unchecked")
-		<T> T get(Class<T> cls, int id) {
-			Query q = pm.newQuery(RunConnections.class, "id == " + id);
-			Collection<T> results = (Collection<T>) q.execute();
-			if (!results.isEmpty()) {
-				return results.iterator().next();
-			}
-			return null;
-		}
-
-		<T extends Throwable> void xact(Action<T> act) throws T {
-			pm.currentTransaction().begin();
-			boolean ok = false;
-			try {
-				act.act();
-				pm.currentTransaction().commit();
-				ok = true;
-			} finally {
-				if (!ok)
-					pm.currentTransaction().rollback();
-			}
-		}
-
-		<R, T extends Throwable> R xact(Function<R, T> act) throws T {
-			pm.currentTransaction().begin();
-			boolean ok = false;
-			try {
-				R r = act.act();
-				pm.currentTransaction().commit();
-				ok = true;
-				return r;
-			} finally {
-				if (!ok)
-					pm.currentTransaction().rollback();
-			}
-		}
-
-		<R> R persist(R value) {
-			return pm.makePersistent(value);
-		}
-	}
-
 	/**
 	 * @param persistenceManagerFactory
 	 *            The JDO engine to use for managing persistence of the state.
 	 */
+	@Required
 	public void setPersistenceManagerFactory(
 			PersistenceManagerFactory persistenceManagerFactory) {
-		ctx = new PersistentContext(persistenceManagerFactory);
+		ctx = new PersistentContext<LocalWorkerManagementState>(
+				persistenceManagerFactory);
 	}
 
-	PersistentContext ctx;
+	PersistentContext<LocalWorkerManagementState> ctx;
 
 	/** Initial lifetime of runs, in minutes. */
 	int defaultLifetime;
@@ -351,147 +285,31 @@ public class LocalWorkerState {
 
 	// --------------------------------------------------------------
 
-	public interface PerRunCallback<T extends Throwable> {
-		public void doit(String name, TavernaRun run) throws T;
-	}
-
-	public interface RemovalFilter {
-		public boolean test(String name, TavernaRun run);
-	}
-
-	private interface A<T extends Throwable> {
-		public void a(Map<String, TavernaRun> runs) throws T;
-	}
-
-	private interface F<R, T extends Throwable> {
-		public R f(Map<String, TavernaRun> runs) throws T;
-	}
-
-	private <R, T extends Throwable> R xact(final F<R, T> fun) throws T {
-		return ctx.xact(new Function<R, T>() {
-			@Override
-			public R act() throws T {
-				RunConnections c = ctx.get(RunConnections.class,
-						RunConnections.KEY);
-				if (c != null)
-					return fun.f(c.getRuns());
-				c = new RunConnections();
-				c.id = RunConnections.KEY;
-				c.setRuns(new HashMap<String, TavernaRun>());
-				return fun.f(ctx.persist(c).getRuns());
-			}
-		});
-	}
-
-	private <T extends Throwable> void xact(final A<T> act) throws T {
-		ctx.xact(new Action<T>() {
-			@Override
-			public void act() throws T {
-				RunConnections c = ctx.get(RunConnections.class,
-						RunConnections.KEY);
-				if (c != null) {
-					act.a(c.getRuns());
-				} else {
-					c = new RunConnections();
-					c.id = RunConnections.KEY;
-					c.setRuns(new HashMap<String, TavernaRun>());
-					act.a(ctx.persist(c).getRuns());
-				}
-			}
-		});
-	}
-
-	public int countRuns() {
-		return xact(new F<Integer, RuntimeException>() {
-			@Override
-			public Integer f(Map<String, TavernaRun> runs) {
-				return runs.size();
-			}
-		});
-	}
-
-	public <T extends Throwable> void iterateOverRuns(final PerRunCallback<T> cb)
-			throws T {
-		xact(new A<T>() {
-			@Override
-			public void a(Map<String, TavernaRun> runs) throws T {
-				for (Map.Entry<String, TavernaRun> e : runs.entrySet()) {
-					cb.doit(e.getKey(), e.getValue());
-				}
-			}
-		});
-	}
-
-	public void add(final String name, final TavernaRun run) {
-		xact(new A<RuntimeException>() {
-			@Override
-			public void a(Map<String, TavernaRun> runs) {
-				runs.put(name, run);
-			}
-		});
-	}
-
-	public void remove(final String name) {
-		xact(new A<RuntimeException>() {
-			@Override
-			public void a(Map<String, TavernaRun> runs) {
-				runs.remove(name);
-			}
-		});
-	}
-
-	public TavernaRun get(final String name) {
-		return xact(new F<TavernaRun, RuntimeException>() {
-			@Override
-			public TavernaRun f(Map<String, TavernaRun> runs) {
-				return runs.get(name);
-			}
-		});
-	}
-
-	public void removeWhen(final RemovalFilter filter) {
-		xact(new A<RuntimeException>() {
-			@Override
-			public void a(Map<String, TavernaRun> runs) {
-				Set<String> toGo = new HashSet<String>();
-				for (Map.Entry<String, TavernaRun> e : runs.entrySet())
-					if (filter.test(e.getKey(), e.getValue()))
-						toGo.add(e.getKey());
-				for (String key : toGo)
-					try {
-						runs.remove(key).destroy();
-					} catch (NoDestroyException e1) {
-					}
-			}
-		});
-	}
-
-	// --------------------------------------------------------------
-
 	private boolean loadedState;
 
 	public void load() {
 		if (loadedState || ctx == null)
 			return;
-		ctx.xact(new Action<RuntimeException>() {
+		ctx.inTransaction(new Action<RuntimeException>() {
 			@Override
 			public void act() {
-				LocalWorkerManagementState state = ctx.get(
+				LocalWorkerManagementState state = ctx.getByID(
 						LocalWorkerManagementState.class, KEY);
-				if (state != null) {
-					defaultLifetime = state.getDefaultLifetime();
-					executeWorkflowScript = state.getExecuteWorkflowScript();
-					extraArgs = state.getExtraArgs();
-					factoryProcessNamePrefix = state
-							.getFactoryProcessNamePrefix();
-					javaBinary = state.getJavaBinary();
-					maxRuns = state.getMaxRuns();
-					serverWorkerJar = state.getServerWorkerJar();
-					sleepMS = state.getSleepMS();
-					waitSeconds = state.getWaitSeconds();
-					registryHost = state.getRegistryHost();
-					registryPort = state.getRegistryPort();
+				if (state == null) {
+					return;
 				}
+
+				defaultLifetime = state.getDefaultLifetime();
+				executeWorkflowScript = state.getExecuteWorkflowScript();
+				extraArgs = state.getExtraArgs();
+				factoryProcessNamePrefix = state.getFactoryProcessNamePrefix();
+				javaBinary = state.getJavaBinary();
+				maxRuns = state.getMaxRuns();
+				serverWorkerJar = state.getServerWorkerJar();
+				sleepMS = state.getSleepMS();
+				waitSeconds = state.getWaitSeconds();
+				registryHost = state.getRegistryHost();
+				registryPort = state.getRegistryPort();
 			}
 		});
 		loadedState = true;
@@ -500,40 +318,26 @@ public class LocalWorkerState {
 	private void store() {
 		if (ctx == null)
 			return;
-		ctx.xact(new Action<RuntimeException>() {
+		ctx.inTransaction(new Action<RuntimeException>() {
 			@Override
 			public void act() {
-				LocalWorkerManagementState state = ctx.get(
+				LocalWorkerManagementState state = ctx.getByID(
 						LocalWorkerManagementState.class, KEY);
 				if (state == null) {
-					state = new LocalWorkerManagementState();
-					// save state
-					state.id = KEY; // whatever...
-					state.setDefaultLifetime(defaultLifetime);
-					state.setExecuteWorkflowScript(executeWorkflowScript);
-					state.setExtraArgs(extraArgs);
-					state.setFactoryProcessNamePrefix(factoryProcessNamePrefix);
-					state.setJavaBinary(javaBinary);
-					state.setMaxRuns(maxRuns);
-					state.setServerWorkerJar(serverWorkerJar);
-					state.setSleepMS(sleepMS);
-					state.setWaitSeconds(waitSeconds);
-					state.setRegistryHost(registryHost);
-					state.setRegistryPort(registryPort);
-					state = ctx.persist(state);
-				} else {
-					state.setDefaultLifetime(defaultLifetime);
-					state.setExecuteWorkflowScript(executeWorkflowScript);
-					state.setExtraArgs(extraArgs);
-					state.setFactoryProcessNamePrefix(factoryProcessNamePrefix);
-					state.setJavaBinary(javaBinary);
-					state.setMaxRuns(maxRuns);
-					state.setServerWorkerJar(serverWorkerJar);
-					state.setSleepMS(sleepMS);
-					state.setWaitSeconds(waitSeconds);
-					state.setRegistryHost(registryHost);
-					state.setRegistryPort(registryPort);
+					state = ctx.persist(makeInstance());
 				}
+
+				state.setDefaultLifetime(defaultLifetime);
+				state.setExecuteWorkflowScript(executeWorkflowScript);
+				state.setExtraArgs(extraArgs);
+				state.setFactoryProcessNamePrefix(factoryProcessNamePrefix);
+				state.setJavaBinary(javaBinary);
+				state.setMaxRuns(maxRuns);
+				state.setServerWorkerJar(serverWorkerJar);
+				state.setSleepMS(sleepMS);
+				state.setWaitSeconds(waitSeconds);
+				state.setRegistryHost(registryHost);
+				state.setRegistryPort(registryPort);
 			}
 		});
 		loadedState = true;
@@ -542,10 +346,16 @@ public class LocalWorkerState {
 
 @javax.jdo.annotations.PersistenceCapable
 class LocalWorkerManagementState {
-	@PrimaryKey
-	protected int id;
+	static LocalWorkerManagementState makeInstance() {
+		LocalWorkerManagementState o = new LocalWorkerManagementState();
+		o.ID = KEY;
+		return o;
+	}
 
-	public static final int KEY = 32;
+	@PrimaryKey(column = "ID")
+	protected int ID;
+
+	static final int KEY = 32;
 
 	@Persistent
 	private int defaultLifetime;
@@ -555,7 +365,7 @@ class LocalWorkerManagementState {
 	private String factoryProcessNamePrefix;
 	@Persistent
 	private String executeWorkflowScript;
-	@Persistent
+	@Persistent(serialized = "true")
 	private String[] extraArgs;
 	@Persistent
 	private int waitSeconds;
@@ -706,7 +516,8 @@ class LocalWorkerManagementState {
 	}
 
 	/**
-	 * @param registryPort the registryPort to set
+	 * @param registryPort
+	 *            the registryPort to set
 	 */
 	public void setRegistryPort(int registryPort) {
 		this.registryPort = registryPort;
@@ -720,7 +531,8 @@ class LocalWorkerManagementState {
 	}
 
 	/**
-	 * @param registryHost the registryHost to set
+	 * @param registryHost
+	 *            the registryHost to set
 	 */
 	public void setRegistryHost(String registryHost) {
 		this.registryHost = registryHost;
@@ -731,33 +543,5 @@ class LocalWorkerManagementState {
 	 */
 	public String getRegistryHost() {
 		return registryHost;
-	}
-}
-
-@PersistenceCapable
-class RunConnections {
-	@PrimaryKey
-	protected int id;
-
-	public static final int KEY = 1;
-
-	@Persistent
-	@Key(table = "RUN_CONNECTIONS", unique = "true")
-	@Value(serialized = "true")
-	private Map<String, TavernaRun> runs;
-
-	/**
-	 * @param runs
-	 *            the runs to set
-	 */
-	public void setRuns(Map<String, TavernaRun> runs) {
-		this.runs = runs;
-	}
-
-	/**
-	 * @return the runs
-	 */
-	public Map<String, TavernaRun> getRuns() {
-		return runs == null ? new HashMap<String, TavernaRun>() : runs;
 	}
 }

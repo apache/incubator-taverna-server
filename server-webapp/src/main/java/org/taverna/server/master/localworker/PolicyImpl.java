@@ -5,6 +5,7 @@ import static java.util.Collections.emptyList;
 import java.security.Principal;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoDestroyException;
@@ -21,12 +22,16 @@ import org.taverna.server.master.interfaces.TavernaRun;
  */
 class PolicyImpl implements Policy {
 	private LocalWorkerState state;
+	private RunDatabase runDB;
 
-	/**
-	 * @param state the state to set
-	 */
+	@Required
 	public void setState(LocalWorkerState state) {
 		this.state = state;
+	}
+
+	@Required
+	public void setRunDB(RunDatabase runDB) {
+		this.runDB = runDB;
 	}
 
 	@Override
@@ -55,7 +60,7 @@ class PolicyImpl implements Policy {
 		if (user == null)
 			throw new NoCreateException(
 					"anonymous workflow creation not allowed");
-		if (state.countRuns() >= getMaxRuns())
+		if (runDB.countRuns() >= getMaxRuns())
 			throw new NoCreateException("server load exceeded; please wait");
 	}
 

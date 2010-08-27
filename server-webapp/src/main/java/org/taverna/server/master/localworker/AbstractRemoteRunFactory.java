@@ -20,6 +20,7 @@ import javax.xml.ws.Holder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
@@ -30,7 +31,7 @@ import org.taverna.server.master.factories.ListenerFactory;
 import org.taverna.server.master.factories.RunFactory;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.localworker.LocalWorkerState.PerRunCallback;
+import org.taverna.server.master.localworker.RunDatabase.PerRunCallback;
 
 /**
  * Bridge to remote runs via RMI.
@@ -95,7 +96,18 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 * install.
 	 */
 	public static final String SECURITY_POLICY_FILE = "security.policy";
-	public LocalWorkerState state;
+	LocalWorkerState state;
+	private RunDatabase runDB;
+
+	@Required
+	public void setState(LocalWorkerState state) {
+		this.state = state;
+	}
+
+	@Required
+	public void setRunDB(RunDatabase runDB) {
+		this.runDB = runDB;
+	}
 
 	@ManagedAttribute(description = "The host holding the RMI registry to communicate via.")
 	public String getRegistryHost() {
@@ -164,7 +176,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		final Holder<List<String>> types = new Holder<List<String>>();
 		types.value = emptyList();
 		try {
-			state.iterateOverRuns(new PerRunCallback<RemoteException>() {
+			runDB.iterateOverRuns(new PerRunCallback<RemoteException>() {
 				@Override
 				public void doit(String name, TavernaRun run)
 						throws RemoteException {
@@ -182,13 +194,8 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	@Override
 	public Listener makeListener(TavernaRun run, String listenerType,
 			String configuration) throws NoListenerException {
-		try {
-			return new RemoteRunDelegate.ListenerDelegate(
-					((RemoteRunDelegate) run).run.makeListener(listenerType,
-							configuration));
-		} catch (RemoteException e) {
-			throw new NoListenerException("failed to make listener", e);
-		}
+		return ((RemoteRunDelegate) run).makeListener(listenerType,
+				configuration);
 	}
 
 	@Override
@@ -226,7 +233,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	@ManagedAttribute(description = "The names of the current runs.", currencyTimeLimit = 5)
 	public String[] getCurrentRunNames() {
 		final List<String> names = new ArrayList<String>();
-		state.iterateOverRuns(new PerRunCallback<RuntimeException>() {
+		runDB.iterateOverRuns(new PerRunCallback<RuntimeException>() {
 			@Override
 			public void doit(String name, TavernaRun run) {
 				names.add(name);

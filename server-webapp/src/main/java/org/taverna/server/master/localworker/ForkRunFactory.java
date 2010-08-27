@@ -41,10 +41,6 @@ import org.taverna.server.master.exceptions.NoCreateException;
 @ManagedResource(objectName = "Taverna:group=Server,name=ForkRunFactory", description = "The factory for simple singleton forked run.")
 public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		ServletContextAware {
-	public void setState(LocalWorkerState state) {
-		this.state = state;
-	}
-
 	private JAXBContext context;
 	private int lastStartupCheckCount;
 	private Integer lastExitCode;
