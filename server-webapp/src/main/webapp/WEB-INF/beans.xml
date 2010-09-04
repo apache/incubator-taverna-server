@@ -27,7 +27,7 @@
 		<property name="stateModel" ref="webapp.state" />
 	</bean>
 
-	<bean id="webapp.state" class="org.taverna.server.master.ManagementModel"
+	<bean id="webapp.state" class="org.taverna.server.master.ManagementState"
 		init-method="load">
 		<description>The initial state of the webapp.</description>
 		<property name="logIncomingWorkflows" value="false" />

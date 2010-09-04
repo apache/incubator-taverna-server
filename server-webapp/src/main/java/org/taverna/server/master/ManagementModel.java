@@ -10,9 +10,46 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+public interface ManagementModel {
+	/**
+	 * @return whether we allow the creation of new workflow runs.
+	 */
+	public boolean getAllowNewWorkflowRuns();
+
+	/**
+	 * @return whether we should log all workflows sent to us.
+	 */
+	public boolean getLogIncomingWorkflows();
+
+	/**
+	 * @return whether outgoing exceptions should be logged before being
+	 *         converted to responses.
+	 */
+	public boolean getLogOutgoingExceptions();
+
+	/**
+	 * @param logIncomingWorkflows
+	 *            whether we should log all workflows sent to us.
+	 */
+	public void setLogIncomingWorkflows(boolean logIncomingWorkflows);
+
+	/**
+	 * @param allowNewWorkflowRuns
+	 *            whether we allow the creation of new workflow runs.
+	 */
+	public void setAllowNewWorkflowRuns(boolean allowNewWorkflowRuns);
+
+	/**
+	 * @param logOutgoingExceptions
+	 *            whether outgoing exceptions should be logged before being
+	 *            converted to responses.
+	 */
+	public void setLogOutgoingExceptions(boolean logOutgoingExceptions);
+}
+
 /** The persistent, manageable state of the Taverna Server web application. */
 @PersistenceAware
-public class ManagementModel {
+class ManagementState implements ManagementModel {
 	/**
 	 * @param persistenceManagerFactory
 	 *            The JDO engine to use for managing persistence of the state.
@@ -37,54 +74,37 @@ public class ManagementModel {
 	 */
 	private boolean logOutgoingExceptions = false;
 
-	/**
-	 * @param logIncomingWorkflows
-	 *            whether we should log all workflows sent to us.
-	 */
+	@Override
 	public void setLogIncomingWorkflows(boolean logIncomingWorkflows) {
 		this.logIncomingWorkflows = logIncomingWorkflows;
 		store();
 	}
 
-	/**
-	 * @return whether we should log all workflows sent to us.
-	 */
+	@Override
 	public boolean getLogIncomingWorkflows() {
 		load();
 		return logIncomingWorkflows;
 	}
 
-	/**
-	 * @param allowNewWorkflowRuns
-	 *            whether we allow the creation of new workflow runs.
-	 */
+	@Override
 	public void setAllowNewWorkflowRuns(boolean allowNewWorkflowRuns) {
 		this.allowNewWorkflowRuns = allowNewWorkflowRuns;
 		store();
 	}
 
-	/**
-	 * @return whether we allow the creation of new workflow runs.
-	 */
+	@Override
 	public boolean getAllowNewWorkflowRuns() {
 		load();
 		return allowNewWorkflowRuns;
 	}
 
-	/**
-	 * @param logOutgoingExceptions
-	 *            whether outgoing exceptions should be logged before being
-	 *            converted to responses.
-	 */
+	@Override
 	public void setLogOutgoingExceptions(boolean logOutgoingExceptions) {
 		this.logOutgoingExceptions = logOutgoingExceptions;
 		store();
 	}
 
-	/**
-	 * @return whether outgoing exceptions should be logged before being
-	 *         converted to responses.
-	 */
+	@Override
 	public boolean getLogOutgoingExceptions() {
 		load();
 		return logOutgoingExceptions;
@@ -154,8 +174,8 @@ public class ManagementModel {
 		}
 	}
 
-	@PersistenceCapable(table="MANAGEMENTMODEL__WEBAPPSTATE")
-	static class WebappState {
+	@PersistenceCapable(table="MANAGEMENTSTATE__WEBAPPSTATE")
+	static class WebappState implements ManagementModel {
 		@PrimaryKey
 		protected int id;
 
@@ -177,6 +197,7 @@ public class ManagementModel {
 		/**
 		 * @param logIncomingWorkflows the logIncomingWorkflows to set
 		 */
+		@Override
 		public void setLogIncomingWorkflows(boolean logIncomingWorkflows) {
 			this.logIncomingWorkflows = logIncomingWorkflows;
 		}
@@ -184,6 +205,7 @@ public class ManagementModel {
 		/**
 		 * @return the logIncomingWorkflows
 		 */
+		@Override
 		public boolean getLogIncomingWorkflows() {
 			return logIncomingWorkflows;
 		}
@@ -191,6 +213,7 @@ public class ManagementModel {
 		/**
 		 * @param allowNewWorkflowRuns the allowNewWorkflowRuns to set
 		 */
+		@Override
 		public void setAllowNewWorkflowRuns(boolean allowNewWorkflowRuns) {
 			this.allowNewWorkflowRuns = allowNewWorkflowRuns;
 		}
@@ -198,6 +221,7 @@ public class ManagementModel {
 		/**
 		 * @return the allowNewWorkflowRuns
 		 */
+		@Override
 		public boolean getAllowNewWorkflowRuns() {
 			return allowNewWorkflowRuns;
 		}
@@ -205,6 +229,7 @@ public class ManagementModel {
 		/**
 		 * @param logOutgoingExceptions the logOutgoingExceptions to set
 		 */
+		@Override
 		public void setLogOutgoingExceptions(boolean logOutgoingExceptions) {
 			this.logOutgoingExceptions = logOutgoingExceptions;
 		}
@@ -212,6 +237,7 @@ public class ManagementModel {
 		/**
 		 * @return the logOutgoingExceptions
 		 */
+		@Override
 		public boolean getLogOutgoingExceptions() {
 			return logOutgoingExceptions;
 		}

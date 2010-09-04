@@ -73,7 +73,34 @@ public class TavernaServerImplTest {
 		// Wire everything up; ought to be done with Spring, but this works...
 		server = new TavernaServerImpl();
 		server.setLogGetPrincipalFailures(false);
-		server.setStateModel(new ManagementModel());
+		server.setStateModel(new ManagementModel() {
+			@Override
+			public boolean getAllowNewWorkflowRuns() {
+				return true;
+			}
+
+			@Override
+			public boolean getLogIncomingWorkflows() {
+				return false;
+			}
+
+			@Override
+			public boolean getLogOutgoingExceptions() {
+				return false;
+			}
+
+			@Override
+			public void setAllowNewWorkflowRuns(boolean allowNewWorkflowRuns) {
+			}
+
+			@Override
+			public void setLogIncomingWorkflows(boolean logIncomingWorkflows) {
+			}
+
+			@Override
+			public void setLogOutgoingExceptions(boolean logOutgoingExceptions) {
+			}
+		});
 		server.setPolicy(policy = new MockPolicy());
 		server.setRunStore(store = new SimpleNonpersistentRunStore());
 		store.setPolicy(policy);

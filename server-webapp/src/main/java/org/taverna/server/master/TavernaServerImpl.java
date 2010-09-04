@@ -667,7 +667,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		}
 
 		private boolean matchType(MediaType a, MediaType b) {
-			log.info("comparing " + a.getType() + "/" + a.getSubtype()
+			log.debug("comparing " + a.getType() + "/" + a.getSubtype()
 					+ " and " + b.getType() + "/" + b.getSubtype());
 			return (a.isWildcardType() || b.isWildcardType() || a.getType()
 					.equals(b.getType()))
