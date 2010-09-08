@@ -1,5 +1,6 @@
 package org.taverna.server.localworker.impl;
 
+import static java.lang.System.arraycopy;
 import static org.apache.commons.io.FileUtils.forceDelete;
 
 import java.io.File;
@@ -37,17 +38,31 @@ public class FileDelegate extends UnicastRemoteObject implements RemoteFile {
 	}
 
 	@Override
-	public byte[] getContents() throws IOException {
+	public byte[] getContents(int offset, int length) throws IOException {
+		if (length == -1)
+			length = (int) (file.length() - offset); 
+		if (length < 0 || length > 1024*64)
+			length = 1024*64;
+		byte[] buffer = new byte[length];
 		FileInputStream fis = null;
+		int read;
 		try {
 			fis = new FileInputStream(file);
-			byte[] buffer = new byte[(int) file.length()];
-			fis.read(buffer);
-			return buffer;
+			if (offset > 0)
+				fis.skip(offset);
+			read = fis.read(buffer);
 		} finally {
 			if (fis != null)
 				fis.close();
 		}
+		if (read <= 0)
+			return new byte[0];
+		if (read < buffer.length) {
+			byte[] shortened = new byte[read];
+			arraycopy(buffer, 0, shortened, 0, read);
+			return shortened;
+		}
+		return buffer;
 	}
 
 	@Override

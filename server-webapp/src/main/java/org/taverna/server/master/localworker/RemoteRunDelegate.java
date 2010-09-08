@@ -390,7 +390,18 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext,
 				} else {
 					RemoteFile rf = (RemoteFile) rde;
 					zos.putNextEntry(new ZipEntry(name));
-					zos.write(rf.getContents());
+					try {
+						int off = 0;
+						while (true) {
+							byte[] c = rf.getContents(off, 64 * 1024);
+							if (c == null || c.length == 0)
+								break;
+							zos.write(c);
+							off += c.length;
+						}
+					} finally {
+						zos.closeEntry();
+					}
 				}
 			}
 		}
@@ -405,9 +416,10 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext,
 		}
 
 		@Override
-		public byte[] getContents() throws FilesystemAccessException {
+		public byte[] getContents(int offset, int length)
+				throws FilesystemAccessException {
 			try {
-				return rf.getContents();
+				return rf.getContents(offset, length);
 			} catch (IOException e) {
 				throw new FilesystemAccessException(
 						"failed to read file contents", e);

@@ -67,6 +67,7 @@
 			<ref bean="ExceptionProvider.NoUpdate" />
 			<ref bean="ExceptionProvider.UnknownRun" />
 			<ref bean="ExceptionProvider.JAXBException" />
+			<ref bean="MessagingProvider.File" />
 		</jaxrs:providers>
 	</jaxrs:server>
 	<bean id="ExceptionProvider.BadPropertyValue" class="org.taverna.server.master.rest.BadPropertyValueHandler">
@@ -95,6 +96,9 @@
 	</bean>
 	<bean id="ExceptionProvider.JAXBException" class="org.taverna.server.master.rest.JAXBExceptionHandler">
 		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="MessagingProvider.File" class="org.taverna.server.master.rest.FileMessageHandler">
+		<property name="maxChunkSize" value="65536" />
 	</bean>
 
 	<!--

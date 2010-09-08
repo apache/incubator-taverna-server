@@ -3,19 +3,25 @@ package org.taverna.server.master.interfaces;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 
 /**
- * Represents a file in the working directory of a workflow instance run, or
- * in some sub-directory of it.
+ * Represents a file in the working directory of a workflow instance run, or in
+ * some sub-directory of it.
  * 
  * @author Donal Fellows
  * @see Directory
  */
 public interface File extends DirectoryEntry {
 	/**
-	 * @return The literal byte contents of the file.
+	 * @param offset
+	 *            Where in the file to start reading.
+	 * @param length
+	 *            The length of file to read.
+	 * @return The literal byte contents of the section of the file, or null if
+	 *         the section doesn't exist.
 	 * @throws FilesystemAccessException
 	 *             If the read of the file goes wrong.
 	 */
-	public byte[] getContents() throws FilesystemAccessException;
+	public byte[] getContents(int offset, int length)
+			throws FilesystemAccessException;
 
 	/**
 	 * Write the data to the file, totally replacing what was there before.
