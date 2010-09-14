@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.junit.After;
 import org.junit.Before;
@@ -76,17 +77,26 @@ public class LocalWorkerTest {
 
 		@Override
 		public void initWorker(String executeWorkflowCommand, String workflow,
-				File workingDir, String inputBaclava,
-				Map<String, String> inputFiles,
-				Map<String, String> inputValues, String outputBaclava)
-				throws Exception {
+				File workingDir, File inputBaclava,
+				Map<String, File> inputFiles, Map<String, String> inputValues,
+				File outputBaclava) throws Exception {
 			events.add("init[");
 			events.add(executeWorkflowCommand);
 			events.add(workflow);
-			events.add(Integer.toString(workingDir.toString().length()));
-			events.add(inputFiles.toString());
-			events.add(inputValues.toString());
-			events.add(outputBaclava == null ? "<null>" : outputBaclava);
+			int dirLen = workingDir.toString().length();
+			events.add(Integer.toString(dirLen));
+			events.add(inputBaclava == null ? "<null>" : inputBaclava
+					.toString().substring(dirLen));
+			Map<String, String> in = new TreeMap<String, String>();
+			for (String name : inputFiles.keySet()) {
+				File f = inputFiles.get(name);
+				in.put(name, f == null ? "<null>" : f.toString().substring(
+						dirLen));
+			}
+			events.add(in.toString());
+			events.add(new TreeMap<String,String>(inputValues).toString());
+			events.add(outputBaclava == null ? "<null>" : outputBaclava
+					.toString().substring(dirLen));
 			events.add("]");
 		}
 
@@ -134,8 +144,8 @@ public class LocalWorkerTest {
 	public void testDestroy2() throws Exception {
 		lw.setStatus(RemoteStatus.Operating);
 		lw.destroy();
-		assertEquals(l("init[", "XWC", "WF", "36", "{}", "{}", "<null>", "]",
-				"kill"), events);
+		assertEquals(l("init[", "XWC", "WF", "36", "<null>", "{}", "{}",
+				"<null>", "]", "kill"), events);
 	}
 
 	@Test
@@ -143,19 +153,19 @@ public class LocalWorkerTest {
 		lw.setStatus(RemoteStatus.Operating);
 		lw.setStatus(RemoteStatus.Stopped);
 		lw.destroy();
-		assertEquals(l("init[", "XWC", "WF", "36", "{}", "{}", "<null>", "]",
-				"stop", "kill"), events);
+		assertEquals(l("init[", "XWC", "WF", "36", "<null>", "{}", "{}",
+				"<null>", "]", "stop", "kill"), events);
 	}
 
 	@Test
 	public void testDestroy4() throws Exception {
 		lw.setStatus(RemoteStatus.Operating);
 		lw.setStatus(RemoteStatus.Finished);
-		assertEquals(l("init[", "XWC", "WF", "36", "{}", "{}", "<null>", "]",
-				"kill"), events);
+		assertEquals(l("init[", "XWC", "WF", "36", "<null>", "{}", "{}",
+				"<null>", "]", "kill"), events);
 		lw.destroy();
-		assertEquals(l("init[", "XWC", "WF", "36", "{}", "{}", "<null>", "]",
-				"kill"), events);
+		assertEquals(l("init[", "XWC", "WF", "36", "<null>", "{}", "{}",
+				"<null>", "]", "kill"), events);
 	}
 
 	@Test
@@ -269,9 +279,9 @@ public class LocalWorkerTest {
 		assertEquals(RemoteStatus.Finished, lw.getStatus());
 		returnThisStatus = RemoteStatus.Stopped;
 		assertEquals(RemoteStatus.Finished, lw.getStatus());
-		assertEquals(l("init[", "XWC", "WF", "36", "{}", "{}", "<null>", "]",
-				"status=Operating", "status=Operating", "status=Finished"),
-				events);
+		assertEquals(l("init[", "XWC", "WF", "36", "<null>", "{}", "{}",
+				"<null>", "]", "status=Operating", "status=Operating",
+				"status=Finished"), events);
 	}
 
 	@Test
@@ -290,8 +300,13 @@ public class LocalWorkerTest {
 	public void testValidateFilename() throws Exception {
 		lw.validateFilename("foobar");
 		lw.validateFilename("foo/bar");
-		lw.validateFilename("./.");
+		lw.validateFilename("foo.bar");
 		lw.validateFilename("foo..bar");
+	}
+
+	@Test(expected = RemoteException.class)
+	public void testValidateFilenameBad0() throws Exception {
+		lw.validateFilename("./.");
 	}
 
 	@Test(expected = RemoteException.class)
@@ -416,8 +431,8 @@ public class LocalWorkerTest {
 		lw.setStatus(RemoteStatus.Operating);
 		lw.setStatus(RemoteStatus.Finished);
 		lw.setStatus(RemoteStatus.Finished);
-		assertEquals(l("init[", "XWC", "WF", "36", "{}", "{}", "<null>", "]",
-				"stop", "start", "kill"), events);
+		assertEquals(l("init[", "XWC", "WF", "36", "<null>", "{}", "{}",
+				"<null>", "]", "stop", "start", "kill"), events);
 	}
 
 	@Test
@@ -425,8 +440,8 @@ public class LocalWorkerTest {
 		lw.setStatus(RemoteStatus.Operating);
 		lw.setStatus(RemoteStatus.Stopped);
 		lw.setStatus(RemoteStatus.Finished);
-		assertEquals(l("init[", "XWC", "WF", "36", "{}", "{}", "<null>", "]",
-				"stop", "kill"), events);
+		assertEquals(l("init[", "XWC", "WF", "36", "<null>", "{}", "{}",
+				"<null>", "]", "stop", "kill"), events);
 	}
 
 	@Test
@@ -478,7 +493,8 @@ public class LocalWorkerTest {
 		lw.setStatus(RemoteStatus.Operating);
 		lw.setStatus(RemoteStatus.Finished);
 		// Assumes order of map, so fragile but works...
-		assertEquals(l("init[", "XWC", "WF", "36", "{foo=foofile, bar=null}",
-				"{foo=null, bar=barvalue}", "boo", "]", "kill"), events);
+		assertEquals(l("init[", "XWC", "WF", "36", "<null>",
+				"{bar=<null>, foo=/foofile}", "{bar=barvalue, foo=null}", "/boo",
+				"]", "kill"), events);
 	}
 }

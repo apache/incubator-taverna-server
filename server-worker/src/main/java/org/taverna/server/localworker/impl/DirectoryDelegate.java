@@ -3,6 +3,7 @@ package org.taverna.server.localworker.impl;
 import static org.apache.commons.io.FileUtils.forceDelete;
 import static org.apache.commons.io.FileUtils.forceMkdir;
 import static org.apache.commons.io.FileUtils.touch;
+import static org.taverna.server.localworker.impl.utils.FilenameVerifier.getValidatedNewFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,21 +53,23 @@ public class DirectoryDelegate extends UnicastRemoteObject implements
 			if (s.equals(".") || s.equals(".."))
 				continue;
 			File f = new File(dir, s);
-			RemoteDirectoryEntry entry = (RemoteDirectoryEntry) localCache
-					.get(s);
-			if (f.isDirectory()) {
-				if (entry == null || !(entry instanceof DirectoryDelegate)) {
-					entry = new DirectoryDelegate(f, this);
-					localCache.put(s, entry);
+			RemoteDirectoryEntry entry;
+			synchronized (localCache) {
+				entry = (RemoteDirectoryEntry) localCache.get(s);
+				if (f.isDirectory()) {
+					if (entry == null || !(entry instanceof DirectoryDelegate)) {
+						entry = new DirectoryDelegate(f, this);
+						localCache.put(s, entry);
+					}
+				} else if (f.isFile()) {
+					if (entry == null || !(entry instanceof FileDelegate)) {
+						entry = new FileDelegate(f, this);
+						localCache.put(s, entry);
+					}
+				} else {
+					// not file or dir; skip...
+					continue;
 				}
-			} else if (f.isFile()) {
-				if (entry == null || !(entry instanceof FileDelegate)) {
-					entry = new FileDelegate(f, this);
-					localCache.put(s, entry);
-				}
-			} else {
-				// not file or dir; skip...
-				continue;
 			}
 			result.add(entry);
 		}
@@ -75,39 +78,40 @@ public class DirectoryDelegate extends UnicastRemoteObject implements
 
 	@Override
 	public RemoteFile makeEmptyFile(String name) throws IOException {
-		if ("..".equals(name) || name.contains("/"))
-			throw new IOException("illegal filename");
-		File f = new File(dir, name);
-		if (f.exists())
-			throw new IOException("already exists");
+		File f = getValidatedNewFile(dir, name);
 		touch(f);
 		FileDelegate delegate = new FileDelegate(f, this);
-		localCache.put(name, delegate);
+		synchronized (localCache) {
+			localCache.put(name, delegate);
+		}
 		return delegate;
 	}
 
 	@Override
 	public RemoteDirectory makeSubdirectory(String name) throws IOException {
-		if ("..".equals(name) || name.contains("/"))
-			throw new IOException("illegal filename");
-		File f = new File(dir, name);
-		if (f.exists())
-			throw new IOException("already exists");
+		File f = getValidatedNewFile(dir, name);
 		forceMkdir(f);
 		DirectoryDelegate delegate = new DirectoryDelegate(f, this);
-		localCache.put(name, delegate);
+		synchronized (localCache) {
+			localCache.put(name, delegate);
+		}
 		return delegate;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void destroy() throws IOException {
 		if (parent == null)
 			throw new IOException("tried to destroy main job working directory");
-		for (Object obj : localCache.values()) {
+		Collection<RemoteDirectoryEntry> values;
+		synchronized (localCache) {
+			values = new ArrayList<RemoteDirectoryEntry>(localCache.values());
+		}
+		for (RemoteDirectoryEntry obj : values) {
 			if (obj == null)
 				continue;
 			try {
-				((RemoteDirectoryEntry) obj).destroy();
+				obj.destroy();
 			} catch (IOException e) {
 			}
 		}
@@ -121,12 +125,14 @@ public class DirectoryDelegate extends UnicastRemoteObject implements
 	}
 
 	void forgetEntry(RemoteDirectoryEntry entry) {
-		MapIterator i = localCache.mapIterator();
-		while (i.hasNext()) {
-			Object key = i.next();
-			if (entry == i.getValue()) {
-				localCache.remove(key);
-				break;
+		synchronized (localCache) {
+			MapIterator i = localCache.mapIterator();
+			while (i.hasNext()) {
+				Object key = i.next();
+				if (entry == i.getValue()) {
+					localCache.remove(key);
+					break;
+				}
 			}
 		}
 	}

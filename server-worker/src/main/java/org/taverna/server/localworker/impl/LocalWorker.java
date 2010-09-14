@@ -17,12 +17,12 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.taverna.server.localworker.impl.utils.FilenameVerifier;
 import org.taverna.server.localworker.remote.IllegalStateTransitionException;
 import org.taverna.server.localworker.remote.RemoteDirectory;
 import org.taverna.server.localworker.remote.RemoteInput;
@@ -46,13 +46,21 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	private String workflow;
 	private File base;
 	private DirectoryDelegate baseDir;
-	/** When did this workflow start running, or <tt>null</tt> for "never/not yet". */
+	/**
+	 * When did this workflow start running, or <tt>null</tt> for
+	 * "never/not yet".
+	 */
 	public Date start;
-	/** When did this workflow finish running, or <tt>null</tt> for "never/not yet". */
+	/**
+	 * When did this workflow finish running, or <tt>null</tt> for
+	 * "never/not yet".
+	 */
 	public Date finish;
 	RemoteStatus status;
 	String inputBaclava, outputBaclava;
+	File inputBaclavaFile, outputBaclavaFile;
 	Map<String, String> inputFiles;
+	Map<String, File> inputRealFiles;
 	Map<String, String> inputValues;
 	Worker core;
 	private Thread shutdownHook;
@@ -78,6 +86,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		}
 		baseDir = new DirectoryDelegate(base, null);
 		inputFiles = new HashMap<String, String>();
+		inputRealFiles = new HashMap<String, File>();
 		inputValues = new HashMap<String, String>();
 		try {
 			core = workerClass.newInstance();
@@ -197,14 +206,14 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		return baseDir;
 	}
 
-	void validateFilename(String filename) throws RemoteException {
+	File validateFilename(String filename) throws RemoteException {
 		if (filename == null)
 			throw new IllegalArgumentException("filename must be non-null");
-		if (filename.length() == 0 || filename.startsWith("/")
-				|| filename.contains("//"))
-			throw new RemoteException("invalid filename");
-		if (Arrays.asList(filename.split("/")).contains(".."))
-			throw new RemoteException("invalid filename");
+		try {
+			return FilenameVerifier.getValidatedFile(base, filename.split("/"));
+		} catch (IOException e) {
+			throw new RemoteException("failed to validate filename", e);
+		}
 	}
 
 	class InputDelegate extends UnicastRemoteObject implements RemoteInput {
@@ -217,6 +226,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 				if (status != RemoteStatus.Initialized)
 					throw new RemoteException("not initializing");
 				inputFiles.put(name, null);
+				inputRealFiles.put(name, null);
 				inputValues.put(name, null);
 			}
 		}
@@ -240,7 +250,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		public void setFile(String file) throws RemoteException {
 			if (status != RemoteStatus.Initialized)
 				throw new RemoteException("not initializing");
-			validateFilename(file);
+			inputRealFiles.put(name, validateFilename(file));
 			inputValues.put(name, null);
 			inputFiles.put(name, file);
 			inputBaclava = null;
@@ -252,6 +262,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 				throw new RemoteException("not initializing");
 			inputValues.put(name, value);
 			inputFiles.put(name, null);
+			inputRealFiles.put(name, null);
 			LocalWorker.this.inputBaclava = null;
 		}
 	}
@@ -271,9 +282,10 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	public void setInputBaclavaFile(String filename) throws RemoteException {
 		if (status != RemoteStatus.Initialized)
 			throw new RemoteException("not initializing");
-		validateFilename(filename);
+		inputBaclavaFile = validateFilename(filename);
 		for (String input : inputFiles.keySet()) {
 			inputFiles.put(input, null);
+			inputRealFiles.put(input, null);
 			inputValues.put(input, null);
 		}
 		inputBaclava = filename;
@@ -284,7 +296,9 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		if (status != RemoteStatus.Initialized)
 			throw new RemoteException("not initializing");
 		if (filename != null)
-			validateFilename(filename);
+			outputBaclavaFile = validateFilename(filename);
+		else
+			outputBaclavaFile = null;
 		outputBaclava = filename;
 	}
 
@@ -304,8 +318,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 				try {
 					start = new Date();
 					core.initWorker(executeWorkflowCommand, workflow, base,
-							inputBaclava, inputFiles, inputValues,
-							outputBaclava);
+							inputBaclavaFile, inputRealFiles, inputValues,
+							outputBaclavaFile);
 				} catch (Exception e) {
 					throw new RemoteException(
 							"problem creating executing workflow", e);

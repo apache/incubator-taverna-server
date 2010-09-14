@@ -133,9 +133,9 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	 */
 	@Override
 	public void initWorker(String executeWorkflowCommand, String workflow,
-			File workingDir, String inputBaclava,
-			Map<String, String> inputFiles, Map<String, String> inputValues,
-			String outputBaclava) throws IOException {
+			File workingDir, File inputBaclava, Map<String, File> inputFiles,
+			Map<String, String> inputValues, File outputBaclava)
+			throws IOException {
 		// How we execute the workflow in a subprocess
 		ProcessBuilder pb = new ProcessBuilder()
 				.command(executeWorkflowCommand);
@@ -143,15 +143,19 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		// Add arguments denoting inputs
 		if (inputBaclava != null) {
 			pb.command().add("-inputdoc");
-			pb.command().add(
-					new File(workingDir, inputBaclava).getAbsolutePath());
+			pb.command().add(inputBaclava.getAbsolutePath());
+			if (!inputBaclava.exists())
+				throw new IOException("input baclava file doesn't exist");
 		} else {
 			for (String port : inputFiles.keySet()) {
-				String f = inputFiles.get(port);
+				File f = inputFiles.get(port);
 				if (f != null) {
 					pb.command().add("-inputfile");
 					pb.command().add(port);
-					pb.command().add(new File(workingDir, f).getAbsolutePath());
+					pb.command().add(f.getAbsolutePath());
+					if (!f.exists())
+						throw new IOException("input file for port \"" + port
+								+ "\" doesn't exist");
 				}
 			}
 			for (String port : inputValues.keySet()) {
@@ -167,8 +171,12 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		// Add arguments denoting outputs
 		if (outputBaclava != null) {
 			pb.command().add("-outputdoc");
-			pb.command().add(
-					new File(workingDir, outputBaclava).getAbsolutePath());
+			pb.command().add(outputBaclava.getAbsolutePath());
+			if (!outputBaclava.getParentFile().exists())
+				throw new IOException(
+						"parent directory of output baclava file does not exist");
+			if (outputBaclava.exists())
+				throw new IOException("output baclava file exists");
 		} else {
 			File out = new File(workingDir, "out");
 			if (!out.mkdir()) {

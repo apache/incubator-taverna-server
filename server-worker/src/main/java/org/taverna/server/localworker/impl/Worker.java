@@ -22,10 +22,10 @@ public interface Worker {
 	 *            The workflow document to execute.
 	 * @param workingDir
 	 *            What directory to use as the working directory.
-	 * @param inputBaclava
+	 * @param inputBaclavaFile
 	 *            The baclava file to use for inputs, or <tt>null</tt> to use
 	 *            the other <b>input*</b> arguments' values.
-	 * @param inputFiles
+	 * @param inputRealFiles
 	 *            A mapping of input names to files that supply them. Note that
 	 *            we assume that nothing mapped here will be mapped in
 	 *            <b>inputValues</b>.
@@ -33,7 +33,7 @@ public interface Worker {
 	 *            A mapping of input names to values to supply to them. Note
 	 *            that we assume that nothing mapped here will be mapped in
 	 *            <b>inputFiles</b>.
-	 * @param outputBaclava
+	 * @param outputBaclavaFile
 	 *            What baclava file to write the output from the workflow into,
 	 *            or <tt>null</tt> to have it written into the <tt>out</tt>
 	 *            subdirectory.
@@ -41,9 +41,9 @@ public interface Worker {
 	 *             If any of quite a large number of things goes wrong.
 	 */
 	public void initWorker(String executeWorkflowCommand, String workflow,
-			File workingDir, String inputBaclava,
-			Map<String, String> inputFiles, Map<String, String> inputValues,
-			String outputBaclava) throws Exception;
+			File workingDir, File inputBaclavaFile,
+			Map<String, File> inputRealFiles, Map<String, String> inputValues,
+			File outputBaclavaFile) throws Exception;
 
 	/**
 	 * Kills off the subprocess if it exists and is alive.
