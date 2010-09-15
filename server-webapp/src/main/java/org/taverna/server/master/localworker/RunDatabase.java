@@ -3,15 +3,12 @@ package org.taverna.server.master.localworker;
 import static org.taverna.server.master.localworker.RunConnections.KEY;
 import static org.taverna.server.master.localworker.RunConnections.makeInstance;
 
-import java.lang.ref.WeakReference;
 import java.security.Principal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.annotations.Join;
@@ -129,19 +126,6 @@ public class RunDatabase implements RunStore {
 		});
 	}
 
-	/**
-	 * How frequently to check for expired workflow runs.
-	 */
-	public static final int CLEANER_INTERVAL_MS = 30000;
-	private Timer timer = new Timer("Taverna.Server.RunDB.Timer", true);
-	private TimerTask cleaner;
-
-	public RunDatabase() {
-		cleaner = new Cleaner(this);
-		timer.scheduleAtFixedRate(cleaner, CLEANER_INTERVAL_MS,
-				CLEANER_INTERVAL_MS);
-	}
-
 	@Override
 	public TavernaRun getRun(Principal user, Policy p, String uuid)
 			throws UnknownRunException {
@@ -194,7 +178,11 @@ public class RunDatabase implements RunStore {
 		});
 	}
 
-	void clean(final Date now) {
+	/**
+	 * Remove currently-expired runs from this database.
+	 */
+	public void cleanNow() {
+		final Date now = new Date();
 		inTransaction(new Act<RuntimeException>() {
 			@Override
 			public void a(Map<String, RemoteRunDelegate> runs) {
@@ -210,48 +198,6 @@ public class RunDatabase implements RunStore {
 			}
 		});
 	}
-
-	public void shutdown() {
-		synchronized (this) {
-			TimerTask tt = cleaner;
-			cleaner = null;
-			if (tt != null) {
-				tt.cancel();
-				timer.cancel();
-			}
-		}
-	}
-
-	@Override
-	protected void finalize() {
-		shutdown();
-	}
-
-	/**
-	 * Class that handles cleanup of tasks when their expiry is past.
-	 * 
-	 * @author Donal Fellows
-	 */
-	private static class Cleaner extends TimerTask {
-		private WeakReference<RunDatabase> arrf;
-
-		Cleaner(RunDatabase arrf) {
-			this.arrf = new WeakReference<RunDatabase>(arrf);
-		}
-
-		@Override
-		public void run() {
-			// Reconvert back to a strong reference for the length of this check
-			RunDatabase f = arrf.get();
-			if (f == null) {
-				cancel();
-				return;
-			}
-			// Check to see if anything is needing cleaning; if not, we're done
-			f.clean(new Date());
-		}
-	}
-
 }
 
 /**

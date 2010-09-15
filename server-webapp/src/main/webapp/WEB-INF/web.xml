@@ -94,5 +94,6 @@
 	</security-constraint>
 	<login-config>
 		<auth-method>BASIC</auth-method>
+		<!--<realm-name>tavernaserver</realm-name>--><!-- TODO: uncomment -->
 	</login-config>
 </web-app>

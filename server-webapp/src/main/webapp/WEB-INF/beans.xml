@@ -156,4 +156,13 @@
 	</bean>
 	<context:mbean-export server="MBeanServer"
 		default-domain="${my.domain}" />
+
+	<bean id="timerFactory" class="org.springframework.scheduling.timer.TimerFactoryBean">
+		<description>Single point for handling scheduled tasks.</description>
+		<property name="scheduledTimerTasks">
+			<list>
+				<ref bean="deleteExpiredWorkflowRuns" />
+			</list>
+		</property>
+	</bean>
 </beans>

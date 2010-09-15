@@ -72,8 +72,7 @@
 		<property name="state" ref="localworker.state" />
 		<property name="runDB" ref="localworker.runDB" />
 	</bean>
-	<bean id="localworker.runDB" class="org.taverna.server.master.localworker.RunDatabase"
-		destroy-method="shutdown">
+	<bean id="localworker.runDB" class="org.taverna.server.master.localworker.RunDatabase">
 		<description>
 			The implementation of the catalog of workflow runs
 			supported by the localworker run engine.
@@ -82,8 +81,21 @@
 		<property name="persistenceManagerFactory" ref="pmf" />
 	</bean>
 
+	<bean id="localworker.runDB.cleaner" class="org.springframework.scheduling.timer.ScheduledTimerTask">
+		<property name="delay" value="10000" />
+		<property name="period" value="30000" />
+		<property name="timerTask">
+			<bean id="localworker.cleanDBNow"
+				class="org.springframework.scheduling.timer.MethodInvokingTimerTaskFactoryBean">
+				<property name="targetObject" ref="localworker.runDB" />
+				<property name="targetMethod" value="cleanNow" />
+			</bean>
+		</property>
+	</bean>
+	
 	<alias name="localworker.policy" alias="policy" />
 	<alias name="localworker.runDB" alias="runCatalog" />
 	<alias name="localworker.factory" alias="runFactory" />
 	<alias name="localworker.factory" alias="listenerFactory" />
+	<alias name="localworker.runDB.cleaner" alias="deleteExpiredWorkflowRuns" />
 </beans>
