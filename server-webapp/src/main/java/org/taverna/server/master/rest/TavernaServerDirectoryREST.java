@@ -17,6 +17,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.cxf.jaxrs.ext.Description;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
+import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.Directory;
 import org.taverna.server.master.interfaces.File;
@@ -56,6 +57,8 @@ public interface TavernaServerDirectoryREST {
 	 * @param headers
 	 *            About what the caller was looking for.
 	 * @return An HTTP response containing a description of the named thing.
+	 * @throws NoDirectoryEntryException
+	 *             If the name of the file or directory can't be looked up.
 	 * @throws FilesystemAccessException
 	 *             If something went wrong during the filesystem operation.
 	 */
@@ -66,7 +69,8 @@ public interface TavernaServerDirectoryREST {
 	@Description("Gives a description of the named entity in or beneath the working directory of the workflow run (either a Directory or File).")
 	public Response getDirectoryOrFileContents(
 			@PathParam("path") List<PathSegment> path, @Context UriInfo ui,
-			@Context HttpHeaders headers) throws FilesystemAccessException;
+			@Context HttpHeaders headers) throws NoDirectoryEntryException,
+			FilesystemAccessException;
 
 	/**
 	 * Creates a directory in the filesystem beneath the working directory of
@@ -81,6 +85,8 @@ public interface TavernaServerDirectoryREST {
 	 *            About how this method was called.
 	 * @return An HTTP response indicating where the directory was actually made
 	 *         or what file was created/updated.
+	 * @throws NoDirectoryEntryException
+	 *             If the name of the containing directory can't be looked up.
 	 * @throws NoUpdateException
 	 *             If the user is not permitted to update the run.
 	 * @throws FilesystemAccessException
@@ -92,7 +98,8 @@ public interface TavernaServerDirectoryREST {
 	public Response makeDirectoryOrUpdateFile(
 			@PathParam("path") List<PathSegment> parent,
 			MakeOrUpdateDirEntry operation, @Context UriInfo ui)
-			throws NoUpdateException, FilesystemAccessException;
+			throws NoUpdateException, FilesystemAccessException,
+			NoDirectoryEntryException;
 
 	/**
 	 * Deletes a file or directory that is in or below the working directory of
@@ -105,11 +112,14 @@ public interface TavernaServerDirectoryREST {
 	 *             If the user is not permitted to update the run.
 	 * @throws FilesystemAccessException
 	 *             If something went wrong during the filesystem operation.
+	 * @throws NoDirectoryEntryException
+	 *             If the name of the file or directory can't be looked up.
 	 */
 	@DELETE
 	@Path("{path:.*}")
 	@Description("Deletes a file or directory that is in or below the working directory of a workflow run.")
 	public Response destroyDirectoryEntry(
 			@PathParam("path") List<PathSegment> path)
-			throws NoUpdateException, FilesystemAccessException;
+			throws NoUpdateException, FilesystemAccessException,
+			NoDirectoryEntryException;
 }

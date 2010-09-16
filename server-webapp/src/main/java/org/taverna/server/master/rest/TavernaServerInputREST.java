@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlValue;
 
 import org.apache.cxf.jaxrs.ext.Description;
 import org.taverna.server.master.common.Uri;
+import org.taverna.server.master.exceptions.BadInputPortNameException;
 import org.taverna.server.master.exceptions.BadPropertyValueException;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
@@ -85,7 +86,7 @@ public interface TavernaServerInputREST {
 	 * @param name
 	 *            The input to set.
 	 * @return A description of the input.
-	 * @throws BadPropertyValueException
+	 * @throws BadInputPortNameException
 	 *             If no input with that name exists.
 	 */
 	@GET
@@ -93,7 +94,7 @@ public interface TavernaServerInputREST {
 	@Produces( { "application/xml", "application/json" })
 	@Description("Gives a description of what is used to supply a particular input.")
 	public InDesc getInput(@PathParam("name") String name)
-			throws BadPropertyValueException;
+			throws BadInputPortNameException;
 
 	/**
 	 * Set what an input uses to provide data into the workflow run.
@@ -110,8 +111,10 @@ public interface TavernaServerInputREST {
 	 * @throws FilesystemAccessException
 	 *             If a filename is being set and the filename starts with a
 	 *             <tt>/</tt> or if it contains a <tt>..</tt> segment.
-	 * @throws BadPropertyValueException
+	 * @throws BadInputPortNameException
 	 *             If no input with that name exists.
+	 * @throws BadPropertyValueException
+	 *             If some bad misconfiguration has happened.
 	 */
 	@PUT
 	@Path("input/{name}")
@@ -120,7 +123,7 @@ public interface TavernaServerInputREST {
 	public InDesc setInput(@PathParam("name") String name,
 			InDesc inputDescriptor) throws NoUpdateException,
 			BadStateChangeException, FilesystemAccessException,
-			BadPropertyValueException;
+			BadPropertyValueException, BadInputPortNameException;
 
 	/**
 	 * A description of the structure of inputs to a Taverna workflow run, done

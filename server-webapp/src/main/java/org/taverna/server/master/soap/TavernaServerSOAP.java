@@ -17,6 +17,7 @@ import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadPropertyValueException;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
+import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.UnknownRunException;
@@ -451,12 +452,15 @@ public interface TavernaServerSOAP {
 	 * @throws FilesystemAccessException
 	 *             If some assumption is violated (e.g., reading the contents of
 	 *             a file).
+	 * @throws NoDirectoryEntryException
+	 *             If the name of the directory can't be looked up.
 	 */
 	@WebResult(name = "DirectoryEntry")
 	public DirEntryReference[] getRunDirectoryContents(
 			@WebParam(name = "runName") String runName,
 			@WebParam(name = "directory") DirEntryReference directory)
-			throws UnknownRunException, FilesystemAccessException;
+			throws UnknownRunException, FilesystemAccessException,
+			NoDirectoryEntryException;
 
 	/**
 	 * Get the contents of any directory (and its subdirectories) at/under the
@@ -475,12 +479,15 @@ public interface TavernaServerSOAP {
 	 * @throws FilesystemAccessException
 	 *             If some assumption is violated (e.g., reading the contents of
 	 *             a file).
+	 * @throws NoDirectoryEntryException
+	 *             If the name of the directory can't be looked up.
 	 */
 	@WebResult(name = "ZipFile")
 	public byte[] getRunDirectoryAsZip(
 			@WebParam(name = "runName") String runName,
 			@WebParam(name = "directory") DirEntryReference directory)
-			throws UnknownRunException, FilesystemAccessException;
+			throws UnknownRunException, FilesystemAccessException,
+			NoDirectoryEntryException;
 
 	/**
 	 * Make a new empty directory beneath an existing one, which must be the
@@ -504,8 +511,10 @@ public interface TavernaServerSOAP {
 	 * @throws NoUpdateException
 	 *             If the user is not allowed to make modifications to the run.
 	 * @throws FilesystemAccessException
-	 *             If some assuption is violated (e.g., making something with
+	 *             If some assumption is violated (e.g., making something with
 	 *             the same name as something that already exists).
+	 * @throws NoDirectoryEntryException
+	 *             If the name of the containing directory can't be looked up.
 	 */
 	@WebResult(name = "CreatedDirectory")
 	public DirEntryReference makeRunDirectory(
@@ -513,7 +522,7 @@ public interface TavernaServerSOAP {
 			@WebParam(name = "parentDirectory") DirEntryReference parent,
 			@WebParam(name = "directoryName") String name)
 			throws UnknownRunException, NoUpdateException,
-			FilesystemAccessException;
+			FilesystemAccessException, NoDirectoryEntryException;
 
 	/**
 	 * Make a new empty file in an existing directory, which may be the run's
@@ -538,6 +547,8 @@ public interface TavernaServerSOAP {
 	 * @throws FilesystemAccessException
 	 *             If some assumption is violated (e.g., making something with
 	 *             the same name as something that already exists).
+	 * @throws NoDirectoryEntryException
+	 *             If the name of the containing directory can't be looked up.
 	 */
 	@WebResult(name = "CreatedFile")
 	public DirEntryReference makeRunFile(
@@ -545,7 +556,7 @@ public interface TavernaServerSOAP {
 			@WebParam(name = "parentDirectory") DirEntryReference parent,
 			@WebParam(name = "fileName") String name)
 			throws UnknownRunException, NoUpdateException,
-			FilesystemAccessException;
+			FilesystemAccessException, NoDirectoryEntryException;
 
 	/**
 	 * Destroy an entry (file or directory) in or beneath a run's working
@@ -565,12 +576,14 @@ public interface TavernaServerSOAP {
 	 *             If some assumption is violated (e.g., deleting something
 	 *             which doesn't exist or attempting to delete the main working
 	 *             directory).
+	 * @throws NoDirectoryEntryException
+	 *             If the name of the file or directory can't be looked up.
 	 */
 	public void destroyRunDirectoryEntry(
 			@WebParam(name = "runName") String runName,
 			@WebParam(name = "directoryEntry") DirEntryReference dirEntry)
 			throws UnknownRunException, NoUpdateException,
-			FilesystemAccessException;
+			FilesystemAccessException, NoDirectoryEntryException;
 
 	/**
 	 * Get the contents of a file under the run's working directory. Runs do not
@@ -588,12 +601,15 @@ public interface TavernaServerSOAP {
 	 * @throws FilesystemAccessException
 	 *             If some assumption is violated (e.g., reading the contents of
 	 *             a directory).
+	 * @throws NoDirectoryEntryException
+	 *             If the file doesn't exist.
 	 */
 	@WebResult(name = "FileContents")
 	public byte[] getRunFileContents(
 			@WebParam(name = "runName") String runName,
 			@WebParam(name = "fileName") DirEntryReference file)
-			throws UnknownRunException, FilesystemAccessException;
+			throws UnknownRunException, FilesystemAccessException,
+			NoDirectoryEntryException;
 
 	/**
 	 * Set the contents of a file under the run's working directory. Runs do not
@@ -614,12 +630,14 @@ public interface TavernaServerSOAP {
 	 * @throws FilesystemAccessException
 	 *             If some assumption is violated (e.g., writing the contents of
 	 *             a directory).
+	 * @throws NoDirectoryEntryException
+	 *             If the file doesn't exist.
 	 */
 	public void setRunFileContents(@WebParam(name = "runName") String runName,
 			@WebParam(name = "fileName") DirEntryReference file,
 			@WebParam(name = "contents") byte[] newContents)
 			throws UnknownRunException, NoUpdateException,
-			FilesystemAccessException;
+			FilesystemAccessException, NoDirectoryEntryException;
 
 	/**
 	 * Get the length of any file (in bytes) at/under the run's working
@@ -637,11 +655,14 @@ public interface TavernaServerSOAP {
 	 * @throws FilesystemAccessException
 	 *             If some assumption is violated (e.g., reading the length of a
 	 *             directory).
+	 * @throws NoDirectoryEntryException
+	 *             If the file doesn't exist.
 	 */
 	@WebResult(name = "FileLength")
 	public long getRunFileLength(@WebParam(name = "runName") String runName,
 			@WebParam(name = "fileName") DirEntryReference file)
-			throws UnknownRunException, FilesystemAccessException;
+			throws UnknownRunException, FilesystemAccessException,
+			NoDirectoryEntryException;
 
 	/**
 	 * Get the configuration document for an event listener attached to a run.

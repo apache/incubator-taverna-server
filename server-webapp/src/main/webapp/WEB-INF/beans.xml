@@ -58,11 +58,13 @@
 			<!-- <cxf:logging /> -->
 		</jaxrs:features>
 		<jaxrs:providers>
+			<ref bean="ExceptionProvider.BadInputPortName" />
 			<ref bean="ExceptionProvider.BadPropertyValue" />
 			<ref bean="ExceptionProvider.BadStateChange" />
 			<ref bean="ExceptionProvider.FilesystemAccess" />
 			<ref bean="ExceptionProvider.NoCreate" />
 			<ref bean="ExceptionProvider.NoDestroy" />
+			<ref bean="ExceptionProvider.NoDirectoryEntry" />
 			<ref bean="ExceptionProvider.NoListener" />
 			<ref bean="ExceptionProvider.NoUpdate" />
 			<ref bean="ExceptionProvider.UnknownRun" />
@@ -70,6 +72,9 @@
 			<ref bean="MessagingProvider.File" />
 		</jaxrs:providers>
 	</jaxrs:server>
+	<bean id="ExceptionProvider.BadInputPortName" class="org.taverna.server.master.rest.BadInputPortNameHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
 	<bean id="ExceptionProvider.BadPropertyValue" class="org.taverna.server.master.rest.BadPropertyValueHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
@@ -83,6 +88,9 @@
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
 	<bean id="ExceptionProvider.NoDestroy" class="org.taverna.server.master.rest.NoDestroyHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.NoDirectoryEntry" class="org.taverna.server.master.rest.NoDirectoryEntryHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
 	<bean id="ExceptionProvider.NoListener" class="org.taverna.server.master.rest.NoListenerHandler">

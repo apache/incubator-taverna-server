@@ -56,11 +56,13 @@ import org.taverna.server.master.common.Namespaces;
 import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Workflow;
+import org.taverna.server.master.exceptions.BadInputPortNameException;
 import org.taverna.server.master.exceptions.BadPropertyValueException;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoDestroyException;
+import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.UnknownRunException;
@@ -476,11 +478,11 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 
 					@Override
 					public InDesc getInput(String name)
-							throws BadPropertyValueException {
+							throws BadInputPortNameException {
 						invokes++;
 						Input i = TavernaServerImpl.getInput(run, name);
 						if (i == null)
-							throw new BadPropertyValueException(
+							throw new BadInputPortNameException(
 									"unknown input port name");
 						return new InDesc(i);
 					}
@@ -500,12 +502,13 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 					public InDesc setInput(String name, InDesc inputDescriptor)
 							throws NoUpdateException, BadStateChangeException,
 							FilesystemAccessException,
+							BadInputPortNameException,
 							BadPropertyValueException {
 						invokes++;
 						AbstractContents ac = inputDescriptor.assignment;
 						if (name == null || name.isEmpty())
-							throw new BadPropertyValueException(
-									"bad property name");
+							throw new BadInputPortNameException(
+									"bad input name");
 						if (ac == null)
 							throw new BadPropertyValueException("no content!");
 						if (!(ac instanceof InDesc.File || ac instanceof InDesc.Value))
@@ -633,7 +636,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 
 		@Override
 		public Response destroyDirectoryEntry(List<PathSegment> path)
-				throws NoUpdateException, FilesystemAccessException {
+				throws NoUpdateException, FilesystemAccessException,
+				NoDirectoryEntryException {
 			invokes++;
 			permitUpdate(run);
 			getDirEntry(run, path).destroy();
@@ -651,7 +655,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		// Nasty! This can have several different responses...
 		// @Override
 		public Response getDirectoryOrFileContents(List<PathSegment> path,
-				UriInfo ui, Request req) throws FilesystemAccessException {
+				UriInfo ui, Request req) throws FilesystemAccessException,
+				NoDirectoryEntryException {
 			invokes++;
 			DirectoryEntry de = getDirEntry(run, path);
 
@@ -697,7 +702,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		@Override
 		public Response getDirectoryOrFileContents(List<PathSegment> path,
 				UriInfo ui, HttpHeaders headers)
-				throws FilesystemAccessException {
+				throws FilesystemAccessException, NoDirectoryEntryException {
 			invokes++;
 			DirectoryEntry de = getDirEntry(run, path);
 
@@ -744,7 +749,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		@Override
 		public Response makeDirectoryOrUpdateFile(List<PathSegment> parent,
 				MakeOrUpdateDirEntry op, UriInfo ui) throws NoUpdateException,
-				FilesystemAccessException {
+				FilesystemAccessException, NoDirectoryEntryException {
 			invokes++;
 			permitUpdate(run);
 			DirectoryEntry container = getDirEntry(run, parent);
@@ -895,7 +900,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	@Override
 	public DirEntryReference[] getRunDirectoryContents(String runName,
 			DirEntryReference d) throws UnknownRunException,
-			FilesystemAccessException {
+			FilesystemAccessException, NoDirectoryEntryException {
 		invokes++;
 		List<DirEntryReference> result = new ArrayList<DirEntryReference>();
 		for (DirectoryEntry e : getDirectory(getRun(runName), d).getContents())
@@ -905,7 +910,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 
 	@Override
 	public byte[] getRunDirectoryAsZip(String runName, DirEntryReference d)
-			throws UnknownRunException, FilesystemAccessException {
+			throws UnknownRunException, FilesystemAccessException,
+			NoDirectoryEntryException {
 		invokes++;
 		return getDirectory(getRun(runName), d).getContentsAsZip();
 	}
@@ -913,7 +919,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	@Override
 	public DirEntryReference makeRunDirectory(String runName,
 			DirEntryReference parent, String name) throws UnknownRunException,
-			NoUpdateException, FilesystemAccessException {
+			NoUpdateException, FilesystemAccessException,
+			NoDirectoryEntryException {
 		invokes++;
 		TavernaRun w = getRun(runName);
 		permitUpdate(w);
@@ -925,7 +932,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	@Override
 	public DirEntryReference makeRunFile(String runName,
 			DirEntryReference parent, String name) throws UnknownRunException,
-			NoUpdateException, FilesystemAccessException {
+			NoUpdateException, FilesystemAccessException,
+			NoDirectoryEntryException {
 		invokes++;
 		TavernaRun w = getRun(runName);
 		permitUpdate(w);
@@ -936,7 +944,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	@Override
 	public void destroyRunDirectoryEntry(String runName, DirEntryReference d)
 			throws UnknownRunException, NoUpdateException,
-			FilesystemAccessException {
+			FilesystemAccessException, NoDirectoryEntryException {
 		invokes++;
 		TavernaRun w = getRun(runName);
 		permitUpdate(w);
@@ -945,7 +953,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 
 	@Override
 	public byte[] getRunFileContents(String runName, DirEntryReference d)
-			throws UnknownRunException, FilesystemAccessException {
+			throws UnknownRunException, FilesystemAccessException,
+			NoDirectoryEntryException {
 		invokes++;
 		File f = getFile(getRun(runName), d);
 		return f.getContents(0, -1);
@@ -954,7 +963,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	@Override
 	public void setRunFileContents(String runName, DirEntryReference d,
 			byte[] newContents) throws UnknownRunException, NoUpdateException,
-			FilesystemAccessException {
+			FilesystemAccessException, NoDirectoryEntryException {
 		invokes++;
 		TavernaRun w = getRun(runName);
 		permitUpdate(w);
@@ -963,7 +972,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 
 	@Override
 	public long getRunFileLength(String runName, DirEntryReference d)
-			throws UnknownRunException, FilesystemAccessException {
+			throws UnknownRunException, FilesystemAccessException,
+			NoDirectoryEntryException {
 		invokes++;
 		return getFile(getRun(runName), d).getSize();
 	}
@@ -1189,7 +1199,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	}
 
 	private Directory getDirectory(TavernaRun run, DirEntryReference d)
-			throws FilesystemAccessException {
+			throws FilesystemAccessException, NoDirectoryEntryException {
 		DirectoryEntry dirEntry = getDirEntry(run, d);
 		if (dirEntry instanceof Directory)
 			return (Directory) dirEntry;
@@ -1197,7 +1207,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	}
 
 	private File getFile(TavernaRun run, DirEntryReference d)
-			throws FilesystemAccessException {
+			throws FilesystemAccessException, NoDirectoryEntryException {
 		DirectoryEntry dirEntry = getDirEntry(run, d);
 		if (dirEntry instanceof File)
 			return (File) dirEntry;
@@ -1216,18 +1226,26 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 *         path in the directory reference; an empty path will retrieve the
 	 *         working directory handle itself.
 	 * @throws FilesystemAccessException
-	 *             If there is no such entry (or the directory isn't specified
-	 *             or isn't readable).
+	 *             If the directory isn't specified or isn't readable.
+	 * @throws NoDirectoryEntryException
+	 *             If there is no such entry.
 	 */
 	private DirectoryEntry getDirEntry(TavernaRun run, DirEntryReference d)
-			throws FilesystemAccessException {
+			throws FilesystemAccessException, NoDirectoryEntryException {
 		Directory dir = run.getWorkingDirectory();
 		DirectoryEntry found = dir;
+		boolean mustBeLast = false;
 		for (String bit : d.path.split("/")) {
+			if (mustBeLast)
+				throw new FilesystemAccessException(
+						"trying to take subdirectory of file");
 			found = getDirEntry(bit, dir);
 			dir = null;
-			if (found instanceof Directory)
+			if (found instanceof Directory) {
 				dir = (Directory) found;
+				mustBeLast = false;
+			} else
+				mustBeLast = true;
 		}
 		return found;
 	}
@@ -1243,21 +1261,29 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 * @return The directory entry whose name is equal to the last part of the
 	 *         path; an empty path will retrieve the working directory handle
 	 *         itself.
+	 * @throws NoDirectoryEntryException
+	 *             If there is no such entry.
 	 * @throws FilesystemAccessException
-	 *             If there is no such entry (or the directory isn't specified
-	 *             or isn't readable).
+	 *             If the directory isn't specified or isn't readable.
 	 */
 	DirectoryEntry getDirEntry(TavernaRun run, List<PathSegment> d)
-			throws FilesystemAccessException {
+			throws FilesystemAccessException, NoDirectoryEntryException {
 		Directory dir = run.getWorkingDirectory();
 		DirectoryEntry found = dir;
+		boolean mustBeLast = false;
 		// Must be nested loops; avoids problems with %-encoded "/" chars
 		for (PathSegment segment : d)
 			for (String bit : segment.getPath().split("/")) {
+				if (mustBeLast)
+					throw new FilesystemAccessException(
+							"trying to take subdirectory of file");
 				found = getDirEntry(bit, dir);
 				dir = null;
-				if (found instanceof Directory)
+				if (found instanceof Directory) {
 					dir = (Directory) found;
+					mustBeLast = false;
+				} else
+					mustBeLast = true;
 			}
 		return found;
 	}
@@ -1270,18 +1296,19 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 * @param dir
 	 *            The directory to look in.
 	 * @return The directory entry whose name is equal to the given name.
+	 * @throws NoDirectoryEntryException
+	 *             If there is no such entry.
 	 * @throws FilesystemAccessException
-	 *             If there is no such entry (or the directory isn't specified
-	 *             or isn't readable).
+	 *             If the directory isn't specified or isn't readable.
 	 */
 	private DirectoryEntry getDirEntry(String name, Directory dir)
-			throws FilesystemAccessException {
+			throws FilesystemAccessException, NoDirectoryEntryException {
 		if (dir == null)
 			throw new FilesystemAccessException("no such directory entry");
 		for (DirectoryEntry entry : dir.getContents())
 			if (entry.getName().equals(name))
 				return entry;
-		throw new FilesystemAccessException("no such directory entry");
+		throw new NoDirectoryEntryException("no such directory entry");
 	}
 
 	/**
