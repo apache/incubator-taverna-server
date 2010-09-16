@@ -170,6 +170,7 @@
 		<property name="scheduledTimerTasks">
 			<list>
 				<ref bean="deleteExpiredWorkflowRuns" />
+				<ref bean="scanForTerminatedRuns" />
 			</list>
 		</property>
 	</bean>

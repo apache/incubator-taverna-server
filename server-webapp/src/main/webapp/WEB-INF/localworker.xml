@@ -92,10 +92,22 @@
 			</bean>
 		</property>
 	</bean>
+	<bean id="localworker.runDB.scanner" class="org.springframework.scheduling.timer.ScheduledTimerTask">
+		<property name="delay" value="25000" />
+		<property name="period" value="12345" />
+		<property name="timerTask">
+			<bean id="localworker.scanRuns"
+				class="org.springframework.scheduling.timer.MethodInvokingTimerTaskFactoryBean">
+				<property name="targetObject" ref="localworker.runDB" />
+				<property name="targetMethod" value="checkForFinishNow" />
+			</bean>
+		</property>
+	</bean>
 	
 	<alias name="localworker.policy" alias="policy" />
 	<alias name="localworker.runDB" alias="runCatalog" />
 	<alias name="localworker.factory" alias="runFactory" />
 	<alias name="localworker.factory" alias="listenerFactory" />
 	<alias name="localworker.runDB.cleaner" alias="deleteExpiredWorkflowRuns" />
+	<alias name="localworker.runDB.scanner" alias="scanForTerminatedRuns" />
 </beans>

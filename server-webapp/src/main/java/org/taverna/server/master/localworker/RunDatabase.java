@@ -198,6 +198,20 @@ public class RunDatabase implements RunStore {
 			}
 		});
 	}
+
+	/**
+	 * Scan each run to see if it has finished yet.
+	 */
+	public void checkForFinishNow() {
+		inTransaction(new Act<RuntimeException>(){
+			@Override
+			public void a(Map<String,RemoteRunDelegate> runs) {
+				for (RemoteRunDelegate run: runs.values()) {
+					run.getStatus();
+				}
+			}
+		});
+	}
 }
 
 /**
