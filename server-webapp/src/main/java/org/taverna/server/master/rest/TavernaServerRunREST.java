@@ -116,7 +116,8 @@ public interface TavernaServerRunREST {
 	public String getCreateTime();
 
 	/**
-	 * Returns the time when the workflow run was started (through a user-driven state change).
+	 * Returns the time when the workflow run was started (through a user-driven
+	 * state change).
 	 * 
 	 * @return When the run was started, or <tt>null</tt>.
 	 */
@@ -251,7 +252,7 @@ public interface TavernaServerRunREST {
 	@XmlRootElement
 	@XmlType(name = "")
 	public static class RunDescription {
-		@XmlAttribute
+		@XmlAttribute(namespace = Namespaces.SERVER_REST)
 		public String owner;
 		/** The description of the expiry. */
 		public Expiry expiry;
