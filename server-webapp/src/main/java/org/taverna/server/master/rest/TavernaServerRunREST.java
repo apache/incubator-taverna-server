@@ -251,6 +251,8 @@ public interface TavernaServerRunREST {
 	@XmlRootElement
 	@XmlType(name = "")
 	public static class RunDescription {
+		@XmlAttribute
+		public String owner;
 		/** The description of the expiry. */
 		public Expiry expiry;
 		/** The location of the creation workflow description. */
@@ -363,6 +365,7 @@ public interface TavernaServerRunREST {
 			createTime = new Uri(ui, "createTime");
 			startTime = new Uri(ui, "startTime");
 			finishTime = new Uri(ui, "finishTime");
+			owner = run.getSecurityContext().getOwner().getName();
 		}
 	}
 }

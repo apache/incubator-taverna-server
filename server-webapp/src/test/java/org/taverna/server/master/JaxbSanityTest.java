@@ -23,6 +23,7 @@ import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.rest.DirectoryContents;
 import org.taverna.server.master.rest.ListenerDefinition;
 import org.taverna.server.master.rest.MakeOrUpdateDirEntry;
+import org.taverna.server.master.rest.TavernaServerREST.PolicyView.PolicyDescription;
 import org.taverna.server.master.rest.TavernaServerInputREST.InDesc;
 import org.taverna.server.master.rest.TavernaServerInputREST.InputsDescriptor;
 import org.taverna.server.master.rest.TavernaServerListenersREST.ListenerDescription;
@@ -190,6 +191,12 @@ public class JaxbSanityTest {
 	}
 
 	@Test
+	public void testJAXBForPolicyDescription() throws Exception {
+		JAXBContext.newInstance(PolicyDescription.class).generateSchema(sink);
+		assertTrue(schema().length() > 0);
+	}
+
+	@Test
 	public void testJAXBForEverythingAtOnce() throws Exception {
 		JAXBContext c = JAXBContext.newInstance(DirEntryReference.class,
 				InputDescription.class, RunReference.class, Workflow.class,
@@ -199,7 +206,7 @@ public class JaxbSanityTest {
 				Listeners.class, Properties.class, PropertyDescription.class,
 				PermittedListeners.class, PermittedWorkflows.class,
 				ServerDescription.class, RunDescription.class, Uri.class,
-				RunList.class, PointingRunList.class);
+				RunList.class, PointingRunList.class, PolicyDescription.class);
 		c.generateSchema(sink);
 		//System.out.println(schema());
 		assertTrue(schema().length() > 0);

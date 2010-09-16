@@ -203,13 +203,13 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	private SecurityContext jaxrsContext;
 
 	/** Encapsulates the policies applied by this server. */
-	private Policy policy;
+	Policy policy;
 	/** A factory for workflow runs. */
 	private RunFactory runFactory;
 	/** A storage facility for workflow runs. */
 	private RunStore runStore;
 	/** A factory for event listeners to attach to workflow runs. */
-	private ListenerFactory listenerFactory;
+	ListenerFactory listenerFactory;
 	/** Connection to the persistent state of this service. */
 	private ManagementModel stateModel;
 
@@ -286,17 +286,36 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	}
 
 	@Override
-	public PermittedWorkflows getPermittedWorkflows() {
-		invokes++;
-		return new PermittedWorkflows(policy
-				.listPermittedWorkflows(getPrincipal()));
-	}
+	public PolicyView getPolicyDescription() {
+		return new PolicyView() {
+			@Override
+			public PolicyDescription getDescription(UriInfo ui) {
+				return new PolicyDescription(ui);
+			}
 
-	@Override
-	public PermittedListeners getPermittedListeners() {
-		invokes++;
-		return new PermittedListeners(listenerFactory
-				.getSupportedListenerTypes());
+			@Override
+			public int getMaxSimultaneousRuns() {
+				invokes++;
+				Integer limit = policy.getMaxRuns(getPrincipal());
+				if (limit == null)
+					return policy.getMaxRuns();
+				return min(limit.intValue(), policy.getMaxRuns());
+			}
+
+			@Override
+			public PermittedListeners getPermittedListeners() {
+				invokes++;
+				return new PermittedListeners(listenerFactory
+						.getSupportedListenerTypes());
+			}
+
+			@Override
+			public PermittedWorkflows getPermittedWorkflows() {
+				invokes++;
+				return new PermittedWorkflows(policy
+						.listPermittedWorkflows(getPrincipal()));
+			}
+		};
 	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

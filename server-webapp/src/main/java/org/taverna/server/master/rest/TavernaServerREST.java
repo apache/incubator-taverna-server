@@ -86,44 +86,9 @@ public interface TavernaServerREST {
 	public Response submitWorkflow(Workflow workflow, @Context UriInfo ui)
 			throws NoUpdateException;
 
-	/**
-	 * Gets the maximum number of simultaneous runs that the user may create.
-	 * The <i>actual</i> number they can create may be lower than this. If this
-	 * number is lower than the number they currently have, they will be unable
-	 * to create any runs at all.
-	 * 
-	 * @return The maximum number of runs.
-	 */
-	@GET
-	@Path("policy/runLimit")
-	@Produces("text/plain")
-	@Description("Gets the maximum number of simultaneous runs that the user may create.")
-	public int getMaxSimultaneousRuns();
-
-	/**
-	 * Gets the list of permitted workflows. Any workflow may be submitted if
-	 * the list is empty, otherwise it must be one of the workflows on this
-	 * list.
-	 * 
-	 * @return The list of workflow documents.
-	 */
-	@GET
-	@Path("policy/permittedWorkflows")
-	@Produces( { "application/xml", "application/json" })
-	@Description("Gets the list of permitted workflows.")
-	public PermittedWorkflows getPermittedWorkflows();
-
-	/**
-	 * Gets the list of permitted event listener types. All event listeners must
-	 * be of a type described on this list.
-	 * 
-	 * @return The types of event listeners allowed.
-	 */
-	@GET
-	@Path("policy/permittedListenerTypes")
-	@Produces( { "application/xml", "application/json" })
-	@Description("Gets the list of permitted event listener types.")
-	public PermittedListeners getPermittedListeners();
+	@Path("policy")
+	@Description("The policies supported by this server.")
+	PolicyView getPolicyDescription();
 
 	/**
 	 * Get a particular named run resource.
@@ -154,17 +119,9 @@ public interface TavernaServerREST {
 		 */
 		public PointingRunList runs;
 		/**
-		 * Where to go to find out about the maximum number of runs.
+		 * Reference to the policy description part of this server.
 		 */
-		public Uri runLimit;
-		/**
-		 * Where to go to find out about what workflows are allowed.
-		 */
-		public Uri permittedWorkflows;
-		/**
-		 * Where to go to find out about what listeners are allowed.
-		 */
-		public Uri permittedListeners;
+		public Uri policy;
 		/**
 		 * Where to go to make queries on the provenance database. Not yet
 		 * supported, so not handled by JAXB.
@@ -188,11 +145,94 @@ public interface TavernaServerREST {
 			runs = new PointingRunList(ws, ui.getAbsolutePathBuilder().path(
 					"runs/{uuid}"), ui.getAbsolutePathBuilder().path("runs")
 					.build());
-			runLimit = new Uri(ui, "policy/runLimit");
-			permittedWorkflows = new Uri(ui, "policy/permittedWorkflows");
-			permittedListeners = new Uri(ui, "policy/permittedListenerTypes");
+			policy = new Uri(ui, "policy");
 			// database = new Uri(ui, "database");
 			// TODO make the database point to something real
+		}
+	}
+
+	/**
+	 * How to discover the publicly-visible policies supported by this server.
+	 *
+	 * @author Donal Fellows
+	 */
+	public interface PolicyView {
+		@GET
+		@Path("/")
+		@Produces({"application/xml", "application/json"})
+		@Description("Describe the parts of this policy.")
+		public PolicyDescription getDescription(@Context UriInfo ui);
+
+		/**
+		 * Gets the maximum number of simultaneous runs that the user may create.
+		 * The <i>actual</i> number they can create may be lower than this. If this
+		 * number is lower than the number they currently have, they will be unable
+		 * to create any runs at all.
+		 * 
+		 * @return The maximum number of runs.
+		 */
+		@GET
+		@Path("runLimit")
+		@Produces("text/plain")
+		@Description("Gets the maximum number of simultaneous runs that the user may create.")
+		public int getMaxSimultaneousRuns();
+
+		/**
+		 * Gets the list of permitted workflows. Any workflow may be submitted if
+		 * the list is empty, otherwise it must be one of the workflows on this
+		 * list.
+		 * 
+		 * @return The list of workflow documents.
+		 */
+		@GET
+		@Path("permittedWorkflows")
+		@Produces( { "application/xml", "application/json" })
+		@Description("Gets the list of permitted workflows.")
+		public PermittedWorkflows getPermittedWorkflows();
+
+		/**
+		 * Gets the list of permitted event listener types. All event listeners must
+		 * be of a type described on this list.
+		 * 
+		 * @return The types of event listeners allowed.
+		 */
+		@GET
+		@Path("permittedListenerTypes")
+		@Produces( { "application/xml", "application/json" })
+		@Description("Gets the list of permitted event listener types.")
+		public PermittedListeners getPermittedListeners();
+
+		/**
+		 * A description of the parts of a server policy.
+		 * 
+		 * @author Donal Fellows
+		 */
+		@XmlRootElement
+		@XmlType(name = "")
+		public static class PolicyDescription {
+			/**
+			 * Where to go to find out about the maximum number of runs.
+			 */
+			public Uri runLimit;
+			/**
+			 * Where to go to find out about what workflows are allowed.
+			 */
+			public Uri permittedWorkflows;
+			/**
+			 * Where to go to find out about what listeners are allowed.
+			 */
+			public Uri permittedListenerTypes;
+
+			/** Make a blank server description. */
+			public PolicyDescription() {
+			}
+
+			/** Make a server description. */
+			public PolicyDescription(UriInfo ui) {
+				runLimit = new Uri(ui, "runLimit");
+				permittedWorkflows = new Uri(ui, "permittedWorkflows");
+				permittedListenerTypes = new Uri(ui, "permittedListenerTypes");
+			}
 		}
 	}
 
