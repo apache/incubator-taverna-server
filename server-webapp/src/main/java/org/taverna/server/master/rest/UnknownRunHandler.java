@@ -4,7 +4,7 @@
 package org.taverna.server.master.rest;
 
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.taverna.server.master.TavernaServerImpl.log;
 
 import javax.ws.rs.core.Response;
@@ -20,7 +20,7 @@ public class UnknownRunHandler extends HandlerCore implements
 	public Response toResponse(UnknownRunException exn) {
 		if (managementModel.getLogOutgoingExceptions())
 			log.info("converting exception to response", exn);
-		return Response.status(FORBIDDEN).type(TEXT_PLAIN_TYPE).entity(
+		return Response.status(NOT_FOUND).type(TEXT_PLAIN_TYPE).entity(
 				exn.getMessage()).build();
 	}
 }
