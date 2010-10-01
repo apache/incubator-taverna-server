@@ -18,6 +18,8 @@ import static javax.xml.ws.handler.MessageContext.PATH_INFO;
 import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.common.DirEntryReference.newInstance;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
 import java.security.Principal;
@@ -789,6 +791,68 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			}
 			f.setContents(op.contents);
 			return seeOther(ub.build(f.getName())).build();
+		}
+
+		@Override
+		public Response setFileContents(List<PathSegment> filePath,
+				String name, InputStream contents, UriInfo ui)
+				throws NoDirectoryEntryException, NoUpdateException,
+				FilesystemAccessException {
+			invokes++;
+			permitUpdate(run);
+			Directory d;
+			if (filePath != null && filePath.size() > 0) {
+				DirectoryEntry e = getDirEntry(run, filePath);
+				if (!(e instanceof Directory)) {
+					throw new FilesystemAccessException(
+							"Cannot create a file that is not in a directory.");
+				}
+				d = (Directory) e;
+			} else {
+				d = run.getWorkingDirectory();
+			}
+
+			File f = null;
+			for (DirectoryEntry e : d.getContents()) {
+				if (e.getName().equals(name)) {
+					if (e instanceof File) {
+						f = (File) e;
+						break;
+					}
+					throw new FilesystemAccessException(
+							"Cannot create a file that is not in a directory.");
+				}
+			}
+			if (f == null)
+				f = d.makeEmptyFile(getPrincipal(), name);
+
+			try {
+				byte[] buffer = new byte[65536];
+				int len = contents.read(buffer);
+				if (len >= 0) {
+					if (len < buffer.length) {
+						byte[] newBuf = new byte[len];
+						System.arraycopy(buffer, 0, newBuf, 0, len);
+						buffer = newBuf;
+					}
+					f.setContents(buffer);
+					while (len == 65536) {
+						len = contents.read(buffer);
+						if (len < 1)
+							break;
+						if (len < buffer.length) {
+							byte[] newBuf = new byte[len];
+							System.arraycopy(buffer, 0, newBuf, 0, len);
+							buffer = newBuf;
+						}
+						f.appendContents(buffer);
+					}
+				}
+			} catch (IOException exn) {
+				throw new FilesystemAccessException("failed to transfer bytes",
+						exn);
+			}
+			return seeOther(ui.getAbsolutePath()).build();
 		}
 	}
 

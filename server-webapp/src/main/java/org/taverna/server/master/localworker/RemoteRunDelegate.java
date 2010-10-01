@@ -445,6 +445,16 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext,
 						"failed to write file contents", e);
 			}
 		}
+
+		@Override
+		public void appendContents(byte[] data) throws FilesystemAccessException {
+			try {
+				rf.appendContents(data);
+			} catch (IOException e) {
+				throw new FilesystemAccessException(
+						"failed to write file contents", e);
+			}
+		}
 	}
 
 	@Override

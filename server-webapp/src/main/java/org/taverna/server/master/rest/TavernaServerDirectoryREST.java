@@ -1,11 +1,15 @@
 package org.taverna.server.master.rest;
 
+import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
+
+import java.io.InputStream;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -100,6 +104,35 @@ public interface TavernaServerDirectoryREST {
 			MakeOrUpdateDirEntry operation, @Context UriInfo ui)
 			throws NoUpdateException, FilesystemAccessException,
 			NoDirectoryEntryException;
+
+	/**
+	 * Creates or updates a file in a particular location beneath the working
+	 * directory of the workflow run.
+	 * 
+	 * @param file
+	 *            Which directory contains the file to create or update.
+	 * @param name
+	 *            The name of the file to create or update.
+	 * @param contents
+	 *            Stream of bytes to set the file's contents to.
+	 * @param ui
+	 *            About how this method was called.
+	 * @return An HTTP response indicating what file was created/updated.
+	 * @throws NoDirectoryEntryException
+	 *             If the name of the containing directory can't be looked up.
+	 * @throws NoUpdateException
+	 *             If the user is not permitted to update the run.
+	 * @throws FilesystemAccessException
+	 *             If something went wrong during the filesystem operation.
+	 */
+	@PUT
+	@Path("{path:(.+/)?}{name}")
+	@Consumes(APPLICATION_OCTET_STREAM)
+	@Description("Creates or updates a file in a particular location beneath the working directory of the workflow run.")
+	public Response setFileContents(@PathParam("path") List<PathSegment> file,
+			@PathParam("name") String name, InputStream contents,
+			@Context UriInfo ui) throws NoDirectoryEntryException,
+			NoUpdateException, FilesystemAccessException;
 
 	/**
 	 * Deletes a file or directory that is in or below the working directory of

@@ -70,6 +70,7 @@
 			<ref bean="ExceptionProvider.UnknownRun" />
 			<ref bean="ExceptionProvider.JAXBException" />
 			<ref bean="MessagingProvider.File" />
+			<ref bean="MessagingProvider.InputStream" />
 		</jaxrs:providers>
 	</jaxrs:server>
 	<bean id="ExceptionProvider.BadInputPortName" class="org.taverna.server.master.rest.BadInputPortNameHandler">
@@ -107,6 +108,8 @@
 	</bean>
 	<bean id="MessagingProvider.File" class="org.taverna.server.master.rest.FileMessageHandler">
 		<property name="maxChunkSize" value="65536" />
+	</bean>
+	<bean id="MessagingProvider.InputStream" class="org.taverna.server.master.rest.InputStreamMessageHandler">
 	</bean>
 
 	<!--

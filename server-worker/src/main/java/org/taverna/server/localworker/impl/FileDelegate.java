@@ -40,9 +40,9 @@ public class FileDelegate extends UnicastRemoteObject implements RemoteFile {
 	@Override
 	public byte[] getContents(int offset, int length) throws IOException {
 		if (length == -1)
-			length = (int) (file.length() - offset); 
-		if (length < 0 || length > 1024*64)
-			length = 1024*64;
+			length = (int) (file.length() - offset);
+		if (length < 0 || length > 1024 * 64)
+			length = 1024 * 64;
 		byte[] buffer = new byte[length];
 		FileInputStream fis = null;
 		int read;
@@ -76,7 +76,18 @@ public class FileDelegate extends UnicastRemoteObject implements RemoteFile {
 		try {
 			fos = new FileOutputStream(file);
 			fos.write(data);
-			return;
+		} finally {
+			if (fos != null)
+				fos.close();
+		}
+	}
+
+	@Override
+	public void appendContents(byte[] data) throws IOException {
+		FileOutputStream fos = null;
+		try {
+			fos = new FileOutputStream(file, true);
+			fos.write(data);
 		} finally {
 			if (fos != null)
 				fos.close();

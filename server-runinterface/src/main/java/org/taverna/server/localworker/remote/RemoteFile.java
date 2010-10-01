@@ -36,6 +36,16 @@ public interface RemoteFile extends RemoteDirectoryEntry {
 	public void setContents(byte[] data) throws RemoteException, IOException;
 
 	/**
+	 * Append the data to the file.
+	 * 
+	 * @param data
+	 *            The literal bytes that will be appended.
+	 * @throws IOException
+	 *             If things go wrong.
+	 */
+	public void appendContents(byte[] data) throws RemoteException, IOException;
+
+	/**
 	 * @return The length of the file, in bytes.
 	 */
 	public long getSize() throws RemoteException;

@@ -34,6 +34,17 @@ public interface File extends DirectoryEntry {
 	public void setContents(byte[] data) throws FilesystemAccessException;
 
 	/**
+	 * Append the data to the file.
+	 * 
+	 * @param data
+	 *            The literal bytes that will be added on to the end of the
+	 *            file.
+	 * @throws FilesystemAccessException
+	 *             If the write to the file goes wrong.
+	 */
+	public void appendContents(byte[] data) throws FilesystemAccessException;
+
+	/**
 	 * @return The length of the file, in bytes.
 	 * @throws FilesystemAccessException
 	 *             If the read of the file size goes wrong.
