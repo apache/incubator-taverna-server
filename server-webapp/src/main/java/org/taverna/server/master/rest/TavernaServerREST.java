@@ -26,6 +26,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.apache.cxf.jaxrs.ext.Description;
 import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Uri;
+import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.UnknownRunException;
@@ -112,7 +113,7 @@ public interface TavernaServerREST {
 	 */
 	@XmlRootElement
 	@XmlType(name = "")
-	public static class ServerDescription {
+	public static class ServerDescription extends VersionedElement {
 		/**
 		 * References to the runs (known about by the current user) in this
 		 * server.
@@ -142,6 +143,7 @@ public interface TavernaServerREST {
 		 *            The factory for URIs.
 		 */
 		public ServerDescription(Map<String, TavernaRun> ws, UriInfo ui) {
+			super(true);
 			runs = new PointingRunList(ws, ui.getAbsolutePathBuilder().path(
 					"runs/{uuid}"), ui.getAbsolutePathBuilder().path("runs")
 					.build());
@@ -209,7 +211,7 @@ public interface TavernaServerREST {
 		 */
 		@XmlRootElement
 		@XmlType(name = "")
-		public static class PolicyDescription {
+		public static class PolicyDescription extends VersionedElement {
 			/**
 			 * Where to go to find out about the maximum number of runs.
 			 */
@@ -229,6 +231,7 @@ public interface TavernaServerREST {
 
 			/** Make a server description. */
 			public PolicyDescription(UriInfo ui) {
+				super(true);
 				runLimit = new Uri(ui, "runLimit");
 				permittedWorkflows = new Uri(ui, "permittedWorkflows");
 				permittedListenerTypes = new Uri(ui, "permittedListenerTypes");

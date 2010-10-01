@@ -19,7 +19,7 @@ import org.taverna.server.master.interfaces.TavernaRun;
  */
 @XmlRootElement
 @XmlType(name = "InputDescription")
-public class InputDescription {
+public class InputDescription extends VersionedElement {
 	/**
 	 * The Baclava file handling the description of the elements. May be
 	 * omitted/<tt>null</tt>.
@@ -43,6 +43,7 @@ public class InputDescription {
 	 * @param run
 	 */
 	public InputDescription(TavernaRun run) {
+		super(true);
 		baclavaFile = run.getInputBaclavaFile();
 		if (baclavaFile == null)
 			for (Input i : run.getInputs())

@@ -24,6 +24,7 @@ import javax.xml.bind.annotation.XmlValue;
 import org.apache.cxf.jaxrs.ext.Description;
 import org.taverna.server.master.common.Namespaces;
 import org.taverna.server.master.common.Uri;
+import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
@@ -251,7 +252,7 @@ public interface TavernaServerRunREST {
 	 */
 	@XmlRootElement
 	@XmlType(name = "")
-	public static class RunDescription {
+	public static class RunDescription extends VersionedElement {
 		@XmlAttribute(namespace = Namespaces.SERVER_REST)
 		public String owner;
 		/** The description of the expiry. */
@@ -354,6 +355,7 @@ public interface TavernaServerRunREST {
 		 *            The factory for URIs.
 		 */
 		public RunDescription(TavernaRun run, UriInfo ui) {
+			super(true);
 			creationWorkflow = new Uri(ui, "workflow");
 			expiry = new Expiry(run, ui.getAbsolutePathBuilder().path("expiry"));
 			status = new Uri(ui, "status");

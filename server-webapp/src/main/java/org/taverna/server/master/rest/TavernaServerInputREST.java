@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlValue;
 
 import org.apache.cxf.jaxrs.ext.Description;
 import org.taverna.server.master.common.Uri;
+import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.exceptions.BadInputPortNameException;
 import org.taverna.server.master.exceptions.BadPropertyValueException;
 import org.taverna.server.master.exceptions.BadStateChangeException;
@@ -133,7 +134,7 @@ public interface TavernaServerInputREST {
 	 */
 	@XmlRootElement(name = "runInputs")
 	@XmlType(name = "TavernaRunInputs")
-	public static class InputsDescriptor {
+	public static class InputsDescriptor extends VersionedElement {
 		/**
 		 * Where to find the overall Baclava document filename (if set).
 		 */
@@ -158,6 +159,7 @@ public interface TavernaServerInputREST {
 		 *            The run whose inputs are to be described.
 		 */
 		public InputsDescriptor(UriInfo ui, TavernaRun run) {
+			super(true);
 			baclava = new Uri(ui, "baclava");
 			input = new ArrayList<Uri>();
 			for (Input i : run.getInputs()) {
@@ -174,7 +176,7 @@ public interface TavernaServerInputREST {
 	 */
 	@XmlRootElement(name = "runInput")
 	@XmlType(name = "InputDescription")
-	public static class InDesc {
+	public static class InDesc extends VersionedElement {
 		/** Make a blank description of an input port. */
 		public InDesc() {
 		}
@@ -185,6 +187,7 @@ public interface TavernaServerInputREST {
 		 * @param inputPort
 		 */
 		public InDesc(Input inputPort) {
+			super(true);
 			name = inputPort.getName();
 			if (inputPort.getFile() != null) {
 				assignment = new InDesc.File();

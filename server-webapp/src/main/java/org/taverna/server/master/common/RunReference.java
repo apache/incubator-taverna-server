@@ -1,6 +1,8 @@
 package org.taverna.server.master.common;
 
+import static org.taverna.server.master.common.Namespaces.SERVER;
 import static org.taverna.server.master.common.Namespaces.XLINK;
+import static org.taverna.server.master.common.VersionedElement.VERSION;
 
 import java.net.URI;
 
@@ -26,6 +28,9 @@ public class RunReference {
 	 */
 	@XmlAttribute(name = "href", namespace = XLINK)
 	public URI link;
+	/** What version of server produced this element? */
+	@XmlAttribute(namespace = SERVER)
+	public String serverVersion;
 	/**
 	 * The name of the run. For SOAP.
 	 */
@@ -47,6 +52,7 @@ public class RunReference {
 	 *            A factory for URIs, or <tt>null</tt> if none is to be made.
 	 */
 	public RunReference(String name, UriBuilder ub) {
+		this.serverVersion = VERSION;
 		this.name = name;
 		if (ub != null)
 			this.link = ub.build(name);

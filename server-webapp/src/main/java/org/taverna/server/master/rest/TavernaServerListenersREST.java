@@ -25,6 +25,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.apache.cxf.jaxrs.ext.Description;
 import org.taverna.server.master.common.Uri;
+import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.Listener;
@@ -198,7 +199,7 @@ public interface TavernaServerListenersREST {
 	 */
 	@XmlRootElement
 	@XmlType(name = "ListenerDescription")
-	public class ListenerDescription {
+	public class ListenerDescription extends VersionedElement {
 		/** Where this listener is located. */
 		@XmlAttribute(name = "href", namespace = XLINK)
 		public URI location;
@@ -235,6 +236,7 @@ public interface TavernaServerListenersREST {
 		 *            The factor for URIs.
 		 */
 		public ListenerDescription(Listener listener, UriBuilder ub) {
+			super(true);
 			name = listener.getName();
 			type = listener.getType();
 			configuration = new Uri(ub.clone().path("configuration"));
@@ -288,7 +290,7 @@ public interface TavernaServerListenersREST {
 	 */
 	@XmlRootElement
 	@XmlType(name = "")
-	public static class Listeners {
+	public static class Listeners extends VersionedElement {
 		/**
 		 * The listeners for a workflow run.
 		 */
@@ -309,6 +311,7 @@ public interface TavernaServerListenersREST {
 		 * @param listeners
 		 */
 		public Listeners(List<ListenerDescription> listeners, UriBuilder ub) {
+			super(true);
 			listener = listeners;
 			for (ListenerDescription ld : listeners)
 				ld.location = ub.build(ld.name);
@@ -322,7 +325,7 @@ public interface TavernaServerListenersREST {
 	 */
 	@XmlRootElement
 	@XmlType(name = "")
-	public static class Properties {
+	public static class Properties extends VersionedElement {
 		/**
 		 * The references to the properties of a listener.
 		 */
@@ -344,6 +347,7 @@ public interface TavernaServerListenersREST {
 		 *            The names of the properties.
 		 */
 		public Properties(UriBuilder ub, String[] properties) {
+			super(true);
 			property = new ArrayList<PropertyDescription>(properties.length);
 			for (String propName : properties)
 				property.add(new PropertyDescription(propName, ub));
