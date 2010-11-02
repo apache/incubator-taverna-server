@@ -1201,7 +1201,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 
 		// Security checks
 		policy.permitCreate(p, workflow);
-		if (idMapper.getUsernameForPrincipal(p) == null) {
+		if (idMapper != null && idMapper.getUsernameForPrincipal(p) == null) {
 			log.error("cannot map principal to local user id");
 			throw new NoCreateException(
 					"failed to map security token to local user id");
