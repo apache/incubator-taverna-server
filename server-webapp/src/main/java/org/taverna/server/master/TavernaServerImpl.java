@@ -75,6 +75,7 @@ import org.taverna.server.master.interfaces.DirectoryEntry;
 import org.taverna.server.master.interfaces.File;
 import org.taverna.server.master.interfaces.Input;
 import org.taverna.server.master.interfaces.Listener;
+import org.taverna.server.master.interfaces.LocalIdentityMapper;
 import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.interfaces.TavernaRun;
@@ -216,6 +217,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	ListenerFactory listenerFactory;
 	/** Connection to the persistent state of this service. */
 	private ManagementModel stateModel;
+	/** How to map the user ID to who to run as. */
+	private LocalIdentityMapper idMapper;
 
 	/**
 	 * @param policy
@@ -255,6 +258,14 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 */
 	public void setStateModel(ManagementModel stateModel) {
 		this.stateModel = stateModel;
+	}
+
+	/**
+	 * @param mapper
+	 *            The identity mapper being installed by Spring.
+	 */
+	public void setIdMapper(LocalIdentityMapper mapper) {
+		this.idMapper = mapper;
 	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -1178,15 +1189,23 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			throws NoCreateException {
 		if (!stateModel.getAllowNewWorkflowRuns())
 			throw new NoCreateException("run creation not currently enabled");
-		if (stateModel.getLogIncomingWorkflows())
-			try {
+		try {
+			if (stateModel.getLogIncomingWorkflows()) {
 				StringWriter sw = new StringWriter();
 				workflowSerializer.createMarshaller().marshal(workflow, sw);
 				log.info(sw);
-			} catch (JAXBException e) {
-				log.warn("problem when logging workflow", e);
 			}
+		} catch (JAXBException e) {
+			log.warn("problem when logging workflow", e);
+		}
+
+		// Security checks
 		policy.permitCreate(p, workflow);
+		if (idMapper.getUsernameForPrincipal(p) == null) {
+			log.error("cannot map principal to local user id");
+			throw new NoCreateException(
+					"failed to map security token to local user id");
+		}
 
 		TavernaRun w;
 		try {

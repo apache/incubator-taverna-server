@@ -3,15 +3,16 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
 
-	<bean id="localworker.factory" class="org.taverna.server.master.localworker.ForkRunFactory"
-		scope="singleton" lazy-init="false" init-method="initFactory"
-		destroy-method="killFactory">
+	<bean id="localworker.factory" class="org.taverna.server.master.localworker.IdAwareForkRunFactory"
+		scope="singleton" lazy-init="false" init-method="initMetaFactory"
+		destroy-method="killFactories">
 		<description>
 			The simple policy manager and factory for the baseline
 			localworker case.
 		</description>
 		<property name="state" ref="localworker.state" />
 		<property name="runDB" ref="localworker.runDB" />
+		<property name="idMapper" ref="IdentityMapper" />
 	</bean>
 
 	<bean id="localworker.state" class="org.taverna.server.master.localworker.LocalWorkerState"

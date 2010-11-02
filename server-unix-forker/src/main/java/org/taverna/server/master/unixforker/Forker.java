@@ -1,0 +1,139 @@
+package org.taverna.server.master.unixforker;
+
+import static java.lang.System.err;
+import static java.lang.System.getProperty;
+import static java.lang.System.in;
+import static java.lang.System.out;
+import static java.util.Arrays.asList;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * A simple class that forks off processes when asked to over its standard
+ * input. The one complication is that it forks them off as other users, through
+ * the use of the <tt>sudo</tt> utility. It is Unix-specific.
+ * 
+ * @author Donal Fellows
+ */
+public class Forker extends Thread {
+	private static String password;
+	private static BufferedReader br;
+
+	/**
+	 * Initialization code, which runs before the main loop starts processing.
+	 * 
+	 * @param args
+	 *            The arguments to the program.
+	 * @throws Exception
+	 *             If anything goes wrong.
+	 */
+	public static void init(String[] args) throws Exception {
+		if (args.length < 1)
+			throw new IllegalArgumentException(
+					"wrong # args: must be \"program ?argument ...?\"");
+		FileReader fr = null;
+		try {
+			fr = new FileReader(new File(getProperty("password.file")));
+			password = new BufferedReader(fr).readLine();
+		} catch (IOException e) {
+			err.println("failed to read password from file "
+					+ "described in password.file property");
+			throw e;
+		} finally {
+			if (fr != null)
+				fr.close();
+		}
+		br = new BufferedReader(new InputStreamReader(in));
+	}
+
+	/**
+	 * The body of the main loop of this program.
+	 * 
+	 * @param args
+	 *            The arguments to use when running the other program.
+	 * @return Whether to repeat the loop.
+	 * @throws Exception
+	 *             If anything goes wrong. Note that the loop is repeated if an
+	 *             exception occurs in it.
+	 */
+	public static boolean mainLoopBody(String[] args) throws Exception {
+		String line = br.readLine();
+		if (line == null)
+			return false;
+		List<String> vals = asList(line.split("[ \t]+"));
+		if (vals.size() != 2) {
+			out.println("wrong # values: must be \"username UUID\"");
+			return true;
+		}
+		ProcessBuilder pb = new ProcessBuilder();
+		pb.command()
+				.addAll(asList("sudo", "-u", vals.get(0), "-S", "-H", "--"));
+		List<String> l = new ArrayList<String>(asList(args));
+		l.remove(0);
+		pb.command().addAll(l);
+		pb.command().add(vals.get(1));
+		Forker f = new Forker(pb.start());
+		f.setDaemon(true);
+		f.start();
+		return true;
+	}
+
+	/**
+	 * The main code for this class, which turns this into an executable
+	 * program. Runs the initialisation and then the main loop, in both cases
+	 * with appropriate error handling.
+	 * 
+	 * @param args
+	 *            Arguments to this program.
+	 */
+	public static void main(String... args) {
+		try {
+			init(args);
+			while (true) {
+				try {
+					if (!mainLoopBody(args))
+						break;
+				} catch (Exception e) {
+					e.printStackTrace(err);
+					out.println(e.getClass().getName() + ": " + e.getMessage());
+				}
+			}
+			System.exit(0);
+		} catch (Exception e) {
+			e.printStackTrace(err);
+			System.exit(1);
+		}
+	}
+
+	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+	private Process p;
+
+	public Forker(Process p) {
+		this.p = p;
+	}
+
+	protected void interactWithSudo() throws Exception {
+		p.getInputStream().read(new byte[1024]);
+		OutputStreamWriter os = new OutputStreamWriter(p.getOutputStream());
+		os.write(password + "\n");
+	}
+
+	@Override
+	public final void run() {
+		try {
+			interactWithSudo();
+			p.waitFor();
+		} catch (Exception e) {
+			p.destroy();
+			e.printStackTrace(err);
+		}
+	}
+}

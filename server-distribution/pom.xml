@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>uk.org.taverna.server</groupId>
 	<artifactId>server-distribution</artifactId>
-	<name>Taverna 2 Server Distribution</name>
+	<name>Taverna Server Distribution</name>
 	<packaging>pom</packaging>
 	<scm>
 		<connection>scm:svn:http://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/trunk/server-distribution</connection>

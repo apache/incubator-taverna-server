@@ -26,7 +26,13 @@ public class LocalWorkerState {
 	 * The name of the resource that is the implementation of the subprocess
 	 * that this class will fork off.
 	 */
-	public static final String SUBPROCESS_IMPLEMENTATION_JAR = "util/server.worker.jar";
+	public static final String SERVER_WORKER_IMPLEMENTATION_JAR = "util/server.worker.jar";
+
+	/**
+	 * The name of the resource that is the implementation of the subprocess
+	 * that manages secure forking.
+	 */
+	public static final String SECURE_FORK_IMPLEMENTATION_JAR = "util/secure.fork.jar";
 
 	/**
 	 * @param persistenceManagerFactory
@@ -61,7 +67,19 @@ public class LocalWorkerState {
 	 * expected to be "<i>somewhere/</i><tt>executeWorkflow.sh</tt>".
 	 */
 	String executeWorkflowScript;
+	/** Default value for {@link #executeWorkflowScript}. */
 	transient String defaultExecuteWorkflowScript;
+	/**
+	 * Full path name of the file containing the password used to launch workers
+	 * as other users. The file is normally expected to contain a single line,
+	 * the password, and to be thoroughly locked down so only the user running
+	 * the server (e.g., "<tt>tomcat</tt>") can read it; it will probably reside
+	 * in either the user's home directory or in a system configuration
+	 * directory.
+	 */
+	String passwordFile;
+	/** Default value for {@link #passwordFile}. */
+	transient String defaultPasswordFile;
 	/**
 	 * The extra arguments to pass to the subprocess.
 	 */
@@ -82,7 +100,7 @@ public class LocalWorkerState {
 	 */
 	String serverWorkerJar;
 	private static final String DEFAULT_WORKER_JAR = LocalWorkerState.class
-			.getClassLoader().getResource(SUBPROCESS_IMPLEMENTATION_JAR)
+			.getClassLoader().getResource(SERVER_WORKER_IMPLEMENTATION_JAR)
 			.getFile();
 	/**
 	 * Full path name to the Java binary to use to run the subprocess.
@@ -90,6 +108,14 @@ public class LocalWorkerState {
 	String javaBinary;
 	private static final String DEFAULT_JAVA_BINARY = getProperty("java.home")
 			+ separator + "bin" + separator + "java";
+	/**
+	 * Full path name to the secure fork process's implementation JAR.
+	 */
+	String serverForkerJar;
+	private static final String DEFAULT_FORKER_JAR = LocalWorkerState.class
+			.getClassLoader().getResource(SECURE_FORK_IMPLEMENTATION_JAR)
+			.getFile();
+
 	String registryHost;
 	int registryPort;
 
@@ -232,6 +258,23 @@ public class LocalWorkerState {
 	}
 
 	/**
+	 * @param serverForkerJar
+	 *            the serverForkerJar to set
+	 */
+	public void setServerForkerJar(String serverForkerJar) {
+		this.serverForkerJar = serverForkerJar;
+		store();
+	}
+
+	/**
+	 * @return the serverForkerJar
+	 */
+	public String getServerForkerJar() {
+		load();
+		return serverForkerJar == null ? DEFAULT_FORKER_JAR : serverForkerJar;
+	}
+
+	/**
 	 * @param javaBinary
 	 *            the javaBinary to set
 	 */
@@ -246,6 +289,23 @@ public class LocalWorkerState {
 	public String getJavaBinary() {
 		load();
 		return javaBinary == null ? DEFAULT_JAVA_BINARY : javaBinary;
+	}
+
+	/**
+	 * @param passwordFile
+	 *            the passwordFile to set
+	 */
+	public void setPasswordFile(String passwordFile) {
+		this.passwordFile = passwordFile;
+		store();
+	}
+
+	/**
+	 * @return the passwordFile
+	 */
+	public String getPasswordFile() {
+		load();
+		return passwordFile == null ? defaultPasswordFile : passwordFile;
 	}
 
 	/**
@@ -306,6 +366,8 @@ public class LocalWorkerState {
 				javaBinary = state.getJavaBinary();
 				maxRuns = state.getMaxRuns();
 				serverWorkerJar = state.getServerWorkerJar();
+				serverForkerJar = state.getServerForkerJar();
+				passwordFile = state.getPasswordFile();
 				sleepMS = state.getSleepMS();
 				waitSeconds = state.getWaitSeconds();
 				registryHost = state.getRegistryHost();
@@ -334,6 +396,8 @@ public class LocalWorkerState {
 				state.setJavaBinary(javaBinary);
 				state.setMaxRuns(maxRuns);
 				state.setServerWorkerJar(serverWorkerJar);
+				state.setServerForkerJar(serverForkerJar);
+				state.setPasswordFile(passwordFile);
 				state.setSleepMS(sleepMS);
 				state.setWaitSeconds(waitSeconds);
 				state.setRegistryHost(registryHost);
@@ -373,6 +437,10 @@ class LocalWorkerManagementState {
 	private int sleepMS;
 	@Persistent
 	private String serverWorkerJar;
+	@Persistent
+	private String serverForkerJar;
+	@Persistent
+	private String passwordFile;
 	@Persistent
 	private String javaBinary;
 	@Persistent
@@ -543,5 +611,35 @@ class LocalWorkerManagementState {
 	 */
 	public String getRegistryHost() {
 		return registryHost;
+	}
+
+	/**
+	 * @param serverForkerJar
+	 *            the serverForkerJar to set
+	 */
+	public void setServerForkerJar(String serverForkerJar) {
+		this.serverForkerJar = serverForkerJar;
+	}
+
+	/**
+	 * @return the serverForkerJar
+	 */
+	public String getServerForkerJar() {
+		return serverForkerJar;
+	}
+
+	/**
+	 * @param passwordFile
+	 *            the passwordFile to set
+	 */
+	public void setPasswordFile(String passwordFile) {
+		this.passwordFile = passwordFile;
+	}
+
+	/**
+	 * @return the passwordFile
+	 */
+	public String getPasswordFile() {
+		return passwordFile;
 	}
 }
