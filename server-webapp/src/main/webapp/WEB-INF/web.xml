@@ -8,7 +8,7 @@
 	<description>This is the front-end server engine for Taverna 2 Server.</description>
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
-		<param-value>WEB-INF/beans.xml</param-value>
+		<param-value>WEB-INF/webappBeans.xml</param-value>
 		<description>Where Spring is to load its bean definitions from. DO NOT CHANGE.</description>
 	</context-param>
 	<context-param>

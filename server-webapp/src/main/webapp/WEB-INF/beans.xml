@@ -1,29 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jaxrs="http://cxf.apache.org/jaxrs"
-	xmlns:jaxws="http://cxf.apache.org/jaxws" xmlns:cxf="http://cxf.apache.org/core"
-	xsi:schemaLocation="
-	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
-	http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
-	http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
-	http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd">
-
-	<description>
-		The Taverna Server bean, plus supporting configuration.
-	</description>
-
-	<import resource="classpath:META-INF/cxf/cxf.xml" />
-	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
-	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
-	<import resource="classpath:META-INF/cxf/cxf-extension-jaxrs-binding.xml" />
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
 
 	<bean id="webapp" class="org.taverna.server.master.TavernaServerImpl">
-		<property name="policy" ref="policy" />
+		<property name="policy" ref="localworker.policy" />
 		<property name="listenerFactory" ref="listenerFactory" />
-		<property name="runFactory" ref="runFactory" />
-		<property name="runStore" ref="runCatalog" />
+		<property name="runFactory" ref="localworker.factory" />
+		<property name="runStore" ref="localworker.runDB" />
 		<property name="stateModel" ref="webapp.state" />
 		<property name="idMapper" ref="IdentityMapper" />
 	</bean>
@@ -37,43 +21,6 @@
 		<property name="persistenceManagerFactory" ref="pmf" />
 	</bean>
 
-	<!-- <import resource="example.xml"/>-->
-	<import resource="localworker.xml" />
-
-	<jaxws:endpoint id="master_SOAP" implementor="#webapp"
-		address="/soap" />
-	<jaxrs:server id="root_REST" address="/">
-		<jaxrs:serviceBeans>
-			<ref bean="root_facade" />
-		</jaxrs:serviceBeans>
-		<jaxrs:properties>
-			<entry key="org.apache.cxf.endpoint.private" value="true" />
-		</jaxrs:properties>
-	</jaxrs:server>
-	<jaxrs:server id="master_REST" address="/rest"
-		staticSubresourceResolution="true">
-		<jaxrs:serviceBeans>
-			<ref bean="webapp" />
-		</jaxrs:serviceBeans>
-		<jaxrs:features>
-			<!-- <cxf:logging /> -->
-		</jaxrs:features>
-		<jaxrs:providers>
-			<ref bean="ExceptionProvider.BadInputPortName" />
-			<ref bean="ExceptionProvider.BadPropertyValue" />
-			<ref bean="ExceptionProvider.BadStateChange" />
-			<ref bean="ExceptionProvider.FilesystemAccess" />
-			<ref bean="ExceptionProvider.NoCreate" />
-			<ref bean="ExceptionProvider.NoDestroy" />
-			<ref bean="ExceptionProvider.NoDirectoryEntry" />
-			<ref bean="ExceptionProvider.NoListener" />
-			<ref bean="ExceptionProvider.NoUpdate" />
-			<ref bean="ExceptionProvider.UnknownRun" />
-			<ref bean="ExceptionProvider.JAXBException" />
-			<ref bean="MessagingProvider.File" />
-			<ref bean="MessagingProvider.InputStream" />
-		</jaxrs:providers>
-	</jaxrs:server>
 	<bean id="ExceptionProvider.BadInputPortName" class="org.taverna.server.master.rest.BadInputPortNameHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
@@ -138,13 +85,20 @@
 	</bean>
 
 	<!--
-		<bean id="sessionFactory"
+	<bean id="sessionFactory"
 		class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
-		<property name="dataSource" ref="dataSource" /> <property
-		name="hibernateProperties"> <props> <prop
-		key="hibernate.dialect">org.hibernate.dialect.DerbyDialect</prop>
-		<prop key="hibernate.hbm2ddl.auto">create</prop> </props> </property>
-		<property name="annotatedClasses"> <list> </list> </property> </bean>
+		<property name="dataSource" ref="dataSource" />
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.DerbyDialect</prop>
+				<prop key="hibernate.hbm2ddl.auto">create</prop>
+			</props>
+		</property>
+		<property name="annotatedClasses">
+			<list>
+			</list>
+		</property>
+	</bean>
 	-->
 	<bean id="pmf" class="org.datanucleus.jdo.JDOPersistenceManagerFactory"
 		destroy-method="close">
@@ -175,24 +129,109 @@
 		<property name="password" value="" />
 	</bean>
 
-	<bean id="root_facade" class="org.taverna.server.master.facade.Facade">
-		<property name="file" value="welcome.html" />
-		<property name="pattern" value="SERVICE_URI/" />
+	<bean id="localworker.factory" class="org.taverna.server.master.localworker.IdAwareForkRunFactory"
+		scope="singleton" lazy-init="false" init-method="initMetaFactory"
+		destroy-method="killFactories">
+		<description>
+			The simple policy manager and factory for the baseline
+			localworker case.
+		</description>
+		<property name="state" ref="localworker.state" />
+		<property name="runDB" ref="localworker.runDB" />
+		<property name="idMapper" ref="IdentityMapper" />
 	</bean>
 
-	<bean id="MBeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
-		<property name="locateExistingServerIfPossible" value="true" />
-	</bean>
-	<context:mbean-export server="MBeanServer"
-		default-domain="${my.domain}" />
-
-	<bean id="timerFactory" class="org.springframework.scheduling.timer.TimerFactoryBean">
-		<description>Single point for handling scheduled tasks.</description>
-		<property name="scheduledTimerTasks">
+	<bean id="localworker.state" class="org.taverna.server.master.localworker.LocalWorkerState"
+		scope="singleton" lazy-init="false">
+		<description>
+			The state of the simple factory for the baseline
+			localworker.
+		</description>
+		<property name="defaultLifetime" value="1440">
+			<description>How long the run lasts for by default, in seconds.
+			</description>
+		</property>
+		<property name="maxRuns" value="100">
+			<description>The maximum simultaneous number of runs.</description>
+		</property>
+		<property name="extraArgs">
+			<description>Any extra arguments (memory control, etc.) to pass to
+				the spawned subprocesses.</description>
 			<list>
-				<ref bean="deleteExpiredWorkflowRuns" />
-				<ref bean="scanForTerminatedRuns" />
 			</list>
 		</property>
+		<property name="waitSeconds" value="40">
+			<description>An upper bound (in seconds) on the time to wait for a
+				subprocess to start before failing it.</description>
+		</property>
+		<property name="sleepMS" value="1000">
+			<description>The time to wait (in milliseconds) between polling for
+				the subprocess to complete its registration.</description>
+		</property>
+		<property name="persistenceManagerFactory" ref="pmf" />
+		<!--
+		<property name="javaBinary">
+			<description>The name of the java executable used to run the server
+				worker. Defaults to the executable used to run the hosting
+				environment.</description>
+		</property>
+		-->
+		<!--
+		<property name="serverWorkerJar">
+			<description>The full path to the executable JAR file containing the
+				implementation of the server worker.</description>
+		</property>
+		-->
+		<!--
+		<property name="executeWorkflowScript">
+			<description>The full path to the executeworkflow.sh in either the
+				Taverna 2 Workbench distribution or the Taverna 2 Command Line
+				distribution.</description>
+		</property>
+		-->
 	</bean>
+
+	<bean id="localworker.policy" class="org.taverna.server.master.localworker.PolicyImpl">
+		<description>
+			The implementation of the access control policy
+			supported by the localworker run engine.
+		</description>
+		<property name="state" ref="localworker.state" />
+		<property name="runDB" ref="localworker.runDB" />
+	</bean>
+	<bean id="localworker.runDB" class="org.taverna.server.master.localworker.RunDatabase">
+		<description>
+			The implementation of the catalog of workflow runs
+			supported by the localworker run engine.
+		</description>
+		<property name="state" ref="localworker.state" />
+		<property name="persistenceManagerFactory" ref="pmf" />
+	</bean>
+
+	<bean id="localworker.runDB.cleaner" class="org.springframework.scheduling.timer.ScheduledTimerTask">
+		<property name="delay" value="10000" />
+		<property name="period" value="30000" />
+		<property name="timerTask">
+			<bean id="localworker.cleanDBNow"
+				class="org.springframework.scheduling.timer.MethodInvokingTimerTaskFactoryBean">
+				<property name="targetObject" ref="localworker.runDB" />
+				<property name="targetMethod" value="cleanNow" />
+			</bean>
+		</property>
+	</bean>
+	<bean id="localworker.runDB.scanner" class="org.springframework.scheduling.timer.ScheduledTimerTask">
+		<property name="delay" value="25000" />
+		<property name="period" value="12345" />
+		<property name="timerTask">
+			<bean id="localworker.scanRuns"
+				class="org.springframework.scheduling.timer.MethodInvokingTimerTaskFactoryBean">
+				<property name="targetObject" ref="localworker.runDB" />
+				<property name="targetMethod" value="checkForFinishNow" />
+			</bean>
+		</property>
+	</bean>
+
+	<alias name="localworker.factory" alias="listenerFactory" />
+	<alias name="localworker.runDB.cleaner" alias="timertask.1" />
+	<alias name="localworker.runDB.scanner" alias="timertask.2" />
 </beans>
