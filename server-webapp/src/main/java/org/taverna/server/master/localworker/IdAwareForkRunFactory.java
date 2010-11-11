@@ -51,11 +51,8 @@ import org.taverna.server.master.interfaces.LocalIdentityMapper;
 public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 		ServletContextAware {
 	private JAXBContext context;
-	private int lastStartupCheckCount;
-	private Integer lastExitCode;
 	private int totalRuns;
-	private Process forkerProcess;
-	private PrintWriter forkerChannel;
+	private MetaFactory forker;
 	private Map<String, RemoteRunFactory> factory;
 	private Map<String, String> factoryProcessName;
 
@@ -72,7 +69,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	}
 
 	private void reinitFactory() {
-		boolean makeForker = forkerProcess != null;
+		boolean makeForker = forker != null;
 		try {
 			killForker();
 		} catch (Exception e) {
@@ -229,7 +226,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	 */
 	@ManagedAttribute(description = "How many checks were done for the worker process the last time a spawn was tried.", currencyTimeLimit = 60)
 	public int getLastStartupCheckCount() {
-		return lastStartupCheckCount;
+		return forker == null ? 0 : forker.lastStartupCheckCount();
 	}
 
 	/** @return How many times has a workflow run been spawned by this engine. */
@@ -244,7 +241,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	 */
 	@ManagedAttribute(description = "What was the exit code from the last time the factory subprocess was killed?")
 	public Integer getLastExitCode() {
-		return lastExitCode;
+		return forker == null ? null : forker.lastExitCode();
 	}
 
 	/**
@@ -264,65 +261,207 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 		return result.toArray(new String[result.size()]);
 	}
 
-	public void initMetaFactory() throws IOException {
-		ProcessBuilder p = new ProcessBuilder(getJavaBinary());
-		p.command().add("-Dpassword.file=" + getPasswordFile());
-		p.command().add("-jar");
-		p.command().add(getServerForkerJar());
-		p.command().add(getJavaBinary());
-		p.command().addAll(asList(getExtraArguments()));
-		p.command().add("-jar");
-		p.command().add(getServerWorkerJar());
-		p.command().add(getExecuteWorkflowScript());
-		p.redirectErrorStream(true);
-		p.directory(new File(getProperty("java.io.tmpdir", ".")));
+	/**
+	 * How construction of factories is actually done.
+	 * 
+	 * @author Donal Fellows
+	 */
+	public interface MetaFactory {
+		/**
+		 * Make a factory for the given user.
+		 * 
+		 * @param username
+		 *            Who to make it for.
+		 * @return Handle of the factory.
+		 * @throws Exception
+		 *             If anything goes wrong.
+		 */
+		RemoteRunFactory make(String username) throws Exception;
 
-		// Spawn the subprocess
-		log.info("about to create subprocess: " + p.command());
-		forkerProcess = p.start();
-		forkerChannel = new PrintWriter(new BufferedWriter(
-				new OutputStreamWriter(forkerProcess.getOutputStream())), true);
-		Thread logger = new Thread(new OutputLogger("secure-fork",
-				forkerProcess), "secure-fork.Logger");
-		logger.setDaemon(true);
-		logger.start();
+		/**
+		 * Shut down the meta-factory. It is not defined whether factories
+		 * created by it are also shut down at the same time.
+		 * 
+		 * @throws IOException
+		 *             If something goes wrong when communicating with the
+		 *             meta-factory.
+		 * @throws InterruptedException
+		 *             If something stops us waiting for the shut down to
+		 *             happen.
+		 */
+		void close() throws IOException, InterruptedException;
+
+		int lastStartupCheckCount();
+		Integer lastExitCode();
+	}
+
+	class MetaFactoryImpl implements MetaFactory {
+		private Process process;
+		private PrintWriter channel;
+		private int lastStartupCheckCount;
+		private Integer lastExitCode;
+
+		MetaFactoryImpl() throws IOException {
+			ProcessBuilder p = new ProcessBuilder(getJavaBinary());
+			p.command().add("-Dpassword.file=" + getPasswordFile());
+			p.command().add("-jar");
+			p.command().add(getServerForkerJar());
+			p.command().add(getJavaBinary());
+			p.command().addAll(asList(getExtraArguments()));
+			p.command().add("-jar");
+			p.command().add(getServerWorkerJar());
+			p.command().add(getExecuteWorkflowScript());
+			p.redirectErrorStream(true);
+			p.directory(new File(getProperty("java.io.tmpdir", ".")));
+
+			// Spawn the subprocess
+			log.info("about to create subprocess: " + p.command());
+			process = p.start();
+			channel = new PrintWriter(new BufferedWriter(
+					new OutputStreamWriter(process.getOutputStream())), true);
+			Thread logger = new Thread(
+					new OutputLogger("secure-fork", process),
+					"secure-fork.Logger");
+			logger.setDaemon(true);
+			logger.start();
+		}
+
+		@Override
+		public void close() throws IOException, InterruptedException {
+			try {
+				if (process != null) {
+					log.info("about to close down subprocess");
+					channel.close();
+					int code = -1;
+					try {
+						try {
+							code = process.exitValue();
+							log.info("secure-fork process already dead?");
+						} catch (IllegalThreadStateException e) {
+							try {
+								code = process.waitFor();
+							} catch (InterruptedException e1) {
+								log
+										.info("interrupted waiting for natural death of secure-fork process?!");
+								process.destroy();
+								code = process.waitFor();
+							}
+						}
+					} finally {
+						lastExitCode = code;
+						if (code > 128) {
+							log.info("secure-fork process died with signal="
+									+ (code - 128));
+						} else if (code >= 0) {
+							log
+									.info("secure-fork process killed: code="
+											+ code);
+						} else {
+							log.warn("secure-fork process not yet dead");
+						}
+					}
+				}
+			} finally {
+				process = null;
+				channel = null;
+			}
+		}
+
+		protected void make(String username, String fpn) {
+			log.info("about to request subprocess creation for " + username
+					+ " producing ID " + fpn);
+			channel.println(username + " " + fpn);
+		}
+
+		@Override
+		public RemoteRunFactory make(String username) throws Exception {
+			try {
+				getRegistry().list(); // Validate registry connection first
+			} catch (ConnectException e) {
+				log.warn("connection problems with registry", e);
+			} catch (ConnectIOException e) {
+				log.warn("connection problems with registry", e);
+			} catch (RemoteException e) {
+				if (e.getCause() != null && e.getCause() instanceof Exception) {
+					throw (Exception) e.getCause();
+				}
+				log.warn("connection problems with registry", e);
+			}
+
+			String fpn = state.getFactoryProcessNamePrefix() + randomUUID();
+			make(username, fpn);
+
+			// Wait for the subprocess to register itself in the RMI registry
+			Calendar deadline = Calendar.getInstance();
+			deadline.add(SECOND, state.getWaitSeconds());
+			Exception lastException = null;
+			lastStartupCheckCount = 0;
+			while (deadline.after(Calendar.getInstance())) {
+				try {
+					sleep(state.getSleepMS());
+					lastStartupCheckCount++;
+					log.info("about to look up resource called " + fpn);
+					RemoteRunFactory f = (RemoteRunFactory) getRegistry()
+							.lookup(fpn);
+					log.info("successfully connected to factory subprocess "
+							+ fpn);
+					registerFactory(username, fpn, f);
+					return f;
+				} catch (InterruptedException ie) {
+					continue;
+				} catch (NotBoundException nbe) {
+					lastException = nbe;
+					log.info("resource \"" + fpn + "\" not yet registered...");
+					continue;
+				} catch (RemoteException re) {
+					// Unpack a remote exception if we can
+					lastException = re;
+					try {
+						if (re.getCause() != null)
+							lastException = (Exception) re.getCause();
+					} catch (Throwable t) {
+						// Ignore!
+					}
+				} catch (Exception e) {
+					lastException = e;
+				}
+			}
+			throw lastException;
+		}
+
+		@Override
+		public Integer lastExitCode() {
+			return lastExitCode;
+		}
+
+		@Override
+		public int lastStartupCheckCount() {
+			return lastStartupCheckCount;
+		}
+	}
+
+	void registerFactory(String username, String fpn, RemoteRunFactory f) {
+		factoryProcessName.put(username, fpn);
+		factory.put(username, f);
+	}
+
+	/**
+	 * Makes the connection to the meta-factory that makes factories. Public so
+	 * that Spring can invoke it during start-up.
+	 * 
+	 * @throws IOException
+	 *             If the connection fails.
+	 */
+	public void initMetaFactory() throws IOException {
+		forker = new MetaFactoryImpl();
 	}
 
 	private void killForker() throws IOException, InterruptedException {
 		try {
-			if (forkerProcess != null) {
-				log.info("about to close down subprocess");
-				forkerChannel.close();
-				int code = -1;
-				try {
-					try {
-						code = forkerProcess.exitValue();
-						log.info("secure-fork process already dead?");
-					} catch (IllegalThreadStateException e) {
-						try {
-							code = forkerProcess.waitFor();
-						} catch (InterruptedException e1) {
-							log
-									.info("interrupted waiting for natural death of secure-fork process?!");
-							forkerProcess.destroy();
-							code = forkerProcess.waitFor();
-						}
-					}
-				} finally {
-					lastExitCode = code;
-					if (code > 128) {
-						log.info("secure-fork process died with signal="
-								+ (code - 128));
-					} else if (code >= 0) {
-						log.info("secure-fork process killed: code=" + code);
-					} else {
-						log.warn("secure-fork process not yet dead");
-					}
-				}
-			}
+			if (forker != null)
+				forker.close();
 		} finally {
-			forkerProcess = null;
-			forkerChannel = null;
+			forker = null;
 		}
 	}
 
@@ -335,56 +474,9 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	private void initFactory(String username) throws Exception {
 		if (factory.containsKey(username))
 			return;
-		if (forkerProcess == null)
+		if (forker == null)
 			initMetaFactory();
-		String fpn = state.getFactoryProcessNamePrefix() + randomUUID();
-		log.info("about to request subprocess creation for " + username
-				+ " producing ID " + fpn);
-		forkerChannel.println(username + " " + fpn);
-
-		// Wait for the subprocess to register itself in the RMI registry
-		Calendar deadline = Calendar.getInstance();
-		deadline.add(SECOND, state.getWaitSeconds());
-		Exception lastException = null;
-		lastStartupCheckCount = 0;
-		while (deadline.after(Calendar.getInstance())) {
-			try {
-				sleep(state.getSleepMS());
-				lastStartupCheckCount++;
-				log.info("about to look up resource called " + fpn);
-				try {
-					getRegistry().list(); // Validate registry connection first
-				} catch (ConnectException ce) {
-					log.warn("connection problems with registry", ce);
-				} catch (ConnectIOException e) {
-					log.warn("connection problems with registry", e);
-				}
-				RemoteRunFactory f = (RemoteRunFactory) getRegistry().lookup(
-						fpn);
-				log.info("successfully connected to factory subprocess " + fpn);
-				factoryProcessName.put(username, fpn);
-				factory.put(username, f);
-				return;
-			} catch (InterruptedException ie) {
-				continue;
-			} catch (NotBoundException nbe) {
-				lastException = nbe;
-				log.info("resource \"" + fpn + "\" not yet registered...");
-				continue;
-			} catch (RemoteException re) {
-				// Unpack a remote exception if we can
-				lastException = re;
-				try {
-					if (re.getCause() != null)
-						lastException = (Exception) re.getCause();
-				} catch (Throwable t) {
-					// Ignore!
-				}
-			} catch (Exception e) {
-				lastException = e;
-			}
-		}
-		throw lastException;
+		forker.make(username);
 	}
 
 	private static class OutputLogger implements Runnable {
@@ -468,6 +560,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	public void setIdMapper(LocalIdentityMapper mapper) {
 		this.mapper = mapper;
 	}
+
 	private LocalIdentityMapper mapper;
 
 	@Override
