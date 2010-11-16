@@ -16,6 +16,8 @@ import static javax.ws.rs.core.Response.seeOther;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static javax.xml.ws.handler.MessageContext.PATH_INFO;
 import static org.apache.commons.logging.LogFactory.getLog;
+import static org.joda.time.format.ISODateTimeFormat.dateTime;
+import static org.joda.time.format.ISODateTimeFormat.dateTimeParser;
 import static org.taverna.server.master.common.DirEntryReference.newInstance;
 
 import java.io.IOException;
@@ -23,9 +25,6 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
 import java.security.Principal;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -50,6 +49,7 @@ import javax.xml.ws.handler.MessageContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.cxf.common.security.SimplePrincipal;
+import org.joda.time.DateTime;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.taverna.server.master.common.DirEntryReference;
@@ -118,7 +118,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 */
 	private JAXBContext workflowSerializer;
 	/**
-	 * Whether to log failures during pricipal retrieval. Should be normally on
+	 * Whether to log failures during principal retrieval. Should be normally on
 	 * as it indicates a serious problem, but can be switched off for testing.
 	 */
 	private transient boolean logGetPrincipalFailures = true;
@@ -412,27 +412,27 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			@Override
 			public String getExpiryTime() {
 				invokes++;
-				return df().format(run.getExpiry());
+				return dateTime().print(new DateTime(run.getExpiry()));
 			}
 
 			@Override
 			public String getCreateTime() {
 				invokes++;
-				return df().format(run.getCreationTimestamp());
+				return dateTime().print(new DateTime(run.getCreationTimestamp()));
 			}
 
 			@Override
 			public String getFinishTime() {
 				invokes++;
 				Date f = run.getFinishTimestamp();
-				return f == null ? "" : df().format(f);
+				return f == null ? "" : dateTime().print(new DateTime(f));
 			}
 
 			@Override
 			public String getStartTime() {
 				invokes++;
 				Date f = run.getStartTimestamp();
-				return f == null ? "" : df().format(f);
+				return f == null ? "" : dateTime().print(new DateTime(f));
 			}
 
 			@Override
@@ -457,9 +457,10 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			public String setExpiryTime(String expiry) throws NoUpdateException {
 				invokes++;
 				try {
-					return df().format(
-							updateExpiry(run, df().parse(expiry.trim())));
-				} catch (ParseException e) {
+					return dateTime().print(
+							new DateTime(updateExpiry(run, dateTimeParser()
+									.parseDateTime(expiry.trim()).toDate())));
+				} catch (IllegalArgumentException e) {
 					throw new NoUpdateException(e.getMessage(), e);
 				}
 			}
@@ -1176,14 +1177,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	// SUPPORT METHODS
-
-	private static DateFormat isoFormat;
-
-	static DateFormat df() {
-		if (isoFormat == null)
-			isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-		return isoFormat;
-	}
 
 	private String buildWorkflow(Workflow workflow, Principal p)
 			throws NoCreateException {
