@@ -9,6 +9,15 @@
 	<name>Taverna Server</name>
 	<description>Taverna Server is a service that provides execution of Taverna Workflows, provided they do not access the user interface while executing.</description>
 	<url>http://www.taverna.org.uk/</url>
+
+	<properties>
+		<!-- Set these to control what is used for signing code. -->
+		<signing.keystore>${project.parent.basedir}/src/main/signing/signing.jks</signing.keystore>
+		<signing.user>taverna</signing.user>
+		<signing.password>taverna</signing.password>
+	</properties>
+
+	<!-- Having to edit anything below here is probably indicative of a bug. -->
 	<parent>
 		<artifactId>parent</artifactId>
 		<groupId>net.sf.taverna</groupId>
@@ -104,6 +113,15 @@
 				<role>code review</role>
 			</roles>
 		</contributor>
+		<contributor>
+			<name>David Withers</name>
+			<organization>The University of Manchester</organization>
+			<organizationUrl>http://www.manchester.ac.uk/</organizationUrl>
+			<timezone>0</timezone>
+			<roles>
+				<role>platform</role>
+			</roles>
+		</contributor>
 	</contributors>
 	<ciManagement>
 		<system>Hudson</system>
@@ -187,6 +205,30 @@
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<tagBase>https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/tags</tagBase>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jarsigner-plugin</artifactId>
+				<version>1.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+						<id>sign</id>
+						<phase>package</phase>
+						<configuration>
+							<keystore>${signing.keystore}</keystore>
+							<alias>${signing.user}</alias>
+							<storepass>${signing.password}</storepass>
+							<keypass>${signing.password}</keypass>
+							<excludeClassifiers>
+								<param>tests</param>
+								<param>test-sources</param>
+							</excludeClassifiers>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
