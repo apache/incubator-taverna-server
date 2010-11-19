@@ -2,6 +2,7 @@ package org.taverna.server.localworker.impl;
 
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.exit;
+import static java.lang.System.getProperty;
 import static java.lang.System.out;
 import static java.lang.System.setProperty;
 import static java.lang.System.setSecurityManager;
@@ -200,6 +201,8 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 			throw new Exception("wrong # args: must be \"" + usage + "\"");
 		setProperty("java.security.policy", LocalWorker.class.getClassLoader()
 				.getResource(SECURITY_POLICY_FILE).toExternalForm());
+		if (!getProperty("taverna.suppressrestrictions.rmi","no").equals("yes"))
+			setProperty("java.rmi.server.hostname", "127.0.0.1");
 		setSecurityManager(new RMISecurityManager());
 		String command = args[0];
 		factoryName = args[1];

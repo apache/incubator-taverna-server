@@ -6,6 +6,7 @@ import static java.util.Arrays.asList;
 import static java.util.Calendar.SECOND;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.logging.LogFactory.getLog;
+import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -38,7 +39,7 @@ import org.taverna.server.master.exceptions.NoCreateException;
  * 
  * @author Donal Fellows
  */
-@ManagedResource(objectName = "Taverna:group=Server,name=ForkRunFactory", description = "The factory for simple singleton forked run.")
+@ManagedResource(objectName = JMX_ROOT + "ForkRunFactory", description = "The factory for simple singleton forked run.")
 public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		ServletContextAware {
 	private JAXBContext context;
@@ -222,7 +223,8 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		p.command().add(getExecuteWorkflowScript());
 		p.command().add(factoryProcessName);
 		p.redirectErrorStream(true);
-		p.directory(new File(getProperty("java.io.tmpdir", ".")));
+		p.directory(new File(getProperty("javax.servlet.context.tempdir",
+				getProperty("java.io.tmpdir"))));
 
 		// Spawn the subprocess
 		log.info("about to create subprocess: " + p.command());
@@ -244,13 +246,14 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 				log.info("about to look up resource called "
 						+ factoryProcessName);
 				try {
-					getRegistry().list(); // Validate registry connection first
+					getTheRegistry().list(); // Validate registry connection
+												// first
 				} catch (ConnectException ce) {
 					log.warn("connection problems with registry", ce);
 				} catch (ConnectIOException e) {
 					log.warn("connection problems with registry", e);
 				}
-				factory = (RemoteRunFactory) getRegistry().lookup(
+				factory = (RemoteRunFactory) getTheRegistry().lookup(
 						factoryProcessName);
 				log.info("successfully connected to factory subprocess "
 						+ factoryProcessName);

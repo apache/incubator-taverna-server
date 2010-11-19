@@ -100,8 +100,9 @@ import org.taverna.server.master.soap.TavernaServerSOAP;
  */
 @Path("/")
 @WebService(endpointInterface = "org.taverna.server.master.soap.TavernaServerSOAP", serviceName = "TavernaServer", targetNamespace = Namespaces.SERVER_SOAP)
-@ManagedResource(objectName = "Taverna:group=Server,name=Webapp", description = "The main web-application interface to Taverna Server.")
+@ManagedResource(objectName = TavernaServerImpl.JMX_ROOT + "Webapp", description = "The main web-application interface to Taverna Server.")
 public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
+	public static final String JMX_ROOT = "Taverna:group=Server-v2,name=";
 	/** The logger for the server framework. */
 	public static Log log = getLog(TavernaServerImpl.class);
 
@@ -418,7 +419,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			@Override
 			public String getCreateTime() {
 				invokes++;
-				return dateTime().print(new DateTime(run.getCreationTimestamp()));
+				return dateTime().print(
+						new DateTime(run.getCreationTimestamp()));
 			}
 
 			@Override

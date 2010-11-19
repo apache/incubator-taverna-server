@@ -6,6 +6,7 @@ import static java.util.Arrays.asList;
 import static java.util.Calendar.SECOND;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.logging.LogFactory.getLog;
+import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -47,7 +48,7 @@ import org.taverna.server.master.interfaces.LocalIdentityMapper;
  * 
  * @author Donal Fellows
  */
-@ManagedResource(objectName = "Taverna:group=Server,name=ForkRunFactory", description = "The factory for simple singleton forked run.")
+@ManagedResource(objectName = JMX_ROOT + "IdAwareForkRunFactory", description = "The factory for simple singleton forked run.")
 public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 		ServletContextAware {
 	private JAXBContext context;
@@ -292,6 +293,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 		void close() throws IOException, InterruptedException;
 
 		int lastStartupCheckCount();
+
 		Integer lastExitCode();
 	}
 
@@ -303,7 +305,13 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 
 		MetaFactoryImpl() throws IOException {
 			ProcessBuilder p = new ProcessBuilder(getJavaBinary());
-			p.command().add("-Dpassword.file=" + getPasswordFile());
+			String pwf = getPasswordFile();
+			if (pwf == null) {
+				throw new IllegalStateException(
+						"no configured secureForkPasswordFile, "
+								+ "and no override of passwordFile");
+			}
+			p.command().add("-Dpassword.file=" + pwf);
 			p.command().add("-jar");
 			p.command().add(getServerForkerJar());
 			p.command().add(getJavaBinary());
@@ -312,7 +320,8 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 			p.command().add(getServerWorkerJar());
 			p.command().add(getExecuteWorkflowScript());
 			p.redirectErrorStream(true);
-			p.directory(new File(getProperty("java.io.tmpdir", ".")));
+			p.directory(new File(getProperty("javax.servlet.context.tempdir",
+					getProperty("java.io.tmpdir"))));
 
 			// Spawn the subprocess
 			log.info("about to create subprocess: " + p.command());
@@ -376,7 +385,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 		@Override
 		public RemoteRunFactory make(String username) throws Exception {
 			try {
-				getRegistry().list(); // Validate registry connection first
+				getTheRegistry().list(); // Validate registry connection first
 			} catch (ConnectException e) {
 				log.warn("connection problems with registry", e);
 			} catch (ConnectIOException e) {
@@ -401,7 +410,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 					sleep(state.getSleepMS());
 					lastStartupCheckCount++;
 					log.info("about to look up resource called " + fpn);
-					RemoteRunFactory f = (RemoteRunFactory) getRegistry()
+					RemoteRunFactory f = (RemoteRunFactory) getTheRegistry()
 							.lookup(fpn);
 					log.info("successfully connected to factory subprocess "
 							+ fpn);

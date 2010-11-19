@@ -4,8 +4,10 @@ import static java.lang.System.getSecurityManager;
 import static java.lang.System.setProperty;
 import static java.lang.System.setSecurityManager;
 import static java.rmi.registry.LocateRegistry.createRegistry;
+import static java.rmi.registry.LocateRegistry.getRegistry;
 import static java.rmi.registry.Registry.REGISTRY_PORT;
 import static java.util.Collections.emptyList;
+import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
@@ -38,7 +40,7 @@ import org.taverna.server.master.localworker.RunDatabase.PerRunCallback;
  * 
  * @author Donal Fellows
  */
-@ManagedResource(objectName = "Taverna:group=Server,name=Factory", description = "The factory for runs")
+@ManagedResource(objectName = JMX_ROOT + "Factory", description = "The factory for runs")
 public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		RunFactory {
 	static final Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
@@ -46,7 +48,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	/**
 	 * @return A handle to the current RMI registry.
 	 */
-	protected Registry getRegistry() {
+	protected Registry getTheRegistry() {
 		try {
 			if (registry != null) {
 				registry.list();
@@ -57,8 +59,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 			registry = null;
 		}
 		try {
-			registry = LocateRegistry.getRegistry(getRegistryHost(),
-					getRegistryPort());
+			registry = getRegistry(getRegistryHost(), getRegistryPort());
 			registry.list();
 			return registry;
 		} catch (RemoteException e) {
@@ -67,7 +68,8 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 			log.warn("Will build new registry, "
 					+ "but service restart ability is at risk.");
 			try {
-				registry = LocateRegistry.createRegistry(getRegistryPort());
+				setProperty("java.rmi.server.hostname", "127.0.0.1");
+				registry = createRegistry(getRegistryPort());
 				registry.list();
 				return registry;
 			} catch (RemoteException e2) {
@@ -78,15 +80,24 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 			}
 		}
 		try {
-			registry = LocateRegistry.createRegistry(REGISTRY_PORT);
+			registry = getRegistry(getRegistryHost(), REGISTRY_PORT);
 			registry.list();
 			return registry;
 		} catch (RemoteException e) {
-			log.fatal(
-					"totally failed to get registry handle, even on fallback!",
-					e);
-			registry = null;
-			throw new RuntimeException("No RMI Registry Available");
+			log.warn("Failed to get working RMI registry handle on backup port.");
+			try {
+				setProperty("java.rmi.server.hostname", "127.0.0.1");
+				registry = createRegistry(REGISTRY_PORT);
+				registry.list();
+				return registry;
+			} catch (RemoteException e2) {
+				log.fatal(
+						"totally failed to get registry handle, even on fallback!",
+						e2);
+				log.info("original connection exception", e);
+				registry = null;
+				throw new RuntimeException("No RMI Registry Available");
+			}
 		}
 	}
 
