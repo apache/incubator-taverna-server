@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Example doctype for a Tomcat <Context>; not complete; not really even correct for Valve. -->
+<!DOCTYPE Context [
+	<!ELEMENT Parameter		EMPTY>
+	<!ELEMENT Environment	EMPTY>
+	<!ELEMENT Resource		EMPTY>
+	<!ELEMENT Valve			EMPTY>
+	<!ELEMENT Context		((Parameter|Environment|Resource|Valve)*)>
+	<!ATTLIST Context		path CDATA #REQUIRED>
+	<!ATTLIST Parameter		name NMTOKEN #REQUIRED
+							override CDATA "false" 
+							value CDATA #REQUIRED
+							description CDATA #IMPLIED>
+	<!ATTLIST Environment	name NMTOKEN #REQUIRED
+							override CDATA "false"
+							value CDATA #REQUIRED
+							type CDATA #REQUIRED
+							description CDATA #IMPLIED>
+	<!ATTLIST Resource		auth NMTOKEN #IMPLIED
+							name NMTOKEN #REQUIRED
+							override CDATA "false"
+							scope NMTOKEN "Shareable"
+							type CDATA #REQUIRED
+							description CDATA #IMPLIED>
+	<!ATTLIST Valve			className NMTOKEN #REQUIRED
+							directory CDATA #IMPLIED
+							pattern CDATA "common"
+							prefix CDATA "taverna_server."
+							resolveHosts CDATA "false"
+							suffix CDATA ".log"
+							rotatable CDATA "true"
+							condition CDATA #IMPLIED
+							fileDateFormat CDATA #IMPLIED
+							buffered CDATA "true">
+]>
+<Context path="/taverna2">
+	<!-- Sample logging configuration. -->
+	<Valve className="org.apache.catalina.valves.AccessLogValve" />
+
+	<!-- Two parameters that may well need tuning; they do not have sensible defaults. -->
+	<Parameter name="executeWorkflowScript"
+		value="/usr/local/taverna-commandline-2.2.0/executeworkflow.sh"
+		description="The fully-qualified location of the program to run a workflow." />
+	<Parameter name="secureForkPasswordFile"
+		value="/usr/local/tomcat6.0/conf/sudopass.txt"
+		description="The fully-qualified location of a file containing the password to use with sudo. The password is assumed to be the first line of the file." />
+</Context>
