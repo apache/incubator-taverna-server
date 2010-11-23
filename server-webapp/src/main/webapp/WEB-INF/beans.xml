@@ -65,19 +65,21 @@
 		<property name="identityMappers">
 			<list>
 				<bean id="ExtractingIDMapper" class="org.taverna.server.master.NameIDMapper">
-					<description>An alternate mechanism for mapping users.
+					<description>An alternate mechanism for mapping users. This tries
+						to use an RE to extract the user name from the principal name.
 					</description>
 					<property name="regexp">
 						<description>An optional regexp to extract the local user name
 							from
-							the principal's string description. The first capturing group will
+							the principal's string description. The first capturing group
+							will
 							be the result of the mapping operation.</description>
-						<value>^(.*)$</value>
+						<value>^TAVERNAUSER=(.*)$</value>
 					</property>
 				</bean>
 				<bean id="ConstantIDMapper" class="org.taverna.server.master.ConstantIDMapper">
-					<description>How to map web principals to local users.
-					</description>
+					<description>How to map web principals to local users. This one
+						maps everyone to the same user, "taverna".</description>
 					<property name="constantId" value="taverna" />
 				</bean>
 			</list>
@@ -134,7 +136,8 @@
 
 	<bean id="contextualizer" class="org.taverna.server.master.utils.Contextualizer" />
 
-	<bean id="localworker.factory" class="org.taverna.server.master.localworker.IdAwareForkRunFactory"
+	<bean id="localworker.factory"
+		class="org.taverna.server.master.localworker.IdAwareForkRunFactory"
 		scope="singleton" lazy-init="false" init-method="initMetaFactory"
 		destroy-method="killFactories">
 		<description>
@@ -184,7 +187,7 @@
 		<!--
 		<property name="serverWorkerJar">
 			<description>The full path to the executable JAR file containing the
-				implementation of the server worker.</description>
+			 	implementation of the server worker.</description>
 		</property>
 		-->
 		<!--
@@ -199,7 +202,8 @@
 	<bean id="localworker.policy" class="org.taverna.server.master.localworker.PolicyImpl">
 		<description>
 			The implementation of the access control policy
-			supported by the localworker run engine.
+			supported
+			by the localworker run engine.
 		</description>
 		<property name="state" ref="localworker.state" />
 		<property name="runDB" ref="localworker.runDB" />

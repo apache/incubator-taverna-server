@@ -37,6 +37,7 @@
 	<properties>
 		<version.cxf>2.2.11</version.cxf>
 		<version.spring>2.5.6.SEC02</version.spring>
+		<forker.module>server-unix-forker</forker.module>
 	</properties>
 
 	<dependencies>
@@ -94,7 +95,7 @@
 		</dependency>
 		<dependency>
 			<groupId>uk.org.taverna.server</groupId>
-			<artifactId>server-unix-forker</artifactId>
+			<artifactId>${forker.module}</artifactId>
 			<version>${project.parent.version}</version>
 			<type>jar</type>
 			<classifier>jar-with-dependencies</classifier>
@@ -107,13 +108,22 @@
 			<scope>provided</scope>
 		</dependency>
 		<!--
-			<dependency> <groupId>org.hibernate</groupId>
+		<dependency>
+			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-annotations</artifactId>
-			<version>3.4.0.GA</version> <type>jar</type> <scope>compile</scope>
-			</dependency> <dependency> <groupId>org.hibernate</groupId>
+			<version>3.4.0.GA</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		-->
+		<!--
+		<dependency>
+			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-validator</artifactId>
-			<version>4.0.2.GA</version> <type>jar</type> <scope>compile</scope>
-			</dependency>
+			<version>4.0.2.GA</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
 		-->
 		<dependency>
 			<groupId>org.apache.derby</groupId>
@@ -297,7 +307,7 @@
 								</artifactItem>
 								<artifactItem>
 									<groupId>uk.org.taverna.server</groupId>
-									<artifactId>server-unix-forker</artifactId>
+									<artifactId>${forker.module}</artifactId>
 									<version>${project.parent.version}</version>
 									<classifier>jar-with-dependencies</classifier>
 									<overWrite>false</overWrite>
@@ -338,4 +348,19 @@
 		</resources>
 	</build>
 
+	<profiles>
+		<profile>
+			<id>unix</id>
+			<properties>
+				<forker.module>server-unix-forker</forker.module>
+			</properties>
+		</profile>
+		<profile>
+			<id>win</id>
+			<properties>
+				<!-- This doesn't exist yet. -->
+				<forker.module>server-win-forker</forker.module>
+			</properties>
+		</profile>
+	</profiles>
 </project>
