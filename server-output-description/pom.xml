@@ -10,7 +10,8 @@
 	</parent>
 	<groupId>uk.org.taverna.server</groupId>
 	<artifactId>server-output-description</artifactId>
-	<version>2.2b1-SNAPSHOT</version>
+	<version>0.1-SNAPSHOT</version>
+	<!-- <version>${project.parent.version}</version> -->
 	<name>Taverna Server Output Description Format Library</name>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -19,7 +20,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>3.8.1</version>
+			<version>4.8.1</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
