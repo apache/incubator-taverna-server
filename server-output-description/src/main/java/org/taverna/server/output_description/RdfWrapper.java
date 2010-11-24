@@ -21,7 +21,7 @@ public class RdfWrapper {
 	@XmlElements( {
 			@XmlElement(name = "value", type = LeafValue.class, nillable = false),
 			@XmlElement(name = "list", type = ListValue.class, nillable = false),
-			@XmlElement(name = "error", type = ErrorValue.class, nillable = false), })
+			@XmlElement(name = "error", type = ErrorValue.class, nillable = false) })
 	public List<AbstractValue> outputs = new ArrayList<AbstractValue>();
 	@XmlElement
 	public Run run;
