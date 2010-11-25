@@ -4,6 +4,7 @@ import static org.taverna.server.output_description.Namespaces.RDF;
 import static org.taverna.server.output_description.Namespaces.RUN;
 import static org.taverna.server.output_description.Namespaces.XLINK;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,17 +22,26 @@ public class RdfWrapper {
 	@XmlElements( {
 			@XmlElement(name = "value", type = LeafValue.class, nillable = false),
 			@XmlElement(name = "list", type = ListValue.class, nillable = false),
-			@XmlElement(name = "error", type = ErrorValue.class, nillable = false) })
+			@XmlElement(name = "error", type = ErrorValue.class, nillable = false),
+			@XmlElement(name = "absent", type = AbsentValue.class, nillable = false) })
 	public List<AbstractValue> outputs = new ArrayList<AbstractValue>();
 	@XmlElement
 	public Run run;
 
 	@XmlRootElement(name = "workflowRun", namespace = RUN)
-	@XmlType(namespace = RUN)
+	@XmlType(propOrder = {}, namespace = RUN)
 	public static class Run {
 		@XmlAttribute(namespace = RDF)
 		public String about;
 		@XmlAttribute(namespace = XLINK)
-		public String href;
+		public URI href;
+		@XmlElement(name = "runOf", namespace = RUN, nillable = false)
+		public RunID runid;
+
+		@XmlType(name = "")
+		public static class RunID {
+			@XmlAttribute(namespace = RDF, required = true)
+			public String resource;
+		}
 	}
 }

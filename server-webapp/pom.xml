@@ -81,6 +81,11 @@
 		</dependency>
 		<dependency>
 			<groupId>uk.org.taverna.server</groupId>
+			<artifactId>server-output-description</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>uk.org.taverna.server</groupId>
 			<artifactId>server-runinterface</artifactId>
 			<version>${project.parent.version}</version>
 			<scope>compile</scope>

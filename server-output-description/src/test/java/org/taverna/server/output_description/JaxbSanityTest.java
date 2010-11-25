@@ -46,6 +46,12 @@ public class JaxbSanityTest {
 	}
 
 	@Test
+	public void testJAXBForAbsentValue() throws Exception {
+		JAXBContext.newInstance(AbstractValue.class).generateSchema(sink);
+		assertTrue(schema().length() > 0);
+	}
+
+	@Test
 	public void testJAXBForAbstractValue() throws Exception {
 		JAXBContext.newInstance(AbstractValue.class).generateSchema(sink);
 		assertTrue(schema().length() > 0);
@@ -83,11 +89,11 @@ public class JaxbSanityTest {
 
 	@Test
 	public void testJAXBForEverythingAtOnce() throws Exception {
-		JAXBContext c = JAXBContext.newInstance(AbstractValue.class,
-				ListValue.class, LeafValue.class, ErrorValue.class,
-				Outputs.class, RdfWrapper.class);
+		JAXBContext c = JAXBContext.newInstance(AbsentValue.class,
+				AbstractValue.class, ListValue.class, LeafValue.class,
+				ErrorValue.class, Outputs.class, RdfWrapper.class);
 		c.generateSchema(sink);
-		//System.out.println(schema());
+		// System.out.println(schema());
 		assertTrue(schema().length() > 0);
 	}
 }

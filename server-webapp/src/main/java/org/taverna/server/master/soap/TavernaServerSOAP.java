@@ -22,6 +22,7 @@ import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.rest.TavernaServerREST;
+import org.taverna.server.output_description.RdfWrapper;
 
 /**
  * The SOAP service interface to Taverna 2 Server release 2.
@@ -259,6 +260,28 @@ public interface TavernaServerSOAP {
 			@WebParam(name = "outputFile") String outputFile)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, BadStateChangeException;
+
+	/**
+	 * Return a description of the outputs of a run.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @return RDF as XML
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 * @throws BadStateChangeException
+	 *             If the run is in the {@link Status#Initialized Initialized}
+	 *             state
+	 * @throws FilesystemAccessException
+	 *             If there is an exception when accessing the filesystem.
+	 * @throws NoDirectoryEntryException
+	 *             If things are odd in the filesystem.
+	 */
+	public RdfWrapper getRunOutputDescription(
+			@WebParam(name = "runName") String runName)
+			throws UnknownRunException, BadStateChangeException,
+			FilesystemAccessException, NoDirectoryEntryException;
 
 	/**
 	 * Get the time when the run will be eligible to be automatically deleted.

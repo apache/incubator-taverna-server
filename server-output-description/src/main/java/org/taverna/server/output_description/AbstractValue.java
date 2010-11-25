@@ -1,16 +1,30 @@
 package org.taverna.server.output_description;
 
+import static org.taverna.server.output_description.Namespaces.RDF;
 import static org.taverna.server.output_description.Namespaces.XLINK;
+
+import java.net.URI;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType
-@XmlSeeAlso( { ErrorValue.class, LeafValue.class, ListValue.class })
+@XmlSeeAlso( { ErrorValue.class, LeafValue.class, ListValue.class, AbsentValue.class })
 public abstract class AbstractValue {
 	@XmlAttribute
 	String output;
 	@XmlAttribute(namespace = XLINK)
-	String href;
+	URI href;
+	@XmlAttribute(namespace = RDF)
+	public String about;
+
+	public void setAddress(URI uri, String localAddress) {
+		if (uri.getPath().endsWith("/")) {
+			href = URI.create(uri + "wd/out/" + localAddress);
+		} else {
+			href = URI.create(uri + "/wd/out/" + localAddress);
+		}
+		about = "out/" + localAddress;
+	}
 }

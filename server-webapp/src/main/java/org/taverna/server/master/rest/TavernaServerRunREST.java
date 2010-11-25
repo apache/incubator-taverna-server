@@ -23,14 +23,17 @@ import javax.xml.bind.annotation.XmlValue;
 
 import org.apache.cxf.jaxrs.ext.Description;
 import org.taverna.server.master.common.Namespaces;
+import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
+import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.output_description.RdfWrapper;
 
 /**
  * This represents how a Taverna Server workflow run looks to a RESTful API.
@@ -219,6 +222,28 @@ public interface TavernaServerRunREST {
 	@Produces("text/plain")
 	@Description("Gives the Baclava file where output will be written; empty means use multiple simple files in the out directory.")
 	public String getOutputFile();
+
+	/**
+	 * Get a description of the outputs as RDF.
+	 * 
+	 * @param ui
+	 *            About the URI used to access this operation.
+	 * @return RDF as XML
+	 * @throws BadStateChangeException
+	 *             If the run is in the {@link Status#Initialized Initialized}
+	 *             state.
+	 * @throws FilesystemAccessException
+	 *             If problems occur when accessing the filesystem.
+	 * @throws NoDirectoryEntryException
+	 *             If things are odd in the filesystem.
+	 */
+	@GET
+	@Path("output")
+	@Produces("application/xml")
+	@Description("Gives an RDF description of the outputs, as currently understood")
+	public RdfWrapper getOutputDescription(@Context UriInfo ui)
+			throws BadStateChangeException, FilesystemAccessException,
+			NoDirectoryEntryException;
 
 	/**
 	 * Set the output Baclava file for this workflow run.

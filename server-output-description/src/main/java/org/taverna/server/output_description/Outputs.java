@@ -13,6 +13,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "workflowOutputs")
 @XmlType(propOrder = {})
 public class Outputs {
+	@XmlAttribute(namespace = RDF)
+	public String about;
 	@XmlElement(nillable = false)
 	public List<Contains> contains = new ArrayList<Contains>();
 

@@ -19,6 +19,7 @@ import static org.apache.commons.logging.LogFactory.getLog;
 import static org.joda.time.format.ISODateTimeFormat.dateTime;
 import static org.joda.time.format.ISODateTimeFormat.dateTimeParser;
 import static org.taverna.server.master.common.DirEntryReference.newInstance;
+import static org.taverna.server.master.common.Status.Initialized;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -92,6 +93,10 @@ import org.taverna.server.master.rest.TavernaServerInputREST.InDesc.AbstractCont
 import org.taverna.server.master.rest.TavernaServerListenersREST.ListenerDescription;
 import org.taverna.server.master.rest.TavernaServerListenersREST.TavernaServerListenerREST;
 import org.taverna.server.master.soap.TavernaServerSOAP;
+import org.taverna.server.output_description.RdfWrapper;
+import org.taverna.server.output_description.Outputs.Contains;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * The core implementation of the web application.
@@ -627,6 +632,18 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 					throw new NoListenerException("no such property");
 				}
 			}
+
+			@Override
+			public RdfWrapper getOutputDescription(UriInfo ui)
+					throws BadStateChangeException, FilesystemAccessException,
+					NoDirectoryEntryException {
+				invokes++;
+				if (run.getStatus() == Initialized) {
+					throw new BadStateChangeException(
+							"may not get output description in initial state");
+				}
+				return makeOutputDescriptor(run, ui);
+			}
 		};
 	}
 
@@ -974,6 +991,19 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	// SOAP INTERFACE - Filesystem connection
+
+	@Override
+	public RdfWrapper getRunOutputDescription(String runName)
+			throws UnknownRunException, BadStateChangeException,
+			FilesystemAccessException, NoDirectoryEntryException {
+		invokes++;
+		TavernaRun run = getRun(runName);
+		if (run.getStatus() == Initialized) {
+			throw new BadStateChangeException(
+					"may not get output description in initial state");
+		}
+		return makeOutputDescriptor(run, null);
+	}
 
 	@Override
 	public DirEntryReference[] getRunDirectoryContents(String runName,
@@ -1387,6 +1417,54 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			if (entry.getName().equals(name))
 				return entry;
 		throw new NoDirectoryEntryException("no such directory entry");
+	}
+
+	private static final String T2FLOW_NS = "http://taverna.sf.net/2008/xml/t2flow";
+
+	private void constructContents(TavernaRun run, UriBuilder ub,
+			RdfWrapper descriptor, ArrayList<String> expected) {
+		NodeList nl, nl2;
+		Element e = run.getWorkflow().content[0];
+		nl = e.getElementsByTagNameNS(T2FLOW_NS, "dataflow");
+		if (nl.getLength() == 0)
+			return; // Not t2flow
+		String id = ((Element) nl.item(0)).getAttribute("id");
+		if (id != null && !id.isEmpty())
+			descriptor.run.about = "http://ns.taverna.org.uk/2010/run/" + id;
+		nl = ((Element) nl.item(0)).getElementsByTagNameNS(T2FLOW_NS,
+				"outputPorts");
+		if (nl.getLength() == 0)
+			return; // No outputs
+		nl = ((Element) nl.item(0)).getElementsByTagNameNS(T2FLOW_NS, "port");
+		for (int i = 0; i < nl.getLength(); i++) {
+			nl2 = ((Element) nl.item(i)).getElementsByTagNameNS(T2FLOW_NS,
+					"name");
+			if (nl2.getLength() == 1) {
+				Contains c = new Contains();
+				c.resource = "out/" + nl2.item(0).getTextContent();
+				descriptor.outputsDescription.contains.add(c);
+			}
+		}
+	}
+
+	RdfWrapper makeOutputDescriptor(TavernaRun run, UriInfo ui)
+			throws FilesystemAccessException, NoDirectoryEntryException {
+		RdfWrapper descriptor = new RdfWrapper();
+		UriBuilder ub;
+		if (ui == null)
+			ub = getRestfulRunReferenceBuilder();
+		else
+			ub = fromUri(ui.getAbsolutePathBuilder().path("..").build());
+		descriptor.run.href = ub.build();
+		if (run.getOutputBaclavaFile() != null) {
+			return descriptor;
+		}
+		ArrayList<String> expected = new ArrayList<String>();
+		constructContents(run, ub, descriptor, expected);
+		Directory out = (Directory) getDirEntry("out", run
+				.getWorkingDirectory());
+		// TODO Auto-generated method stub
+		return descriptor;
 	}
 
 	/**

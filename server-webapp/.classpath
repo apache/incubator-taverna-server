@@ -10,5 +10,6 @@
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/server-runinterface"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/server-output-description"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
