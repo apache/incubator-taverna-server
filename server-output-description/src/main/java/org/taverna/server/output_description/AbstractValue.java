@@ -13,9 +13,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlSeeAlso( { ErrorValue.class, LeafValue.class, ListValue.class, AbsentValue.class })
 public abstract class AbstractValue {
 	@XmlAttribute
-	String output;
+	public String output;
 	@XmlAttribute(namespace = XLINK)
-	URI href;
+	public URI href;
 	@XmlAttribute(namespace = RDF)
 	public String about;
 
