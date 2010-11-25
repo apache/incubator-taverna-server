@@ -1,5 +1,8 @@
 package org.taverna.server.master;
 
+import static eu.medsea.util.MimeUtil.UNKNOWN_MIME_TYPE;
+import static eu.medsea.util.MimeUtil.getMimeType;
+import static java.lang.Integer.parseInt;
 import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -21,6 +24,7 @@ import static org.joda.time.format.ISODateTimeFormat.dateTimeParser;
 import static org.taverna.server.master.common.DirEntryReference.newInstance;
 import static org.taverna.server.master.common.Status.Initialized;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -28,8 +32,11 @@ import java.net.URI;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.jws.WebService;
@@ -93,6 +100,11 @@ import org.taverna.server.master.rest.TavernaServerInputREST.InDesc.AbstractCont
 import org.taverna.server.master.rest.TavernaServerListenersREST.ListenerDescription;
 import org.taverna.server.master.rest.TavernaServerListenersREST.TavernaServerListenerREST;
 import org.taverna.server.master.soap.TavernaServerSOAP;
+import org.taverna.server.output_description.AbsentValue;
+import org.taverna.server.output_description.AbstractValue;
+import org.taverna.server.output_description.ErrorValue;
+import org.taverna.server.output_description.LeafValue;
+import org.taverna.server.output_description.ListValue;
 import org.taverna.server.output_description.RdfWrapper;
 import org.taverna.server.output_description.Outputs.Contains;
 import org.w3c.dom.Element;
@@ -1447,6 +1459,61 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		}
 	}
 
+	private void fillInLeafValue(File f, LeafValue lv) {
+		try {
+			byte[] head = f.getContents(0, 1024);
+			lv.contentType = getMimeType(new ByteArrayInputStream(head));
+		} catch (Exception e) {
+			lv.contentType = UNKNOWN_MIME_TYPE;
+		}
+	}
+
+	private void fillInListValue(Directory d, URI baseURI, ListValue lv)
+			throws FilesystemAccessException {
+		Map<Integer, DirectoryEntry> numbered = new HashMap<Integer, DirectoryEntry>();
+		Set<Integer> errors = new HashSet<Integer>();
+		for (DirectoryEntry de : d.getContents()) {
+			String name = de.getName();
+			try {
+				if (name.endsWith(".err")) {
+					name = name.substring(0, name.length() - 4);
+					int i = parseInt(name);
+					if (i >= 0)
+						errors.add(i);
+				} else {
+					int i = parseInt(name);
+					if (i >= 0)
+						numbered.put(i, de);
+				}
+			} catch (NumberFormatException nfe) {
+				// skip
+				break;
+			}
+		}
+		for (int i = 0; !(numbered.isEmpty() && errors.isEmpty()); i++) {
+			AbstractValue av;
+			DirectoryEntry de = numbered.remove(i);
+			if (de != null) {
+				if (de instanceof Directory) {
+					av = new ListValue();
+					fillInListValue((Directory) de, fromUri(baseURI).path(
+							"{dir}").build(Integer.toString(i)), (ListValue) av);
+				} else {
+					av = new LeafValue();
+					fillInLeafValue((File) de, (LeafValue) av);
+				}
+				av.setAddress(baseURI, Integer.toString(i));
+			} else if (errors.remove(i)) {
+				av = new ErrorValue();
+				av.setAddress(baseURI, i + ".err");
+			} else {
+				av = new AbsentValue();
+				av.setAddress(baseURI, Integer.toString(i));
+			}
+			lv.contents.add(av);
+		}
+	}
+
 	RdfWrapper makeOutputDescriptor(TavernaRun run, UriInfo ui)
 			throws FilesystemAccessException, NoDirectoryEntryException {
 		RdfWrapper descriptor = new RdfWrapper();
@@ -1463,7 +1530,32 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		constructContents(run, ub, descriptor, expected);
 		Directory out = (Directory) getDirEntry("out", run
 				.getWorkingDirectory());
-		// TODO Auto-generated method stub
+		URI outUri = ub.path("out").build();
+		for (String outputName : expected) {
+			String eName = outputName + ".err";
+			AbstractValue v = new AbsentValue();
+			for (DirectoryEntry de : out.getContents()) {
+				if (outputName.equals(de.getName())) {
+					if (de instanceof Directory) {
+						v = new ListValue();
+						fillInListValue((Directory) de, outUri, (ListValue) v);
+						break;
+					} else if (de instanceof File) {
+						v = new LeafValue();
+						fillInLeafValue((File) de, (LeafValue) v);
+						break;
+					} else {
+						continue;
+					}
+				} else if (eName.equals(de.getName())) {
+					v = new ErrorValue();
+					break;
+				}
+			}
+			v.setAddress(outUri, outputName);
+			v.output = outputName;
+			descriptor.outputs.add(v);
+		}
 		return descriptor;
 	}
 
