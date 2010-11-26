@@ -7,4 +7,6 @@ import javax.xml.bind.annotation.XmlType;
 public class LeafValue extends AbstractValue {
 	@XmlAttribute
 	public String contentType;
+	@XmlAttribute
+	public Long byteLength;
 }
