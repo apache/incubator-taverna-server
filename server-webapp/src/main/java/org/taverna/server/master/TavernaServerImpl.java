@@ -1,6 +1,5 @@
 package org.taverna.server.master;
 
-import static eu.medsea.util.MimeUtil.UNKNOWN_MIME_TYPE;
 import static eu.medsea.util.MimeUtil.getMimeType;
 import static java.lang.Integer.parseInt;
 import static java.lang.Math.min;
@@ -1431,8 +1430,22 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		throw new NoDirectoryEntryException("no such directory entry");
 	}
 
+	/** Namespace for use when pulling apart a .t2flow document. */
 	private static final String T2FLOW_NS = "http://taverna.sf.net/2008/xml/t2flow";
 
+	/**
+	 * Build the contents description.
+	 * 
+	 * @param run
+	 *            The workflow run this is talking about.
+	 * @param ub
+	 *            How to build URIs.
+	 * @param descriptor
+	 *            The descriptor to modify.
+	 * @param expected
+	 *            The list of outputs that are <i>expected</i> to be produced;
+	 *            they might not actually produce anything though.
+	 */
 	private void constructContents(TavernaRun run, UriBuilder ub,
 			RdfWrapper descriptor, ArrayList<String> expected) {
 		NodeList nl, nl2;
@@ -1459,36 +1472,63 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		}
 	}
 
+	/**
+	 * Fills in attributes specific to a leaf value.
+	 * 
+	 * @param f
+	 *            The file which is the source of the information.
+	 * @param lv
+	 *            The value that is to be updated.
+	 */
 	private void fillInLeafValue(File f, LeafValue lv) {
+		try {
+			lv.byteLength = f.getSize();
+		} catch (FilesystemAccessException e) {
+			// Ignore exception; will result in omitted attribute
+		}
 		try {
 			byte[] head = f.getContents(0, 1024);
 			lv.contentType = getMimeType(new ByteArrayInputStream(head));
 		} catch (Exception e) {
-			lv.contentType = UNKNOWN_MIME_TYPE;
+			lv.contentType = APPLICATION_OCTET_STREAM_TYPE.toString();
 		}
 	}
 
-	private void fillInListValue(Directory d, URI baseURI, ListValue lv)
-			throws FilesystemAccessException {
+	/**
+	 * Fill in attributes and contents specific to a list value.
+	 * 
+	 * @param d
+	 *            The directory which is the source of the information.
+	 * @param baseURI
+	 *            The base URI of the directory.
+	 * @param lv
+	 *            The list value to be built.
+	 */
+	private void fillInListValue(Directory d, URI baseURI, ListValue lv) {
 		Map<Integer, DirectoryEntry> numbered = new HashMap<Integer, DirectoryEntry>();
 		Set<Integer> errors = new HashSet<Integer>();
-		for (DirectoryEntry de : d.getContents()) {
-			String name = de.getName();
-			try {
-				if (name.endsWith(".err")) {
-					name = name.substring(0, name.length() - 4);
-					int i = parseInt(name);
-					if (i >= 0)
-						errors.add(i);
-				} else {
-					int i = parseInt(name);
-					if (i >= 0)
-						numbered.put(i, de);
+		try {
+			for (DirectoryEntry de : d.getContents()) {
+				String name = de.getName();
+				try {
+					if (name.endsWith(".err")) {
+						name = name.substring(0, name.length() - 4);
+						int i = parseInt(name);
+						if (i >= 0)
+							errors.add(i);
+					} else {
+						int i = parseInt(name);
+						if (i >= 0)
+							numbered.put(i, de);
+					}
+				} catch (NumberFormatException nfe) {
+					// skip
+					break;
 				}
-			} catch (NumberFormatException nfe) {
-				// skip
-				break;
 			}
+		} catch (FilesystemAccessException e) {
+			// Couldn't list the directory contents;
+			// We model this as an empty directory.
 		}
 		for (int i = 0; !(numbered.isEmpty() && errors.isEmpty()); i++) {
 			AbstractValue av;
@@ -1514,6 +1554,19 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		}
 	}
 
+	/**
+	 * Construct a description of the outputs of a workflow run.
+	 * 
+	 * @param run
+	 *            The workflow run whose outputs are to be described.
+	 * @param ui
+	 *            The origin for URIs.
+	 * @return The description, which can be serialized to RDF+XML.
+	 * @throws FilesystemAccessException
+	 *             If something goes wrong reading the directories.
+	 * @throws NoDirectoryEntryException
+	 *             If something goes wrong reading the directories.
+	 */
 	RdfWrapper makeOutputDescriptor(TavernaRun run, UriInfo ui)
 			throws FilesystemAccessException, NoDirectoryEntryException {
 		RdfWrapper descriptor = new RdfWrapper();
