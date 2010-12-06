@@ -1,6 +1,7 @@
 package org.taverna.server.localworker.impl;
 
 import static java.io.File.createTempFile;
+import static java.lang.Boolean.parseBoolean;
 import static java.lang.System.out;
 import static org.apache.commons.io.IOUtils.copy;
 import static org.taverna.server.localworker.remote.RemoteStatus.Finished;
@@ -40,7 +41,8 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	static final Map<String, Property> pmap = new HashMap<String, Property>();
 
 	enum Property {
-		STDOUT("stdout"), STDERR("stderr"), EXIT_CODE("exitcode");
+		STDOUT("stdout"), STDERR("stderr"), EXIT_CODE("exitcode"), READY_TO_NOTIFY(
+				"readyToNotify"), EMAIL("notificationAddress");
 
 		private String s;
 
@@ -68,6 +70,8 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	StringWriter stdout;
 	StringWriter stderr;
 	Integer exitCode;
+	boolean readyToSendEmail;
+	String emailAddress;
 
 	/**
 	 * @throws RemoteException
@@ -230,6 +234,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 				finished = true;
 			}
 			exitCode = code;
+			readyToSendEmail = true;
 			if (code > 128) {
 				out.println("workflow aborted, signal=" + (code - 128));
 			} else {
@@ -275,6 +280,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		try {
 			exitCode = subprocess.exitValue();
 			finished = true;
+			readyToSendEmail = true;
 			return Finished;
 		} catch (IllegalThreadStateException e) {
 			return Operating;
@@ -300,6 +306,10 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			return stderr.toString();
 		case EXIT_CODE:
 			return (exitCode == null) ? "" : exitCode.toString();
+		case EMAIL:
+			return emailAddress;
+		case READY_TO_NOTIFY:
+			return Boolean.toString(readyToSendEmail);
 		default:
 			throw new RemoteException("unknown property");
 		}
@@ -318,7 +328,20 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	@Override
 	public void setProperty(String propName, String value)
 			throws RemoteException {
-		throw new RemoteException("property is read only");
+		switch (Property.is(propName)) {
+		case EMAIL:
+			emailAddress = value;
+			return;
+		case READY_TO_NOTIFY:
+			readyToSendEmail = parseBoolean(value);
+			return;
+		case STDOUT:
+		case STDERR:
+		case EXIT_CODE:
+			throw new RemoteException("property is read only");
+		default:
+			throw new RemoteException("unknown property");
+		}
 	}
 
 	@Override

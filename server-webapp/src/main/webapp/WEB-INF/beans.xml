@@ -215,6 +215,7 @@
 		</description>
 		<property name="state" ref="localworker.state" />
 		<property name="persistenceManagerFactory" ref="pmf" />
+		<property name="notifier" ref="localworker.notifier" />
 	</bean>
 
 	<bean id="localworker.runDB.cleaner" class="org.springframework.scheduling.timer.ScheduledTimerTask">
@@ -238,6 +239,10 @@
 				<property name="targetMethod" value="checkForFinishNow" />
 			</bean>
 		</property>
+	</bean>
+	<bean id="localworker.notifier" class="org.taverna.server.master.localworker.EmailCompletionNotifier">
+		<property name="from" value="taverna.server@localhost" />
+		<property name="subject" value="Taverna workflow run finished" />
 	</bean>
 
 	<alias name="localworker.factory" alias="listenerFactory" />

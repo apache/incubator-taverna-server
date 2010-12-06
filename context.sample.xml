@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Example doctype for a Tomcat <Context>; not complete; not really even correct for Valve. -->
+<!-- Example doctype for a Tomcat <Context>; not complete; not really even 
+	correct for Valve. -->
 <!DOCTYPE Context [
 	<!ELEMENT Parameter		EMPTY>
 	<!ELEMENT Environment	EMPTY>
@@ -21,7 +22,8 @@
 							override CDATA "false"
 							scope NMTOKEN "Shareable"
 							type CDATA #REQUIRED
-							description CDATA #IMPLIED>
+							description CDATA #IMPLIED
+							mail.smtp.host CDATA #IMPLIED>
 	<!ATTLIST Valve			className NMTOKEN #REQUIRED
 							directory CDATA #IMPLIED
 							pattern CDATA "common"
@@ -37,11 +39,14 @@
 	<!-- Sample logging configuration. -->
 	<Valve className="org.apache.catalina.valves.AccessLogValve" />
 
-	<!-- Two parameters that may well need tuning; they do not have sensible defaults. -->
+	<!-- Two parameters that may well need tuning; they do not have sensible 
+		defaults. -->
 	<Parameter name="executeWorkflowScript"
 		value="/usr/local/taverna-commandline-2.2.0/executeworkflow.sh"
 		description="The fully-qualified location of the program to run a workflow." />
-	<Parameter name="secureForkPasswordFile"
-		value="/usr/local/tomcat6.0/conf/sudopass.txt"
+	<Parameter name="secureForkPasswordFile" value="/usr/local/tomcat6.0/conf/sudopass.txt"
 		description="The fully-qualified location of a file containing the password to use with sudo. The password is assumed to be the first line of the file." />
+	<Resource name="mail/Session" auth="Container" type="javax.mail.Session"
+		mail.smtp.host="localhost"
+		description="Where the SMTP server for sending notification emails is located." />
 </Context>

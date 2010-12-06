@@ -1,5 +1,7 @@
 package org.taverna.server.master.localworker;
 
+import static java.lang.Integer.parseInt;
+import static org.taverna.server.master.TavernaServerImpl.log;
 import static org.taverna.server.master.localworker.RunConnections.KEY;
 import static org.taverna.server.master.localworker.RunConnections.makeInstance;
 
@@ -19,7 +21,9 @@ import javax.jdo.annotations.PrimaryKey;
 import javax.jdo.annotations.Value;
 
 import org.springframework.beans.factory.annotation.Required;
+import org.taverna.server.master.common.Status;
 import org.taverna.server.master.exceptions.UnknownRunException;
+import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.interfaces.TavernaRun;
@@ -49,8 +53,13 @@ public class RunDatabase implements RunStore {
 		this.state = state;
 	}
 
+	public void setNotifier(CompletionNotifier n) {
+		notifier = n;
+	}
+
 	PersistentContext<RunConnections> ctx;
 	LocalWorkerState state;
+	CompletionNotifier notifier;
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -203,14 +212,40 @@ public class RunDatabase implements RunStore {
 	 * Scan each run to see if it has finished yet.
 	 */
 	public void checkForFinishNow() {
-		inTransaction(new Act<RuntimeException>(){
+		inTransaction(new Act<RuntimeException>() {
 			@Override
-			public void a(Map<String,RemoteRunDelegate> runs) {
-				for (RemoteRunDelegate run: runs.values()) {
-					run.getStatus();
+			public void a(Map<String, RemoteRunDelegate> runs) {
+				for (RemoteRunDelegate run : runs.values()) {
+					if (run.getStatus() == Status.Finished) {
+						for (Listener l : run.getListeners()) {
+							if (!l.getName().equals("io"))
+								continue;
+							try {
+								if (l.getProperty("readyToNotify").equals(
+										"true")) {
+									l.setProperty("readyToNotify", "false");
+									notifyComplete(
+											run,
+											l.getProperty("notificationAddress"),
+											parseInt(l.getProperty("exitcode")));
+								}
+							} catch (Exception e) {
+								log.warn(
+										"failed to do notification of completion",
+										e);
+							}
+						}
+					}
 				}
 			}
 		});
+	}
+
+	void notifyComplete(RemoteRunDelegate run, String string, int code)
+			throws Exception {
+		if (string != null && string.trim().length() > 0 && notifier != null) {
+			notifier.notifyComplete(run, string, code);
+		}
 	}
 }
 
