@@ -1,7 +1,13 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.localworker;
 
 import static java.util.Calendar.MINUTE;
 import static org.taverna.server.master.localworker.AbstractRemoteRunFactory.log;
+import static org.taverna.server.master.utils.FilenameConverter.getDirEntry;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -28,11 +34,13 @@ import org.taverna.server.localworker.remote.RemoteInput;
 import org.taverna.server.localworker.remote.RemoteListener;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.localworker.remote.RemoteStatus;
-import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.common.Status;
+import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadPropertyValueException;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
+import org.taverna.server.master.exceptions.InvalidCredentialException;
+import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.interfaces.Directory;
 import org.taverna.server.master.interfaces.DirectoryEntry;
@@ -41,6 +49,8 @@ import org.taverna.server.master.interfaces.Input;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
+import org.taverna.server.master.rest.TavernaServerRunREST.Security.Credential;
+import org.taverna.server.master.rest.TavernaServerRunREST.Security.Trust;
 
 /**
  * Bridging shim between the WebApp world and the RMI world.
@@ -172,8 +182,8 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext,
 				log.warn("failed to set property", e);
 				if (e.getCause() != null
 						&& e.getCause() instanceof RuntimeException)
-					throw new NoListenerException("failed to set property", e
-							.getCause());
+					throw new NoListenerException("failed to set property",
+							e.getCause());
 				if (e.getCause() != null && e.getCause() instanceof Exception)
 					throw new BadPropertyValueException(
 							"failed to set property", e.getCause());
@@ -305,9 +315,7 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext,
 			try {
 				for (RemoteDirectoryEntry rde : rd.getContents()) {
 					if (rde instanceof RemoteDirectory)
-						result
-								.add(new DirectoryDelegate(
-										(RemoteDirectory) rde));
+						result.add(new DirectoryDelegate((RemoteDirectory) rde));
 					else
 						result.add(new FileDelegate((RemoteFile) rde));
 				}
@@ -447,7 +455,8 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext,
 		}
 
 		@Override
-		public void appendContents(byte[] data) throws FilesystemAccessException {
+		public void appendContents(byte[] data)
+				throws FilesystemAccessException {
 			try {
 				rf.appendContents(data);
 			} catch (IOException e) {
@@ -666,5 +675,128 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext,
 			}
 		};
 		run = ((MarshalledObject<RemoteSingleRun>) in.readObject()).get();
+	}
+
+	private List<Credential> credentials = new ArrayList<Credential>();
+	private List<Trust> trusted = new ArrayList<Trust>();
+
+	@Override
+	public Credential[] getCredentials() {
+		synchronized (credentials) {
+			return credentials.toArray(new Credential[credentials.size()]);
+		}
+	}
+
+	@Override
+	public void addCredential(Credential toAdd) {
+		synchronized (credentials) {
+			int idx = credentials.indexOf(toAdd);
+			if (idx != -1) {
+				credentials.set(idx, toAdd);
+			} else {
+				credentials.add(toAdd);
+			}
+			updatedCredentials();
+		}
+	}
+
+	@Override
+	public void deleteCredential(Credential toDelete) {
+		synchronized (credentials) {
+			if (credentials.remove(toDelete))
+				updatedCredentials();
+		}
+	}
+
+	@Override
+	public Trust[] getTrusted() {
+		synchronized (trusted) {
+			return trusted.toArray(new Trust[trusted.size()]);
+		}
+	}
+
+	@Override
+	public void addTrusted(Trust toAdd) {
+		synchronized (trusted) {
+			int idx = trusted.indexOf(toAdd);
+			if (idx != -1) {
+				trusted.set(idx, toAdd);
+			} else {
+				trusted.add(toAdd);
+			}
+			updatedTrusted();
+		}
+	}
+
+	@Override
+	public void deleteTrusted(Trust toDelete) {
+		synchronized (trusted) {
+			if (trusted.remove(toDelete))
+				updatedTrusted();
+		}
+	}
+
+	private void updatedCredentials() {
+		// TODO Convey the credentials to the back-end
+	}
+
+	private void updatedTrusted() {
+		// TODO Convey the certificates to the back-end
+	}
+
+	@Override
+	public void validateCredential(TavernaRun run, Credential c)
+			throws InvalidCredentialException {
+		if (c.credentialName == null || c.credentialName.trim().length() == 0)
+			throw new InvalidCredentialException(
+					"absent or empty credentialName");
+		if (c.credentialType == null || c.credentialType.trim().length() == 0)
+			throw new InvalidCredentialException(
+					"absent or empty credentialType");
+		if (c.credentialType.equals("password")) {
+			// Special case
+			if (!c.credentialName.matches(".+:.+"))
+				throw new InvalidCredentialException(
+						"malformatted credentialName, given that credentialType is password");
+			return;
+		}
+		if (c.credentialFile == null || c.credentialFile.trim().length() == 0)
+			throw new InvalidCredentialException(
+					"absent or empty credentialFile");
+		File f = resolveFilenameToReadableFile(run, c.credentialFile);
+		try {
+			f.getContents(0, (int) f.getSize());
+			// TODO parse credential contents
+		} catch (FilesystemAccessException e) {
+			throw new InvalidCredentialException(e);
+		}
+	}
+
+	@Override
+	public void validateTrusted(TavernaRun run, Trust t)
+			throws InvalidCredentialException {
+		if (t.certificateFile == null || t.certificateFile.trim().length() == 0)
+			throw new InvalidCredentialException(
+					"absent or empty certificateFile");
+		File f = resolveFilenameToReadableFile(run, t.certificateFile);
+		try {
+			f.getContents(0, (int) f.getSize());
+			// TODO parse certificate contents
+		} catch (FilesystemAccessException e) {
+			throw new InvalidCredentialException(e);
+		}
+	}
+
+	private File resolveFilenameToReadableFile(TavernaRun run, String name)
+			throws InvalidCredentialException {
+		try {
+			return (File) getDirEntry(run, name);
+		} catch (NoDirectoryEntryException e) {
+			throw new InvalidCredentialException(e);
+		} catch (FilesystemAccessException e) {
+			throw new InvalidCredentialException(e);
+		} catch (ClassCastException e) {
+			throw new InvalidCredentialException("not a file", e);
+		}
 	}
 }

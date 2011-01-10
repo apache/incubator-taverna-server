@@ -33,7 +33,13 @@
 	<bean id="ExceptionProvider.FilesystemAccess" class="org.taverna.server.master.rest.FilesystemAccessHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
+	<bean id="ExceptionProvider.InvalidCredential" class="org.taverna.server.master.rest.InvalidCredentialHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
 	<bean id="ExceptionProvider.NoCreate" class="org.taverna.server.master.rest.NoCreateHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.NoCredential" class="org.taverna.server.master.rest.NoCredentialHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
 	<bean id="ExceptionProvider.NoDestroy" class="org.taverna.server.master.rest.NoDestroyHandler">
@@ -46,6 +52,9 @@
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
 	<bean id="ExceptionProvider.NoUpdate" class="org.taverna.server.master.rest.NoUpdateHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.NotOwner" class="org.taverna.server.master.rest.NotOwnerHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
 	<bean id="ExceptionProvider.UnknownRun" class="org.taverna.server.master.rest.UnknownRunHandler">

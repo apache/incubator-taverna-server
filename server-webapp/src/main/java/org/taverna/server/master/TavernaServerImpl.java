@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master;
 
 import static eu.medsea.util.MimeUtil.getMimeType;
@@ -22,6 +27,7 @@ import static org.joda.time.format.ISODateTimeFormat.dateTime;
 import static org.joda.time.format.ISODateTimeFormat.dateTimeParser;
 import static org.taverna.server.master.common.DirEntryReference.newInstance;
 import static org.taverna.server.master.common.Status.Initialized;
+import static org.taverna.server.master.utils.FilenameConverter.getDirEntry;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -69,11 +75,14 @@ import org.taverna.server.master.exceptions.BadInputPortNameException;
 import org.taverna.server.master.exceptions.BadPropertyValueException;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
+import org.taverna.server.master.exceptions.InvalidCredentialException;
 import org.taverna.server.master.exceptions.NoCreateException;
+import org.taverna.server.master.exceptions.NoCredentialException;
 import org.taverna.server.master.exceptions.NoDestroyException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
+import org.taverna.server.master.exceptions.NotOwnerException;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.factories.ListenerFactory;
 import org.taverna.server.master.factories.RunFactory;
@@ -86,6 +95,7 @@ import org.taverna.server.master.interfaces.LocalIdentityMapper;
 import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.interfaces.TavernaSecurityContext;
 import org.taverna.server.master.rest.DirectoryContents;
 import org.taverna.server.master.rest.ListenerDefinition;
 import org.taverna.server.master.rest.MakeOrUpdateDirEntry;
@@ -99,6 +109,7 @@ import org.taverna.server.master.rest.TavernaServerInputREST.InDesc.AbstractCont
 import org.taverna.server.master.rest.TavernaServerListenersREST.ListenerDescription;
 import org.taverna.server.master.rest.TavernaServerListenersREST.TavernaServerListenerREST;
 import org.taverna.server.master.soap.TavernaServerSOAP;
+import org.taverna.server.master.utils.FilenameConverter;
 import org.taverna.server.output_description.AbsentValue;
 import org.taverna.server.output_description.AbstractValue;
 import org.taverna.server.output_description.ErrorValue;
@@ -337,15 +348,15 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			@Override
 			public PermittedListeners getPermittedListeners() {
 				invokes++;
-				return new PermittedListeners(listenerFactory
-						.getSupportedListenerTypes());
+				return new PermittedListeners(
+						listenerFactory.getSupportedListenerTypes());
 			}
 
 			@Override
 			public PermittedWorkflows getPermittedWorkflows() {
 				invokes++;
-				return new PermittedWorkflows(policy
-						.listPermittedWorkflows(getPrincipal()));
+				return new PermittedWorkflows(
+						policy.listPermittedWorkflows(getPrincipal()));
 			}
 		};
 	}
@@ -389,8 +400,9 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 								typeAndConfiguration.type,
 								typeAndConfiguration.configuration).getName();
 						return created(
-								ui.getAbsolutePathBuilder().path(
-										"{listenerName}").build(name)).build();
+								ui.getAbsolutePathBuilder()
+										.path("{listenerName}").build(name))
+								.build();
 					}
 
 					@Override
@@ -411,9 +423,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 								"{name}");
 						for (Listener l : run.getListeners()) {
 							URI base = ub.build(l.getName());
-							result
-									.add(new ListenerDescription(l,
-											fromUri(base)));
+							result.add(new ListenerDescription(l, fromUri(base)));
 						}
 						return new Listeners(result, ub);
 					}
@@ -421,9 +431,167 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			}
 
 			@Override
-			public String getOwner() {
+			public Security getSecurity() throws NotOwnerException {
 				invokes++;
-				return run.getSecurityContext().getOwner().getName();
+				final TavernaSecurityContext context = run.getSecurityContext();
+				if (!getPrincipal().equals(context.getOwner()))
+					throw new NotOwnerException();
+
+				return new Security() {
+					@Override
+					public Descriptor describe(UriInfo ui) {
+						invokes++;
+						return new Descriptor(context.getOwner().getName(),
+								context.getCredentials(), context.getTrusted());
+					}
+
+					@Override
+					public String getOwner() {
+						invokes++;
+						return context.getOwner().getName();
+					}
+
+					@Override
+					public CredentialList listCredentials() {
+						invokes++;
+						return new CredentialList(context.getCredentials());
+					}
+
+					@Override
+					public Credential getParticularCredential(String id)
+							throws NoCredentialException {
+						invokes++;
+						for (Credential c : context.getCredentials())
+							if (c.id.equals(id))
+								return c;
+						throw new NoCredentialException();
+					}
+
+					@Override
+					public Credential setParticularCredential(String id,
+							Credential c, UriInfo ui)
+							throws InvalidCredentialException,
+							BadStateChangeException {
+						invokes++;
+						if (run.getStatus() != Initialized)
+							throw new BadStateChangeException();
+						c.id = id;
+						c.href = ui.getAbsolutePath().toString();
+						context.validateCredential(run, c);
+						context.deleteCredential(c);
+						context.addCredential(c);
+						return c;
+					}
+
+					@Override
+					public Response addCredential(Credential c, UriInfo ui)
+							throws InvalidCredentialException,
+							BadStateChangeException {
+						invokes++;
+						if (run.getStatus() != Initialized)
+							throw new BadStateChangeException();
+						c.id = randomUUID().toString();
+						URI uri = ui.getAbsolutePathBuilder().path("{id}")
+								.build(c.id);
+						c.href = uri.toString();
+						context.validateCredential(run, c);
+						context.addCredential(c);
+						return created(uri).build();
+					}
+
+					@Override
+					public Response deleteAllCredentials(UriInfo ui)
+							throws BadStateChangeException {
+						invokes++;
+						if (run.getStatus() != Initialized)
+							throw new BadStateChangeException();
+						for (Credential c : context.getCredentials())
+							context.deleteCredential(c);
+						return noContent().build();
+					}
+
+					@Override
+					public Response deleteCredential(String id, UriInfo ui)
+							throws BadStateChangeException {
+						invokes++;
+						if (run.getStatus() != Initialized)
+							throw new BadStateChangeException();
+						Credential toDelete = new Credential();
+						toDelete.id = id;
+						context.deleteCredential(toDelete);
+						return noContent().build();
+					}
+
+					@Override
+					public TrustList listTrusted() {
+						invokes++;
+						return new TrustList(context.getTrusted());
+					}
+
+					@Override
+					public Trust getParticularTrust(String id)
+							throws NoCredentialException {
+						invokes++;
+						for (Trust t : context.getTrusted())
+							if (t.id.equals(id))
+								return t;
+						throw new NoCredentialException();
+					}
+
+					@Override
+					public Trust setParticularTrust(String id, Trust t,
+							UriInfo ui) throws InvalidCredentialException,
+							BadStateChangeException {
+						invokes++;
+						if (run.getStatus() != Initialized)
+							throw new BadStateChangeException();
+						t.id = id;
+						t.href = ui.getAbsolutePath().toString();
+						context.validateTrusted(run, t);
+						context.deleteTrusted(t);
+						context.addTrusted(t);
+						return t;
+					}
+
+					@Override
+					public Response addTrust(Trust t, UriInfo ui)
+							throws InvalidCredentialException,
+							BadStateChangeException {
+						invokes++;
+						if (run.getStatus() != Initialized)
+							throw new BadStateChangeException();
+						t.id = randomUUID().toString();
+						URI uri = ui.getAbsolutePathBuilder().path("{id}")
+								.build(t.id);
+						t.href = uri.toString();
+						context.validateTrusted(run, t);
+						context.addTrusted(t);
+						return created(uri).build();
+					}
+
+					@Override
+					public Response deleteAllTrusts(UriInfo ui)
+							throws BadStateChangeException {
+						invokes++;
+						if (run.getStatus() != Initialized)
+							throw new BadStateChangeException();
+						for (Trust t : context.getTrusted())
+							context.deleteTrusted(t);
+						return noContent().build();
+					}
+
+					@Override
+					public Response deleteTrust(String id, UriInfo ui)
+							throws BadStateChangeException {
+						invokes++;
+						if (run.getStatus() != Initialized)
+							throw new BadStateChangeException();
+						Trust toDelete = new Trust();
+						toDelete.id = id;
+						context.deleteTrusted(toDelete);
+						return noContent().build();
+					}
+				};
 			}
 
 			@Override
@@ -595,8 +763,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 				@Override
 				public ListenerDescription getDescription(UriInfo ui) {
 					invokes++;
-					return new ListenerDescription(listen, ui
-							.getAbsolutePathBuilder());
+					return new ListenerDescription(listen,
+							ui.getAbsolutePathBuilder());
 				}
 
 				@Override
@@ -604,8 +772,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 						UriInfo ui) {
 					invokes++;
 					return new TavernaServerListenersREST.Properties(ui
-							.getAbsolutePathBuilder().path("{prop}"), listen
-							.listProperties());
+							.getAbsolutePathBuilder().path("{prop}"),
+							listen.listProperties());
 				}
 
 				@Override
@@ -649,10 +817,9 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 					throws BadStateChangeException, FilesystemAccessException,
 					NoDirectoryEntryException {
 				invokes++;
-				if (run.getStatus() == Initialized) {
+				if (run.getStatus() == Initialized)
 					throw new BadStateChangeException(
 							"may not get output description in initial state");
-				}
 				return makeOutputDescriptor(run, ui);
 			}
 		};
@@ -684,7 +851,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 				NoDirectoryEntryException {
 			invokes++;
 			permitUpdate(run);
-			getDirEntry(run, path).destroy();
+			FilenameConverter.getDirEntry(run, path).destroy();
 			return noContent().build();
 		}
 
@@ -702,7 +869,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 				UriInfo ui, Request req) throws FilesystemAccessException,
 				NoDirectoryEntryException {
 			invokes++;
-			DirectoryEntry de = getDirEntry(run, path);
+			DirectoryEntry de = FilenameConverter.getDirEntry(run, path);
 
 			// How did the user want the result?
 			List<Variant> variants;
@@ -714,8 +881,9 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 				throw new FilesystemAccessException("not a directory or file!");
 			Variant v = req.selectVariant(variants);
 			if (v == null)
-				return notAcceptable(variants).type(TEXT_PLAIN).entity(
-						"Do not know what type of response to produce.")
+				return notAcceptable(variants)
+						.type(TEXT_PLAIN)
+						.entity("Do not know what type of response to produce.")
 						.build();
 
 			// Produce the content to deliver up
@@ -729,8 +897,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			else
 				// Only for directories...
 				// XML or JSON; let CXF pick what to do
-				result = new DirectoryContents(ui, ((Directory) de)
-						.getContents());
+				result = new DirectoryContents(ui,
+						((Directory) de).getContents());
 			return ok(result).type(v.getMediaType()).build();
 		}
 
@@ -748,7 +916,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 				UriInfo ui, HttpHeaders headers)
 				throws FilesystemAccessException, NoDirectoryEntryException {
 			invokes++;
-			DirectoryEntry de = getDirEntry(run, path);
+			DirectoryEntry de = FilenameConverter.getDirEntry(run, path);
 
 			// How did the user want the result?
 			List<Variant> variants;
@@ -770,8 +938,9 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 				}
 			}
 			if (wanted == null)
-				return notAcceptable(variants).type(TEXT_PLAIN).entity(
-						"Do not know what type of response to produce.")
+				return notAcceptable(variants)
+						.type(TEXT_PLAIN)
+						.entity("Do not know what type of response to produce.")
 						.build();
 
 			// Produce the content to deliver up
@@ -785,8 +954,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			else
 				// Only for directories...
 				// XML or JSON; let CXF pick what to do
-				result = new DirectoryContents(ui, ((Directory) de)
-						.getContents());
+				result = new DirectoryContents(ui,
+						((Directory) de).getContents());
 			return ok(result).type(wanted).build();
 		}
 
@@ -796,7 +965,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 				FilesystemAccessException, NoDirectoryEntryException {
 			invokes++;
 			permitUpdate(run);
-			DirectoryEntry container = getDirEntry(run, parent);
+			DirectoryEntry container = FilenameConverter.getDirEntry(run, parent);
 			if (!(container instanceof Directory))
 				throw new FilesystemAccessException(
 						"You may not "
@@ -844,7 +1013,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			permitUpdate(run);
 			Directory d;
 			if (filePath != null && filePath.size() > 0) {
-				DirectoryEntry e = getDirEntry(run, filePath);
+				DirectoryEntry e = FilenameConverter.getDirEntry(run, filePath);
 				if (!(e instanceof Directory)) {
 					throw new FilesystemAccessException(
 							"Cannot create a file that is not in a directory.");
@@ -900,6 +1069,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	// SOAP INTERFACE
+
+	// FIXME: SOAP interface to security
 
 	@Override
 	public RunReference[] listRuns() {
@@ -1067,7 +1238,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		invokes++;
 		TavernaRun w = getRun(runName);
 		permitUpdate(w);
-		getDirEntry(w, d).destroy();
+		FilenameConverter.getDirEntry(w, d).destroy();
 	}
 
 	@Override
@@ -1333,103 +1504,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		throw new FilesystemAccessException("not a file");
 	}
 
-	/**
-	 * Get a named directory entry from a workflow run.
-	 * 
-	 * @param run
-	 *            The run whose working directory is to be used as the root of
-	 *            the search.
-	 * @param d
-	 *            The directory reference describing what to look up.
-	 * @return The directory entry whose name is equal to the last part of the
-	 *         path in the directory reference; an empty path will retrieve the
-	 *         working directory handle itself.
-	 * @throws FilesystemAccessException
-	 *             If the directory isn't specified or isn't readable.
-	 * @throws NoDirectoryEntryException
-	 *             If there is no such entry.
-	 */
-	private DirectoryEntry getDirEntry(TavernaRun run, DirEntryReference d)
-			throws FilesystemAccessException, NoDirectoryEntryException {
-		Directory dir = run.getWorkingDirectory();
-		DirectoryEntry found = dir;
-		boolean mustBeLast = false;
-		for (String bit : d.path.split("/")) {
-			if (mustBeLast)
-				throw new FilesystemAccessException(
-						"trying to take subdirectory of file");
-			found = getDirEntry(bit, dir);
-			dir = null;
-			if (found instanceof Directory) {
-				dir = (Directory) found;
-				mustBeLast = false;
-			} else
-				mustBeLast = true;
-		}
-		return found;
-	}
-
-	/**
-	 * Get a named directory entry from a workflow run.
-	 * 
-	 * @param run
-	 *            The run whose working directory is to be used as the root of
-	 *            the search.
-	 * @param d
-	 *            The path segments describing what to look up.
-	 * @return The directory entry whose name is equal to the last part of the
-	 *         path; an empty path will retrieve the working directory handle
-	 *         itself.
-	 * @throws NoDirectoryEntryException
-	 *             If there is no such entry.
-	 * @throws FilesystemAccessException
-	 *             If the directory isn't specified or isn't readable.
-	 */
-	DirectoryEntry getDirEntry(TavernaRun run, List<PathSegment> d)
-			throws FilesystemAccessException, NoDirectoryEntryException {
-		Directory dir = run.getWorkingDirectory();
-		DirectoryEntry found = dir;
-		boolean mustBeLast = false;
-		// Must be nested loops; avoids problems with %-encoded "/" chars
-		for (PathSegment segment : d)
-			for (String bit : segment.getPath().split("/")) {
-				if (mustBeLast)
-					throw new FilesystemAccessException(
-							"trying to take subdirectory of file");
-				found = getDirEntry(bit, dir);
-				dir = null;
-				if (found instanceof Directory) {
-					dir = (Directory) found;
-					mustBeLast = false;
-				} else
-					mustBeLast = true;
-			}
-		return found;
-	}
-
-	/**
-	 * Get a named directory entry from a directory.
-	 * 
-	 * @param name
-	 *            The name of the entry; must be "<tt>/</tt>"-free.
-	 * @param dir
-	 *            The directory to look in.
-	 * @return The directory entry whose name is equal to the given name.
-	 * @throws NoDirectoryEntryException
-	 *             If there is no such entry.
-	 * @throws FilesystemAccessException
-	 *             If the directory isn't specified or isn't readable.
-	 */
-	private DirectoryEntry getDirEntry(String name, Directory dir)
-			throws FilesystemAccessException, NoDirectoryEntryException {
-		if (dir == null)
-			throw new FilesystemAccessException("no such directory entry");
-		for (DirectoryEntry entry : dir.getContents())
-			if (entry.getName().equals(name))
-				return entry;
-		throw new NoDirectoryEntryException("no such directory entry");
-	}
-
 	/** Namespace for use when pulling apart a .t2flow document. */
 	private static final String T2FLOW_NS = "http://taverna.sf.net/2008/xml/t2flow";
 
@@ -1536,8 +1610,10 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			if (de != null) {
 				if (de instanceof Directory) {
 					av = new ListValue();
-					fillInListValue((Directory) de, fromUri(baseURI).path(
-							"{dir}").build(Integer.toString(i)), (ListValue) av);
+					fillInListValue(
+							(Directory) de,
+							fromUri(baseURI).path("{dir}").build(
+									Integer.toString(i)), (ListValue) av);
 				} else {
 					av = new LeafValue();
 					fillInLeafValue((File) de, (LeafValue) av);
@@ -1581,8 +1657,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		}
 		ArrayList<String> expected = new ArrayList<String>();
 		constructContents(run, ub, descriptor, expected);
-		Directory out = (Directory) getDirEntry("out", run
-				.getWorkingDirectory());
+		Directory out = (Directory) getDirEntry(run, "out");
 		URI outUri = ub.path("out").build();
 		for (String outputName : expected) {
 			String eName = outputName + ".err";

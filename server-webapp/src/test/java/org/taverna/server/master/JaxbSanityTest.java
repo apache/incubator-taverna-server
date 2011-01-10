@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master;
 
 import static org.junit.Assert.assertEquals;
@@ -35,6 +40,7 @@ import org.taverna.server.master.rest.TavernaServerREST.PermittedWorkflows;
 import org.taverna.server.master.rest.TavernaServerREST.PointingRunList;
 import org.taverna.server.master.rest.TavernaServerREST.RunList;
 import org.taverna.server.master.rest.TavernaServerREST.ServerDescription;
+import org.taverna.server.master.rest.TavernaServerRunREST;
 import org.taverna.server.master.rest.TavernaServerRunREST.RunDescription;
 
 /**
@@ -46,7 +52,10 @@ import org.taverna.server.master.rest.TavernaServerRunREST.RunDescription;
 public class JaxbSanityTest {
 	SchemaOutputResolver sink;
 	StringWriter schema;
-	String schema() {return schema.toString();}
+
+	String schema() {
+		return schema.toString();
+	}
 
 	@Before
 	public void init() {
@@ -63,6 +72,15 @@ public class JaxbSanityTest {
 		assertEquals("", schema());
 	}
 
+	private boolean printSchema = false;
+
+	private void testJAXB(Class<?>... classes) throws Exception {
+		JAXBContext.newInstance(classes).generateSchema(sink);
+		if (printSchema)
+			System.out.println(schema());
+		assertTrue(schema().length() > 0);
+	}
+
 	@Test
 	public void testJAXBForDirEntryReference() throws Exception {
 		JAXBContext.newInstance(DirEntryReference.class).generateSchema(sink);
@@ -71,144 +89,150 @@ public class JaxbSanityTest {
 
 	@Test
 	public void testJAXBForInputDescription() throws Exception {
-		JAXBContext.newInstance(InputDescription.class).generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(InputDescription.class);
 	}
 
 	@Test
 	public void testJAXBForRunReference() throws Exception {
-		JAXBContext.newInstance(RunReference.class).generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(RunReference.class);
 	}
 
 	@Test
 	public void testJAXBForWorkflow() throws Exception {
-		JAXBContext.newInstance(Workflow.class).generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(Workflow.class);
 	}
 
 	@Test
 	public void testJAXBForStatus() throws Exception {
-		JAXBContext.newInstance(Status.class).generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(Status.class);
 	}
 
 	@Test
 	public void testJAXBForUri() throws Exception {
-		JAXBContext.newInstance(Uri.class).generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(Uri.class);
 	}
 
 	@Test
 	public void testJAXBForDirectoryContents() throws Exception {
-		JAXBContext.newInstance(DirectoryContents.class).generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(DirectoryContents.class);
 	}
 
 	@Test
 	public void testJAXBForListenerDefinition() throws Exception {
-		JAXBContext.newInstance(ListenerDefinition.class).generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(ListenerDefinition.class);
 	}
 
 	@Test
 	public void testJAXBForMakeOrUpdateDirEntry() throws Exception {
-		JAXBContext.newInstance(MakeOrUpdateDirEntry.class)
-				.generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(MakeOrUpdateDirEntry.class);
 	}
 
 	@Test
 	public void testJAXBForInDesc() throws Exception {
-		JAXBContext.newInstance(InDesc.class).generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(InDesc.class);
 	}
 
 	@Test
 	public void testJAXBForInputsDescriptor() throws Exception {
-		JAXBContext.newInstance(InputsDescriptor.class).generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(InputsDescriptor.class);
 	}
 
 	@Test
 	public void testJAXBForListenerDescription() throws Exception {
-		JAXBContext.newInstance(ListenerDescription.class).generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(ListenerDescription.class);
 	}
 
 	@Test
 	public void testJAXBForListeners() throws Exception {
-		JAXBContext.newInstance(Listeners.class).generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(Listeners.class);
 	}
 
 	@Test
 	public void testJAXBForProperties() throws Exception {
-		JAXBContext.newInstance(Properties.class).generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(Properties.class);
 	}
 
 	@Test
 	public void testJAXBForPropertyDescription() throws Exception {
-		JAXBContext.newInstance(PropertyDescription.class).generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(PropertyDescription.class);
 	}
 
 	@Test
 	public void testJAXBForPermittedListeners() throws Exception {
-		JAXBContext.newInstance(PermittedListeners.class).generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(PermittedListeners.class);
 	}
 
 	@Test
 	public void testJAXBForPermittedWorkflows() throws Exception {
-		JAXBContext.newInstance(PermittedWorkflows.class).generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(PermittedWorkflows.class);
 	}
 
 	@Test
 	public void testJAXBForServerDescription() throws Exception {
-		JAXBContext.newInstance(ServerDescription.class).generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(ServerDescription.class);
 	}
 
 	@Test
 	public void testJAXBForRunDescription() throws Exception {
-		JAXBContext.newInstance(RunDescription.class).generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(RunDescription.class);
 	}
 
 	@Test
 	public void testJAXBForRunList() throws Exception {
-		JAXBContext.newInstance(RunList.class).generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(RunList.class);
 	}
 
 	@Test
 	public void testJAXBForPointingRunList() throws Exception {
-		JAXBContext.newInstance(PointingRunList.class).generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(PointingRunList.class);
 	}
 
 	@Test
 	public void testJAXBForPolicyDescription() throws Exception {
-		JAXBContext.newInstance(PolicyDescription.class).generateSchema(sink);
-		assertTrue(schema().length() > 0);
+		testJAXB(PolicyDescription.class);
+	}
+
+	@Test
+	public void testJAXBForSecurityCredential() throws Exception {
+		testJAXB(TavernaServerRunREST.Security.Credential.class);
+	}
+
+	@Test
+	public void testJAXBForSecurityCredentialList() throws Exception {
+		testJAXB(TavernaServerRunREST.Security.CredentialList.class);
+	}
+
+	@Test
+	public void testJAXBForSecurityTrust() throws Exception {
+		testJAXB(TavernaServerRunREST.Security.Trust.class);
+	}
+
+	@Test
+	public void testJAXBForSecurityTrustList() throws Exception {
+		testJAXB(TavernaServerRunREST.Security.TrustList.class);
+	}
+
+	@Test
+	public void testJAXBForSecurityDescriptor() throws Exception {
+		testJAXB(TavernaServerRunREST.Security.Descriptor.class);
 	}
 
 	@Test
 	public void testJAXBForEverythingAtOnce() throws Exception {
-		JAXBContext c = JAXBContext.newInstance(DirEntryReference.class,
-				InputDescription.class, RunReference.class, Workflow.class,
-				Status.class, DirectoryContents.class, InDesc.class,
+		// printSchema = true;
+		testJAXB(DirEntryReference.class, InputDescription.class,
+				RunReference.class, Workflow.class, Status.class,
+				DirectoryContents.class, InDesc.class,
 				ListenerDefinition.class, MakeOrUpdateDirEntry.class,
 				InputsDescriptor.class, ListenerDescription.class,
 				Listeners.class, Properties.class, PropertyDescription.class,
 				PermittedListeners.class, PermittedWorkflows.class,
 				ServerDescription.class, RunDescription.class, Uri.class,
-				RunList.class, PointingRunList.class, PolicyDescription.class);
-		c.generateSchema(sink);
-		//System.out.println(schema());
-		assertTrue(schema().length() > 0);
+				RunList.class, PointingRunList.class, PolicyDescription.class,
+				TavernaServerRunREST.Security.Credential.class,
+				TavernaServerRunREST.Security.CredentialList.class,
+				TavernaServerRunREST.Security.Trust.class,
+				TavernaServerRunREST.Security.TrustList.class,
+				TavernaServerRunREST.Security.Descriptor.class);
 	}
 }

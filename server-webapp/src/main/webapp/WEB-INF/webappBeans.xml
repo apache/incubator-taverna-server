@@ -50,12 +50,15 @@
 			<ref bean="ExceptionProvider.BadPropertyValue" />
 			<ref bean="ExceptionProvider.BadStateChange" />
 			<ref bean="ExceptionProvider.FilesystemAccess" />
+			<ref bean="ExceptionProvider.InvalidCredential" />
 			<ref bean="ExceptionProvider.NoCreate" />
+			<ref bean="ExceptionProvider.NoCredential" />
 			<ref bean="ExceptionProvider.NoDestroy" />
 			<ref bean="ExceptionProvider.NoDirectoryEntry" />
 			<ref bean="ExceptionProvider.NoListener" />
 			<ref bean="ExceptionProvider.NoUpdate" />
 			<ref bean="ExceptionProvider.UnknownRun" />
+			<ref bean="ExceptionProvider.NotOwner" />
 			<ref bean="ExceptionProvider.JAXBException" />
 			<ref bean="MessagingProvider.File" />
 			<ref bean="MessagingProvider.InputStream" />

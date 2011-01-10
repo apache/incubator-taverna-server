@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.mocks;
 
 import static java.util.Calendar.MINUTE;
@@ -16,6 +21,7 @@ import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
+import org.taverna.server.master.exceptions.InvalidCredentialException;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.factories.RunFactory;
 import org.taverna.server.master.interfaces.Directory;
@@ -23,6 +29,8 @@ import org.taverna.server.master.interfaces.Input;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
+import org.taverna.server.master.rest.TavernaServerRunREST.Security.Credential;
+import org.taverna.server.master.rest.TavernaServerRunREST.Security.Trust;
 
 public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	List<Listener> listeners;
@@ -272,5 +280,55 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	public Date getStartTimestamp() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public Credential[] getCredentials() {
+		// TODO Auto-generated method stub
+		return new Credential[0];
+	}
+
+	@Override
+	public void addCredential(Credential toAdd) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deleteCredential(Credential toDelete) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Trust[] getTrusted() {
+		// TODO Auto-generated method stub
+		return new Trust[0];
+	}
+
+	@Override
+	public void addTrusted(Trust toAdd) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deleteTrusted(Trust toDelete) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void validateCredential(TavernaRun run, Credential c)
+			throws InvalidCredentialException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void validateTrusted(TavernaRun run, Trust t)
+			throws InvalidCredentialException {
+		// TODO Auto-generated method stub
+		
 	}
 }
