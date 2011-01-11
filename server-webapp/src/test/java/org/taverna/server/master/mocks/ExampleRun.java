@@ -17,6 +17,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import org.taverna.server.master.common.Credential;
+import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.exceptions.BadStateChangeException;
@@ -29,8 +31,6 @@ import org.taverna.server.master.interfaces.Input;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
-import org.taverna.server.master.rest.TavernaServerRunREST.Security.Credential;
-import org.taverna.server.master.rest.TavernaServerRunREST.Security.Trust;
 
 public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	List<Listener> listeners;

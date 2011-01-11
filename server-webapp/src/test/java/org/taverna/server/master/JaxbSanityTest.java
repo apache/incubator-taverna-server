@@ -19,9 +19,11 @@ import javax.xml.transform.stream.StreamResult;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
 import org.taverna.server.master.common.RunReference;
+import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Uri;
@@ -194,7 +196,7 @@ public class JaxbSanityTest {
 
 	@Test
 	public void testJAXBForSecurityCredential() throws Exception {
-		testJAXB(TavernaServerRunREST.Security.Credential.class);
+		testJAXB(Credential.class);
 	}
 
 	@Test
@@ -204,7 +206,7 @@ public class JaxbSanityTest {
 
 	@Test
 	public void testJAXBForSecurityTrust() throws Exception {
-		testJAXB(TavernaServerRunREST.Security.Trust.class);
+		testJAXB(Trust.class);
 	}
 
 	@Test
@@ -229,9 +231,9 @@ public class JaxbSanityTest {
 				PermittedListeners.class, PermittedWorkflows.class,
 				ServerDescription.class, RunDescription.class, Uri.class,
 				RunList.class, PointingRunList.class, PolicyDescription.class,
-				TavernaServerRunREST.Security.Credential.class,
+				Credential.class,
 				TavernaServerRunREST.Security.CredentialList.class,
-				TavernaServerRunREST.Security.Trust.class,
+				Trust.class,
 				TavernaServerRunREST.Security.TrustList.class,
 				TavernaServerRunREST.Security.Descriptor.class);
 	}

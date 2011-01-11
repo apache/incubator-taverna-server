@@ -5,7 +5,6 @@
  */
 package org.taverna.server.master.rest;
 
-import static org.taverna.server.master.common.Namespaces.XLINK;
 
 import java.net.URI;
 import java.text.DateFormat;
@@ -29,13 +28,14 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
 import org.apache.cxf.jaxrs.ext.Description;
+import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.Namespaces;
 import org.taverna.server.master.common.Status;
+import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.common.Workflow;
@@ -548,39 +548,6 @@ public interface TavernaServerRunREST {
 			}
 		}
 
-		@XmlType(name = "CredentialDescriptor")
-		@XmlRootElement(name = "credential")
-		public static final class Credential {
-			@XmlAttribute(namespace = XLINK)
-			public String href;
-			@XmlTransient
-			public String id;
-			@XmlElement
-			public URI serviceURI;
-			@XmlElement(required = true)
-			public String credentialName;
-			@XmlElement(required = true)
-			public String credentialType;
-			@XmlElement(required = true)
-			public String credentialFile;
-			@XmlElement
-			public String fileType;
-			@XmlElement
-			public String unlockPassword;
-
-			@Override
-			public int hashCode() {
-				return id.hashCode();
-			}
-
-			@Override
-			public boolean equals(Object o) {
-				if (o == null || !(o instanceof Credential))
-					return false;
-				return id.equals(((Credential) o).id);
-			}
-		}
-
 		@XmlRootElement(name = "trustedIdentities")
 		public static final class TrustList extends VersionedElement {
 			@XmlElement
@@ -592,31 +559,6 @@ public interface TavernaServerRunREST {
 			public TrustList(Trust[] trust) {
 				super(true);
 				this.trust = trust;
-			}
-		}
-
-		@XmlType(name = "TrustDescriptor")
-		@XmlRootElement(name = "trustedIdentity")
-		public static final class Trust {
-			@XmlAttribute(namespace = XLINK)
-			public String href;
-			@XmlTransient
-			public String id;
-			@XmlElement(required = true)
-			public String certificateFile;
-			@XmlElement
-			public String fileType;
-
-			@Override
-			public int hashCode() {
-				return id.hashCode();
-			}
-
-			@Override
-			public boolean equals(Object o) {
-				if (o == null || !(o instanceof Credential))
-					return false;
-				return id.equals(((Credential) o).id);
 			}
 		}
 	}

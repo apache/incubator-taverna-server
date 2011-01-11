@@ -7,9 +7,9 @@ package org.taverna.server.master.interfaces;
 
 import java.security.Principal;
 
+import org.taverna.server.master.common.Credential;
+import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.exceptions.InvalidCredentialException;
-import org.taverna.server.master.rest.TavernaServerRunREST.Security.Credential;
-import org.taverna.server.master.rest.TavernaServerRunREST.Security.Trust;
 
 /**
  * Security context for a workflow run.

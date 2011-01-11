@@ -9,20 +9,35 @@ import static java.util.Calendar.MINUTE;
 import static org.taverna.server.master.localworker.AbstractRemoteRunFactory.log;
 import static org.taverna.server.master.utils.FilenameConverter.getDirEntry;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.URI;
 import java.rmi.MarshalledObject;
 import java.rmi.RemoteException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -34,7 +49,9 @@ import org.taverna.server.localworker.remote.RemoteInput;
 import org.taverna.server.localworker.remote.RemoteListener;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.localworker.remote.RemoteStatus;
+import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.Status;
+import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadPropertyValueException;
 import org.taverna.server.master.exceptions.BadStateChangeException;
@@ -49,8 +66,6 @@ import org.taverna.server.master.interfaces.Input;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
-import org.taverna.server.master.rest.TavernaServerRunREST.Security.Credential;
-import org.taverna.server.master.rest.TavernaServerRunREST.Security.Trust;
 
 /**
  * Bridging shim between the WebApp world and the RMI world.
@@ -64,6 +79,8 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext,
 	private Date expiry;
 	private transient Principal creator;
 	transient RemoteSingleRun run;
+	transient private List<Credential> credentials = new ArrayList<Credential>();
+	transient private List<Trust> trusted = new ArrayList<Trust>();
 
 	RemoteRunDelegate(Date creationInstant, Principal creator,
 			Workflow workflow, RemoteSingleRun rsr, int defaultLifetime) {
@@ -480,6 +497,9 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext,
 				run.setStatus(RemoteStatus.Initialized);
 				break;
 			case Operating:
+				if (run.getStatus() == RemoteStatus.Initialized) {
+					conveySecurity();
+				}
 				run.setStatus(RemoteStatus.Operating);
 				break;
 			case Stopped:
@@ -493,6 +513,14 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext,
 			throw new BadStateChangeException(e.getMessage());
 		} catch (RemoteException e) {
 			throw new BadStateChangeException(e.getMessage(), e.getCause());
+		} catch (KeyStoreException e) {
+			throw new BadStateChangeException(e.getMessage(), e);
+		} catch (NoSuchAlgorithmException e) {
+			throw new BadStateChangeException(e.getMessage(), e);
+		} catch (CertificateException e) {
+			throw new BadStateChangeException(e.getMessage(), e);
+		} catch (IOException e) {
+			throw new BadStateChangeException(e.getMessage(), e);
 		}
 	}
 
@@ -677,9 +705,6 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext,
 		run = ((MarshalledObject<RemoteSingleRun>) in.readObject()).get();
 	}
 
-	private List<Credential> credentials = new ArrayList<Credential>();
-	private List<Trust> trusted = new ArrayList<Trust>();
-
 	@Override
 	public Credential[] getCredentials() {
 		synchronized (credentials) {
@@ -696,15 +721,13 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext,
 			} else {
 				credentials.add(toAdd);
 			}
-			updatedCredentials();
 		}
 	}
 
 	@Override
 	public void deleteCredential(Credential toDelete) {
 		synchronized (credentials) {
-			if (credentials.remove(toDelete))
-				updatedCredentials();
+			credentials.remove(toDelete);
 		}
 	}
 
@@ -724,25 +747,17 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext,
 			} else {
 				trusted.add(toAdd);
 			}
-			updatedTrusted();
 		}
 	}
 
 	@Override
 	public void deleteTrusted(Trust toDelete) {
 		synchronized (trusted) {
-			if (trusted.remove(toDelete))
-				updatedTrusted();
+			trusted.remove(toDelete);
 		}
 	}
 
-	private void updatedCredentials() {
-		// TODO Convey the credentials to the back-end
-	}
-
-	private void updatedTrusted() {
-		// TODO Convey the certificates to the back-end
-	}
+	public static final String DEFAULT_CERTIFICATE_TYPE = "X.509";
 
 	@Override
 	public void validateCredential(TavernaRun run, Credential c)
@@ -753,21 +768,53 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext,
 		if (c.credentialType == null || c.credentialType.trim().length() == 0)
 			throw new InvalidCredentialException(
 					"absent or empty credentialType");
+		c.credentialType = c.credentialType.trim();
 		if (c.credentialType.equals("password")) {
-			// Special case
-			if (!c.credentialName.matches(".+:.+"))
-				throw new InvalidCredentialException(
-						"malformatted credentialName, given that credentialType is password");
-			return;
+			validatePasswordCredential(c);
+		} else if (c.credentialType.equals("key")) {
+			validateKeyCredential(run, c);
+		} else {
+			throw new InvalidCredentialException("unknown credentialType \""
+					+ c.credentialType + "\"");
 		}
+	}
+
+	private void validatePasswordCredential(Credential c)
+			throws InvalidCredentialException {
+		Matcher m = Pattern.compile("^([^:]+):(.*)$").matcher(c.credentialName);
+		if (!m.matches())
+			throw new InvalidCredentialException(
+					"malformatted credentialName, given that credentialType is password");
+		String user = m.group(1);
+		String pass = m.group(2);
+		// TODO Do something with these!
+	}
+
+	private void validateKeyCredential(TavernaRun run, Credential c)
+			throws InvalidCredentialException {
 		if (c.credentialFile == null || c.credentialFile.trim().length() == 0)
 			throw new InvalidCredentialException(
 					"absent or empty credentialFile");
-		File f = resolveFilenameToReadableFile(run, c.credentialFile);
+		if (c.fileType == null || c.fileType.trim().length() == 0)
+			c.fileType = KeyStore.getDefaultType();
+		c.fileType = c.fileType.trim();
 		try {
-			f.getContents(0, (int) f.getSize());
-			// TODO parse credential contents
-		} catch (FilesystemAccessException e) {
+			KeyStore ks = KeyStore.getInstance(c.fileType);
+			char[] password = c.unlockPassword.toCharArray();
+			ks.load(contents(run, c.credentialFile), password);
+			try {
+				c.loadedKey = ks.getKey(c.credentialName, password);
+			} catch (UnrecoverableKeyException ignored) {
+				c.loadedKey = ks.getKey(c.credentialName, new char[0]);
+			}
+			if (c.loadedKey == null) {
+				throw new InvalidCredentialException(
+						"no such credential in key store");
+			}
+			c.loadedTrustChain = ks.getCertificateChain(c.credentialName);
+		} catch (InvalidCredentialException e) {
+			throw e;
+		} catch (Exception e) {
 			throw new InvalidCredentialException(e);
 		}
 	}
@@ -778,19 +825,74 @@ public class RemoteRunDelegate implements TavernaRun, TavernaSecurityContext,
 		if (t.certificateFile == null || t.certificateFile.trim().length() == 0)
 			throw new InvalidCredentialException(
 					"absent or empty certificateFile");
-		File f = resolveFilenameToReadableFile(run, t.certificateFile);
+		if (t.fileType == null || t.fileType.trim().length() == 0)
+			t.fileType = DEFAULT_CERTIFICATE_TYPE;
+		t.fileType = t.fileType.trim();
 		try {
-			f.getContents(0, (int) f.getSize());
-			// TODO parse certificate contents
-		} catch (FilesystemAccessException e) {
+			t.loadedCertificates = CertificateFactory.getInstance(t.fileType)
+					.generateCertificates(contents(run, t.certificateFile));
+		} catch (CertificateException e) {
 			throw new InvalidCredentialException(e);
 		}
 	}
 
-	private File resolveFilenameToReadableFile(TavernaRun run, String name)
+	private KeyStore getInitialKeyStore() throws KeyStoreException {
+		return KeyStore.getInstance(KeyStore.getDefaultType());
+	}
+
+	/**
+	 * Builds and transfers a keystore with suitable credentials to the back-end
+	 * workflow execution engine.
+	 * 
+	 * @throws KeyStoreException
+	 *             If the keystore creation fails.
+	 * @throws NoSuchAlgorithmException
+	 *             If the keystore can't be streamed due to configuration
+	 *             problems (should not happen).
+	 * @throws CertificateException
+	 *             If the trust chains don't work or are incompatible.
+	 * @throws IOException
+	 *             If there are problems building the data (should not happen).
+	 * @throws RemoteException
+	 *             If the conveyancing fails.
+	 */
+	private void conveySecurity() throws KeyStoreException,
+			NoSuchAlgorithmException, CertificateException, IOException {
+		char[] password = UUID.randomUUID().toString().toCharArray();
+		KeyStore ks = getInitialKeyStore();
+		Map<URI, String> uriToAliasMap = new HashMap<URI, String>();
+		int i = 0;
+
+		synchronized (trusted) {
+			for (Trust t : trusted)
+				for (Certificate cert : t.loadedCertificates)
+					ks.setCertificateEntry("cert" + (++i), cert);
+		}
+
+		synchronized (credentials) {
+			for (Credential c : credentials)
+				if (c.credentialType.equals("key")) {
+					String alias = "key" + (++i);
+					ks.setKeyEntry(alias, c.loadedKey, password,
+							c.loadedTrustChain);
+					uriToAliasMap.put(c.serviceURI, alias);
+				} else if (c.credentialType.equals("password")) {
+					// FIXME handle username/password
+				}
+		}
+
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		ks.store(stream, password);
+		byte[] keystore = stream.toByteArray();
+
+		// TODO convey bytes plus password plus map to worker
+	}
+
+	private InputStream contents(TavernaRun run, String name)
 			throws InvalidCredentialException {
 		try {
-			return (File) getDirEntry(run, name);
+			File f = (File) getDirEntry(run, name);
+			return new ByteArrayInputStream(f.getContents(0, (int) f.getSize()));
 		} catch (NoDirectoryEntryException e) {
 			throw new InvalidCredentialException(e);
 		} catch (FilesystemAccessException e) {
