@@ -156,7 +156,10 @@
 		<property name="state" ref="localworker.state" />
 		<property name="runDB" ref="localworker.runDB" />
 		<property name="idMapper" ref="IdentityMapper" />
+		<property name="securityContextFactory" ref="localworker.securityContext" />
 	</bean>
+
+	<bean id="localworker.securityContext" class="org.taverna.server.master.localworker.SecurityContextDelegate.Factory" />
 
 	<bean id="localworker.state" class="org.taverna.server.master.localworker.LocalWorkerState"
 		scope="singleton" lazy-init="false">

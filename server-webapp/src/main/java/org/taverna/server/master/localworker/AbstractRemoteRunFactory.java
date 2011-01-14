@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.localworker;
 
 import static java.lang.System.getSecurityManager;
@@ -109,6 +114,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	public static final String SECURITY_POLICY_FILE = "security.policy";
 	LocalWorkerState state;
 	private RunDatabase runDB;
+	private SecurityContextFactory securityFactory;
 
 	@Required
 	public void setState(LocalWorkerState state) {
@@ -118,6 +124,11 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	@Required
 	public void setRunDB(RunDatabase runDB) {
 		this.runDB = runDB;
+	}
+
+	@Required
+	public void setSecurityContextFactory(SecurityContextFactory factory) {
+		this.securityFactory = factory;
 	}
 
 	@ManagedAttribute(description = "The host holding the RMI registry to communicate via.")
@@ -170,8 +181,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 			registry.list();
 		} catch (RemoteException e) {
 			log.warn("Failed to get working RMI registry handle.");
-			log
-					.warn("Will build new registry, but service restart ability is at risk.");
+			log.warn("Will build new registry, but service restart ability is at risk.");
 			try {
 				registry = createRegistry(REGISTRY_PORT);
 				registry.list();
@@ -215,8 +225,10 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		try {
 			Date now = new Date();
 			RemoteSingleRun rsr = getRealRun(creator, workflow);
-			return new RemoteRunDelegate(now, creator, workflow, rsr, state
-					.getDefaultLifetime());
+			RemoteRunDelegate run = new RemoteRunDelegate(now, workflow, rsr,
+					state.getDefaultLifetime());
+			run.setSecurityContext(securityFactory.create(run, creator));
+			return run;
 		} catch (NoCreateException e) {
 			log.warn("failed to build run instance", e);
 			throw e;

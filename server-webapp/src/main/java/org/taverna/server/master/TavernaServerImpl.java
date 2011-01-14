@@ -479,7 +479,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 							throw new BadStateChangeException();
 						c.id = id;
 						c.href = ui.getAbsolutePath().toString();
-						context.validateCredential(run, c);
+						context.validateCredential(c);
 						context.deleteCredential(c);
 						context.addCredential(c);
 						return c;
@@ -496,7 +496,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 						URI uri = ui.getAbsolutePathBuilder().path("{id}")
 								.build(c.id);
 						c.href = uri.toString();
-						context.validateCredential(run, c);
+						context.validateCredential(c);
 						context.addCredential(c);
 						return created(uri).build();
 					}
@@ -518,7 +518,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 						invokes++;
 						if (run.getStatus() != Initialized)
 							throw new BadStateChangeException();
-						Credential toDelete = new Credential();
+						Credential toDelete = new Credential(){};
 						toDelete.id = id;
 						context.deleteCredential(toDelete);
 						return noContent().build();
@@ -549,7 +549,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 							throw new BadStateChangeException();
 						t.id = id;
 						t.href = ui.getAbsolutePath().toString();
-						context.validateTrusted(run, t);
+						context.validateTrusted(t);
 						context.deleteTrusted(t);
 						context.addTrusted(t);
 						return t;
@@ -566,7 +566,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 						URI uri = ui.getAbsolutePathBuilder().path("{id}")
 								.build(t.id);
 						t.href = uri.toString();
-						context.validateTrusted(run, t);
+						context.validateTrusted(t);
 						context.addTrusted(t);
 						return created(uri).build();
 					}

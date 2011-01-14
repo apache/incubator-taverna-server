@@ -14,6 +14,7 @@ import java.security.cert.Certificate;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
@@ -24,8 +25,8 @@ import javax.xml.bind.annotation.XmlType;
  * @author Donal Fellows
  */
 @XmlType(name = "CredentialDescriptor")
-@XmlRootElement(name = "credential")
-public final class Credential {
+@XmlSeeAlso({ Credential.KeyPair.class, Credential.Password.class, Credential.CaGridProxy.class })
+public abstract class Credential {
 	/** The location of this descriptor in the REST world. */
 	@XmlAttribute(namespace = XLINK)
 	public String href;
@@ -41,33 +42,6 @@ public final class Credential {
 	 */
 	@XmlElement
 	public URI serviceURI;
-	/** The name of the credential within its store, i.e., it's alias. */
-	@XmlElement(required = true)
-	public String credentialName;
-	/**
-	 * The type of credential being presented. Should be one of <tt>key</tt> or
-	 * <tt>password</tt>; other types may be supported in the future.
-	 */
-	@XmlElement(required = true)
-	public String credentialType;
-	/**
-	 * The keystore file containing the credential. This is resolved with
-	 * respect to the workflow run working directory.
-	 */
-	@XmlElement(required = true)
-	public String credentialFile;
-	/**
-	 * The type of keystore file. Defaults to <tt>JKS</tt> if unspecified.
-	 */
-	@XmlElement
-	public String fileType;
-	/**
-	 * The password used to unlock the keystore file. It is assumed that the
-	 * same password is used for unlocking the credential within, or that the
-	 * inner password is empty.
-	 */
-	@XmlElement
-	public String unlockPassword;
 	/** The key extracted from the keystore. */
 	@XmlTransient
 	public Key loadedKey;
@@ -85,5 +59,49 @@ public final class Credential {
 		if (o == null || !(o instanceof Credential))
 			return false;
 		return id.equals(((Credential) o).id);
+	}
+
+	@XmlRootElement(name = "keypair")
+	@XmlType(name = "KeyPairCredential")
+	public static class KeyPair extends Credential {
+		/** The name of the credential within its store, i.e., it's alias. */
+		@XmlElement(required = true)
+		public String credentialName;
+		/**
+		 * The keystore file containing the credential. This is resolved with
+		 * respect to the workflow run working directory.
+		 */
+		@XmlElement(required = true)
+		public String credentialFile;
+		/**
+		 * The type of keystore file. Defaults to <tt>JKS</tt> if unspecified.
+		 */
+		@XmlElement
+		public String fileType;
+		/**
+		 * The password used to unlock the keystore file. It is assumed that the
+		 * same password is used for unlocking the credential within, or that the
+		 * inner password is empty.
+		 */
+		@XmlElement
+		public String unlockPassword;
+	}
+
+	@XmlRootElement(name = "password")
+	@XmlType(name = "PasswordCredential")
+	public static class Password extends Credential {
+		@XmlElement(required = true)
+		public String username;
+		@XmlElement(required = true)
+		public String password;
+	}
+
+	@XmlRootElement(name = "cagridproxy")
+	@XmlType(name = "CaGridProxyCredential")
+	public static class CaGridProxy extends KeyPair {
+		@XmlElement(required = true)
+		public URI authenticationService;
+		@XmlElement(required = true)
+		public URI dorianService;
 	}
 }

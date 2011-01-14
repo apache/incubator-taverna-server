@@ -291,13 +291,13 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	@Override
 	public void addCredential(Credential toAdd) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void deleteCredential(Credential toDelete) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -309,26 +309,25 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	@Override
 	public void addTrusted(Trust toAdd) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void deleteTrusted(Trust toDelete) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
-	public void validateCredential(TavernaRun run, Credential c)
+	public void validateCredential(Credential c)
 			throws InvalidCredentialException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
-	public void validateTrusted(TavernaRun run, Trust t)
-			throws InvalidCredentialException {
+	public void validateTrusted(Trust t) throws InvalidCredentialException {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

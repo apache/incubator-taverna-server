@@ -50,15 +50,12 @@ public interface TavernaSecurityContext {
 	 * underlying credential file exists and can be unlocked by the password in
 	 * the {@link Credential} object.
 	 * 
-	 * @param run
-	 *            The context used to locate files referred to.
 	 * @param c
 	 *            The credential object to validate.
 	 * @throws InvalidCredentialException
 	 *             If it is invalid.
 	 */
-	void validateCredential(TavernaRun run, Credential c)
-			throws InvalidCredentialException;
+	void validateCredential(Credential c) throws InvalidCredentialException;
 
 	/**
 	 * @return The identities trusted by the user. Never <tt>null</tt>.
@@ -86,13 +83,10 @@ public interface TavernaSecurityContext {
 	 * Tests if the trusted identity descriptor is valid. This includes checking
 	 * whether the underlying trusted identity file exists.
 	 * 
-	 * @param run
-	 *            The context used to locate files referred to.
 	 * @param t
 	 *            The trusted identity descriptor to check.
 	 * @throws InvalidCredentialException
 	 *             If it is invalid.
 	 */
-	void validateTrusted(TavernaRun run, Trust t)
-			throws InvalidCredentialException;
+	void validateTrusted(Trust t) throws InvalidCredentialException;
 }

@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.localworker.impl;
 
 import static java.lang.Runtime.getRuntime;
@@ -14,6 +19,7 @@ import static org.taverna.server.localworker.remote.RemoteStatus.Stopped;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -182,6 +188,31 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			RemoteSecurityContext {
 		protected SecurityDelegate() throws RemoteException {
 			super();
+		}
+
+		@Override
+		public void setKeystore(byte[] keystore) {
+			// TODO Auto-generated method stub
+		}
+
+		@Override
+		public void setKeystorePass(char[] password) {
+			// TODO Auto-generated method stub
+		}
+
+		@Override
+		public void setTruststore(byte[] truststore) {
+			// TODO Auto-generated method stub
+		}
+
+		@Override
+		public void setTruststorePass(char[] password) {
+			// TODO Auto-generated method stub
+		}
+
+		@Override
+		public void setUriToAliasMap(HashMap<URI, String> uriToAliasMap) {
+			// TODO Auto-generated method stub
 		}
 	}
 
