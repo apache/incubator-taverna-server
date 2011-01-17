@@ -192,12 +192,15 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		return outputBaclava;
 	}
 
-	public static final String SECURITY_DIR = ".taverna-server-security";
+	public static final String SECURITY_DIR_NAME = ".taverna-server-security";
 	public static final String KEYSTORE_FILE = "identity.keystore";
 	public static final String KEYSTORE_PASS = "identity.password";
 	public static final String TRUSTSTORE_FILE = "truststore.jks";
 	public static final String TRUSTSTORE_PASS = "truststore.password";
 	public static final String URI_ALIAS_MAP = "urlmap.txt";
+
+	static final File SECURITY_DIR = new File(
+			new File(getProperty("java.home")), SECURITY_DIR_NAME);
 
 	class SecurityDelegate extends UnicastRemoteObject implements
 			RemoteSecurityContext {
@@ -205,9 +208,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 
 		protected SecurityDelegate() throws IOException {
 			super();
-			File tsd = new File(new File(getProperty("java.home")),
-					SECURITY_DIR);
-			contextDirectory = new File(tsd, masterToken);
+			contextDirectory = new File(SECURITY_DIR, masterToken);
 			forceMkdir(contextDirectory);
 			contextDirectory.setReadable(true, true);
 			contextDirectory.setExecutable(true, true);
