@@ -9,6 +9,8 @@ import static java.util.Calendar.MINUTE;
 import static java.util.Collections.unmodifiableList;
 import static org.taverna.server.master.common.Status.Initialized;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +18,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+
+import javax.ws.rs.core.HttpHeaders;
+import javax.xml.ws.handler.MessageContext;
 
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.Trust;
@@ -31,6 +36,7 @@ import org.taverna.server.master.interfaces.Input;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
+import org.taverna.server.master.localworker.SecurityContextFactory;
 
 public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	List<Listener> listeners;
@@ -329,5 +335,29 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	public void validateTrusted(Trust t) throws InvalidCredentialException {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void initializeSecurityFromSOAPContext(MessageContext context) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void initializeSecurityFromRESTContext(HttpHeaders headers) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void conveySecurity() throws GeneralSecurityException, IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public SecurityContextFactory getFactory() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

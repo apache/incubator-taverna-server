@@ -14,9 +14,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -34,7 +34,8 @@ import java.util.List;
 
 import javax.crypto.spec.SecretKeySpec;
 import javax.security.auth.x500.X500Principal;
-import javax.servlet.ServletContext;
+import javax.ws.rs.core.HttpHeaders;
+import javax.xml.ws.handler.MessageContext;
 
 import org.taverna.server.localworker.remote.RemoteSecurityContext;
 import org.taverna.server.master.common.Credential;
@@ -58,10 +59,6 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 	private final Object lock;
 	private final SecurityContextFactory factory;
 
-	public static final String PASSWORD_TYPE = "password";
-	public static final String KEY_TYPE = "key";
-	public static final String CAGRID_TYPE = "cagridproxy";
-
 	SecurityContextDelegate(RemoteRunDelegate run, Principal owner,
 			SecurityContextFactory factory) {
 		this.run = run;
@@ -78,7 +75,8 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 		}
 	}
 
-	SecurityContextFactory getFactory() {
+	@Override
+	public SecurityContextFactory getFactory() {
 		return factory;
 	}
 
@@ -140,7 +138,7 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 	}
 
 	/** The type of certificates that are processed if we don't say otherwise. */
-	public static final String DEFAULT_CERTIFICATE_TYPE = "X.509";
+	private static final String DEFAULT_CERTIFICATE_TYPE = "X.509";
 
 	@Override
 	public void validateCredential(Credential c)
@@ -158,18 +156,15 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 
 	private static final char USERNAME_PASSWORD_SEPARATOR = '\u0000';
 	private static final String USERNAME_PASSWORD_KEY_ALGORITHM = "DUMMY";
+	/** What passwords are encoded as. */
+	private static final Charset UTF8 = Charset.forName("UTF-8");
 
-	private void validatePasswordCredential(Credential.Password c)
-			throws InvalidCredentialException {
-		try {
-			String keyToSave = c.username + USERNAME_PASSWORD_SEPARATOR
-					+ c.password;
-			c.loadedKey = new SecretKeySpec(keyToSave.getBytes("UTF-8"),
-					USERNAME_PASSWORD_KEY_ALGORITHM);
-			c.loadedTrustChain = null;
-		} catch (UnsupportedEncodingException e) {
-			throw new InvalidCredentialException(e);
-		}
+	private void validatePasswordCredential(Credential.Password c) {
+		String keyToSave = c.username + USERNAME_PASSWORD_SEPARATOR
+				+ c.password;
+		c.loadedKey = new SecretKeySpec(keyToSave.getBytes(UTF8),
+				USERNAME_PASSWORD_KEY_ALGORITHM);
+		c.loadedTrustChain = null;
 	}
 
 	private void validateKeyCredential(Credential.KeyPair c)
@@ -233,7 +228,13 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 		}
 	}
 
-	public void initializeSecurityFromContext(ServletContext context) {
+	@Override
+	public void initializeSecurityFromSOAPContext(MessageContext context) {
+		// do nothing in this implementation
+	}
+
+	@Override
+	public void initializeSecurityFromRESTContext(HttpHeaders context) {
 		// do nothing in this implementation
 	}
 
@@ -254,13 +255,13 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 	 * @throws RemoteException
 	 *             If the conveyancing fails.
 	 */
-	protected void conveySecurity() throws GeneralSecurityException,
+	@Override
+	public void conveySecurity() throws GeneralSecurityException,
 			IOException {
 		if ((credentials == null || credentials.isEmpty())
 				&& (trusted == null || trusted.isEmpty()))
 			return;
 		log.info("constructing merged keystore");
-		char[] password = randomUUID().toString().toCharArray();
 		KeyStore ts = KeyStore.getInstance("JKS");
 		KeyStore ks = getInitialKeyStore();
 		HashMap<URI, String> uriToAliasMap = new HashMap<URI, String>();
@@ -289,25 +290,44 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 				}
 		}
 
-		char[] trustpass = new char[0];
-		ByteArrayOutputStream truststream = new ByteArrayOutputStream();
-		ts.store(truststream, trustpass);
-		ByteArrayOutputStream keystream = new ByteArrayOutputStream();
-		ks.store(keystream, password);
+		char[] password = null, trustpass = null;
+		try {
+			password = generateNewPassword();
+			trustpass = new char[0];
+			ByteArrayOutputStream truststream = new ByteArrayOutputStream();
+			ts.store(truststream, trustpass);
+			ByteArrayOutputStream keystream = new ByteArrayOutputStream();
+			ks.store(keystream, password);
 
-		RemoteSecurityContext rc = run.run.getSecurityContext();
-		log.info("transfering merged truststore with " + trustedCount
-				+ " entries");
-		rc.setTruststore(truststream.toByteArray());
-		rc.setTruststorePass(trustpass);
-		log.info("transfering merged keystore with " + keyCount + " entries");
-		rc.setKeystore(keystream.toByteArray());
-		rc.setKeystorePass(password);
-		log.info("transfering serviceURL->alias map with "
-				+ uriToAliasMap.size() + " entries");
-		rc.setUriToAliasMap(uriToAliasMap);
-		for (int j = 0; j < password.length; j++)
-			password[j] = ' ';
+			// Now we've built the security information, ship it off...
+
+			RemoteSecurityContext rc = run.run.getSecurityContext();
+
+			log.info("transfering merged truststore with " + trustedCount
+					+ " entries");
+			rc.setTruststore(truststream.toByteArray());
+			rc.setTruststorePass(trustpass);
+
+			log.info("transfering merged keystore with " + keyCount
+					+ " entries");
+			rc.setKeystore(keystream.toByteArray());
+			rc.setKeystorePass(password);
+
+			log.info("transfering serviceURL->alias map with "
+					+ uriToAliasMap.size() + " entries");
+			rc.setUriToAliasMap(uriToAliasMap);
+
+		} finally {
+			int j;
+			for (j = 0; j < password.length; j++)
+				password[j] = ' ';
+			for (j = 0; j < trustpass.length; j++)
+				trustpass[j] = ' ';
+		}
+	}
+
+	protected char[] generateNewPassword() {
+		return randomUUID().toString().toCharArray();
 	}
 
 	protected void addCertificateToTruststore(KeyStore ts, Certificate cert)

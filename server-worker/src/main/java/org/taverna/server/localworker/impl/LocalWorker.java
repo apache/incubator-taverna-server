@@ -6,12 +6,18 @@
 package org.taverna.server.localworker.impl;
 
 import static java.lang.Runtime.getRuntime;
+import static java.lang.System.getProperty;
 import static java.lang.System.out;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
+import static org.apache.commons.io.FileCleaner.track;
 import static org.apache.commons.io.FileUtils.forceDelete;
 import static org.apache.commons.io.FileUtils.forceMkdir;
+import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
+import static org.apache.commons.io.FileUtils.writeLines;
+import static org.apache.commons.io.FileUtils.writeStringToFile;
+import static org.taverna.server.localworker.impl.utils.FilenameVerifier.getValidatedFile;
 import static org.taverna.server.localworker.remote.RemoteStatus.Finished;
 import static org.taverna.server.localworker.remote.RemoteStatus.Initialized;
 import static org.taverna.server.localworker.remote.RemoteStatus.Operating;
@@ -23,12 +29,12 @@ import java.net.URI;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.taverna.server.localworker.impl.utils.FilenameVerifier;
 import org.taverna.server.localworker.remote.IllegalStateTransitionException;
 import org.taverna.server.localworker.remote.RemoteDirectory;
 import org.taverna.server.localworker.remote.RemoteInput;
@@ -69,6 +75,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	Map<String, File> inputRealFiles;
 	Map<String, String> inputValues;
 	Worker core;
+	final String masterToken;
 	private Thread shutdownHook;
 
 	/**
@@ -81,9 +88,10 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	protected LocalWorker(String executeWorkflowCommand, String workflow,
 			Class<? extends Worker> workerClass) throws RemoteException {
 		super();
+		masterToken = randomUUID().toString();
 		this.workflow = workflow;
 		this.executeWorkflowCommand = executeWorkflowCommand;
-		base = new File(randomUUID().toString());
+		base = new File(masterToken);
 		try {
 			forceMkdir(base);
 		} catch (IOException e) {
@@ -184,41 +192,110 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		return outputBaclava;
 	}
 
+	public static final String SECURITY_DIR = ".taverna-server-security";
+	public static final String KEYSTORE_FILE = "identity.keystore";
+	public static final String KEYSTORE_PASS = "identity.password";
+	public static final String TRUSTSTORE_FILE = "truststore.jks";
+	public static final String TRUSTSTORE_PASS = "truststore.password";
+	public static final String URI_ALIAS_MAP = "urlmap.txt";
+
 	class SecurityDelegate extends UnicastRemoteObject implements
 			RemoteSecurityContext {
-		protected SecurityDelegate() throws RemoteException {
+		File contextDirectory;
+
+		protected SecurityDelegate() throws IOException {
 			super();
+			File tsd = new File(new File(getProperty("java.home")),
+					SECURITY_DIR);
+			contextDirectory = new File(tsd, masterToken);
+			forceMkdir(contextDirectory);
+			contextDirectory.setReadable(true, true);
+			contextDirectory.setExecutable(true, true);
+			contextDirectory.setWritable(true, true);
+			track(contextDirectory, LocalWorker.this);
+		}
+
+		private static final String ENC = "UTF-8";
+
+		private void write(String name, byte[] data) throws RemoteException {
+			try {
+				writeByteArrayToFile(new File(contextDirectory, name), data);
+			} catch (IOException e) {
+				throw new RemoteException("problem writing " + name, e);
+			}
+		}
+
+		private void write(String name, Collection<String> data)
+				throws RemoteException {
+			try {
+				writeLines(new File(contextDirectory, name), ENC, data);
+			} catch (IOException e) {
+				throw new RemoteException("problem writing " + name, e);
+			}
+		}
+
+		private void write(String name, char[] data) throws RemoteException {
+			try {
+				writeStringToFile(new File(contextDirectory, name), new String(
+						data), ENC);
+			} catch (IOException e) {
+				throw new RemoteException("problem writing " + name, e);
+			}
 		}
 
 		@Override
-		public void setKeystore(byte[] keystore) {
-			// TODO Auto-generated method stub
+		public void setKeystore(byte[] keystore) throws RemoteException {
+			if (status != Initialized)
+				throw new RemoteException("not initializing");
+			write(KEYSTORE_FILE, keystore);
 		}
 
 		@Override
-		public void setKeystorePass(char[] password) {
-			// TODO Auto-generated method stub
+		public void setKeystorePass(char[] password) throws RemoteException {
+			if (status != Initialized)
+				throw new RemoteException("not initializing");
+			write(KEYSTORE_PASS, password);
 		}
 
 		@Override
-		public void setTruststore(byte[] truststore) {
-			// TODO Auto-generated method stub
+		public void setTruststore(byte[] truststore) throws RemoteException {
+			if (status != Initialized)
+				throw new RemoteException("not initializing");
+			write(TRUSTSTORE_FILE, truststore);
 		}
 
 		@Override
-		public void setTruststorePass(char[] password) {
-			// TODO Auto-generated method stub
+		public void setTruststorePass(char[] password) throws RemoteException {
+			if (status != Initialized)
+				throw new RemoteException("not initializing");
+			write(TRUSTSTORE_PASS, password);
 		}
 
 		@Override
-		public void setUriToAliasMap(HashMap<URI, String> uriToAliasMap) {
-			// TODO Auto-generated method stub
+		public void setUriToAliasMap(HashMap<URI, String> uriToAliasMap)
+				throws RemoteException {
+			if (status != Initialized)
+				throw new RemoteException("not initializing");
+			ArrayList<String> lines = new ArrayList<String>();
+			for (URI site : uriToAliasMap.keySet())
+				lines.add(site.toASCIIString() + " " + uriToAliasMap.get(site));
+			write(URI_ALIAS_MAP, lines);
 		}
 	}
 
 	@Override
 	public RemoteSecurityContext getSecurityContext() throws RemoteException {
-		return new SecurityDelegate();
+		try {
+			return new SecurityDelegate();
+		} catch (RemoteException e) {
+			if (e.getCause() != null)
+				throw new RemoteException(
+						"problem initializing security context", e.getCause());
+			throw e;
+		} catch (IOException e) {
+			throw new RemoteException("problem initializing security context",
+					e);
+		}
 	}
 
 	@Override
@@ -241,7 +318,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		if (filename == null)
 			throw new IllegalArgumentException("filename must be non-null");
 		try {
-			return FilenameVerifier.getValidatedFile(base, filename.split("/"));
+			return getValidatedFile(base, filename.split("/"));
 		} catch (IOException e) {
 			throw new RemoteException("failed to validate filename", e);
 		}
@@ -254,7 +331,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			super();
 			this.name = name;
 			if (!inputFiles.containsKey(name)) {
-				if (status != RemoteStatus.Initialized)
+				if (status != Initialized)
 					throw new RemoteException("not initializing");
 				inputFiles.put(name, null);
 				inputRealFiles.put(name, null);
@@ -279,7 +356,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 
 		@Override
 		public void setFile(String file) throws RemoteException {
-			if (status != RemoteStatus.Initialized)
+			if (status != Initialized)
 				throw new RemoteException("not initializing");
 			inputRealFiles.put(name, validateFilename(file));
 			inputValues.put(name, null);
@@ -289,7 +366,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 
 		@Override
 		public void setValue(String value) throws RemoteException {
-			if (status != RemoteStatus.Initialized)
+			if (status != Initialized)
 				throw new RemoteException("not initializing");
 			inputValues.put(name, value);
 			inputFiles.put(name, null);
@@ -311,7 +388,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 
 	@Override
 	public void setInputBaclavaFile(String filename) throws RemoteException {
-		if (status != RemoteStatus.Initialized)
+		if (status != Initialized)
 			throw new RemoteException("not initializing");
 		inputBaclavaFile = validateFilename(filename);
 		for (String input : inputFiles.keySet()) {
@@ -324,7 +401,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 
 	@Override
 	public void setOutputBaclavaFile(String filename) throws RemoteException {
-		if (status != RemoteStatus.Initialized)
+		if (status != Initialized)
 			throw new RemoteException("not initializing");
 		if (filename != null)
 			outputBaclavaFile = validateFilename(filename);

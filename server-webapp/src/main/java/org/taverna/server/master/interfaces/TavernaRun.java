@@ -1,5 +1,11 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.interfaces;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -14,7 +20,7 @@ import org.taverna.server.master.exceptions.NoDestroyException;
  * 
  * @author Donal Fellows
  */
-public interface TavernaRun {
+public interface TavernaRun extends Serializable {
 	/**
 	 * @return What was this run was create to execute.
 	 */

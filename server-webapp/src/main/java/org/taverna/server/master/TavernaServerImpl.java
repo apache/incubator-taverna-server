@@ -101,15 +101,15 @@ import org.taverna.server.master.interfaces.TavernaSecurityContext;
 import org.taverna.server.master.rest.DirectoryContents;
 import org.taverna.server.master.rest.ListenerDefinition;
 import org.taverna.server.master.rest.MakeOrUpdateDirEntry;
+import org.taverna.server.master.rest.MakeOrUpdateDirEntry.MakeDirectory;
 import org.taverna.server.master.rest.TavernaServerDirectoryREST;
 import org.taverna.server.master.rest.TavernaServerInputREST;
-import org.taverna.server.master.rest.TavernaServerListenersREST;
-import org.taverna.server.master.rest.TavernaServerREST;
-import org.taverna.server.master.rest.TavernaServerRunREST;
-import org.taverna.server.master.rest.MakeOrUpdateDirEntry.MakeDirectory;
 import org.taverna.server.master.rest.TavernaServerInputREST.InDesc.AbstractContents;
+import org.taverna.server.master.rest.TavernaServerListenersREST;
 import org.taverna.server.master.rest.TavernaServerListenersREST.ListenerDescription;
 import org.taverna.server.master.rest.TavernaServerListenersREST.TavernaServerListenerREST;
+import org.taverna.server.master.rest.TavernaServerREST;
+import org.taverna.server.master.rest.TavernaServerRunREST;
 import org.taverna.server.master.soap.TavernaServerSOAP;
 import org.taverna.server.master.utils.FilenameConverter;
 import org.taverna.server.output_description.AbsentValue;
@@ -117,8 +117,8 @@ import org.taverna.server.output_description.AbstractValue;
 import org.taverna.server.output_description.ErrorValue;
 import org.taverna.server.output_description.LeafValue;
 import org.taverna.server.output_description.ListValue;
-import org.taverna.server.output_description.RdfWrapper;
 import org.taverna.server.output_description.Outputs.Contains;
+import org.taverna.server.output_description.RdfWrapper;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -236,6 +236,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	private WebServiceContext jaxwsContext;
 	@Resource
 	private SecurityContext jaxrsContext;
+	@Resource
+	private HttpHeaders jaxrsHeaders;
 
 	/** Encapsulates the policies applied by this server. */
 	Policy policy;
@@ -518,7 +520,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 						invokes++;
 						if (run.getStatus() != Initialized)
 							throw new BadStateChangeException();
-						Credential toDelete = new Credential(){};
+						Credential toDelete = new Credential() {
+						};
 						toDelete.id = id;
 						context.deleteCredential(toDelete);
 						return noContent().build();
@@ -967,7 +970,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 				FilesystemAccessException, NoDirectoryEntryException {
 			invokes++;
 			permitUpdate(run);
-			DirectoryEntry container = FilenameConverter.getDirEntry(run, parent);
+			DirectoryEntry container = FilenameConverter.getDirEntry(run,
+					parent);
 			if (!(container instanceof Directory))
 				throw new FilesystemAccessException(
 						"You may not "
@@ -1416,16 +1420,22 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 					"failed to map security token to local user id");
 		}
 
-		TavernaRun w;
+		TavernaRun run;
 		try {
-			w = runFactory.create(p, workflow);
+			run = runFactory.create(p, workflow);
+			TavernaSecurityContext c = run.getSecurityContext();
+			if (jaxwsContext != null && jaxwsContext.getUserPrincipal() != null)
+				c.initializeSecurityFromSOAPContext(jaxwsContext
+						.getMessageContext());
+			else if (jaxrsHeaders != null)
+				c.initializeSecurityFromRESTContext(jaxrsHeaders);
 		} catch (Exception e) {
 			log.error("failed to build workflow run worker", e);
 			throw new NoCreateException("failed to build workflow run worker");
 		}
 
 		String uuid = randomUUID().toString();
-		runStore.registerRun(uuid, w);
+		runStore.registerRun(uuid, run);
 		return uuid;
 	}
 

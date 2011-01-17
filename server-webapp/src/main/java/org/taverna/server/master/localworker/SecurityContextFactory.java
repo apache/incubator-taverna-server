@@ -8,6 +8,8 @@ package org.taverna.server.master.localworker;
 import java.io.Serializable;
 import java.security.Principal;
 
+import org.taverna.server.master.interfaces.TavernaSecurityContext;
+
 public interface SecurityContextFactory extends Serializable {
 	/**
 	 * Creates a security context.
@@ -19,5 +21,5 @@ public interface SecurityContextFactory extends Serializable {
 	 *            The identity of the owner of the workflow run.
 	 * @return The security context.
 	 */
-	SecurityContextDelegate create(RemoteRunDelegate run, Principal owner);
+	TavernaSecurityContext create(RemoteRunDelegate run, Principal owner);
 }

@@ -5,11 +5,17 @@
  */
 package org.taverna.server.master.interfaces;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.Principal;
+
+import javax.ws.rs.core.HttpHeaders;
+import javax.xml.ws.handler.MessageContext;
 
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.exceptions.InvalidCredentialException;
+import org.taverna.server.master.localworker.SecurityContextFactory;
 
 /**
  * Security context for a workflow run.
@@ -89,4 +95,41 @@ public interface TavernaSecurityContext {
 	 *             If it is invalid.
 	 */
 	void validateTrusted(Trust t) throws InvalidCredentialException;
+
+	/**
+	 * Establish the security context from how the owning workflow run was
+	 * created. In particular, this gives an opportunity for boot-strapping
+	 * things with any delegateable credentials.
+	 * 
+	 * @param context
+	 *            The full information about the request that caused the
+	 *            workflow to be created.
+	 */
+	void initializeSecurityFromSOAPContext(MessageContext context);
+
+	/**
+	 * Establish the security context from how the owning workflow run was
+	 * created. In particular, this gives an opportunity for boot-strapping
+	 * things with any delegateable credentials.
+	 * 
+	 * @param headers
+	 *            The full information about the request that caused the
+	 *            workflow to be created.
+	 */
+	void initializeSecurityFromRESTContext(HttpHeaders headers);
+
+	/**
+	 * Transfer the security context to the remote system.
+	 * 
+	 * @throws IOException
+	 *             If the communication fails.
+	 * @throws GeneralSecurityException
+	 *             If the assembly of the context fails.
+	 */
+	void conveySecurity() throws GeneralSecurityException, IOException;
+
+	/**
+	 * @return The factory that created this security context.
+	 */
+	SecurityContextFactory getFactory();
 }

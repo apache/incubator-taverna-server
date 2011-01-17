@@ -12,7 +12,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.rmi.MarshalledObject;
 import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
@@ -53,12 +52,12 @@ import org.taverna.server.master.interfaces.TavernaSecurityContext;
  * 
  * @author Donal Fellows
  */
-public class RemoteRunDelegate implements TavernaRun, Serializable {
+public class RemoteRunDelegate implements TavernaRun {
 	private Date creationInstant;
 	private Workflow workflow;
 	private Date expiry;
 	transient RemoteSingleRun run;
-	private transient SecurityContextDelegate secContext;
+	private transient TavernaSecurityContext secContext;
 
 	RemoteRunDelegate(Date creationInstant, Workflow workflow,
 			RemoteSingleRun rsr, int defaultLifetime) {
@@ -690,7 +689,7 @@ public class RemoteRunDelegate implements TavernaRun, Serializable {
 		run = ((MarshalledObject<RemoteSingleRun>) in.readObject()).get();
 	}
 
-	void setSecurityContext(SecurityContextDelegate context) {
-		secContext = context;
+	void setSecurityContext(TavernaSecurityContext tavernaSecurityContext) {
+		secContext = tavernaSecurityContext;
 	}
 }
