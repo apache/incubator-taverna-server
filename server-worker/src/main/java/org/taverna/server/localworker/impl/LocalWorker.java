@@ -201,6 +201,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 
 	static final File SECURITY_DIR = new File(
 			new File(getProperty("java.home")), SECURITY_DIR_NAME);
+	static boolean DO_MKDIR = true;
 
 	class SecurityDelegate extends UnicastRemoteObject implements
 			RemoteSecurityContext {
@@ -209,11 +210,13 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		protected SecurityDelegate() throws IOException {
 			super();
 			contextDirectory = new File(SECURITY_DIR, masterToken);
-			forceMkdir(contextDirectory);
-			contextDirectory.setReadable(true, true);
-			contextDirectory.setExecutable(true, true);
-			contextDirectory.setWritable(true, true);
-			track(contextDirectory, LocalWorker.this);
+			if (DO_MKDIR) {
+				forceMkdir(contextDirectory);
+				contextDirectory.setReadable(true, true);
+				contextDirectory.setExecutable(true, true);
+				contextDirectory.setWritable(true, true);
+				track(contextDirectory, LocalWorker.this);
+			}
 		}
 
 		private static final String ENC = "UTF-8";

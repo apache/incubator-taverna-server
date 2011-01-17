@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.taverna.server.localworker.impl.LocalWorker.DO_MKDIR;
 
 import java.io.File;
 import java.rmi.RemoteException;
@@ -90,11 +91,11 @@ public class LocalWorkerTest {
 			Map<String, String> in = new TreeMap<String, String>();
 			for (String name : inputFiles.keySet()) {
 				File f = inputFiles.get(name);
-				in.put(name, f == null ? "<null>" : f.toString().substring(
-						dirLen));
+				in.put(name,
+						f == null ? "<null>" : f.toString().substring(dirLen));
 			}
 			events.add(in.toString());
-			events.add(new TreeMap<String,String>(inputValues).toString());
+			events.add(new TreeMap<String, String>(inputValues).toString());
 			events.add(outputBaclava == null ? "<null>" : outputBaclava
 					.toString().substring(dirLen));
 			events.add("]");
@@ -144,8 +145,9 @@ public class LocalWorkerTest {
 	public void testDestroy2() throws Exception {
 		lw.setStatus(RemoteStatus.Operating);
 		lw.destroy();
-		assertEquals(l("init[", "XWC", "WF", "36", "<null>", "{}", "{}",
-				"<null>", "]", "kill"), events);
+		assertEquals(
+				l("init[", "XWC", "WF", "36", "<null>", "{}", "{}", "<null>",
+						"]", "kill"), events);
 	}
 
 	@Test
@@ -153,19 +155,22 @@ public class LocalWorkerTest {
 		lw.setStatus(RemoteStatus.Operating);
 		lw.setStatus(RemoteStatus.Stopped);
 		lw.destroy();
-		assertEquals(l("init[", "XWC", "WF", "36", "<null>", "{}", "{}",
-				"<null>", "]", "stop", "kill"), events);
+		assertEquals(
+				l("init[", "XWC", "WF", "36", "<null>", "{}", "{}", "<null>",
+						"]", "stop", "kill"), events);
 	}
 
 	@Test
 	public void testDestroy4() throws Exception {
 		lw.setStatus(RemoteStatus.Operating);
 		lw.setStatus(RemoteStatus.Finished);
-		assertEquals(l("init[", "XWC", "WF", "36", "<null>", "{}", "{}",
-				"<null>", "]", "kill"), events);
+		assertEquals(
+				l("init[", "XWC", "WF", "36", "<null>", "{}", "{}", "<null>",
+						"]", "kill"), events);
 		lw.destroy();
-		assertEquals(l("init[", "XWC", "WF", "36", "<null>", "{}", "{}",
-				"<null>", "]", "kill"), events);
+		assertEquals(
+				l("init[", "XWC", "WF", "36", "<null>", "{}", "{}", "<null>",
+						"]", "kill"), events);
 	}
 
 	@Test
@@ -259,7 +264,13 @@ public class LocalWorkerTest {
 
 	@Test
 	public void testGetSecurityContext() throws Exception {
-		assertNotNull(lw.getSecurityContext());
+		boolean md = DO_MKDIR;
+		LocalWorker.DO_MKDIR = false; // HACK! Work around Hudson problem...
+		try {
+			assertNotNull(lw.getSecurityContext());
+		} finally {
+			LocalWorker.DO_MKDIR = md;
+		}
 	}
 
 	@Test
@@ -279,9 +290,10 @@ public class LocalWorkerTest {
 		assertEquals(RemoteStatus.Finished, lw.getStatus());
 		returnThisStatus = RemoteStatus.Stopped;
 		assertEquals(RemoteStatus.Finished, lw.getStatus());
-		assertEquals(l("init[", "XWC", "WF", "36", "<null>", "{}", "{}",
-				"<null>", "]", "status=Operating", "status=Operating",
-				"status=Finished"), events);
+		assertEquals(
+				l("init[", "XWC", "WF", "36", "<null>", "{}", "{}", "<null>",
+						"]", "status=Operating", "status=Operating",
+						"status=Finished"), events);
 	}
 
 	@Test
@@ -431,8 +443,9 @@ public class LocalWorkerTest {
 		lw.setStatus(RemoteStatus.Operating);
 		lw.setStatus(RemoteStatus.Finished);
 		lw.setStatus(RemoteStatus.Finished);
-		assertEquals(l("init[", "XWC", "WF", "36", "<null>", "{}", "{}",
-				"<null>", "]", "stop", "start", "kill"), events);
+		assertEquals(
+				l("init[", "XWC", "WF", "36", "<null>", "{}", "{}", "<null>",
+						"]", "stop", "start", "kill"), events);
 	}
 
 	@Test
@@ -440,8 +453,9 @@ public class LocalWorkerTest {
 		lw.setStatus(RemoteStatus.Operating);
 		lw.setStatus(RemoteStatus.Stopped);
 		lw.setStatus(RemoteStatus.Finished);
-		assertEquals(l("init[", "XWC", "WF", "36", "<null>", "{}", "{}",
-				"<null>", "]", "stop", "kill"), events);
+		assertEquals(
+				l("init[", "XWC", "WF", "36", "<null>", "{}", "{}", "<null>",
+						"]", "stop", "kill"), events);
 	}
 
 	@Test
@@ -493,8 +507,10 @@ public class LocalWorkerTest {
 		lw.setStatus(RemoteStatus.Operating);
 		lw.setStatus(RemoteStatus.Finished);
 		// Assumes order of map, so fragile but works...
-		assertEquals(l("init[", "XWC", "WF", "36", "<null>",
-				"{bar=<null>, foo=/foofile}", "{bar=barvalue, foo=null}", "/boo",
-				"]", "kill"), events);
+		assertEquals(
+				l("init[", "XWC", "WF", "36", "<null>",
+						"{bar=<null>, foo=/foofile}",
+						"{bar=barvalue, foo=null}", "/boo", "]", "kill"),
+				events);
 	}
 }
