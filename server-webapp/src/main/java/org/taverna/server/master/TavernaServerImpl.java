@@ -1076,8 +1076,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	// SOAP INTERFACE
 
-	// FIXME: SOAP interface to security
-
 	@Override
 	public RunReference[] listRuns() {
 		invokes++;
@@ -1175,6 +1173,131 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	public String getRunOwner(String runName) throws UnknownRunException {
 		invokes++;
 		return getRun(runName).getSecurityContext().getOwner().getName();
+	}
+
+	/**
+	 * Look up a security context, applying access control rules for access to
+	 * the parts of the context that are only open to the owner.
+	 * 
+	 * @param runName
+	 *            The name of the workflow run.
+	 * @param initialOnly
+	 *            Whether to check if we're in the initial state.
+	 * @return The security context. Never <tt>null</tt>.
+	 * @throws UnknownRunException
+	 * @throws NotOwnerException
+	 * @throws BadStateChangeException
+	 */
+	private TavernaSecurityContext getRunSecurityContext(String runName,
+			boolean initialOnly) throws UnknownRunException, NotOwnerException,
+			BadStateChangeException {
+		TavernaRun run = getRun(runName);
+		TavernaSecurityContext c = run.getSecurityContext();
+		if (!c.getOwner().equals(getPrincipal()))
+			throw new NotOwnerException();
+		if (run.getStatus() != Initialized)
+			throw new BadStateChangeException();
+		return c;
+	}
+
+	@Override
+	public Credential[] getRunCredentials(String runName)
+			throws UnknownRunException, NotOwnerException {
+		invokes++;
+		try {
+			return getRunSecurityContext(runName, false).getCredentials();
+		} catch (BadStateChangeException e) {
+			Error e2 = new Error("impossible");
+			e2.initCause(e);
+			throw e2;
+		}
+	}
+
+	@Override
+	public String setRunCredential(String runName, String credentialID,
+			Credential credential) throws UnknownRunException,
+			NotOwnerException, InvalidCredentialException,
+			NoCredentialException, BadStateChangeException {
+		invokes++;
+		TavernaSecurityContext c = getRunSecurityContext(runName, true);
+		if (credentialID == null || credentialID.isEmpty()) {
+			credential.id = randomUUID().toString();
+		} else {
+			find: do {
+				for (Credential t : c.getCredentials())
+					if (t.id.equals(credentialID))
+						break find;
+				throw new NoCredentialException();
+			} while (false);
+			credential.id = credentialID;
+		}
+		URI uri = getRestfulRunReferenceBuilder().path(
+				"security/credentials/{credid}").build(runName, credential.id);
+		credential.href = uri.toString();
+		c.validateCredential(credential);
+		c.addCredential(credential);
+		return credential.id;
+	}
+
+	@Override
+	public void deleteRunCredential(String runName, String credentialID)
+			throws UnknownRunException, NotOwnerException,
+			NoCredentialException, BadStateChangeException {
+		invokes++;
+		TavernaSecurityContext c = getRunSecurityContext(runName, true);
+		Credential toDelete = new Credential(){};
+		toDelete.id = credentialID;
+		c.deleteCredential(toDelete);
+	}
+
+	@Override
+	public Trust[] getRunCertificates(String runName)
+			throws UnknownRunException, NotOwnerException {
+		invokes++;
+		try {
+			return getRunSecurityContext(runName, false).getTrusted();
+		} catch (BadStateChangeException e) {
+			Error e2 = new Error("impossible");
+			e2.initCause(e);
+			throw e2;
+		}
+	}
+
+	@Override
+	public String setRunCertificates(String runName, String certificateID,
+			Trust certificate) throws UnknownRunException, NotOwnerException,
+			InvalidCredentialException, NoCredentialException,
+			BadStateChangeException {
+		invokes++;
+		TavernaSecurityContext c = getRunSecurityContext(runName, true);
+		if (certificateID == null || certificateID.isEmpty()) {
+			certificate.id = randomUUID().toString();
+		} else {
+			find: do {
+				for (Trust t : c.getTrusted())
+					if (t.id.equals(certificateID))
+						break find;
+				throw new NoCredentialException();
+			} while (false);
+			certificate.id = certificateID;
+		}
+		URI uri = getRestfulRunReferenceBuilder().path(
+				"security/trusts/{certid}").build(runName, certificate.id);
+		certificate.href = uri.toString();
+		c.validateTrusted(certificate);
+		c.addTrusted(certificate);
+		return certificate.id;
+	}
+
+	@Override
+	public void deleteRunCertificates(String runName, String certificateID)
+			throws UnknownRunException, NotOwnerException,
+			NoCredentialException, BadStateChangeException {
+		invokes++;
+		TavernaSecurityContext c = getRunSecurityContext(runName, true);
+		Trust toDelete = new Trust();
+		toDelete.id = certificateID;
+		c.deleteTrusted(toDelete);
 	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

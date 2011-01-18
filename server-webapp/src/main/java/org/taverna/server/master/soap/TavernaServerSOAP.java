@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.soap;
 
 import static org.taverna.server.master.common.Namespaces.SERVER_SOAP;
@@ -9,17 +14,22 @@ import javax.jws.WebParam;
 import javax.jws.WebResult;
 import javax.jws.WebService;
 
+import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
 import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Status;
+import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadPropertyValueException;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
+import org.taverna.server.master.exceptions.InvalidCredentialException;
+import org.taverna.server.master.exceptions.NoCredentialException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
+import org.taverna.server.master.exceptions.NotOwnerException;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.rest.TavernaServerREST;
 import org.taverna.server.output_description.RdfWrapper;
@@ -457,6 +467,157 @@ public interface TavernaServerSOAP {
 	@WebResult(name = "Owner")
 	public String getRunOwner(@WebParam(name = "runName") String runName)
 			throws UnknownRunException;
+
+	/**
+	 * Get the credentials associated with the run.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @return The collection of credentials.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 * @throws NotOwnerException
+	 *             If the user is permitted to see the run, but isn't the owner;
+	 *             only the owner may see the credentials.
+	 */
+	@WebResult(name = "Credentials")
+	public Credential[] getRunCredentials(
+			@WebParam(name = "runName") String runName)
+			throws UnknownRunException, NotOwnerException;
+
+	/**
+	 * Set a credential associated with the run.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @param credentialID
+	 *            The handle of the credential to set. If empty, a new
+	 *            credential will be created.
+	 * @param credential
+	 *            The credential to set.
+	 * @return The handle of the credential that was created or updated.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 * @throws NotOwnerException
+	 *             If the user is permitted to see the run, but isn't the owner;
+	 *             only the owner may manipulate the credentials.
+	 * @throws InvalidCredentialException
+	 *             If the <b>credential</b> fails its checks.
+	 * @throws NoCredentialException
+	 *             If the <b>credentialID</b> is not empty but does not
+	 *             correspond to an existing credential.
+	 * @throws BadStateChangeException
+	 *             If an attempt to manipulate the credentials is done after the
+	 *             workflow has started running.
+	 */
+	@WebResult(name = "credentialID")
+	public String setRunCredential(@WebParam(name = "runName") String runName,
+			@WebParam(name = "credentialID") String credentialID,
+			@WebParam(name = "credential") Credential credential)
+			throws UnknownRunException, NotOwnerException,
+			InvalidCredentialException, NoCredentialException,
+			BadStateChangeException;
+
+	/**
+	 * Delete a credential associated with the run.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @param credentialID
+	 *            The handle of the credential to delete. If empty, a new
+	 *            credential will be created.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 * @throws NotOwnerException
+	 *             If the user is permitted to see the run, but isn't the owner;
+	 *             only the owner may manipulate the credentials.
+	 * @throws BadStateChangeException
+	 *             If an attempt to manipulate the credentials is done after the
+	 *             workflow has started running.
+	 */
+	public void deleteRunCredential(@WebParam(name = "runName") String runName,
+			@WebParam(name = "credentialID") String credentialID)
+			throws UnknownRunException, NotOwnerException,
+			NoCredentialException, BadStateChangeException;
+
+	/**
+	 * Get the certificate collections associated with the run.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @return The collection of credentials.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 * @throws NotOwnerException
+	 *             If the user is permitted to see the run, but isn't the owner;
+	 *             only the owner may see the credentials.
+	 */
+	@WebResult(name = "CertificateCollections")
+	public Trust[] getRunCertificates(@WebParam(name = "runName") String runName)
+			throws UnknownRunException, NotOwnerException;
+
+	/**
+	 * Set a certificate collection associated with the run.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @param certificateID
+	 *            The handle of the certificate collection to set. If empty, a
+	 *            new certificate collection will be created.
+	 * @param certificate
+	 *            The certificate collection to set.
+	 * @return The handle of the certificate set that was created or updated.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 * @throws NotOwnerException
+	 *             If the user is permitted to see the run, but isn't the owner;
+	 *             only the owner may manipulate the certificates.
+	 * @throws InvalidCredentialException
+	 *             If the <b>certificate</b> fails its checks.
+	 * @throws NoCredentialException
+	 *             If the <b>credentialID</b> is not empty but does not
+	 *             correspond to an existing certificate collection.
+	 * @throws BadStateChangeException
+	 *             If an attempt to manipulate the credentials is done after the
+	 *             workflow has started running.
+	 */
+	@WebResult(name = "certificateID")
+	public String setRunCertificates(
+			@WebParam(name = "runName") String runName,
+			@WebParam(name = "certificateID") String certificateID,
+			@WebParam(name = "certificate") Trust certificate)
+			throws UnknownRunException, NotOwnerException,
+			InvalidCredentialException, NoCredentialException,
+			BadStateChangeException;
+
+	/**
+	 * Delete a certificate collection associated with the run.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @param certificateID
+	 *            The handle of the credential to delete. If empty, a new
+	 *            credential will be created.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 * @throws NotOwnerException
+	 *             If the user is permitted to see the run, but isn't the owner;
+	 *             only the owner may manipulate the certificates.
+	 * @throws BadStateChangeException
+	 *             If an attempt to manipulate the credentials is done after the
+	 *             workflow has started running.
+	 */
+	public void deleteRunCertificates(
+			@WebParam(name = "runName") String runName,
+			@WebParam(name = "certificateID") String certificateID)
+			throws UnknownRunException, NotOwnerException,
+			NoCredentialException, BadStateChangeException;
 
 	/**
 	 * Get the contents of any directory at/under the run's working directory.
