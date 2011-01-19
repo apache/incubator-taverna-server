@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.localworker;
 
 /**
@@ -9,15 +14,18 @@ public interface CompletionNotifier {
 	/**
 	 * Called to notify someone or something that a workflow run has finished.
 	 * 
+	 * @param name
+	 *            The name of the run.
 	 * @param run
 	 *            What run are we talking about.
-	 * @param target
-	 *            Who should be told.
 	 * @param code
 	 *            What the exit code was.
-	 * @throws Exception
-	 *             If anything fails; the exception will be logged.
+	 * @return The content of the message.
 	 */
-	void notifyComplete(RemoteRunDelegate run, String target, int code)
-			throws Exception;
+	String notifyComplete(String name, RemoteRunDelegate run, int code);
+
+	/**
+	 * @return What mechanism to dispatch by, or <tt>null</tt> for all of them.
+	 */
+	String getTargetDispatcher();
 }

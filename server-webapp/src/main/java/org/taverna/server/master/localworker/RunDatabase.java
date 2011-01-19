@@ -1,14 +1,22 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.localworker;
 
 import static java.lang.Integer.parseInt;
+import static java.util.Arrays.asList;
 import static org.taverna.server.master.TavernaServerImpl.log;
 import static org.taverna.server.master.localworker.RunConnections.KEY;
 import static org.taverna.server.master.localworker.RunConnections.makeInstance;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,14 +62,17 @@ public class RunDatabase implements RunStore {
 	}
 
 	public void setNotifier(CompletionNotifier n) {
-		notifier = n;
+		notifier = asList(n);
+	}
+
+	public void setNotificationDispatchers(Map<String, MessageDispatcher> dispatcherMap) {
+		notificationDispatchers = dispatcherMap;
 	}
 
 	PersistentContext<RunConnections> ctx;
 	LocalWorkerState state;
-	CompletionNotifier notifier;
-
-	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+	Map<String, MessageDispatcher> notificationDispatchers = new HashMap<String,MessageDispatcher>();
+	List<CompletionNotifier> notifier = new ArrayList<CompletionNotifier>();
 
 	private interface Act<Exn extends Exception> {
 		public void a(Map<String, RemoteRunDelegate> runs) throws Exn;
@@ -215,36 +226,47 @@ public class RunDatabase implements RunStore {
 		inTransaction(new Act<RuntimeException>() {
 			@Override
 			public void a(Map<String, RemoteRunDelegate> runs) {
-				for (RemoteRunDelegate run : runs.values()) {
-					if (run.getStatus() == Status.Finished) {
-						for (Listener l : run.getListeners()) {
-							if (!l.getName().equals("io"))
-								continue;
-							try {
-								if (l.getProperty("readyToNotify").equals(
-										"true")) {
-									l.setProperty("readyToNotify", "false");
-									notifyComplete(
-											run,
-											l.getProperty("notificationAddress"),
-											parseInt(l.getProperty("exitcode")));
-								}
-							} catch (Exception e) {
-								log.warn(
-										"failed to do notification of completion",
-										e);
-							}
-						}
+				for (Map.Entry<String, RemoteRunDelegate> run : runs.entrySet()) {
+					if (run.getValue().getStatus() == Status.Finished
+							&& !run.getValue().doneTransitionToFinished) {
+						run.getValue().doneTransitionToFinished = true;
+						notifyFinished(run.getKey(), run.getValue());
 					}
 				}
 			}
 		});
 	}
 
-	void notifyComplete(RemoteRunDelegate run, String string, int code)
-			throws Exception {
-		if (string != null && string.trim().length() > 0 && notifier != null) {
-			notifier.notifyComplete(run, string, code);
+	void notifyFinished(String name, RemoteRunDelegate run) {
+		if (notifier == null)
+			return;
+		for (Listener l : run.getListeners()) {
+			try {
+				if (!l.getName().equals("io"))
+					continue;
+				String to = l.getProperty("notificationAddress");
+				if (to == null || to.trim().isEmpty())
+					continue;
+				int code = parseInt(l.getProperty("exitcode"));
+				for (CompletionNotifier n : notifier) {
+					String message = n.notifyComplete(name, run, code);
+					String handler = n.getTargetDispatcher();
+					if (handler != null) {
+						MessageDispatcher d = notificationDispatchers.get(handler);
+						if (d != null)
+							d.dispatch(message, to);
+						else
+							log.warn("no such notification dispatcher: " + handler);
+					} else {
+						for (MessageDispatcher d: notificationDispatchers.values())
+							d.dispatch(message, to);
+					}
+				}
+			} catch (NumberFormatException e) {
+				// Ignore; not much we can do here...
+			} catch (Exception e) {
+				log.warn("failed to do notification of completion", e);
+			}
 		}
 	}
 }

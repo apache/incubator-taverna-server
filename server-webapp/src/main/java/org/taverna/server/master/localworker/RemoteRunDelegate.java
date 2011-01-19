@@ -58,6 +58,7 @@ public class RemoteRunDelegate implements TavernaRun {
 	private Date expiry;
 	transient RemoteSingleRun run;
 	private transient TavernaSecurityContext secContext;
+	boolean doneTransitionToFinished;
 
 	RemoteRunDelegate(Date creationInstant, Workflow workflow,
 			RemoteSingleRun rsr, int defaultLifetime) {

@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+Copyright (C) 2010-2011 The University of Manchester
+
+See the file "LICENSE.txt" for license terms.
+-->
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
@@ -228,6 +233,13 @@
 		<property name="state" ref="localworker.state" />
 		<property name="persistenceManagerFactory" ref="pmf" />
 		<property name="notifier" ref="localworker.notifier" />
+		<property name="notificationDispatchers">
+			<map>
+				<entry key="finishedEmail">
+					<ref bean="localworker.notifier"/>
+				</entry>
+			</map>
+		</property>
 	</bean>
 
 	<bean id="localworker.runDB.cleaner" class="org.springframework.scheduling.timer.ScheduledTimerTask">
@@ -252,9 +264,14 @@
 			</bean>
 		</property>
 	</bean>
-	<bean id="localworker.notifier" class="org.taverna.server.master.localworker.EmailCompletionNotifier">
+	<bean id="localworker.notifier"
+		class="org.taverna.server.master.localworker.EmailCompletionNotifier">
 		<property name="from" value="taverna.server@localhost" />
 		<property name="subject" value="Taverna workflow run finished" />
+		<property name="messageContentType" value="text/plain" />
+		<property name="messageFormat">
+			<value>Your job with ID={0} has finished with exit code {1,number,integer}.</value>
+		</property>
 	</bean>
 
 	<alias name="localworker.factory" alias="listenerFactory" />
