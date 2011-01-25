@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
-Copyright (C) 2010-2011 The University of Manchester
-
-See the file "LICENSE.txt" for license terms.
--->
+<!-- Copyright (C) 2010-2011 The University of Manchester See the file "LICENSE.txt" 
+	for license terms. -->
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
@@ -100,22 +97,11 @@ See the file "LICENSE.txt" for license terms.
 		</property>
 	</bean>
 
-	<!--
-	<bean id="sessionFactory"
-		class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
-		<property name="dataSource" ref="dataSource" />
-		<property name="hibernateProperties">
-			<props>
-				<prop key="hibernate.dialect">org.hibernate.dialect.DerbyDialect</prop>
-				<prop key="hibernate.hbm2ddl.auto">create</prop>
-			</props>
-		</property>
-		<property name="annotatedClasses">
-			<list>
-			</list>
-		</property>
-	</bean>
-	-->
+	<!-- <bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean"> 
+		<property name="dataSource" ref="dataSource" /> <property name="hibernateProperties"> 
+		<props> <prop key="hibernate.dialect">org.hibernate.dialect.DerbyDialect</prop> 
+		<prop key="hibernate.hbm2ddl.auto">create</prop> </props> </property> <property 
+		name="annotatedClasses"> <list> </list> </property> </bean> -->
 	<bean id="pmf" class="org.datanucleus.jdo.JDOPersistenceManagerFactory"
 		destroy-method="close">
 		<property name="connectionFactory" ref="dataSource" />
@@ -134,10 +120,8 @@ See the file "LICENSE.txt" for license terms.
 		</property>
 	</bean>
 
-	<!--
-		TODO: control the location of the database properly, or move to JNDI
-		TODO: review whether what we are doing now is correct!
-	-->
+	<!-- TODO: control the location of the database properly, or move to JNDI 
+		TODO: review whether what we are doing now is correct! -->
 	<bean id="dataSource" class="org.taverna.server.master.utils.WebappAwareDataSource"
 		destroy-method="close">
 		<property name="driverClassName" value="org.apache.derby.jdbc.EmbeddedDriver" />
@@ -164,7 +148,8 @@ See the file "LICENSE.txt" for license terms.
 		<property name="securityContextFactory" ref="localworker.securityContext" />
 	</bean>
 
-	<bean id="localworker.securityContext" class="org.taverna.server.master.localworker.SecurityContextDelegate.Factory" />
+	<bean id="localworker.securityContext"
+		class="org.taverna.server.master.localworker.SecurityContextDelegate.Factory" />
 
 	<bean id="localworker.state" class="org.taverna.server.master.localworker.LocalWorkerState"
 		scope="singleton" lazy-init="false">
@@ -194,26 +179,15 @@ See the file "LICENSE.txt" for license terms.
 				the subprocess to complete its registration.</description>
 		</property>
 		<property name="persistenceManagerFactory" ref="pmf" />
-		<!--
-		<property name="javaBinary">
-			<description>The name of the java executable used to run the server
-				worker. Defaults to the executable used to run the hosting
-				environment.</description>
-		</property>
-		-->
-		<!--
-		<property name="serverWorkerJar">
-			<description>The full path to the executable JAR file containing the
-			 	implementation of the server worker.</description>
-		</property>
-		-->
-		<!--
-		<property name="executeWorkflowScript">
-			<description>The full path to the executeworkflow.sh in either the
-				Taverna 2 Workbench distribution or the Taverna 2 Command Line
-				distribution.</description>
-		</property>
-		-->
+		<!-- <property name="javaBinary"> <description>The name of the java executable 
+			used to run the server worker. Defaults to the executable used to run the 
+			hosting environment.</description> </property> -->
+		<!-- <property name="serverWorkerJar"> <description>The full path to the 
+			executable JAR file containing the implementation of the server worker.</description> 
+			</property> -->
+		<!-- <property name="executeWorkflowScript"> <description>The full path 
+			to the executeworkflow.sh in either the Taverna 2 Workbench distribution 
+			or the Taverna 2 Command Line distribution.</description> </property> -->
 	</bean>
 
 	<bean id="localworker.policy" class="org.taverna.server.master.localworker.PolicyImpl">
@@ -233,13 +207,22 @@ See the file "LICENSE.txt" for license terms.
 		<property name="state" ref="localworker.state" />
 		<property name="persistenceManagerFactory" ref="pmf" />
 		<property name="notifier" ref="localworker.notifier" />
-		<property name="notificationDispatchers">
+		<property name="notificationEngine" ref="notificationFabric" />
+	</bean>
+
+	<bean id="notificationFabric" class="org.taverna.server.master.NotificationEngine">
+		<property name="dispatchers">
 			<map>
-				<entry key="finishedEmail">
-					<ref bean="localworker.notifier"/>
+				<entry key="mailto">
+					<ref bean="dispatch.email" />
 				</entry>
 			</map>
 		</property>
+	</bean>
+
+	<bean id="dispatch.email" class="org.taverna.server.master.EmailDispatcher">
+		<property name="from" value="taverna.server@localhost" />
+		<property name="messageContentType" value="text/plain" />
 	</bean>
 
 	<bean id="localworker.runDB.cleaner" class="org.springframework.scheduling.timer.ScheduledTimerTask">
@@ -265,10 +248,8 @@ See the file "LICENSE.txt" for license terms.
 		</property>
 	</bean>
 	<bean id="localworker.notifier"
-		class="org.taverna.server.master.localworker.EmailCompletionNotifier">
-		<property name="from" value="taverna.server@localhost" />
+		class="org.taverna.server.master.localworker.SimpleFormattedCompletionNotifier">
 		<property name="subject" value="Taverna workflow run finished" />
-		<property name="messageContentType" value="text/plain" />
 		<property name="messageFormat">
 			<value>Your job with ID={0} has finished with exit code {1,number,integer}.</value>
 		</property>

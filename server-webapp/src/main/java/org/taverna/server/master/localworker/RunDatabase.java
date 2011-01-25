@@ -11,6 +11,8 @@ import static org.taverna.server.master.TavernaServerImpl.log;
 import static org.taverna.server.master.localworker.RunConnections.KEY;
 import static org.taverna.server.master.localworker.RunConnections.makeInstance;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,6 +31,7 @@ import javax.jdo.annotations.PrimaryKey;
 import javax.jdo.annotations.Value;
 
 import org.springframework.beans.factory.annotation.Required;
+import org.taverna.server.master.NotificationEngine;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.interfaces.Listener;
@@ -65,14 +68,15 @@ public class RunDatabase implements RunStore {
 		notifier = asList(n);
 	}
 
-	public void setNotificationDispatchers(Map<String, MessageDispatcher> dispatcherMap) {
-		notificationDispatchers = dispatcherMap;
+	@Required
+	public void setNotificationEngine(NotificationEngine notificationEngine) {
+		this.notificationEngine = notificationEngine;
 	}
 
 	PersistentContext<RunConnections> ctx;
 	LocalWorkerState state;
-	Map<String, MessageDispatcher> notificationDispatchers = new HashMap<String,MessageDispatcher>();
 	List<CompletionNotifier> notifier = new ArrayList<CompletionNotifier>();
+	private NotificationEngine notificationEngine;
 
 	private interface Act<Exn extends Exception> {
 		public void a(Map<String, RemoteRunDelegate> runs) throws Exn;
@@ -220,54 +224,69 @@ public class RunDatabase implements RunStore {
 	}
 
 	/**
-	 * Scan each run to see if it has finished yet.
+	 * Scan each run to see if it has finished yet and issue registered
+	 * notifications if it has.
 	 */
 	public void checkForFinishNow() {
 		inTransaction(new Act<RuntimeException>() {
 			@Override
 			public void a(Map<String, RemoteRunDelegate> runs) {
-				for (Map.Entry<String, RemoteRunDelegate> run : runs.entrySet()) {
-					if (run.getValue().getStatus() == Status.Finished
-							&& !run.getValue().doneTransitionToFinished) {
-						run.getValue().doneTransitionToFinished = true;
-						notifyFinished(run.getKey(), run.getValue());
-					}
+				for (Map.Entry<String, RemoteRunDelegate> run : runs.entrySet())
+					checkForFinishedAndNotify(run.getKey(), run.getValue());
+			}
+
+			// Factored out for more mnemonic-ness.
+			private void checkForFinishedAndNotify(String name,
+					RemoteRunDelegate run) {
+				if (run.doneTransitionToFinished
+						|| run.getStatus() != Status.Finished)
+					return;
+				run.doneTransitionToFinished = true;
+				try {
+					for (Listener l : run.getListeners())
+						if (l.getName().equals("io")) {
+							notifyFinished(name, l, run);
+							return;
+						}
+				} catch (Exception e) {
+					log.warn("failed to do notification of completion", e);
 				}
 			}
 		});
 	}
 
-	void notifyFinished(String name, RemoteRunDelegate run) {
+	/**
+	 * Process the event that a run has finished.
+	 * 
+	 * @param name
+	 *            The name of the run.
+	 * @param io
+	 *            The io listener of the run (used to get information about the
+	 *            run).
+	 * @param run
+	 *            The handle to the run.
+	 * @throws Exception
+	 *             If anything goes wrong.
+	 */
+	void notifyFinished(String name, Listener io, RemoteRunDelegate run)
+			throws Exception {
 		if (notifier == null)
 			return;
-		for (Listener l : run.getListeners()) {
-			try {
-				if (!l.getName().equals("io"))
-					continue;
-				String to = l.getProperty("notificationAddress");
-				if (to == null || to.trim().isEmpty())
-					continue;
-				int code = parseInt(l.getProperty("exitcode"));
-				for (CompletionNotifier n : notifier) {
-					String message = n.notifyComplete(name, run, code);
-					String handler = n.getTargetDispatcher();
-					if (handler != null) {
-						MessageDispatcher d = notificationDispatchers.get(handler);
-						if (d != null)
-							d.dispatch(message, to);
-						else
-							log.warn("no such notification dispatcher: " + handler);
-					} else {
-						for (MessageDispatcher d: notificationDispatchers.values())
-							d.dispatch(message, to);
-					}
-				}
-			} catch (NumberFormatException e) {
-				// Ignore; not much we can do here...
-			} catch (Exception e) {
-				log.warn("failed to do notification of completion", e);
-			}
+		String to = io.getProperty("notificationAddress");
+		if (to == null || to.trim().isEmpty())
+			return;
+		int code;
+		try {
+			code = parseInt(io.getProperty("exitcode"));
+		} catch (NumberFormatException nfe) {
+			// Ignore; not much we can do here...
+			return;
 		}
+
+		for (CompletionNotifier n : notifier)
+			notificationEngine.dispatchMessage(to,
+					n.makeMessageSubject(name, run, code),
+					n.makeCompletionMessage(name, run, code));
 	}
 }
 

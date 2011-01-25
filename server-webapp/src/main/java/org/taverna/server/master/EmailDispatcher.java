@@ -3,14 +3,12 @@
  * 
  * See the file "LICENSE.txt" for license terms.
  */
-package org.taverna.server.master.localworker;
+package org.taverna.server.master;
 
 import static javax.mail.Message.RecipientType.TO;
 import static javax.mail.Transport.send;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static org.taverna.server.master.TavernaServerImpl.log;
-
-import java.text.MessageFormat;
 
 import javax.mail.Message;
 import javax.mail.Session;
@@ -21,14 +19,13 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 
 import org.springframework.beans.factory.annotation.Required;
+import org.taverna.server.master.interfaces.MessageDispatcher;
 
 /**
- * Completion notifier that sends messages by email.
- * 
+ * How to send a plain text message by email to someone.
  * @author Donal Fellows
  */
-public class EmailCompletionNotifier implements CompletionNotifier,
-		MessageDispatcher {
+public class EmailDispatcher implements MessageDispatcher {
 	/**
 	 * @param from
 	 *            Email address that the notification is to come from.
@@ -41,25 +38,6 @@ public class EmailCompletionNotifier implements CompletionNotifier,
 	}
 
 	/**
-	 * @param subject
-	 *            The subject of the notification email.
-	 */
-	@Required
-	public void setSubject(String subject) {
-		this.subject = subject;
-	}
-
-	/**
-	 * @param messageFormat
-	 *            The template for the body of the message to send. Parameter #0
-	 *            will be substituted with the ID of the job, and parameter #1
-	 *            will be substituted with the exit code.
-	 */
-	public void setMessageFormat(String messageFormat) {
-		this.format = new MessageFormat(messageFormat);
-	}
-
-	/**
 	 * @param contentType
 	 *            The content type of the message to be sent. For example, "
 	 *            <tt>text/plain</tt>".
@@ -68,30 +46,13 @@ public class EmailCompletionNotifier implements CompletionNotifier,
 		this.contentType = contentType;
 	}
 
-	public static final String DEFAULT_MESSAGE_FORMAT = "Your job with ID={0} has finished with exit code {1,number,integer}.";
 	private InternetAddress from;
-	private String subject;
-	private MessageFormat format = new MessageFormat(DEFAULT_MESSAGE_FORMAT);
 	private String contentType = TEXT_PLAIN;
 
 	@Override
-	public String notifyComplete(String name, RemoteRunDelegate run,
-			int code) {
-		return format.format(new Object[] { name, code });
-	}
-
-	@Override
-	public String getTargetDispatcher() {
-		return "finishedEmail";
-	}
-
-	@Override
-	public void dispatch(String messageContent, String targetParameter)
+	public void dispatch(String messageSubject, String messageContent, String to)
 			throws Exception {
 		// Simple checks for acceptability
-		String to = targetParameter.trim();
-		if (to.startsWith("mailto:"))
-			to = to.substring(7);
 		if (!to.matches(".+@.+")) {
 			log.info("did not send email notification: improper email address \""
 					+ to + "\"");
@@ -106,7 +67,7 @@ public class EmailCompletionNotifier implements CompletionNotifier,
 		Message message = new MimeMessage(session);
 		message.setFrom(from);
 		message.setRecipient(TO, new InternetAddress(to.trim()));
-		message.setSubject(subject);
+		message.setSubject(messageSubject);
 		message.setContent(messageContent, contentType);
 		send(message);
 	}

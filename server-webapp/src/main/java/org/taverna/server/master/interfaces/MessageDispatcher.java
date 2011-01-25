@@ -3,12 +3,14 @@
  * 
  * See the file "LICENSE.txt" for license terms.
  */
-package org.taverna.server.master.localworker;
+package org.taverna.server.master.interfaces;
 
 public interface MessageDispatcher {
 	/**
 	 * Dispatch a message to a recipient.
 	 * 
+	 * @param messageSubject
+	 *            The subject of the message to send.
 	 * @param messageContent
 	 *            The plain-text content of the message to send.
 	 * @param targetParameter
@@ -16,6 +18,6 @@ public interface MessageDispatcher {
 	 * @throws Exception
 	 *             If anything goes wrong.
 	 */
-	void dispatch(String messageContent, String targetParameter)
-			throws Exception;
+	void dispatch(String messageSubject, String messageContent,
+			String targetParameter) throws Exception;
 }

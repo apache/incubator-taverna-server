@@ -6,13 +6,13 @@
 package org.taverna.server.master.localworker;
 
 /**
- * How a user should be notified about the completion of a job.
+ * How to convert a notification about the completion of a job into a message.
  * 
  * @author Donal Fellows
  */
 public interface CompletionNotifier {
 	/**
-	 * Called to notify someone or something that a workflow run has finished.
+	 * Called to get the content of a message that a workflow run has finished.
 	 * 
 	 * @param name
 	 *            The name of the run.
@@ -20,12 +20,20 @@ public interface CompletionNotifier {
 	 *            What run are we talking about.
 	 * @param code
 	 *            What the exit code was.
-	 * @return The content of the message.
+	 * @return The plain-text content of the message.
 	 */
-	String notifyComplete(String name, RemoteRunDelegate run, int code);
+	String makeCompletionMessage(String name, RemoteRunDelegate run, int code);
 
 	/**
-	 * @return What mechanism to dispatch by, or <tt>null</tt> for all of them.
+	 * Called to get the subject of the message to dispatch.
+	 * 
+	 * @param name
+	 *            The name of the run.
+	 * @param run
+	 *            What run are we talking about.
+	 * @param code
+	 *            What the exit code was.
+	 * @return The plain-text subject of the message.
 	 */
-	String getTargetDispatcher();
+	String makeMessageSubject(String name, RemoteRunDelegate run, int code);
 }
