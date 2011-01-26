@@ -21,7 +21,7 @@ import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.NoSuchProviderException;
+import java.security.KeyStoreSpi;
 import java.security.Principal;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
@@ -37,6 +37,7 @@ import javax.security.auth.x500.X500Principal;
 import javax.ws.rs.core.HttpHeaders;
 import javax.xml.ws.handler.MessageContext;
 
+import org.bouncycastle.jce.provider.JDKKeyStore.BouncyCastleStore;
 import org.taverna.server.localworker.remote.RemoteSecurityContext;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.Trust;
@@ -53,10 +54,10 @@ import org.taverna.server.master.interfaces.TavernaSecurityContext;
  */
 class SecurityContextDelegate implements TavernaSecurityContext {
 	private final Principal owner;
-	private List<Credential> credentials = new ArrayList<Credential>();
-	private List<Trust> trusted = new ArrayList<Trust>();
+	private final List<Credential> credentials = new ArrayList<Credential>();
+	private final List<Trust> trusted = new ArrayList<Trust>();
 	private final RemoteRunDelegate run;
-	private final Object lock;
+	private final Object lock = new Object();
 	private final SecurityContextFactory factory;
 
 	SecurityContextDelegate(RemoteRunDelegate run, Principal owner,
@@ -64,7 +65,6 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 		this.run = run;
 		this.owner = owner;
 		this.factory = factory;
-		this.lock = new Object();
 	}
 
 	public static class Factory implements SecurityContextFactory {
@@ -96,11 +96,10 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 	public void addCredential(Credential toAdd) {
 		synchronized (lock) {
 			int idx = credentials.indexOf(toAdd);
-			if (idx != -1) {
+			if (idx != -1)
 				credentials.set(idx, toAdd);
-			} else {
+			else
 				credentials.add(toAdd);
-			}
 		}
 	}
 
@@ -122,11 +121,10 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 	public void addTrusted(Trust toAdd) {
 		synchronized (lock) {
 			int idx = trusted.indexOf(toAdd);
-			if (idx != -1) {
+			if (idx != -1)
 				trusted.set(idx, toAdd);
-			} else {
+			else
 				trusted.add(toAdd);
-			}
 		}
 	}
 
@@ -143,15 +141,14 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 	@Override
 	public void validateCredential(Credential c)
 			throws InvalidCredentialException {
-		if (c instanceof Credential.CaGridProxy) {
+		if (c instanceof Credential.CaGridProxy)
 			validateProxyCredential((Credential.CaGridProxy) c);
-		} else if (c instanceof Credential.Password) {
+		else if (c instanceof Credential.Password)
 			validatePasswordCredential((Credential.Password) c);
-		} else if (c instanceof Credential.KeyPair) {
+		else if (c instanceof Credential.KeyPair)
 			validateKeyCredential((Credential.KeyPair) c);
-		} else {
+		else
 			throw new InvalidCredentialException("unknown credential type");
-		}
 	}
 
 	private static final char USERNAME_PASSWORD_SEPARATOR = '\u0000';
@@ -188,10 +185,9 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 			} catch (UnrecoverableKeyException ignored) {
 				c.loadedKey = ks.getKey(c.credentialName, new char[0]);
 			}
-			if (c.loadedKey == null) {
+			if (c.loadedKey == null)
 				throw new InvalidCredentialException(
 						"no such credential in key store");
-			}
 			c.loadedTrustChain = ks.getCertificateChain(c.credentialName);
 		} catch (InvalidCredentialException e) {
 			throw e;
@@ -238,9 +234,14 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 		// do nothing in this implementation
 	}
 
-	protected KeyStore getInitialKeyStore() throws KeyStoreException,
-			NoSuchProviderException {
-		return KeyStore.getInstance("UBER", "BC");
+	protected KeyStoreSpi getInitialKeyStore() throws GeneralSecurityException {
+		// Uses the SPI because we don't want to integrate with the host
+		// platform's security infrastructure
+		return new BouncyCastleStore();
+	}
+
+	protected KeyStore getInitialTrustStore() throws GeneralSecurityException {
+		return KeyStore.getInstance("JKS");
 	}
 
 	/**
@@ -256,48 +257,47 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 	 *             If the conveyancing fails.
 	 */
 	@Override
-	public void conveySecurity() throws GeneralSecurityException,
-			IOException {
-		if ((credentials == null || credentials.isEmpty())
-				&& (trusted == null || trusted.isEmpty()))
+	public void conveySecurity() throws GeneralSecurityException, IOException {
+		if (credentials.isEmpty() && trusted.isEmpty())
 			return;
 		log.info("constructing merged keystore");
-		KeyStore ts = KeyStore.getInstance("JKS");
-		KeyStore ks = getInitialKeyStore();
+		KeyStore truststore = getInitialTrustStore();
+		KeyStoreSpi bcks = getInitialKeyStore();
+		KeyStore jks = KeyStore.getInstance("JKS");
 		HashMap<URI, String> uriToAliasMap = new HashMap<URI, String>();
 		int trustedCount = 0, keyCount = 0;
 
 		synchronized (lock) {
 			for (Trust t : trusted)
 				for (Certificate cert : t.loadedCertificates) {
-					addCertificateToTruststore(ts, cert);
+					addCertificateToTruststore(truststore, cert);
 					trustedCount++;
 				}
 
-			for (Credential c : credentials)
+			for (Credential c : credentials) {
+				String alias;
+
 				if (c instanceof Credential.Password) {
-					uriToAliasMap.put(c.serviceURI,
-							addUserPassToKeystore(ks, (Credential.Password) c));
-					keyCount++;
+					alias = addUserPassToKeystore(bcks, (Credential.Password) c);
 				} else if (c instanceof Credential.CaGridProxy) {
-					uriToAliasMap.put(c.serviceURI,
-							addPoxyToKeystore(ks, (Credential.CaGridProxy) c));
-					keyCount++;
+					alias = addPoxyToKeystore(bcks, (Credential.CaGridProxy) c);
 				} else {
-					uriToAliasMap.put(c.serviceURI,
-							addKeypairToKeystore(ks, (Credential.KeyPair) c));
-					keyCount++;
+					alias = addKeypairToKeystore(bcks, (Credential.KeyPair) c);
 				}
+				uriToAliasMap.put(c.serviceURI, alias);
+				jks.setKeyEntry(alias, c.loadedKey, null, c.loadedTrustChain);
+				keyCount++;
+			}
 		}
 
 		char[] password = null, trustpass = null;
+		byte[] trustbytes = null, uberbytes = null, jksbytes = null;
 		try {
 			password = generateNewPassword();
 			trustpass = new char[0];
-			ByteArrayOutputStream truststream = new ByteArrayOutputStream();
-			ts.store(truststream, trustpass);
-			ByteArrayOutputStream keystream = new ByteArrayOutputStream();
-			ks.store(keystream, password);
+			trustbytes = serialize(truststore, trustpass);
+			uberbytes = serialize(bcks, password);
+			jksbytes = serialize(jks, password);
 
 			// Now we've built the security information, ship it off...
 
@@ -305,25 +305,56 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 
 			log.info("transfering merged truststore with " + trustedCount
 					+ " entries");
-			rc.setTruststore(truststream.toByteArray());
+			rc.setTruststore(trustbytes);
 			rc.setTruststorePass(trustpass);
 
 			log.info("transfering merged keystore with " + keyCount
 					+ " entries");
-			rc.setKeystore(keystream.toByteArray());
+			rc.setKeystore(uberbytes);
 			rc.setKeystorePass(password);
+			// Do we transfer the jks keystore too?
 
 			log.info("transfering serviceURL->alias map with "
 					+ uriToAliasMap.size() + " entries");
 			rc.setUriToAliasMap(uriToAliasMap);
 
 		} finally {
-			int j;
-			for (j = 0; j < password.length; j++)
-				password[j] = ' ';
-			for (j = 0; j < trustpass.length; j++)
-				trustpass[j] = ' ';
+			blankOut(password);
+			blankOut(trustpass);
+			blankOut(trustbytes);
+			blankOut(uberbytes);
+			blankOut(jksbytes);
 		}
+	}
+
+	private static void blankOut(char[] ary) {
+		if (ary == null)
+			return;
+		for (int i = 0; i < ary.length; i++)
+			ary[i] = ' ';
+	}
+
+	private static void blankOut(byte[] ary) {
+		if (ary == null)
+			return;
+		for (int i = 0; i < ary.length; i++)
+			ary[i] = 0;
+	}
+
+	private static byte[] serialize(KeyStore ks, char[] password)
+			throws GeneralSecurityException, IOException {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		ks.store(stream, password);
+		stream.close();
+		return stream.toByteArray();
+	}
+
+	private static byte[] serialize(KeyStoreSpi ks, char[] password)
+			throws GeneralSecurityException, IOException {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		ks.engineStore(stream, password);
+		stream.close();
+		return stream.toByteArray();
 	}
 
 	protected char[] generateNewPassword() {
@@ -333,42 +364,66 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 	protected void addCertificateToTruststore(KeyStore ts, Certificate cert)
 			throws KeyStoreException {
 		X509Certificate c = (X509Certificate) cert;
-		String owner = getName(c.getSubjectX500Principal(), "CN", "COMMONNAME",
-				"OU", "ORGANIZATIONALUNITNAME", "O", "ORGANIZATIONNAME");
-		String issuer = getName(c.getIssuerX500Principal(), "CN", "COMMONNAME",
-				"OU", "ORGANIZATIONALUNITNAME", "O", "ORGANIZATIONNAME");
+		String owner = X500Utils.getName(c.getSubjectX500Principal(), "CN",
+				"COMMONNAME", "OU", "ORGANIZATIONALUNITNAME", "O",
+				"ORGANIZATIONNAME");
+		String issuer = X500Utils.getName(c.getIssuerX500Principal(), "CN",
+				"COMMONNAME", "OU", "ORGANIZATIONALUNITNAME", "O",
+				"ORGANIZATIONNAME");
 		String alias = "trustedcert#" + owner + "#" + issuer + "#"
-				+ getSerial(c);
+				+ X500Utils.getSerial(c);
 		ts.setCertificateEntry(alias, c);
 	}
 
-	protected String addKeypairToKeystore(KeyStore ks, Credential.KeyPair c)
+	protected String addKeypairToKeystore(KeyStoreSpi ks, Credential.KeyPair c)
 			throws KeyStoreException {
 		X509Certificate subjectCert = ((X509Certificate) c.loadedTrustChain[0]);
 		X500Principal subject = subjectCert.getSubjectX500Principal();
 		X500Principal issuer = subjectCert.getIssuerX500Principal();
-		String alias = "keypair#" + getName(subject, "CN", "COMMONNAME") + "#"
-				+ getName(issuer, "CN", "COMMONNAME") + "#"
-				+ getSerial(subjectCert);
-		ks.setKeyEntry(alias, c.loadedKey, null, c.loadedTrustChain);
+		String alias = "keypair#"
+				+ X500Utils.getName(subject, "CN", "COMMONNAME") + "#"
+				+ X500Utils.getName(issuer, "CN", "COMMONNAME") + "#"
+				+ X500Utils.getSerial(subjectCert);
+		ks.engineSetKeyEntry(alias, c.loadedKey, null, c.loadedTrustChain);
 		return alias;
 	}
 
-	protected String addUserPassToKeystore(KeyStore ks, Credential.Password c)
+	protected String addUserPassToKeystore(KeyStoreSpi ks, Credential.Password c)
 			throws KeyStoreException {
 		String alias = "password#" + c.serviceURI;
-		ks.setKeyEntry(alias, c.loadedKey, null, null);
+		ks.engineSetKeyEntry(alias, c.loadedKey, null, null);
 		return alias;
 	}
 
-	private String addPoxyToKeystore(KeyStore ks, Credential.CaGridProxy c)
+	private String addPoxyToKeystore(KeyStoreSpi ks, Credential.CaGridProxy c)
 			throws KeyStoreException {
 		String alias = "cagridproxy#" + c.authenticationService + " "
 				+ c.dorianService;
-		ks.setKeyEntry(alias, c.loadedKey, null, c.loadedTrustChain);
+		ks.engineSetKeyEntry(alias, c.loadedKey, null, c.loadedTrustChain);
 		return alias;
 	}
 
+	private InputStream contents(String name) throws InvalidCredentialException {
+		try {
+			File f = (File) getDirEntry(run, name);
+			return new ByteArrayInputStream(f.getContents(0, (int) f.getSize()));
+		} catch (NoDirectoryEntryException e) {
+			throw new InvalidCredentialException(e);
+		} catch (FilesystemAccessException e) {
+			throw new InvalidCredentialException(e);
+		} catch (ClassCastException e) {
+			throw new InvalidCredentialException("not a file", e);
+		}
+	}
+}
+
+/**
+ * Support class that factors out some of the messier parts of working with
+ * X.500 identities and X.509 certificates.
+ * 
+ * @author Donal Fellows
+ */
+class X500Utils {
 	private static final char DN_SEPARATOR = ',';
 	private static final char DN_ESCAPE = '\\';
 	private static final char DN_QUOTE = '"';
@@ -384,7 +439,7 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 	 * @return The common-name part of the distinguished name, or the literal
 	 *         string "<tt>none</tt>" if there is no CN.
 	 */
-	private static String getName(X500Principal id, String... fields) {
+	public static String getName(X500Principal id, String... fields) {
 		String dn = id.getName(RFC2253);
 
 		int i = 0;
@@ -393,46 +448,42 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 		boolean inQuotes = false;
 		HashMap<String, String> tokenized = new HashMap<String, String>();
 
-		for (i = 0; i < dn.length(); i++) {
-			if (ignoreThisChar) {
+		for (i = 0; i < dn.length(); i++)
+			if (ignoreThisChar)
 				ignoreThisChar = false;
-			} else if (dn.charAt(i) == DN_QUOTE) {
+			else if (dn.charAt(i) == DN_QUOTE)
 				inQuotes = !inQuotes;
-			} else if (inQuotes) {
+			else if (inQuotes)
 				continue;
-			} else if (dn.charAt(i) == DN_ESCAPE) {
+			else if (dn.charAt(i) == DN_ESCAPE)
 				ignoreThisChar = true;
-			} else if ((dn.charAt(i) == DN_SEPARATOR) && !ignoreThisChar) {
-				String[] split = dn.substring(startIndex, i).trim()
-						.split("=", 2);
-				if (split != null && split.length == 2) {
-					String key = split[0].toUpperCase();
-					if (tokenized.containsKey(key)) {
-						log.warn("duplicate field in DN: " + key);
-					}
-					tokenized.put(key, split[1]);
-				}
+			else if ((dn.charAt(i) == DN_SEPARATOR) && !ignoreThisChar) {
+				storeDNField(tokenized, dn.substring(startIndex, i).trim()
+						.split("=", 2));
 				startIndex = i + 1;
 			}
-		}
-
+		if (inQuotes || ignoreThisChar)
+			log.warn("was parsing invalid DN format");
 		// Add last token - after the last delimiter
-		String[] split = dn.substring(startIndex).trim().split("=", 2);
-		if (split != null && split.length == 2) {
-			String key = split[0].toUpperCase();
-			if (tokenized.containsKey(key)) {
-				log.warn("duplicate field in DN: " + key);
-			}
-			tokenized.put(key, split[1]);
-		}
+		storeDNField(tokenized, dn.substring(startIndex).trim().split("=", 2));
 
 		for (String field : fields) {
 			String value = tokenized.get(field);
-			// LATER: Should the field be de-quoted?
 			if (value != null)
 				return value;
 		}
 		return "none";
+	}
+
+	private static void storeDNField(HashMap<String, String> container,
+			String[] split) {
+		if (split == null || split.length != 2)
+			return;
+		String key = split[0].toUpperCase();
+		if (container.containsKey(key))
+			log.warn("duplicate field in DN: " + key);
+		// LATER: Should the field be de-quoted?
+		container.put(key, split[1]);
 	}
 
 	/**
@@ -442,21 +493,8 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 	 *            The certificate to extract from.
 	 * @return A hex string, in upper-case.
 	 */
-	private static String getSerial(X509Certificate cert) {
+	public static String getSerial(X509Certificate cert) {
 		return new BigInteger(1, cert.getSerialNumber().toByteArray())
 				.toString(16).toUpperCase();
-	}
-
-	private InputStream contents(String name) throws InvalidCredentialException {
-		try {
-			File f = (File) getDirEntry(run, name);
-			return new ByteArrayInputStream(f.getContents(0, (int) f.getSize()));
-		} catch (NoDirectoryEntryException e) {
-			throw new InvalidCredentialException(e);
-		} catch (FilesystemAccessException e) {
-			throw new InvalidCredentialException(e);
-		} catch (ClassCastException e) {
-			throw new InvalidCredentialException("not a file", e);
-		}
 	}
 }
