@@ -149,7 +149,9 @@
 	</bean>
 
 	<bean id="localworker.securityContext"
-		class="org.taverna.server.master.localworker.SecurityContextDelegate.Factory" />
+		class="org.taverna.server.master.localworker.SecurityContextDelegate.Factory">
+		<property name="runDatabase" ref="localworker.runDB" />
+	</bean>
 
 	<bean id="localworker.state" class="org.taverna.server.master.localworker.LocalWorkerState"
 		scope="singleton" lazy-init="false">

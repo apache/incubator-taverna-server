@@ -18,6 +18,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.xml.ws.handler.MessageContext;
@@ -359,5 +360,41 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	public SecurityContextFactory getFactory() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public Set<String> getPermittedDestroyers() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setPermittedDestroyers(Set<String> destroyers) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Set<String> getPermittedUpdaters() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setPermittedUpdaters(Set<String> updaters) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Set<String> getPermittedReaders() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setPermittedReaders(Set<String> readers) {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.localworker;
 
 import static java.util.Collections.emptyList;
@@ -12,6 +17,7 @@ import org.taverna.server.master.exceptions.NoDestroyException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.interfaces.TavernaSecurityContext;
 
 /**
  * Basic policy implementation that allows any workflow to be instantiated by
@@ -51,7 +57,10 @@ class PolicyImpl implements Policy {
 
 	@Override
 	public boolean permitAccess(Principal user, TavernaRun run) {
-		return true;
+		TavernaSecurityContext context = run.getSecurityContext();
+		if (context.getOwner().equals(user))
+			return true;
+		return context.getPermittedReaders().contains(user.getName());
 	}
 
 	@Override
@@ -67,23 +76,23 @@ class PolicyImpl implements Policy {
 	@Override
 	public synchronized void permitDestroy(Principal user, TavernaRun run)
 			throws NoDestroyException {
-		// Simple model: if you can update, you can destroy
-		try {
-			permitUpdate(user, run);
-		} catch (NoUpdateException e) {
+		TavernaSecurityContext context = run.getSecurityContext();
+		if (context.getOwner() == null || context.getOwner().equals(user))
+			return;
+		if (user == null
+				|| !context.getPermittedDestroyers().contains(user.getName()))
 			throw new NoDestroyException();
-		}
 	}
 
 	@Override
 	public void permitUpdate(Principal user, TavernaRun run)
 			throws NoUpdateException {
-		Principal owner = run.getSecurityContext().getOwner();
-		if (owner == null)
-			return; // Not owned by anyone; fair game
-		if (user == null)
-			throw new NoUpdateException("who are you?");
-		if (!owner.getName().equals(user.getName()))
-			throw new NoUpdateException("workflow run not owned by you");
+		TavernaSecurityContext context = run.getSecurityContext();
+		if (context.getOwner().equals(user))
+			return;
+		if (user == null
+				|| !context.getPermittedUpdaters().contains(user.getName()))
+			throw new NoUpdateException(
+					"workflow run not owned by you and you're not granted access");
 	}
 }

@@ -14,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -31,6 +32,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import javax.crypto.spec.SecretKeySpec;
 import javax.security.auth.x500.X500Principal;
@@ -38,6 +40,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.xml.ws.handler.MessageContext;
 
 import org.bouncycastle.jce.provider.JDKKeyStore.BouncyCastleStore;
+import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.localworker.remote.RemoteSecurityContext;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.Trust;
@@ -58,20 +61,45 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 	private final List<Trust> trusted = new ArrayList<Trust>();
 	private final RemoteRunDelegate run;
 	private final Object lock = new Object();
-	private final SecurityContextFactory factory;
+	private final Factory factory;
 
 	SecurityContextDelegate(RemoteRunDelegate run, Principal owner,
-			SecurityContextFactory factory) {
+			Factory factory) {
 		this.run = run;
 		this.owner = owner;
 		this.factory = factory;
 	}
 
+	/**
+	 * Singleton factory. Really is a singleton (and is also very trivial); the
+	 * singleton-ness is just about limiting the number of instances of this
+	 * around even when lots of serialization is going on.
+	 * 
+	 * @see Serializable
+	 * @author Donal Fellows
+	 */
 	public static class Factory implements SecurityContextFactory {
+		private static Factory instance;
+		transient RunDatabase db;
+
+		public Factory() {
+			if (instance == null)
+				instance = this;
+		}
+
+		@Required
+		public void setRunDatabase(RunDatabase db) {
+			this.db = db;
+		}
+
 		@Override
 		public SecurityContextDelegate create(RemoteRunDelegate run,
 				Principal owner) {
 			return new SecurityContextDelegate(run, owner, this);
+		}
+
+		private Object readResolve() {
+			return (instance != null) ? instance : (instance = this);
 		}
 	}
 
@@ -414,6 +442,36 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 		} catch (ClassCastException e) {
 			throw new InvalidCredentialException("not a file", e);
 		}
+	}
+
+	@Override
+	public Set<String> getPermittedDestroyers() {
+		return run.getDestroyers();
+	}
+
+	@Override
+	public void setPermittedDestroyers(Set<String> destroyers) {
+		run.setDestroyers(destroyers, factory.db);
+	}
+
+	@Override
+	public Set<String> getPermittedUpdaters() {
+		return run.getWriters();
+	}
+
+	@Override
+	public void setPermittedUpdaters(Set<String> updaters) {
+		run.setWriters(updaters, factory.db);
+	}
+
+	@Override
+	public Set<String> getPermittedReaders() {
+		return run.getReaders();
+	}
+
+	@Override
+	public void setPermittedReaders(Set<String> readers) {
+		run.setReaders(readers, factory.db);
 	}
 }
 

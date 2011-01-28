@@ -8,6 +8,7 @@ package org.taverna.server.master.interfaces;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
+import java.util.Set;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.xml.ws.handler.MessageContext;
@@ -27,6 +28,48 @@ public interface TavernaSecurityContext {
 	 * @return Who owns the security context.
 	 */
 	Principal getOwner();
+
+	/**
+	 * Describe the names of the users (as extracted from their
+	 * {@link Principal} objects) that may destroy the run or manipulate its
+	 * lifetime.
+	 */
+	Set<String> getPermittedDestroyers();
+
+	/**
+	 * Sets the collection of names of users (as extracted from their
+	 * {@link Principal} objects) that may destroy the run or manipulate its
+	 * lifetime.
+	 */
+	void setPermittedDestroyers(Set<String> destroyers);
+
+	/**
+	 * Describe the names of the users (as extracted from their
+	 * {@link Principal} objects) that may update the run (including writing to
+	 * files).
+	 */
+	Set<String> getPermittedUpdaters();
+
+	/**
+	 * Sets the collection of names of users (as extracted from their
+	 * {@link Principal} objects) that may update the run (including writing to
+	 * its files).
+	 */
+	void setPermittedUpdaters(Set<String> updaters);
+
+	/**
+	 * Describe the names of the users (as extracted from their
+	 * {@link Principal} objects) that may read from the run (including its
+	 * files).
+	 */
+	Set<String> getPermittedReaders();
+
+	/**
+	 * Sets the collection of names of users (as extracted from their
+	 * {@link Principal} objects) that may read from the run (including its
+	 * files).
+	 */
+	void setPermittedReaders(Set<String> readers);
 
 	/**
 	 * @return The credentials owned by the user. Never <tt>null</tt>.

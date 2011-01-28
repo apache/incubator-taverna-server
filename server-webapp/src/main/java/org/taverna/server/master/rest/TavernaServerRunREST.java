@@ -5,7 +5,6 @@
  */
 package org.taverna.server.master.rest;
 
-
 import java.net.URI;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -15,34 +14,26 @@ import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
 import org.apache.cxf.jaxrs.ext.Description;
-import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.Namespaces;
 import org.taverna.server.master.common.Status;
-import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
-import org.taverna.server.master.exceptions.InvalidCredentialException;
-import org.taverna.server.master.exceptions.NoCredentialException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.NotOwnerException;
@@ -103,7 +94,7 @@ public interface TavernaServerRunREST {
 	 */
 	@Path("security")
 	@Description("Access the workflow run's security.")
-	public Security getSecurity() throws NotOwnerException;
+	public TavernaServerSecurityREST getSecurity() throws NotOwnerException;
 
 	/**
 	 * Returns the time when the workflow run becomes eligible for automatic
@@ -410,156 +401,6 @@ public interface TavernaServerRunREST {
 			startTime = new Uri(ui, "startTime");
 			finishTime = new Uri(ui, "finishTime");
 			owner = run.getSecurityContext().getOwner().getName();
-		}
-	}
-
-	public interface Security {
-		@GET
-		@Path("/")
-		@Produces("application/xml")
-		public Descriptor describe(@Context UriInfo ui);
-
-		/**
-		 * Gets the identity of who owns the workflow run.
-		 * 
-		 * @return The name of the owner of the run.
-		 */
-		@GET
-		@Path("owner")
-		@Produces("text/plain")
-		@Description("Gives the identity of who owns the workflow run.")
-		public String getOwner();
-
-		/*
-		 * @PUT
-		 * 
-		 * @Path("/")
-		 * 
-		 * @Consumes(APPLICATION_OCTET_STREAM) public void set(InputStream
-		 * contents, @Context UriInfo ui);
-		 */
-
-		@GET
-		@Path("credentials")
-		@Produces("application/xml")
-		public CredentialList listCredentials();
-
-		@GET
-		@Path("credentials/{id}")
-		@Produces("application/xml")
-		public Credential getParticularCredential(@PathParam("id") String id)
-				throws NoCredentialException;
-
-		@PUT
-		@Path("credentials/{id}")
-		@Consumes("appplication/xml")
-		@Produces("application/xml")
-		public Credential setParticularCredential(@PathParam("id") String id,
-				Credential c, @Context UriInfo ui)
-				throws InvalidCredentialException, BadStateChangeException;
-
-		@POST
-		@Path("credentials")
-		@Consumes("application/xml")
-		public Response addCredential(Credential c, @Context UriInfo ui)
-				throws InvalidCredentialException, BadStateChangeException;
-
-		@DELETE
-		@Path("credentials")
-		public Response deleteAllCredentials(@Context UriInfo ui)
-				throws BadStateChangeException;
-
-		@DELETE
-		@Path("credentials/{id}")
-		public Response deleteCredential(@PathParam("id") String id,
-				@Context UriInfo ui) throws BadStateChangeException;
-
-		@GET
-		@Path("trusts")
-		@Produces("application/xml")
-		public TrustList listTrusted();
-
-		@GET
-		@Path("trusts/{id}")
-		@Produces("application/xml")
-		public Trust getParticularTrust(@PathParam("id") String id)
-				throws NoCredentialException;
-
-		@PUT
-		@Path("trusts/{id}")
-		@Consumes("appplication/xml")
-		@Produces("application/xml")
-		public Trust setParticularTrust(@PathParam("id") String id, Trust t,
-				@Context UriInfo ui) throws InvalidCredentialException,
-				BadStateChangeException;
-
-		@POST
-		@Path("trusts")
-		@Consumes("application/xml")
-		public Response addTrust(Trust c, @Context UriInfo ui)
-				throws InvalidCredentialException, BadStateChangeException;
-
-		@DELETE
-		@Path("trusts")
-		public Response deleteAllTrusts(@Context UriInfo ui)
-				throws BadStateChangeException;
-
-		@DELETE
-		@Path("trusts/{id}")
-		public Response deleteTrust(@PathParam("id") String id,
-				@Context UriInfo ui) throws BadStateChangeException;
-
-		@XmlRootElement(name = "securityDescriptor")
-		@XmlType(name = "SecurityDescriptor")
-		public static final class Descriptor extends VersionedElement {
-			@XmlElement
-			public String owner;
-
-			@XmlElement
-			@XmlElementWrapper(name = "credentials")
-			public Credential[] credential;
-			@XmlElement
-			@XmlElementWrapper(name = "trusts")
-			public Trust[] trust;
-
-			public Descriptor() {
-			}
-
-			public Descriptor(String owner, Credential[] credential,
-					Trust[] trust) {
-				super(true);
-				this.owner = owner;
-				this.credential = credential;
-				this.trust = trust;
-			}
-		}
-
-		@XmlRootElement(name = "credentials")
-		public static final class CredentialList extends VersionedElement {
-			@XmlElement
-			public Credential[] credential;
-
-			public CredentialList() {
-			}
-
-			public CredentialList(Credential[] credential) {
-				super(true);
-				this.credential = credential;
-			}
-		}
-
-		@XmlRootElement(name = "trustedIdentities")
-		public static final class TrustList extends VersionedElement {
-			@XmlElement
-			public Trust[] trust;
-
-			public TrustList() {
-			}
-
-			public TrustList(Trust[] trust) {
-				super(true);
-				this.trust = trust;
-			}
 		}
 	}
 }

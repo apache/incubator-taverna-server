@@ -17,6 +17,7 @@ import javax.jws.WebService;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
+import org.taverna.server.master.common.Permission;
 import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Trust;
@@ -467,6 +468,45 @@ public interface TavernaServerSOAP {
 	@WebResult(name = "Owner")
 	public String getRunOwner(@WebParam(name = "runName") String runName)
 			throws UnknownRunException;
+
+	/**
+	 * Get the list of permissions associated with a workflow run.
+	 * 
+	 * @param runName
+	 *            The name of the run whose permissions are to be obtained.
+	 * @return A description of the non-<tt>none</tt> permissions.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the current
+	 *             user is not permitted to see it.
+	 * @throws NotOwnerException
+	 *             If asked to provide this information about a run that the
+	 *             current user may see but where they are not the owner of it.
+	 */
+	@WebResult(name = "PermissionList")
+	PermissionList listRunPermissions(@WebParam(name = "runName") String runName)
+			throws UnknownRunException, NotOwnerException;
+
+	/**
+	 * Set the permission for a user to access and update a particular workflow
+	 * run.
+	 * 
+	 * @param runName
+	 *            The name of the run whose permissions are to be updated.
+	 * @param userName
+	 *            The name of the user about whom this call is talking.
+	 * @param permission
+	 *            The permission level to set.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the current
+	 *             user is not permitted to see it.
+	 * @throws NotOwnerException
+	 *             If asked to provide this information about a run that the
+	 *             current user may see but where they are not the owner of it.
+	 */
+	void setRunPermission(@WebParam(name = "runName") String runName,
+			@WebParam(name = "userName") String userName,
+			@WebParam(name = "permission") Permission permission)
+			throws UnknownRunException, NotOwnerException;
 
 	/**
 	 * Get the credentials associated with the run.

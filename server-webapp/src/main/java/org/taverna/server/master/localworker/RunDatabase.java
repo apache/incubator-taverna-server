@@ -11,8 +11,6 @@ import static org.taverna.server.master.TavernaServerImpl.log;
 import static org.taverna.server.master.localworker.RunConnections.KEY;
 import static org.taverna.server.master.localworker.RunConnections.makeInstance;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -198,6 +196,20 @@ public class RunDatabase implements RunStore {
 			@Override
 			public void a(Map<String, RemoteRunDelegate> runs) {
 				runs.remove(name);
+			}
+		});
+	}
+
+	void flushToDisk(final RemoteRunDelegate run) {
+		inTransaction(new Act<RuntimeException>(){
+			@Override
+			public void a(Map<String, RemoteRunDelegate> runs)
+					throws RuntimeException {
+				for (Map.Entry<String, RemoteRunDelegate> entry: runs.entrySet())
+					if (entry.getValue().equals(run)) {
+						runs.put(entry.getKey(), run);
+						return;
+					}
 			}
 		});
 	}

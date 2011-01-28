@@ -10,6 +10,7 @@ import static java.lang.Integer.parseInt;
 import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static java.util.Collections.sort;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
@@ -69,6 +70,7 @@ import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
 import org.taverna.server.master.common.Namespaces;
+import org.taverna.server.master.common.Permission;
 import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Trust;
@@ -102,6 +104,7 @@ import org.taverna.server.master.rest.DirectoryContents;
 import org.taverna.server.master.rest.ListenerDefinition;
 import org.taverna.server.master.rest.MakeOrUpdateDirEntry;
 import org.taverna.server.master.rest.MakeOrUpdateDirEntry.MakeDirectory;
+import org.taverna.server.master.rest.TavernaServerSecurityREST;
 import org.taverna.server.master.rest.TavernaServerDirectoryREST;
 import org.taverna.server.master.rest.TavernaServerInputREST;
 import org.taverna.server.master.rest.TavernaServerInputREST.InDesc.AbstractContents;
@@ -110,6 +113,7 @@ import org.taverna.server.master.rest.TavernaServerListenersREST.ListenerDescrip
 import org.taverna.server.master.rest.TavernaServerListenersREST.TavernaServerListenerREST;
 import org.taverna.server.master.rest.TavernaServerREST;
 import org.taverna.server.master.rest.TavernaServerRunREST;
+import org.taverna.server.master.soap.PermissionList;
 import org.taverna.server.master.soap.TavernaServerSOAP;
 import org.taverna.server.master.utils.FilenameConverter;
 import org.taverna.server.output_description.AbsentValue;
@@ -435,17 +439,19 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			}
 
 			@Override
-			public Security getSecurity() throws NotOwnerException {
+			public TavernaServerSecurityREST getSecurity()
+					throws NotOwnerException {
 				invokes++;
 				final TavernaSecurityContext context = run.getSecurityContext();
 				if (!getPrincipal().equals(context.getOwner()))
 					throw new NotOwnerException();
 
-				return new Security() {
+				return new TavernaServerSecurityREST() {
 					@Override
 					public Descriptor describe(UriInfo ui) {
 						invokes++;
-						return new Descriptor(context.getOwner().getName(),
+						return new Descriptor(ui.getAbsolutePathBuilder().path(
+								"{element}"), context.getOwner().getName(),
 								context.getCredentials(), context.getTrusted());
 					}
 
@@ -595,6 +601,50 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 						toDelete.id = id;
 						context.deleteTrusted(toDelete);
 						return noContent().build();
+					}
+
+					@Override
+					public PermissionsDescription describePermissions(UriInfo ui) {
+						invokes++;
+						Map<String, Permission> perm = new HashMap<String, Permission>();
+						for (String u : context.getPermittedReaders())
+							perm.put(u, Permission.Read);
+						for (String u : context.getPermittedUpdaters())
+							perm.put(u, Permission.Update);
+						for (String u : context.getPermittedDestroyers())
+							perm.put(u, Permission.Destroy);
+						return new PermissionsDescription(ui
+								.getAbsolutePathBuilder().path("{id}"), perm);
+					}
+
+					@Override
+					public Permission describePermission(String id) {
+						invokes++;
+						return getPerm(context, id);
+					}
+
+					@Override
+					public Permission setPermission(String id, Permission perm) {
+						invokes++;
+						setPerm(context, id, perm);
+						return getPerm(context, id);
+					}
+
+					@Override
+					public Response deletePermission(String id, UriInfo ui) {
+						invokes++;
+						setPerm(context, id, Permission.None);
+						return noContent().build();
+					}
+
+					@Override
+					public Response makePermission(PermissionDescription desc,
+							UriInfo ui) {
+						invokes++;
+						setPerm(context, desc.userName, desc.permission);
+						return created(
+								ui.getAbsolutePathBuilder().path("{user}")
+										.build(desc.userName)).build();
 					}
 				};
 			}
@@ -1169,6 +1219,9 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		w.setStatus(s);
 	}
 
+	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	// SOAP INTERFACE - Security
+
 	@Override
 	public String getRunOwner(String runName) throws UnknownRunException {
 		invokes++;
@@ -1195,7 +1248,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		TavernaSecurityContext c = run.getSecurityContext();
 		if (!c.getOwner().equals(getPrincipal()))
 			throw new NotOwnerException();
-		if (run.getStatus() != Initialized)
+		if (initialOnly && run.getStatus() != Initialized)
 			throw new BadStateChangeException();
 		return c;
 	}
@@ -1245,7 +1298,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			NoCredentialException, BadStateChangeException {
 		invokes++;
 		TavernaSecurityContext c = getRunSecurityContext(runName, true);
-		Credential toDelete = new Credential(){};
+		Credential toDelete = new Credential() {
+		};
 		toDelete.id = credentialID;
 		c.deleteCredential(toDelete);
 	}
@@ -1298,6 +1352,42 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		Trust toDelete = new Trust();
 		toDelete.id = certificateID;
 		c.deleteTrusted(toDelete);
+	}
+
+	@Override
+	public PermissionList listRunPermissions(String runName)
+			throws UnknownRunException, NotOwnerException {
+		PermissionList pl = new PermissionList();
+		pl.permission = new ArrayList<PermissionList.SinglePermissionMapping>();
+		Map<String, Permission> perm = new HashMap<String, Permission>();
+		try {
+			TavernaSecurityContext context = getRunSecurityContext(runName, false);
+			for (String u : context.getPermittedReaders())
+				perm.put(u, Permission.Read);
+			for (String u : context.getPermittedUpdaters())
+				perm.put(u, Permission.Update);
+			for (String u : context.getPermittedDestroyers())
+				perm.put(u, Permission.Destroy);
+		} catch (BadStateChangeException e) {
+			log.error("unexpected error from internal API", e);
+		}
+		List<String> users = new ArrayList<String>(perm.keySet());
+		sort(users);
+		for (String user: users) {
+			pl.permission.add(new PermissionList.SinglePermissionMapping(user, perm.get(user)));
+		}
+		return pl;
+	}
+
+	@Override
+	public void setRunPermission(String runName, String userName,
+			Permission permission) throws UnknownRunException,
+			NotOwnerException {
+		try {
+			setPerm(getRunSecurityContext(runName, false), userName, permission);
+		} catch (BadStateChangeException e) {
+			log.error("unexpected error from internal API", e);
+		}
 	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -1896,5 +1986,50 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 
 	public void setLogGetPrincipalFailures(boolean logthem) {
 		logGetPrincipalFailures = logthem;
+	}
+
+	void setPerm(TavernaSecurityContext context, String id, Permission perm) {
+		Set<String> permSet;
+		boolean doRead = false, doWrite = false, doKill = false;
+
+		switch (perm) {
+		case Destroy:
+			doKill = true;
+		case Update:
+			doWrite = true;
+		case Read:
+			doRead = true;
+		}
+
+		permSet = context.getPermittedReaders();
+		if (doRead)
+			permSet.add(id);
+		else
+			permSet.remove(id);
+		context.setPermittedReaders(permSet);
+
+		permSet = context.getPermittedUpdaters();
+		if (doWrite)
+			permSet.add(id);
+		else
+			permSet.remove(id);
+		context.setPermittedUpdaters(permSet);
+
+		permSet = context.getPermittedDestroyers();
+		if (doKill)
+			permSet.add(id);
+		else
+			permSet.remove(id);
+		context.setPermittedDestroyers(permSet);
+	}
+
+	Permission getPerm(TavernaSecurityContext context, String id) {
+		if (context.getPermittedDestroyers().contains(id))
+			return Permission.Destroy;
+		if (context.getPermittedUpdaters().contains(id))
+			return Permission.Update;
+		if (context.getPermittedReaders().contains(id))
+			return Permission.Read;
+		return Permission.None;
 	}
 }

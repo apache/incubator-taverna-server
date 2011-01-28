@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
+import org.taverna.server.master.common.Permission;
 import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.common.Workflow;
@@ -30,6 +31,7 @@ import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.rest.DirectoryContents;
 import org.taverna.server.master.rest.ListenerDefinition;
 import org.taverna.server.master.rest.MakeOrUpdateDirEntry;
+import org.taverna.server.master.rest.TavernaServerSecurityREST;
 import org.taverna.server.master.rest.TavernaServerREST.PolicyView.PolicyDescription;
 import org.taverna.server.master.rest.TavernaServerInputREST.InDesc;
 import org.taverna.server.master.rest.TavernaServerInputREST.InputsDescriptor;
@@ -42,8 +44,8 @@ import org.taverna.server.master.rest.TavernaServerREST.PermittedWorkflows;
 import org.taverna.server.master.rest.TavernaServerREST.PointingRunList;
 import org.taverna.server.master.rest.TavernaServerREST.RunList;
 import org.taverna.server.master.rest.TavernaServerREST.ServerDescription;
-import org.taverna.server.master.rest.TavernaServerRunREST;
 import org.taverna.server.master.rest.TavernaServerRunREST.RunDescription;
+import org.taverna.server.master.soap.PermissionList;
 
 /**
  * This test file ensures that the JAXB bindings will work once deployed instead
@@ -201,7 +203,7 @@ public class JaxbSanityTest {
 
 	@Test
 	public void testJAXBForSecurityCredentialList() throws Exception {
-		testJAXB(TavernaServerRunREST.Security.CredentialList.class);
+		testJAXB(TavernaServerSecurityREST.CredentialList.class);
 	}
 
 	@Test
@@ -211,12 +213,32 @@ public class JaxbSanityTest {
 
 	@Test
 	public void testJAXBForSecurityTrustList() throws Exception {
-		testJAXB(TavernaServerRunREST.Security.TrustList.class);
+		testJAXB(TavernaServerSecurityREST.TrustList.class);
+	}
+
+	@Test
+	public void testJAXBForPermission() throws Exception {
+		testJAXB(Permission.class);
+	}
+
+	@Test
+	public void testJAXBForSecurityPermissionDescription() throws Exception {
+		testJAXB(TavernaServerSecurityREST.PermissionDescription.class);
+	}
+
+	@Test
+	public void testJAXBForSecurityPermissionsDescription() throws Exception {
+		testJAXB(TavernaServerSecurityREST.PermissionsDescription.class);
 	}
 
 	@Test
 	public void testJAXBForSecurityDescriptor() throws Exception {
-		testJAXB(TavernaServerRunREST.Security.Descriptor.class);
+		testJAXB(TavernaServerSecurityREST.Descriptor.class);
+	}
+
+	@Test
+	public void testJAXBForPermissionList() throws Exception {
+		testJAXB(PermissionList.class);
 	}
 
 	@Test
@@ -231,10 +253,11 @@ public class JaxbSanityTest {
 				PermittedListeners.class, PermittedWorkflows.class,
 				ServerDescription.class, RunDescription.class, Uri.class,
 				RunList.class, PointingRunList.class, PolicyDescription.class,
-				Credential.class,
-				TavernaServerRunREST.Security.CredentialList.class,
-				Trust.class,
-				TavernaServerRunREST.Security.TrustList.class,
-				TavernaServerRunREST.Security.Descriptor.class);
+				PermissionList.class, Credential.class, Trust.class,
+				TavernaServerSecurityREST.CredentialList.class,
+				TavernaServerSecurityREST.TrustList.class, Permission.class,
+				TavernaServerSecurityREST.Descriptor.class,
+				TavernaServerSecurityREST.PermissionDescription.class,
+				TavernaServerSecurityREST.PermissionsDescription.class);
 	}
 }

@@ -6,6 +6,7 @@
 package org.taverna.server.master.localworker;
 
 import static java.util.Calendar.MINUTE;
+import static java.util.Collections.unmodifiableSet;
 import static org.taverna.server.master.localworker.AbstractRemoteRunFactory.log;
 
 import java.io.ByteArrayOutputStream;
@@ -21,7 +22,9 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -59,6 +62,9 @@ public class RemoteRunDelegate implements TavernaRun {
 	transient RemoteSingleRun run;
 	private transient TavernaSecurityContext secContext;
 	boolean doneTransitionToFinished;
+	HashSet<String> readers;
+	HashSet<String> writers;
+	HashSet<String> destroyers;
 
 	RemoteRunDelegate(Date creationInstant, Workflow workflow,
 			RemoteSingleRun rsr, int defaultLifetime) {
@@ -651,6 +657,63 @@ public class RemoteRunDelegate implements TavernaRun {
 			log.info("failed to get finish timestamp", e);
 			return null;
 		}
+	}
+
+	/**
+	 * @param readers
+	 *            the readers to set
+	 * @param db
+	 *            the database of runs
+	 */
+	public void setReaders(Set<String> readers, RunDatabase db) {
+		this.readers = new HashSet<String>(readers);
+		db.flushToDisk(this);
+	}
+
+	/**
+	 * @return the readers
+	 */
+	public Set<String> getReaders() {
+		return readers == null ? new HashSet<String>()
+				: unmodifiableSet(readers);
+	}
+
+	/**
+	 * @param writers
+	 *            the writers to set
+	 * @param db
+	 *            the database of runs
+	 */
+	public void setWriters(Set<String> writers, RunDatabase db) {
+		this.writers = new HashSet<String>(writers);
+		db.flushToDisk(this);
+	}
+
+	/**
+	 * @return the writers
+	 */
+	public Set<String> getWriters() {
+		return writers == null ? new HashSet<String>()
+				: unmodifiableSet(writers);
+	}
+
+	/**
+	 * @param destroyers
+	 *            the destroyers to set
+	 * @param db
+	 *            the database of runs
+	 */
+	public void setDestroyers(Set<String> destroyers, RunDatabase db) {
+		this.destroyers = new HashSet<String>(destroyers);
+		db.flushToDisk(this);
+	}
+
+	/**
+	 * @return the destroyers
+	 */
+	public Set<String> getDestroyers() {
+		return destroyers == null ? new HashSet<String>()
+				: unmodifiableSet(destroyers);
 	}
 
 	private void writeObject(ObjectOutputStream out) throws IOException {
