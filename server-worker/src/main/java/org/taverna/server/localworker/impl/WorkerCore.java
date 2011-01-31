@@ -3,6 +3,7 @@ package org.taverna.server.localworker.impl;
 import static java.io.File.createTempFile;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.System.out;
+import static java.nio.charset.Charset.defaultCharset;
 import static org.apache.commons.io.IOUtils.copy;
 import static org.taverna.server.localworker.remote.RemoteStatus.Finished;
 import static org.taverna.server.localworker.remote.RemoteStatus.Initialized;
@@ -12,6 +13,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.rmi.RemoteException;
@@ -138,11 +141,19 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	@Override
 	public void initWorker(String executeWorkflowCommand, String workflow,
 			File workingDir, File inputBaclava, Map<String, File> inputFiles,
-			Map<String, String> inputValues, File outputBaclava)
-			throws IOException {
+			Map<String, String> inputValues, File outputBaclava,
+			File securityDir, char[] password) throws IOException {
 		// How we execute the workflow in a subprocess
 		ProcessBuilder pb = new ProcessBuilder()
 				.command(executeWorkflowCommand);
+
+		char[] pass = null;
+		if (securityDir != null && password != null) {
+			//FIXME - Send correct arguments in to enable security
+			//pb.command().add("-keystoreDirectory");
+			//pb.command().add(securityDir.getAbsolutePath());
+			//pass = password;
+		}
 
 		// Add arguments denoting inputs
 		if (inputBaclava != null) {
@@ -207,6 +218,10 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		subprocess = pb.start();
 		if (subprocess == null)
 			throw new IOException("unknown failure creating process");
+		if (pass != null)
+			new PrintWriter(new OutputStreamWriter(
+					subprocess.getOutputStream(), defaultCharset().name()))
+					.println(pass);
 
 		// Capture its stdout and stderr
 		new AsyncCopy(subprocess.getInputStream(), stdout);

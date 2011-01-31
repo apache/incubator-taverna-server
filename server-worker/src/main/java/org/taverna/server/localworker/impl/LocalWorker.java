@@ -16,7 +16,6 @@ import static org.apache.commons.io.FileUtils.forceDelete;
 import static org.apache.commons.io.FileUtils.forceMkdir;
 import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
 import static org.apache.commons.io.FileUtils.writeLines;
-import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.taverna.server.localworker.impl.utils.FilenameVerifier.getValidatedFile;
 import static org.taverna.server.localworker.remote.RemoteStatus.Finished;
 import static org.taverna.server.localworker.remote.RemoteStatus.Initialized;
@@ -193,20 +192,19 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	}
 
 	public static final String SECURITY_DIR_NAME = ".taverna-server-security";
-	public static final String KEYSTORE_FILE = "identity.keystore";
-	public static final String KEYSTORE_PASS = "identity.password";
-	public static final String TRUSTSTORE_FILE = "truststore.jks";
-	public static final String TRUSTSTORE_PASS = "truststore.password";
+	public static final String KEYSTORE_FILE = "t2keystore.jceks";
+	public static final String TRUSTSTORE_FILE = "t2truststore.jceks";
 	public static final String URI_ALIAS_MAP = "urlmap.txt";
 
 	static final File SECURITY_DIR = new File(
 			new File(getProperty("java.home")), SECURITY_DIR_NAME);
 	static boolean DO_MKDIR = true;
 
+	File contextDirectory;
+	char[] keystorePassword;
+
 	class SecurityDelegate extends UnicastRemoteObject implements
 			RemoteSecurityContext {
-		File contextDirectory;
-
 		protected SecurityDelegate() throws IOException {
 			super();
 			contextDirectory = new File(SECURITY_DIR, masterToken);
@@ -238,15 +236,6 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			}
 		}
 
-		private void write(String name, char[] data) throws RemoteException {
-			try {
-				writeStringToFile(new File(contextDirectory, name), new String(
-						data), ENC);
-			} catch (IOException e) {
-				throw new RemoteException("problem writing " + name, e);
-			}
-		}
-
 		@Override
 		public void setKeystore(byte[] keystore) throws RemoteException {
 			if (status != Initialized)
@@ -255,10 +244,10 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		}
 
 		@Override
-		public void setKeystorePass(char[] password) throws RemoteException {
+		public void setPassword(char[] password) throws RemoteException {
 			if (status != Initialized)
 				throw new RemoteException("not initializing");
-			write(KEYSTORE_PASS, password);
+			keystorePassword = password;
 		}
 
 		@Override
@@ -266,13 +255,6 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			if (status != Initialized)
 				throw new RemoteException("not initializing");
 			write(TRUSTSTORE_FILE, truststore);
-		}
-
-		@Override
-		public void setTruststorePass(char[] password) throws RemoteException {
-			if (status != Initialized)
-				throw new RemoteException("not initializing");
-			write(TRUSTSTORE_PASS, password);
 		}
 
 		@Override
@@ -431,7 +413,12 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 					start = new Date();
 					core.initWorker(executeWorkflowCommand, workflow, base,
 							inputBaclavaFile, inputRealFiles, inputValues,
-							outputBaclavaFile);
+							outputBaclavaFile, contextDirectory,
+							keystorePassword);
+					for (int i = 0; keystorePassword != null
+							&& i < keystorePassword.length; i++)
+						keystorePassword[i] = ' ';
+					keystorePassword = null;
 				} catch (Exception e) {
 					throw new RemoteException(
 							"problem creating executing workflow", e);

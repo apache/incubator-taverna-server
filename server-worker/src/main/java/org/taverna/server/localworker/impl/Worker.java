@@ -37,13 +37,20 @@ public interface Worker {
 	 *            What baclava file to write the output from the workflow into,
 	 *            or <tt>null</tt> to have it written into the <tt>out</tt>
 	 *            subdirectory.
+	 * @param contextDirectory
+	 *            The directory containing the keystore and truststore. May be
+	 *            <tt>null</tt> if no security information is provided.
+	 * @param keystorePassword
+	 *            The password to the keystore and truststore. May be
+	 *            <tt>null</tt> if no security information is provided.
 	 * @throws Exception
 	 *             If any of quite a large number of things goes wrong.
 	 */
 	public void initWorker(String executeWorkflowCommand, String workflow,
 			File workingDir, File inputBaclavaFile,
 			Map<String, File> inputRealFiles, Map<String, String> inputValues,
-			File outputBaclavaFile) throws Exception;
+			File outputBaclavaFile, File contextDirectory,
+			char[] keystorePassword) throws Exception;
 
 	/**
 	 * Kills off the subprocess if it exists and is alive.

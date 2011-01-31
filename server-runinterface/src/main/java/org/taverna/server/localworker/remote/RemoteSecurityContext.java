@@ -18,11 +18,9 @@ import java.util.HashMap;
 public interface RemoteSecurityContext extends Remote {
 	void setKeystore(byte[] keystore) throws RemoteException;
 
-	void setKeystorePass(char[] password) throws RemoteException;
+	void setPassword(char[] password) throws RemoteException;
 
 	void setTruststore(byte[] truststore) throws RemoteException;
-
-	void setTruststorePass(char[] password) throws RemoteException;
 
 	void setUriToAliasMap(HashMap<URI, String> uriToAliasMap)
 			throws RemoteException;

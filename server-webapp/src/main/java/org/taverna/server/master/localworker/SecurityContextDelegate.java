@@ -22,7 +22,6 @@ import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.KeyStoreSpi;
 import java.security.Principal;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
@@ -39,7 +38,6 @@ import javax.security.auth.x500.X500Principal;
 import javax.ws.rs.core.HttpHeaders;
 import javax.xml.ws.handler.MessageContext;
 
-import org.bouncycastle.jce.provider.JDKKeyStore.BouncyCastleStore;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.localworker.remote.RemoteSecurityContext;
 import org.taverna.server.master.common.Credential;
@@ -262,14 +260,12 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 		// do nothing in this implementation
 	}
 
-	protected KeyStoreSpi getInitialKeyStore() throws GeneralSecurityException {
-		// Uses the SPI because we don't want to integrate with the host
-		// platform's security infrastructure
-		return new BouncyCastleStore();
+	protected KeyStore getInitialKeyStore() throws GeneralSecurityException {
+		return KeyStore.getInstance("JCEKS");
 	}
 
 	protected KeyStore getInitialTrustStore() throws GeneralSecurityException {
-		return KeyStore.getInstance("JKS");
+		return KeyStore.getInstance("JCEKS");
 	}
 
 	/**
@@ -288,70 +284,70 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 	public void conveySecurity() throws GeneralSecurityException, IOException {
 		if (credentials.isEmpty() && trusted.isEmpty())
 			return;
-		log.info("constructing merged keystore");
-		KeyStore truststore = getInitialTrustStore();
-		KeyStoreSpi bcks = getInitialKeyStore();
-		KeyStore jks = KeyStore.getInstance("JKS");
-		HashMap<URI, String> uriToAliasMap = new HashMap<URI, String>();
-		int trustedCount = 0, keyCount = 0;
-
-		synchronized (lock) {
-			for (Trust t : trusted)
-				for (Certificate cert : t.loadedCertificates) {
-					addCertificateToTruststore(truststore, cert);
-					trustedCount++;
-				}
-
-			for (Credential c : credentials) {
-				String alias;
-
-				if (c instanceof Credential.Password) {
-					alias = addUserPassToKeystore(bcks, (Credential.Password) c);
-				} else if (c instanceof Credential.CaGridProxy) {
-					alias = addPoxyToKeystore(bcks, (Credential.CaGridProxy) c);
-				} else {
-					alias = addKeypairToKeystore(bcks, (Credential.KeyPair) c);
-				}
-				uriToAliasMap.put(c.serviceURI, alias);
-				jks.setKeyEntry(alias, c.loadedKey, null, c.loadedTrustChain);
-				keyCount++;
-			}
-		}
-
-		char[] password = null, trustpass = null;
-		byte[] trustbytes = null, uberbytes = null, jksbytes = null;
+		char[] password = null;
 		try {
 			password = generateNewPassword();
-			trustpass = new char[0];
-			trustbytes = serialize(truststore, trustpass);
-			uberbytes = serialize(bcks, password);
-			jksbytes = serialize(jks, password);
 
-			// Now we've built the security information, ship it off...
+			log.info("constructing merged keystore");
+			KeyStore truststore = getInitialTrustStore();
+			KeyStore keystore = getInitialKeyStore();
+			HashMap<URI, String> uriToAliasMap = new HashMap<URI, String>();
+			int trustedCount = 0, keyCount = 0;
 
-			RemoteSecurityContext rc = run.run.getSecurityContext();
+			synchronized (lock) {
+				try {
+					for (Trust t : trusted)
+						for (Certificate cert : t.loadedCertificates) {
+							addCertificateToTruststore(truststore, cert);
+							trustedCount++;
+						}
 
-			log.info("transfering merged truststore with " + trustedCount
-					+ " entries");
-			rc.setTruststore(trustbytes);
-			rc.setTruststorePass(trustpass);
+					this.password = password;
+					this.uriToAliasMap = uriToAliasMap;
+					this.keystore = keystore;
+					for (Credential c : credentials) {
+						if (c instanceof Credential.Password)
+							addUserPassToKeystore((Credential.Password) c);
+						else if (c instanceof Credential.CaGridProxy)
+							addPoxyToKeystore((Credential.CaGridProxy) c);
+						else
+							addKeypairToKeystore((Credential.KeyPair) c);
+						keyCount++;
+					}
+				} finally {
+					this.password = null;
+					this.uriToAliasMap = null;
+					this.keystore = null;
+				}
+			}
 
-			log.info("transfering merged keystore with " + keyCount
-					+ " entries");
-			rc.setKeystore(uberbytes);
-			rc.setKeystorePass(password);
-			// Do we transfer the jks keystore too?
+			byte[] trustbytes = null, keybytes = null;
+			try {
+				trustbytes = serialize(truststore, password);
+				keybytes = serialize(keystore, password);
 
-			log.info("transfering serviceURL->alias map with "
-					+ uriToAliasMap.size() + " entries");
-			rc.setUriToAliasMap(uriToAliasMap);
+				// Now we've built the security information, ship it off...
 
+				RemoteSecurityContext rc = run.run.getSecurityContext();
+
+				log.info("transfering merged truststore with " + trustedCount
+						+ " entries");
+				rc.setTruststore(trustbytes);
+
+				log.info("transfering merged keystore with " + keyCount
+						+ " entries");
+				rc.setKeystore(keybytes);
+				rc.setPassword(password);
+
+				log.info("transfering serviceURL->alias map with "
+						+ uriToAliasMap.size() + " entries");
+				rc.setUriToAliasMap(uriToAliasMap);
+			} finally {
+				blankOut(trustbytes);
+				blankOut(keybytes);
+			}
 		} finally {
 			blankOut(password);
-			blankOut(trustpass);
-			blankOut(trustbytes);
-			blankOut(uberbytes);
-			blankOut(jksbytes);
 		}
 	}
 
@@ -377,14 +373,6 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 		return stream.toByteArray();
 	}
 
-	private static byte[] serialize(KeyStoreSpi ks, char[] password)
-			throws GeneralSecurityException, IOException {
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		ks.engineStore(stream, password);
-		stream.close();
-		return stream.toByteArray();
-	}
-
 	protected char[] generateNewPassword() {
 		return randomUUID().toString().toCharArray();
 	}
@@ -403,7 +391,19 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 		ts.setCertificateEntry(alias, c);
 	}
 
-	protected String addKeypairToKeystore(KeyStoreSpi ks, Credential.KeyPair c)
+	private transient KeyStore keystore;
+	private transient char[] password;
+	private transient HashMap<URI, String> uriToAliasMap;
+
+	protected final void addKeypairToKeystore(String alias, Credential c)
+			throws KeyStoreException {
+		if (uriToAliasMap.containsKey(c.serviceURI))
+			log.warn("duplicate URI in alias mapping: " + c.serviceURI);
+		keystore.setKeyEntry(alias, c.loadedKey, password, c.loadedTrustChain);
+		uriToAliasMap.put(c.serviceURI, alias);
+	}
+
+	protected void addKeypairToKeystore(Credential.KeyPair c)
 			throws KeyStoreException {
 		X509Certificate subjectCert = ((X509Certificate) c.loadedTrustChain[0]);
 		X500Principal subject = subjectCert.getSubjectX500Principal();
@@ -412,23 +412,20 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 				+ X500Utils.getName(subject, "CN", "COMMONNAME") + "#"
 				+ X500Utils.getName(issuer, "CN", "COMMONNAME") + "#"
 				+ X500Utils.getSerial(subjectCert);
-		ks.engineSetKeyEntry(alias, c.loadedKey, null, c.loadedTrustChain);
-		return alias;
+		addKeypairToKeystore(alias, c);
 	}
 
-	protected String addUserPassToKeystore(KeyStoreSpi ks, Credential.Password c)
+	protected void addUserPassToKeystore(Credential.Password c)
 			throws KeyStoreException {
 		String alias = "password#" + c.serviceURI;
-		ks.engineSetKeyEntry(alias, c.loadedKey, null, null);
-		return alias;
+		addKeypairToKeystore(alias, c);
 	}
 
-	private String addPoxyToKeystore(KeyStoreSpi ks, Credential.CaGridProxy c)
+	private void addPoxyToKeystore(Credential.CaGridProxy c)
 			throws KeyStoreException {
 		String alias = "cagridproxy#" + c.authenticationService + " "
 				+ c.dorianService;
-		ks.engineSetKeyEntry(alias, c.loadedKey, null, c.loadedTrustChain);
-		return alias;
+		addKeypairToKeystore(alias, c);
 	}
 
 	private InputStream contents(String name) throws InvalidCredentialException {

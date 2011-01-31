@@ -40,8 +40,6 @@
 		<version.datanucleus>2.2.2</version.datanucleus>
 		<version.asm>3.3</version.asm>
 		<forker.module>server-unix-forker</forker.module>
-		<bc.targetplatform>jdk16</bc.targetplatform>
-		<bc.version>1.45</bc.version>
 	</properties>
 
 	<dependencies>
@@ -179,13 +177,6 @@
 			<groupId>net.sf.mime-util</groupId>
 			<artifactId>mime-util</artifactId>
 			<version>1.2</version>
-			<type>jar</type>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-${bc.targetplatform}</artifactId>
-			<version>${bc.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>

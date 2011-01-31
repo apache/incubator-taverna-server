@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.apache.commons.dbcp.BasicDataSource;
+import org.springframework.beans.factory.annotation.Required;
 
 /**
  * Add some awareness of the context so that we can locate databases internally
@@ -18,6 +19,7 @@ import org.apache.commons.dbcp.BasicDataSource;
 public class WebappAwareDataSource extends BasicDataSource {
 	private transient boolean init;
 	private Contextualizer ctxt;
+	@Required
 	public void setContextualizer(Contextualizer ctxt) {
 		this.ctxt = ctxt;
 	}
