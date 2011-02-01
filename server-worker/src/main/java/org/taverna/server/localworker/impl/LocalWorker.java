@@ -8,6 +8,8 @@ package org.taverna.server.localworker.impl;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;
 import static java.lang.System.out;
+import static java.nio.charset.Charset.defaultCharset;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
@@ -191,11 +193,29 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		return outputBaclava;
 	}
 
+	/** The name of the default encoding for characters on this machine. */
+	public static final String SYSTEM_ENCODING = defaultCharset().name();
+	/**
+	 * The name of the directory (in the home directory) where security settings
+	 * will be written.
+	 */
 	public static final String SECURITY_DIR_NAME = ".taverna-server-security";
+	/** The name of the file that will be the created keystore. */
 	public static final String KEYSTORE_FILE = "t2keystore.jceks";
+	/** The name of the file that will be the created truststore. */
 	public static final String TRUSTSTORE_FILE = "t2truststore.jceks";
-	public static final String URI_ALIAS_MAP = "urlmap.txt";
+	/**
+	 * The name of the file that contains the password to unlock the keystore
+	 * and truststore.
+	 */
+	public static final String PASSWORD_FILE = "password.txt";
+	// /**
+	// * The name of the file that contains the mapping from URIs to keystore
+	// * aliases.
+	// */
+	// public static final String URI_ALIAS_MAP = "urlmap.txt";
 
+	/** Handle to the directory containing the security info. */
 	static final File SECURITY_DIR = new File(
 			new File(getProperty("java.home")), SECURITY_DIR_NAME);
 	static boolean DO_MKDIR = true;
@@ -205,9 +225,9 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 
 	class SecurityDelegate extends UnicastRemoteObject implements
 			RemoteSecurityContext {
-		protected SecurityDelegate() throws IOException {
+		protected SecurityDelegate(String token) throws IOException {
 			super();
-			contextDirectory = new File(SECURITY_DIR, masterToken);
+			contextDirectory = new File(SECURITY_DIR, token);
 			if (DO_MKDIR) {
 				forceMkdir(contextDirectory);
 				contextDirectory.setReadable(true, true);
@@ -217,9 +237,17 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			}
 		}
 
-		private static final String ENC = "UTF-8";
-
-		private void write(String name, byte[] data) throws RemoteException {
+		/**
+		 * Write some data to a given file in the context directory.
+		 * 
+		 * @param name
+		 *            The name of the file to write.
+		 * @param data
+		 *            The bytes to put in the file.
+		 * @throws RemoteException
+		 *             If anything goes wrong.
+		 */
+		protected void write(String name, byte[] data) throws RemoteException {
 			try {
 				writeByteArrayToFile(new File(contextDirectory, name), data);
 			} catch (IOException e) {
@@ -227,10 +255,44 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			}
 		}
 
-		private void write(String name, Collection<String> data)
+		/**
+		 * Write some data to a given file in the context directory.
+		 * 
+		 * @param name
+		 *            The name of the file to write.
+		 * @param data
+		 *            The lines to put in the file. The
+		 *            {@linkplain LocalWorker#SYSTEM_ENCODING system encoding}
+		 *            will be used to do the writing.
+		 * @throws RemoteException
+		 *             If anything goes wrong.
+		 */
+		protected void write(String name, Collection<String> data)
 				throws RemoteException {
 			try {
-				writeLines(new File(contextDirectory, name), ENC, data);
+				writeLines(new File(contextDirectory, name), SYSTEM_ENCODING,
+						data);
+			} catch (IOException e) {
+				throw new RemoteException("problem writing " + name, e);
+			}
+		}
+
+		/**
+		 * Write some data to a given file in the context directory.
+		 * 
+		 * @param name
+		 *            The name of the file to write.
+		 * @param data
+		 *            The line to put in the file. The
+		 *            {@linkplain LocalWorker#SYSTEM_ENCODING system encoding}
+		 *            will be used to do the writing.
+		 * @throws RemoteException
+		 *             If anything goes wrong.
+		 */
+		protected void write(String name, char[] data) throws RemoteException {
+			try {
+				writeLines(new File(contextDirectory, name), SYSTEM_ENCODING,
+						asList(new String(data)));
 			} catch (IOException e) {
 				throw new RemoteException("problem writing " + name, e);
 			}
@@ -248,6 +310,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			if (status != Initialized)
 				throw new RemoteException("not initializing");
 			keystorePassword = password;
+			//write(PASSWORD_FILE, password); // Written later
 		}
 
 		@Override
@@ -265,14 +328,14 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			ArrayList<String> lines = new ArrayList<String>();
 			for (URI site : uriToAliasMap.keySet())
 				lines.add(site.toASCIIString() + " " + uriToAliasMap.get(site));
-			write(URI_ALIAS_MAP, lines);
+			// write(URI_ALIAS_MAP, lines);
 		}
 	}
 
 	@Override
 	public RemoteSecurityContext getSecurityContext() throws RemoteException {
 		try {
-			return new SecurityDelegate();
+			return new SecurityDelegate(masterToken);
 		} catch (RemoteException e) {
 			if (e.getCause() != null)
 				throw new RemoteException(

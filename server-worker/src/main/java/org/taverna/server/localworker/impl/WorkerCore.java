@@ -1,15 +1,22 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.localworker.impl;
 
 import static java.io.File.createTempFile;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.System.out;
-import static java.nio.charset.Charset.defaultCharset;
 import static org.apache.commons.io.IOUtils.copy;
+import static org.taverna.server.localworker.impl.LocalWorker.SYSTEM_ENCODING;
+import static org.taverna.server.localworker.impl.LocalWorker.PASSWORD_FILE;
 import static org.taverna.server.localworker.remote.RemoteStatus.Finished;
 import static org.taverna.server.localworker.remote.RemoteStatus.Initialized;
 import static org.taverna.server.localworker.remote.RemoteStatus.Operating;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -147,12 +154,21 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		ProcessBuilder pb = new ProcessBuilder()
 				.command(executeWorkflowCommand);
 
-		char[] pass = null;
-		if (securityDir != null && password != null) {
-			//FIXME - Send correct arguments in to enable security
-			//pb.command().add("-keystoreDirectory");
-			//pb.command().add(securityDir.getAbsolutePath());
-			//pass = password;
+		if (securityDir != null) {
+			pb.command().add("-cmdir");
+			pb.command().add(securityDir.getAbsolutePath());
+		}
+		if (password != null) {
+			PrintWriter pw = null;
+			try {
+				pw = new PrintWriter(new OutputStreamWriter(
+						new FileOutputStream(new File(securityDir,
+								PASSWORD_FILE)), SYSTEM_ENCODING));
+				pw.println(password);
+			} finally {
+				if (pw != null)
+					pw.close();
+			}
 		}
 
 		// Add arguments denoting inputs
@@ -218,10 +234,6 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		subprocess = pb.start();
 		if (subprocess == null)
 			throw new IOException("unknown failure creating process");
-		if (pass != null)
-			new PrintWriter(new OutputStreamWriter(
-					subprocess.getOutputStream(), defaultCharset().name()))
-					.println(pass);
 
 		// Capture its stdout and stderr
 		new AsyncCopy(subprocess.getInputStream(), stdout);
