@@ -15,7 +15,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>US-ASCII</project.build.sourceEncoding>
-		<forkerMainClass>org.taverna.server.master.unixforker.Forker</forkerMainClass>
+		<forkerMainClass>org.taverna.server.unixforker.Forker</forkerMainClass>
 	</properties>
 
 	<dependencies>

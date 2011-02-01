@@ -1,4 +1,4 @@
-package org.taverna.server.master.unixforker;
+package org.taverna.server.unixforker;
 
 import static java.lang.System.err;
 import static java.lang.System.getProperty;
