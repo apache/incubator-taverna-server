@@ -80,7 +80,7 @@ public class LocalWorkerTest {
 		public void initWorker(String executeWorkflowCommand, String workflow,
 				File workingDir, File inputBaclava,
 				Map<String, File> inputFiles, Map<String, String> inputValues,
-				File outputBaclava) throws Exception {
+				File outputBaclava, File cmdir, char[] cmpass) throws Exception {
 			events.add("init[");
 			events.add(executeWorkflowCommand);
 			events.add(workflow);
@@ -98,6 +98,7 @@ public class LocalWorkerTest {
 			events.add(new TreeMap<String, String>(inputValues).toString());
 			events.add(outputBaclava == null ? "<null>" : outputBaclava
 					.toString().substring(dirLen));
+			// TODO: check cmdir and cmpass
 			events.add("]");
 		}
 
