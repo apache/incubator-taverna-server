@@ -5,8 +5,6 @@
  */
 package org.taverna.server.master;
 
-import static eu.medsea.util.MimeUtil.getMimeType;
-import static java.lang.Integer.parseInt;
 import static java.lang.Math.min;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -28,9 +26,7 @@ import static org.joda.time.format.ISODateTimeFormat.dateTime;
 import static org.joda.time.format.ISODateTimeFormat.dateTimeParser;
 import static org.taverna.server.master.common.DirEntryReference.newInstance;
 import static org.taverna.server.master.common.Status.Initialized;
-import static org.taverna.server.master.utils.FilenameConverter.getDirEntry;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -39,7 +35,6 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,11 +54,11 @@ import javax.ws.rs.core.Variant;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.ws.WebServiceContext;
-import javax.xml.ws.handler.MessageContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.cxf.common.security.SimplePrincipal;
 import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.taverna.server.master.common.Credential;
@@ -115,16 +110,8 @@ import org.taverna.server.master.rest.TavernaServerREST;
 import org.taverna.server.master.rest.TavernaServerRunREST;
 import org.taverna.server.master.soap.PermissionList;
 import org.taverna.server.master.soap.TavernaServerSOAP;
-import org.taverna.server.master.utils.FilenameConverter;
-import org.taverna.server.output_description.AbsentValue;
-import org.taverna.server.output_description.AbstractValue;
-import org.taverna.server.output_description.ErrorValue;
-import org.taverna.server.output_description.LeafValue;
-import org.taverna.server.output_description.ListValue;
-import org.taverna.server.output_description.Outputs.Contains;
+import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.output_description.RdfWrapper;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 /**
  * The core implementation of the web application.
@@ -255,11 +242,14 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	private ManagementModel stateModel;
 	/** How to map the user ID to who to run as. */
 	private LocalIdentityMapper idMapper;
+	transient ContentsDescriptorBuilder cdBuilder;
+	transient FilenameUtils fileUtils;
 
 	/**
 	 * @param policy
 	 *            The policy being installed by Spring.
 	 */
+	@Required
 	public void setPolicy(Policy policy) {
 		this.policy = policy;
 	}
@@ -268,6 +258,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 * @param listenerFactory
 	 *            The listener factory being installed by Spring.
 	 */
+	@Required
 	public void setListenerFactory(ListenerFactory listenerFactory) {
 		this.listenerFactory = listenerFactory;
 	}
@@ -276,6 +267,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 * @param runFactory
 	 *            The run factory being installed by Spring.
 	 */
+	@Required
 	public void setRunFactory(RunFactory runFactory) {
 		this.runFactory = runFactory;
 	}
@@ -284,6 +276,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 * @param runStore
 	 *            The run store being installed by Spring.
 	 */
+	@Required
 	public void setRunStore(RunStore runStore) {
 		this.runStore = runStore;
 	}
@@ -292,6 +285,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 * @param stateModel
 	 *            The state model engine being installed by Spring.
 	 */
+	@Required
 	public void setStateModel(ManagementModel stateModel) {
 		this.stateModel = stateModel;
 	}
@@ -300,8 +294,27 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 * @param mapper
 	 *            The identity mapper being installed by Spring.
 	 */
+	@Required
 	public void setIdMapper(LocalIdentityMapper mapper) {
 		this.idMapper = mapper;
+	}
+
+	/**
+	 * @param converter
+	 *            The filename converter being installed by Spring.
+	 */
+	@Required
+	public void setFileUtils(FilenameUtils converter) {
+		this.fileUtils = converter;
+	}
+
+	/**
+	 * @param cdBuilder
+	 *            The contents descriptor builder being installed by Spring.
+	 */
+	@Required
+	public void setContentsDescriptorBuilder(ContentsDescriptorBuilder cdBuilder) {
+		this.cdBuilder = cdBuilder;
 	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -875,7 +888,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 				if (run.getStatus() == Initialized)
 					throw new BadStateChangeException(
 							"may not get output description in initial state");
-				return makeOutputDescriptor(run, ui);
+				return cdBuilder.makeOutputDescriptor(run, ui);
 			}
 		};
 	}
@@ -906,7 +919,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 				NoDirectoryEntryException {
 			invokes++;
 			permitUpdate(run);
-			FilenameConverter.getDirEntry(run, path).destroy();
+			fileUtils.getDirEntry(run, path).destroy();
 			return noContent().build();
 		}
 
@@ -924,7 +937,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 				UriInfo ui, Request req) throws FilesystemAccessException,
 				NoDirectoryEntryException {
 			invokes++;
-			DirectoryEntry de = FilenameConverter.getDirEntry(run, path);
+			DirectoryEntry de = fileUtils.getDirEntry(run, path);
 
 			// How did the user want the result?
 			List<Variant> variants;
@@ -971,7 +984,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 				UriInfo ui, HttpHeaders headers)
 				throws FilesystemAccessException, NoDirectoryEntryException {
 			invokes++;
-			DirectoryEntry de = FilenameConverter.getDirEntry(run, path);
+			DirectoryEntry de = fileUtils.getDirEntry(run, path);
 
 			// How did the user want the result?
 			List<Variant> variants;
@@ -1020,8 +1033,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 				FilesystemAccessException, NoDirectoryEntryException {
 			invokes++;
 			permitUpdate(run);
-			DirectoryEntry container = FilenameConverter.getDirEntry(run,
-					parent);
+			DirectoryEntry container = fileUtils.getDirEntry(run, parent);
 			if (!(container instanceof Directory))
 				throw new FilesystemAccessException(
 						"You may not "
@@ -1069,7 +1081,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			permitUpdate(run);
 			Directory d;
 			if (filePath != null && filePath.size() > 0) {
-				DirectoryEntry e = FilenameConverter.getDirEntry(run, filePath);
+				DirectoryEntry e = fileUtils.getDirEntry(run, filePath);
 				if (!(e instanceof Directory)) {
 					throw new FilesystemAccessException(
 							"Cannot create a file that is not in a directory.");
@@ -1130,7 +1142,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	public RunReference[] listRuns() {
 		invokes++;
 		ArrayList<RunReference> ws = new ArrayList<RunReference>();
-		UriBuilder ub = getRestfulRunReferenceBuilder();
+		UriBuilder ub = getRunUriBuilder();
 		for (String runName : runs().keySet())
 			ws.add(new RunReference(runName, ub));
 		return ws.toArray(new RunReference[ws.size()]);
@@ -1141,7 +1153,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			throws NoUpdateException {
 		invokes++;
 		String name = buildWorkflow(workflow, getPrincipal());
-		return new RunReference(name, getRestfulRunReferenceBuilder());
+		return new RunReference(name, getRunUriBuilder());
 	}
 
 	private static final Workflow[] WORKFLOW_ARRAY_TYPE = new Workflow[0];
@@ -1284,8 +1296,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			} while (false);
 			credential.id = credentialID;
 		}
-		URI uri = getRestfulRunReferenceBuilder().path(
-				"security/credentials/{credid}").build(runName, credential.id);
+		URI uri = getRunUriBuilder().path("security/credentials/{credid}")
+				.build(runName, credential.id);
 		credential.href = uri.toString();
 		c.validateCredential(credential);
 		c.addCredential(credential);
@@ -1335,8 +1347,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			} while (false);
 			certificate.id = certificateID;
 		}
-		URI uri = getRestfulRunReferenceBuilder().path(
-				"security/trusts/{certid}").build(runName, certificate.id);
+		URI uri = getRunUriBuilder().path("security/trusts/{certid}").build(
+				runName, certificate.id);
 		certificate.href = uri.toString();
 		c.validateTrusted(certificate);
 		c.addTrusted(certificate);
@@ -1361,7 +1373,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		pl.permission = new ArrayList<PermissionList.SinglePermissionMapping>();
 		Map<String, Permission> perm = new HashMap<String, Permission>();
 		try {
-			TavernaSecurityContext context = getRunSecurityContext(runName, false);
+			TavernaSecurityContext context = getRunSecurityContext(runName,
+					false);
 			for (String u : context.getPermittedReaders())
 				perm.put(u, Permission.Read);
 			for (String u : context.getPermittedUpdaters())
@@ -1373,8 +1386,9 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		}
 		List<String> users = new ArrayList<String>(perm.keySet());
 		sort(users);
-		for (String user: users) {
-			pl.permission.add(new PermissionList.SinglePermissionMapping(user, perm.get(user)));
+		for (String user : users) {
+			pl.permission.add(new PermissionList.SinglePermissionMapping(user,
+					perm.get(user)));
 		}
 		return pl;
 	}
@@ -1403,7 +1417,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			throw new BadStateChangeException(
 					"may not get output description in initial state");
 		}
-		return makeOutputDescriptor(run, null);
+		return cdBuilder.makeOutputDescriptor(run, null);
 	}
 
 	@Override
@@ -1412,7 +1426,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			FilesystemAccessException, NoDirectoryEntryException {
 		invokes++;
 		List<DirEntryReference> result = new ArrayList<DirEntryReference>();
-		for (DirectoryEntry e : getDirectory(getRun(runName), d).getContents())
+		for (DirectoryEntry e : fileUtils.getDirectory(getRun(runName), d)
+				.getContents())
 			result.add(newInstance(null, e));
 		return result.toArray(new DirEntryReference[result.size()]);
 	}
@@ -1422,7 +1437,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException {
 		invokes++;
-		return getDirectory(getRun(runName), d).getContentsAsZip();
+		return fileUtils.getDirectory(getRun(runName), d).getContentsAsZip();
 	}
 
 	@Override
@@ -1433,7 +1448,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		invokes++;
 		TavernaRun w = getRun(runName);
 		permitUpdate(w);
-		Directory dir = getDirectory(w, parent).makeSubdirectory(
+		Directory dir = fileUtils.getDirectory(w, parent).makeSubdirectory(
 				getPrincipal(), name);
 		return newInstance(null, dir);
 	}
@@ -1446,7 +1461,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		invokes++;
 		TavernaRun w = getRun(runName);
 		permitUpdate(w);
-		File f = getDirectory(w, parent).makeEmptyFile(getPrincipal(), name);
+		File f = fileUtils.getDirectory(w, parent).makeEmptyFile(
+				getPrincipal(), name);
 		return newInstance(null, f);
 	}
 
@@ -1457,7 +1473,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		invokes++;
 		TavernaRun w = getRun(runName);
 		permitUpdate(w);
-		FilenameConverter.getDirEntry(w, d).destroy();
+		fileUtils.getDirEntry(w, d).destroy();
 	}
 
 	@Override
@@ -1465,7 +1481,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException {
 		invokes++;
-		File f = getFile(getRun(runName), d);
+		File f = fileUtils.getFile(getRun(runName), d);
 		return f.getContents(0, -1);
 	}
 
@@ -1476,7 +1492,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		invokes++;
 		TavernaRun w = getRun(runName);
 		permitUpdate(w);
-		getFile(w, d).setContents(newContents);
+		fileUtils.getFile(w, d).setContents(newContents);
 	}
 
 	@Override
@@ -1484,7 +1500,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException {
 		invokes++;
-		return getFile(getRun(runName), d).getSize();
+		return fileUtils.getFile(getRun(runName), d).getSize();
 	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -1647,19 +1663,21 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			throw new NoCreateException("failed to build workflow run worker");
 		}
 
-		String uuid = randomUUID().toString();
-		runStore.registerRun(uuid, run);
-		return uuid;
+		return runStore.registerRun(run);
 	}
 
-	private UriBuilder getRestfulRunReferenceBuilder() {
-		if (jaxwsContext == null)
+	UriBuilder getRunUriBuilder() {
+		if (jaxwsContext == null || jaxwsContext.getMessageContext() == null)
 			// Hack to make the test suite work
 			return fromUri("/taverna-server/rest/runs").path("{uuid}");
-		MessageContext mc = jaxwsContext.getMessageContext();
-		String pathInfo = (String) mc.get(PATH_INFO);
+		String pathInfo = (String) jaxwsContext.getMessageContext().get(
+				PATH_INFO);
 		return fromUri(pathInfo.replaceFirst("/soap$", "/rest/runs")).path(
 				"{uuid}");
+	}
+
+	UriBuilder getRunUriBuilder(TavernaRun run) {
+		return fromUri(getRunUriBuilder().build(run.getID()));
 	}
 
 	Map<String, TavernaRun> runs() {
@@ -1713,205 +1731,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		return listenerFactory.makeListener(run, type, config);
 	}
 
-	private Directory getDirectory(TavernaRun run, DirEntryReference d)
-			throws FilesystemAccessException, NoDirectoryEntryException {
-		DirectoryEntry dirEntry = getDirEntry(run, d);
-		if (dirEntry instanceof Directory)
-			return (Directory) dirEntry;
-		throw new FilesystemAccessException("not a directory");
-	}
-
-	private File getFile(TavernaRun run, DirEntryReference d)
-			throws FilesystemAccessException, NoDirectoryEntryException {
-		DirectoryEntry dirEntry = getDirEntry(run, d);
-		if (dirEntry instanceof File)
-			return (File) dirEntry;
-		throw new FilesystemAccessException("not a file");
-	}
-
-	/** Namespace for use when pulling apart a .t2flow document. */
-	private static final String T2FLOW_NS = "http://taverna.sf.net/2008/xml/t2flow";
-
-	/**
-	 * Build the contents description.
-	 * 
-	 * @param run
-	 *            The workflow run this is talking about.
-	 * @param ub
-	 *            How to build URIs.
-	 * @param descriptor
-	 *            The descriptor to modify.
-	 * @param expected
-	 *            The list of outputs that are <i>expected</i> to be produced;
-	 *            they might not actually produce anything though.
-	 */
-	private void constructContents(TavernaRun run, UriBuilder ub,
-			RdfWrapper descriptor, ArrayList<String> expected) {
-		NodeList nl, nl2;
-		Element e = run.getWorkflow().content[0];
-		nl = e.getElementsByTagNameNS(T2FLOW_NS, "dataflow");
-		if (nl.getLength() == 0)
-			return; // Not t2flow
-		String id = ((Element) nl.item(0)).getAttribute("id");
-		if (id != null && !id.isEmpty())
-			descriptor.run.about = "http://ns.taverna.org.uk/2010/run/" + id;
-		nl = ((Element) nl.item(0)).getElementsByTagNameNS(T2FLOW_NS,
-				"outputPorts");
-		if (nl.getLength() == 0)
-			return; // No outputs
-		nl = ((Element) nl.item(0)).getElementsByTagNameNS(T2FLOW_NS, "port");
-		for (int i = 0; i < nl.getLength(); i++) {
-			nl2 = ((Element) nl.item(i)).getElementsByTagNameNS(T2FLOW_NS,
-					"name");
-			if (nl2.getLength() == 1) {
-				Contains c = new Contains();
-				c.resource = "out/" + nl2.item(0).getTextContent();
-				descriptor.outputsDescription.contains.add(c);
-			}
-		}
-	}
-
-	/**
-	 * Fills in attributes specific to a leaf value.
-	 * 
-	 * @param f
-	 *            The file which is the source of the information.
-	 * @param lv
-	 *            The value that is to be updated.
-	 */
-	private void fillInLeafValue(File f, LeafValue lv) {
-		try {
-			lv.byteLength = f.getSize();
-		} catch (FilesystemAccessException e) {
-			// Ignore exception; will result in omitted attribute
-		}
-		try {
-			byte[] head = f.getContents(0, 1024);
-			lv.contentType = getMimeType(new ByteArrayInputStream(head));
-		} catch (Exception e) {
-			lv.contentType = APPLICATION_OCTET_STREAM_TYPE.toString();
-		}
-	}
-
-	/**
-	 * Fill in attributes and contents specific to a list value.
-	 * 
-	 * @param d
-	 *            The directory which is the source of the information.
-	 * @param baseURI
-	 *            The base URI of the directory.
-	 * @param lv
-	 *            The list value to be built.
-	 */
-	private void fillInListValue(Directory d, URI baseURI, ListValue lv) {
-		Map<Integer, DirectoryEntry> numbered = new HashMap<Integer, DirectoryEntry>();
-		Set<Integer> errors = new HashSet<Integer>();
-		try {
-			for (DirectoryEntry de : d.getContents()) {
-				String name = de.getName();
-				try {
-					if (name.endsWith(".err")) {
-						name = name.substring(0, name.length() - 4);
-						int i = parseInt(name);
-						if (i >= 0)
-							errors.add(i);
-					} else {
-						int i = parseInt(name);
-						if (i >= 0)
-							numbered.put(i, de);
-					}
-				} catch (NumberFormatException nfe) {
-					// skip
-					break;
-				}
-			}
-		} catch (FilesystemAccessException e) {
-			// Couldn't list the directory contents;
-			// We model this as an empty directory.
-		}
-		for (int i = 0; !(numbered.isEmpty() && errors.isEmpty()); i++) {
-			AbstractValue av;
-			DirectoryEntry de = numbered.remove(i);
-			if (de != null) {
-				if (de instanceof Directory) {
-					av = new ListValue();
-					fillInListValue(
-							(Directory) de,
-							fromUri(baseURI).path("{dir}").build(
-									Integer.toString(i)), (ListValue) av);
-				} else {
-					av = new LeafValue();
-					fillInLeafValue((File) de, (LeafValue) av);
-				}
-				av.setAddress(baseURI, Integer.toString(i));
-			} else if (errors.remove(i)) {
-				av = new ErrorValue();
-				av.setAddress(baseURI, i + ".err");
-			} else {
-				av = new AbsentValue();
-				av.setAddress(baseURI, Integer.toString(i));
-			}
-			lv.contents.add(av);
-		}
-	}
-
-	/**
-	 * Construct a description of the outputs of a workflow run.
-	 * 
-	 * @param run
-	 *            The workflow run whose outputs are to be described.
-	 * @param ui
-	 *            The origin for URIs.
-	 * @return The description, which can be serialized to RDF+XML.
-	 * @throws FilesystemAccessException
-	 *             If something goes wrong reading the directories.
-	 * @throws NoDirectoryEntryException
-	 *             If something goes wrong reading the directories.
-	 */
-	RdfWrapper makeOutputDescriptor(TavernaRun run, UriInfo ui)
-			throws FilesystemAccessException, NoDirectoryEntryException {
-		RdfWrapper descriptor = new RdfWrapper();
-		UriBuilder ub;
-		if (ui == null)
-			ub = getRestfulRunReferenceBuilder();
-		else
-			ub = fromUri(ui.getAbsolutePathBuilder().path("..").build());
-		descriptor.run.href = ub.build();
-		if (run.getOutputBaclavaFile() != null) {
-			return descriptor;
-		}
-		ArrayList<String> expected = new ArrayList<String>();
-		constructContents(run, ub, descriptor, expected);
-		Directory out = (Directory) getDirEntry(run, "out");
-		URI outUri = ub.path("out").build();
-		for (String outputName : expected) {
-			String eName = outputName + ".err";
-			AbstractValue v = new AbsentValue();
-			for (DirectoryEntry de : out.getContents()) {
-				if (outputName.equals(de.getName())) {
-					if (de instanceof Directory) {
-						v = new ListValue();
-						fillInListValue((Directory) de, outUri, (ListValue) v);
-						break;
-					} else if (de instanceof File) {
-						v = new LeafValue();
-						fillInLeafValue((File) de, (LeafValue) v);
-						break;
-					} else {
-						continue;
-					}
-				} else if (eName.equals(de.getName())) {
-					v = new ErrorValue();
-					break;
-				}
-			}
-			v.setAddress(outUri, outputName);
-			v.output = outputName;
-			descriptor.outputs.add(v);
-		}
-		return descriptor;
-	}
-
 	/**
 	 * Gets the identity of the user currently accessing the webapp, which is
 	 * stored in a thread-safe way in the webapp's container's context.
@@ -1952,7 +1771,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	/** The name of the role of the super-user. */
 	public static final String SUPER_ROLE = "tavernasuperuser";
 
-	boolean isSuperUser() {
+	private boolean isSuperUser() {
 		if (jaxwsContext == null && jaxrsContext == null)
 			return false;
 		try {
@@ -1960,14 +1779,14 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 				return jaxwsContext.isUserInRole(SUPER_ROLE);
 		} catch (NullPointerException e) {
 			if (logGetPrincipalFailures)
-				log.warn("failed to get user principal", e);
+				log.warn("failed to get user principal via JAX-WS", e);
 		}
 		try {
 			if (jaxrsContext != null)
 				return jaxrsContext.isUserInRole(SUPER_ROLE);
 		} catch (NullPointerException e) {
 			if (logGetPrincipalFailures)
-				log.warn("failed to get user principal", e);
+				log.warn("failed to get user principal via JAX-RS", e);
 		}
 		return false;
 	}

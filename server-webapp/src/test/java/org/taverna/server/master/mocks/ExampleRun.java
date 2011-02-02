@@ -7,6 +7,7 @@ package org.taverna.server.master.mocks;
 
 import static java.util.Calendar.MINUTE;
 import static java.util.Collections.unmodifiableList;
+import static java.util.UUID.randomUUID;
 import static org.taverna.server.master.common.Status.Initialized;
 
 import java.io.IOException;
@@ -24,9 +25,9 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.xml.ws.handler.MessageContext;
 
 import org.taverna.server.master.common.Credential;
+import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.common.Workflow;
-import org.taverna.server.master.common.Status;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.InvalidCredentialException;
@@ -40,6 +41,7 @@ import org.taverna.server.master.interfaces.TavernaSecurityContext;
 import org.taverna.server.master.localworker.SecurityContextFactory;
 
 public class ExampleRun implements TavernaRun, TavernaSecurityContext {
+	String id;
 	List<Listener> listeners;
 	Workflow workflow;
 	Status status;
@@ -51,6 +53,7 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	List<Input> inputs;
 
 	public ExampleRun(Principal creator, Workflow workflow, Date expiry) {
+		this.id = randomUUID().toString();
 		this.listeners = new ArrayList<Listener>();
 		this.status = Initialized;
 		this.owner = creator;
@@ -396,5 +399,10 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	public void setPermittedReaders(Set<String> readers) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public String getID() {
+		return id;
 	}
 }

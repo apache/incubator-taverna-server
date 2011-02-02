@@ -27,7 +27,7 @@ public interface RunStore {
 	 *             If the lookup fails (either because it does not exist or
 	 *             because it is not permitted for the user by the policy).
 	 */
-	public TavernaRun getRun(Principal user, Policy p, String uuid)
+	TavernaRun getRun(Principal user, Policy p, String uuid)
 			throws UnknownRunException;
 
 	/**
@@ -53,19 +53,18 @@ public interface RunStore {
 	 *            The general policy system context.
 	 * @return A mapping from run names to run instances.
 	 */
-	public Map<String, TavernaRun> listRuns(Principal user, Policy p);
+	Map<String, TavernaRun> listRuns(Principal user, Policy p);
 
 	/**
 	 * Adds a workflow instance run to the store. Note that this operation is
 	 * <i>not</i> expected to be security-checked; that is the callers'
 	 * responsibility.
 	 * 
-	 * @param uuid
-	 *            The name of the run.
 	 * @param run
 	 *            The run itself.
+	 * @return The name of the run.
 	 */
-	public void registerRun(String uuid, TavernaRun run);
+	String registerRun(TavernaRun run);
 
 	/**
 	 * Removes a run from the store. Note that this operation is <i>not</i>
@@ -74,5 +73,5 @@ public interface RunStore {
 	 * @param uuid
 	 *            The name of the run.
 	 */
-	public void unregisterRun(String uuid);
+	void unregisterRun(String uuid);
 }

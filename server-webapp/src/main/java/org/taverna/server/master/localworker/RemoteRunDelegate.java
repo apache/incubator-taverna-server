@@ -7,6 +7,7 @@ package org.taverna.server.master.localworker;
 
 import static java.util.Calendar.MINUTE;
 import static java.util.Collections.unmodifiableSet;
+import static java.util.UUID.randomUUID;
 import static org.taverna.server.master.localworker.AbstractRemoteRunFactory.log;
 
 import java.io.ByteArrayOutputStream;
@@ -56,6 +57,7 @@ import org.taverna.server.master.interfaces.TavernaSecurityContext;
  * @author Donal Fellows
  */
 public class RemoteRunDelegate implements TavernaRun {
+	String id;
 	private Date creationInstant;
 	private Workflow workflow;
 	private Date expiry;
@@ -90,6 +92,13 @@ public class RemoteRunDelegate implements TavernaRun {
 		else
 			log.fatal("bad listener " + listener.getClass()
 					+ "; not applicable remotely!");
+	}
+
+	@Override
+	public String getID() {
+		if (id == null)
+			id = randomUUID().toString();
+		return id;
 	}
 
 	public Listener makeListener(String type, String config)

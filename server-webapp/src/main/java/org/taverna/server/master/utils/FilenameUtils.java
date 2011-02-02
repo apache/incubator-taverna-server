@@ -14,6 +14,7 @@ import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.interfaces.Directory;
 import org.taverna.server.master.interfaces.DirectoryEntry;
+import org.taverna.server.master.interfaces.File;
 import org.taverna.server.master.interfaces.TavernaRun;
 
 /**
@@ -21,9 +22,11 @@ import org.taverna.server.master.interfaces.TavernaRun;
  * 
  * @author Donal Fellows
  */
-public class FilenameConverter {
+public class FilenameUtils {
 	private static final String TYPE_ERROR = "trying to take subdirectory of file";
 	private static final String NO_FILE = "no such directory entry";
+	private static final String NOT_A_FILE = "not a file";
+	private static final String NOT_A_DIR = "not a directory";
 
 	/**
 	 * Get a named directory entry from a workflow run.
@@ -41,7 +44,7 @@ public class FilenameConverter {
 	 * @throws FilesystemAccessException
 	 *             If the directory isn't specified or isn't readable.
 	 */
-	public static DirectoryEntry getDirEntry(TavernaRun run, String name)
+	public DirectoryEntry getDirEntry(TavernaRun run, String name)
 			throws FilesystemAccessException, NoDirectoryEntryException {
 		Directory dir = run.getWorkingDirectory();
 		DirectoryEntry found = dir;
@@ -78,7 +81,7 @@ public class FilenameConverter {
 	 * @throws FilesystemAccessException
 	 *             If the directory isn't specified or isn't readable.
 	 */
-	public static DirectoryEntry getDirEntry(TavernaRun run, List<PathSegment> d)
+	public DirectoryEntry getDirEntry(TavernaRun run, List<PathSegment> d)
 			throws FilesystemAccessException, NoDirectoryEntryException {
 		Directory dir = run.getWorkingDirectory();
 		DirectoryEntry found = dir;
@@ -116,7 +119,7 @@ public class FilenameConverter {
 	 * @throws NoDirectoryEntryException
 	 *             If there is no such entry.
 	 */
-	public static DirectoryEntry getDirEntry(TavernaRun run, DirEntryReference d)
+	public DirectoryEntry getDirEntry(TavernaRun run, DirEntryReference d)
 			throws FilesystemAccessException, NoDirectoryEntryException {
 		Directory dir = run.getWorkingDirectory();
 		DirectoryEntry found = dir;
@@ -149,7 +152,7 @@ public class FilenameConverter {
 	 * @throws FilesystemAccessException
 	 *             If the directory isn't specified or isn't readable.
 	 */
-	private static DirectoryEntry getEntryFromDir(String name, Directory dir)
+	private DirectoryEntry getEntryFromDir(String name, Directory dir)
 			throws FilesystemAccessException, NoDirectoryEntryException {
 		if (dir == null)
 			throw new FilesystemAccessException(NO_FILE);
@@ -157,5 +160,55 @@ public class FilenameConverter {
 			if (entry.getName().equals(name))
 				return entry;
 		throw new NoDirectoryEntryException(NO_FILE);
+	}
+
+	/**
+	 * Get a named directory from a workflow run.
+	 * 
+	 * @param run
+	 *            The run whose working directory is to be used as the root of
+	 *            the search.
+	 * @param d
+	 *            The directory reference describing what to look up.
+	 * @return The directory whose name is equal to the last part of the path in
+	 *         the directory reference; an empty path will retrieve the working
+	 *         directory handle itself.
+	 * @throws FilesystemAccessException
+	 *             If the directory isn't specified or isn't readable, or if the
+	 *             name doesn't refer to a directory.
+	 * @throws NoDirectoryEntryException
+	 *             If there is no such entry.
+	 */
+	public Directory getDirectory(TavernaRun run, DirEntryReference d)
+			throws FilesystemAccessException, NoDirectoryEntryException {
+		DirectoryEntry dirEntry = getDirEntry(run, d);
+		if (dirEntry instanceof Directory)
+			return (Directory) dirEntry;
+		throw new FilesystemAccessException(NOT_A_DIR);
+	}
+
+	/**
+	 * Get a named file from a workflow run.
+	 * 
+	 * @param run
+	 *            The run whose working directory is to be used as the root of
+	 *            the search.
+	 * @param d
+	 *            The directory reference describing what to look up.
+	 * @return The file whose name is equal to the last part of the path in the
+	 *         directory reference; an empty path will retrieve the working
+	 *         directory handle itself.
+	 * @throws FilesystemAccessException
+	 *             If the file isn't specified or isn't readable, or if the name
+	 *             doesn't refer to a file.
+	 * @throws NoDirectoryEntryException
+	 *             If there is no such entry.
+	 */
+	public File getFile(TavernaRun run, DirEntryReference d)
+			throws FilesystemAccessException, NoDirectoryEntryException {
+		DirectoryEntry dirEntry = getDirEntry(run, d);
+		if (dirEntry instanceof File)
+			return (File) dirEntry;
+		throw new FilesystemAccessException(NOT_A_FILE);
 	}
 }

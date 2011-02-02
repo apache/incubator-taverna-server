@@ -12,6 +12,13 @@
 		<property name="runStore" ref="localworker.runDB" />
 		<property name="stateModel" ref="webapp.state" />
 		<property name="idMapper" ref="IdentityMapper" />
+		<property name="fileUtils" ref="fileUtils" />
+		<property name="contentsDescriptorBuilder" ref="contentsDescriptorBuilder" />
+	</bean>
+
+	<bean id="contentsDescriptorBuilder" class="org.taverna.server.master.ContentsDescriptorBuilder">
+		<property name="webapp" ref="webapp" />
+		<property name="fileUtils" ref="fileUtils" />
 	</bean>
 
 	<bean id="webapp.state" class="org.taverna.server.master.ManagementState"
@@ -151,6 +158,7 @@
 	<bean id="localworker.securityContext"
 		class="org.taverna.server.master.localworker.SecurityContextDelegate.Factory">
 		<property name="runDatabase" ref="localworker.runDB" />
+		<property name="filenameConverter" ref="fileUtils" />
 	</bean>
 
 	<bean id="localworker.state" class="org.taverna.server.master.localworker.LocalWorkerState"
@@ -260,4 +268,6 @@
 	<alias name="localworker.factory" alias="listenerFactory" />
 	<alias name="localworker.runDB.cleaner" alias="timertask.1" />
 	<alias name="localworker.runDB.scanner" alias="timertask.2" />
+
+	<bean id="fileUtils" class="org.taverna.server.master.utils.FilenameUtils" />
 </beans>

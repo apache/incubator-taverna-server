@@ -22,15 +22,20 @@ import org.taverna.server.master.exceptions.NoDestroyException;
  */
 public interface TavernaRun extends Serializable {
 	/**
+	 * @return The identifier of the run.
+	 */
+	String getID();
+
+	/**
 	 * @return What was this run was create to execute.
 	 */
-	public Workflow getWorkflow();
+	Workflow getWorkflow();
 
 	/**
 	 * @return The name of the Baclava file to use for all inputs, or
 	 *         <tt>null</tt> if no Baclava file is set.
 	 */
-	public String getInputBaclavaFile();
+	String getInputBaclavaFile();
 
 	/**
 	 * Sets the Baclava file to use for all inputs. This overrides the use of
@@ -46,13 +51,13 @@ public interface TavernaRun extends Serializable {
 	 *             If the workflow is not in the {@link Status#Initialized
 	 *             Initialized} state.
 	 */
-	public void setInputBaclavaFile(String filename)
+	void setInputBaclavaFile(String filename)
 			throws FilesystemAccessException, BadStateChangeException;
 
 	/**
 	 * @return The list of input assignments.
 	 */
-	public List<Input> getInputs();
+	List<Input> getInputs();
 
 	/**
 	 * Create an input assignment.
@@ -64,7 +69,7 @@ public interface TavernaRun extends Serializable {
 	 *             If the workflow is not in the {@link Status#Initialized
 	 *             Initialized} state.
 	 */
-	public Input makeInput(String name) throws BadStateChangeException;
+	Input makeInput(String name) throws BadStateChangeException;
 
 	/**
 	 * @return The file (relative to the working directory) to write the outputs
@@ -72,7 +77,7 @@ public interface TavernaRun extends Serializable {
 	 *         to be written to non-Baclava files in a directory called
 	 *         <tt>out</tt>.
 	 */
-	public String getOutputBaclavaFile();
+	String getOutputBaclavaFile();
 
 	/**
 	 * Sets where the output of the run is to be written to. This will cause the
@@ -91,14 +96,14 @@ public interface TavernaRun extends Serializable {
 	 *             If the workflow is not in the {@link Status#Initialized
 	 *             Initialized} state.
 	 */
-	public void setOutputBaclavaFile(String filename)
+	void setOutputBaclavaFile(String filename)
 			throws FilesystemAccessException, BadStateChangeException;
 
 	/**
 	 * @return When this run will expire, becoming eligible for automated
 	 *         deletion.
 	 */
-	public Date getExpiry();
+	Date getExpiry();
 
 	/**
 	 * Set when this run will expire.
@@ -106,12 +111,12 @@ public interface TavernaRun extends Serializable {
 	 * @param d
 	 *            Expiry time. Deletion will happen some time after that.
 	 */
-	public void setExpiry(Date d);
+	void setExpiry(Date d);
 
 	/**
 	 * @return The current status of the run.
 	 */
-	public Status getStatus();
+	Status getStatus();
 
 	/**
 	 * Set the status of the run, which should cause it to move into the given
@@ -122,18 +127,18 @@ public interface TavernaRun extends Serializable {
 	 * @throws BadStateChangeException
 	 *             If the change to the given state is impossible.
 	 */
-	public void setStatus(Status s) throws BadStateChangeException;
+	void setStatus(Status s) throws BadStateChangeException;
 
 	/**
 	 * @return Handle to the main working directory of the run.
 	 * @throws FilesystemAccessException
 	 */
-	public Directory getWorkingDirectory() throws FilesystemAccessException;
+	Directory getWorkingDirectory() throws FilesystemAccessException;
 
 	/**
 	 * @return The list of listener instances attached to the run.
 	 */
-	public List<Listener> getListeners();
+	List<Listener> getListeners();
 
 	/**
 	 * Add a listener to the run.
@@ -141,12 +146,12 @@ public interface TavernaRun extends Serializable {
 	 * @param listener
 	 *            The listener to add.
 	 */
-	public void addListener(Listener listener);
+	void addListener(Listener listener);
 
 	/**
 	 * @return The security context structure for this run.
 	 */
-	public TavernaSecurityContext getSecurityContext();
+	TavernaSecurityContext getSecurityContext();
 
 	/**
 	 * Kill off this run, removing all resources which it consumes.
@@ -154,23 +159,23 @@ public interface TavernaRun extends Serializable {
 	 * @throws NoDestroyException
 	 *             If the destruction failed.
 	 */
-	public void destroy() throws NoDestroyException;
+	void destroy() throws NoDestroyException;
 
 	/**
 	 * @return When this workflow run was created.
 	 */
-	public Date getCreationTimestamp();
+	Date getCreationTimestamp();
 
 	/**
 	 * @return When this workflow run was started, or <tt>null</tt> if it has
 	 *         never been started.
 	 */
-	public Date getStartTimestamp();
+	Date getStartTimestamp();
 
 	/**
 	 * @return When this workflow run was found to have finished, or
 	 *         <tt>null</tt> if it has never finished (either still running or
 	 *         never started).
 	 */
-	public Date getFinishTimestamp();
+	Date getFinishTimestamp();
 }

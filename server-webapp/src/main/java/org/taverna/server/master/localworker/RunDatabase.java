@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.annotations.Join;
@@ -178,16 +179,20 @@ public class RunDatabase implements RunStore {
 	}
 
 	@Override
-	public void registerRun(final String name, final TavernaRun run) {
+	public String registerRun(TavernaRun run) {
 		if (!(run instanceof RemoteRunDelegate))
 			throw new IllegalArgumentException(
 					"run must be created by localworker package");
+		final RemoteRunDelegate rrd = (RemoteRunDelegate) run;
+		if (rrd.id == null)
+			rrd.id = UUID.randomUUID().toString();
 		inTransaction(new Act<RuntimeException>() {
 			@Override
 			public void a(Map<String, RemoteRunDelegate> runs) {
-				runs.put(name, (RemoteRunDelegate) run);
+				runs.put(rrd.getID(), rrd);
 			}
 		});
+		return rrd.getID();
 	}
 
 	@Override

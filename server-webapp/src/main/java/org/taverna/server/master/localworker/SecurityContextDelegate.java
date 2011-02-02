@@ -8,7 +8,6 @@ package org.taverna.server.master.localworker;
 import static java.util.UUID.randomUUID;
 import static javax.security.auth.x500.X500Principal.RFC2253;
 import static org.taverna.server.master.localworker.AbstractRemoteRunFactory.log;
-import static org.taverna.server.master.utils.FilenameConverter.getDirEntry;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -47,6 +46,7 @@ import org.taverna.server.master.exceptions.InvalidCredentialException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.interfaces.File;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
+import org.taverna.server.master.utils.FilenameUtils;
 
 /**
  * Implementation of a security context.
@@ -79,6 +79,7 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 	public static class Factory implements SecurityContextFactory {
 		private static Factory instance;
 		transient RunDatabase db;
+		transient FilenameUtils fileUtils;
 
 		public Factory() {
 			if (instance == null)
@@ -88,6 +89,11 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 		@Required
 		public void setRunDatabase(RunDatabase db) {
 			this.db = db;
+		}
+
+		@Required
+		public void setFilenameConverter(FilenameUtils fileUtils) {
+			this.fileUtils = fileUtils;
 		}
 
 		@Override
@@ -430,7 +436,7 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 
 	private InputStream contents(String name) throws InvalidCredentialException {
 		try {
-			File f = (File) getDirEntry(run, name);
+			File f = (File) factory.fileUtils.getDirEntry(run, name);
 			return new ByteArrayInputStream(f.getContents(0, (int) f.getSize()));
 		} catch (NoDirectoryEntryException e) {
 			throw new InvalidCredentialException(e);
