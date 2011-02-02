@@ -226,6 +226,9 @@
 				<entry key="mailto">
 					<ref bean="dispatch.email" />
 				</entry>
+				<entry key="twitter">
+					<ref bean="dispatch.twitter" />
+				</entry>
 			</map>
 		</property>
 	</bean>
@@ -234,6 +237,7 @@
 		<property name="from" value="taverna.server@localhost" />
 		<property name="messageContentType" value="text/plain" />
 	</bean>
+	<bean id="dispatch.twitter" class="org.taverna.server.master.TwitterDispatcher" />
 
 	<bean id="localworker.runDB.cleaner" class="org.springframework.scheduling.timer.ScheduledTimerTask">
 		<property name="delay" value="10000" />
