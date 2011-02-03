@@ -10,6 +10,7 @@ import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.util.Set;
 
+import javax.servlet.ServletContext;
 import javax.ws.rs.core.HttpHeaders;
 import javax.xml.ws.handler.MessageContext;
 
@@ -138,6 +139,20 @@ public interface TavernaSecurityContext {
 	 *             If it is invalid.
 	 */
 	void validateTrusted(Trust t) throws InvalidCredentialException;
+
+	/**
+	 * Establish the security context from how the owning workflow run was
+	 * created. In particular, this gives an opportunity for boot-strapping
+	 * things with any delegateable credentials.
+	 * 
+	 * @param servletContext
+	 *            The servlet context associated with the request that caused
+	 *            the workflow to be created.
+	 * @throws Exception
+	 *             If anything goes wrong.
+	 */
+	void initializeSecurityFromContext(ServletContext servletContext)
+			throws Exception;
 
 	/**
 	 * Establish the security context from how the owning workflow run was

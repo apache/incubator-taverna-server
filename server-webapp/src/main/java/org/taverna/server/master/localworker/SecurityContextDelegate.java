@@ -34,6 +34,7 @@ import java.util.Set;
 
 import javax.crypto.spec.SecretKeySpec;
 import javax.security.auth.x500.X500Principal;
+import javax.servlet.ServletContext;
 import javax.ws.rs.core.HttpHeaders;
 import javax.xml.ws.handler.MessageContext;
 
@@ -53,7 +54,7 @@ import org.taverna.server.master.utils.FilenameUtils;
  * 
  * @author Donal Fellows
  */
-class SecurityContextDelegate implements TavernaSecurityContext {
+public class SecurityContextDelegate implements TavernaSecurityContext {
 	private final Principal owner;
 	private final List<Credential> credentials = new ArrayList<Credential>();
 	private final List<Trust> trusted = new ArrayList<Trust>();
@@ -61,7 +62,7 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 	private final Object lock = new Object();
 	private final Factory factory;
 
-	SecurityContextDelegate(RemoteRunDelegate run, Principal owner,
+	protected SecurityContextDelegate(RemoteRunDelegate run, Principal owner,
 			Factory factory) {
 		this.run = run;
 		this.owner = owner;
@@ -98,7 +99,7 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 
 		@Override
 		public SecurityContextDelegate create(RemoteRunDelegate run,
-				Principal owner) {
+				Principal owner) throws Exception {
 			return new SecurityContextDelegate(run, owner, this);
 		}
 
@@ -254,6 +255,11 @@ class SecurityContextDelegate implements TavernaSecurityContext {
 		} catch (CertificateException e) {
 			throw new InvalidCredentialException(e);
 		}
+	}
+
+	@Override
+	public void initializeSecurityFromContext(ServletContext servletContext) throws Exception {
+		// do nothing in this implementation
 	}
 
 	@Override

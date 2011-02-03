@@ -41,7 +41,9 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.jws.WebService;
+import javax.servlet.ServletContext;
 import javax.ws.rs.Path;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.PathSegment;
@@ -229,6 +231,9 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	private SecurityContext jaxrsContext;
 	@Resource
 	private HttpHeaders jaxrsHeaders;
+	@Resource
+	@Context
+	ServletContext servletContext;
 
 	/** Encapsulates the policies applied by this server. */
 	Policy policy;
@@ -1653,6 +1658,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		try {
 			run = runFactory.create(p, workflow);
 			TavernaSecurityContext c = run.getSecurityContext();
+			if (servletContext != null)
+				c.initializeSecurityFromContext(servletContext);
 			if (jaxwsContext != null && jaxwsContext.getUserPrincipal() != null)
 				c.initializeSecurityFromSOAPContext(jaxwsContext
 						.getMessageContext());

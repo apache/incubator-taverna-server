@@ -739,30 +739,44 @@ public class RemoteRunDelegate implements TavernaRun {
 		final String creatorName = in.readUTF();
 		SecurityContextFactory factory = (SecurityContextFactory) in
 				.readObject();
-		secContext = factory.create(this, new Principal() {
-			@Override
-			public String getName() {
-				return creatorName;
-			}
-
-			@Override
-			public boolean equals(Object o) {
-				if (o instanceof Principal) {
-					Principal p = (Principal) o;
-					return creatorName.equals(p.getName());
+		try {
+			secContext = factory.create(this, new Principal() {
+				@Override
+				public String getName() {
+					return creatorName;
 				}
-				return false;
-			}
 
-			@Override
-			public int hashCode() {
-				return creatorName.hashCode();
-			}
-		});
+				@Override
+				public boolean equals(Object o) {
+					if (o instanceof Principal) {
+						Principal p = (Principal) o;
+						return creatorName.equals(p.getName());
+					}
+					return false;
+				}
+
+				@Override
+				public int hashCode() {
+					return creatorName.hashCode();
+				}
+			});
+		} catch (RuntimeException e) {
+			throw e;
+		} catch (IOException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new SecurityContextReconstructionException(e);
+		}
 		run = ((MarshalledObject<RemoteSingleRun>) in.readObject()).get();
 	}
 
 	void setSecurityContext(TavernaSecurityContext tavernaSecurityContext) {
 		secContext = tavernaSecurityContext;
+	}
+}
+
+class SecurityContextReconstructionException extends RuntimeException {
+	public SecurityContextReconstructionException(Throwable t) {
+		super("failed to rebuild security context", t);
 	}
 }

@@ -20,6 +20,9 @@ public interface SecurityContextFactory extends Serializable {
 	 * @param owner
 	 *            The identity of the owner of the workflow run.
 	 * @return The security context.
+	 * @throws Exception
+	 *             If anything goes wrong.
 	 */
-	TavernaSecurityContext create(RemoteRunDelegate run, Principal owner);
+	TavernaSecurityContext create(RemoteRunDelegate run, Principal owner)
+			throws Exception;
 }

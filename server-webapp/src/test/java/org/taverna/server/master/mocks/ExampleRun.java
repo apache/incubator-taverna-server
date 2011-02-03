@@ -21,6 +21,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Set;
 
+import javax.servlet.ServletContext;
 import javax.ws.rs.core.HttpHeaders;
 import javax.xml.ws.handler.MessageContext;
 
@@ -404,5 +405,12 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	@Override
 	public String getID() {
 		return id;
+	}
+
+	@Override
+	public void initializeSecurityFromContext(ServletContext servletContext)
+			throws Exception {
+		// TODO Auto-generated method stub
+		
 	}
 }
