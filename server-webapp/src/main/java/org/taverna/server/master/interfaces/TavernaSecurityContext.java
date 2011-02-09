@@ -17,7 +17,6 @@ import javax.xml.ws.handler.MessageContext;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.exceptions.InvalidCredentialException;
-import org.taverna.server.master.localworker.SecurityContextFactory;
 
 /**
  * Security context for a workflow run.

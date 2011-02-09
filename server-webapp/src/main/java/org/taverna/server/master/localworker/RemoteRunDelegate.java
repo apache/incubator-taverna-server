@@ -48,6 +48,7 @@ import org.taverna.server.master.interfaces.DirectoryEntry;
 import org.taverna.server.master.interfaces.File;
 import org.taverna.server.master.interfaces.Input;
 import org.taverna.server.master.interfaces.Listener;
+import org.taverna.server.master.interfaces.SecurityContextFactory;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
 

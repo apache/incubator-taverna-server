@@ -6,15 +6,12 @@
 package org.taverna.server.master.localworker;
 
 import static java.util.UUID.randomUUID;
-import static javax.security.auth.x500.X500Principal.RFC2253;
 import static org.taverna.server.master.localworker.AbstractRemoteRunFactory.log;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
-import java.math.BigInteger;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
@@ -38,7 +35,6 @@ import javax.servlet.ServletContext;
 import javax.ws.rs.core.HttpHeaders;
 import javax.xml.ws.handler.MessageContext;
 
-import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.localworker.remote.RemoteSecurityContext;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.Trust;
@@ -47,7 +43,7 @@ import org.taverna.server.master.exceptions.InvalidCredentialException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.interfaces.File;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
-import org.taverna.server.master.utils.FilenameUtils;
+import org.taverna.server.master.utils.X500Utils;
 
 /**
  * Implementation of a security context.
@@ -60,52 +56,13 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 	private final List<Trust> trusted = new ArrayList<Trust>();
 	private final RemoteRunDelegate run;
 	private final Object lock = new Object();
-	private final Factory factory;
+	private final SecurityContextFactory factory;
 
 	protected SecurityContextDelegate(RemoteRunDelegate run, Principal owner,
-			Factory factory) {
+			SecurityContextFactory factory) {
 		this.run = run;
 		this.owner = owner;
 		this.factory = factory;
-	}
-
-	/**
-	 * Singleton factory. Really is a singleton (and is also very trivial); the
-	 * singleton-ness is just about limiting the number of instances of this
-	 * around even when lots of serialization is going on.
-	 * 
-	 * @see Serializable
-	 * @author Donal Fellows
-	 */
-	public static class Factory implements SecurityContextFactory {
-		private static Factory instance;
-		transient RunDatabase db;
-		transient FilenameUtils fileUtils;
-
-		public Factory() {
-			if (instance == null)
-				instance = this;
-		}
-
-		@Required
-		public void setRunDatabase(RunDatabase db) {
-			this.db = db;
-		}
-
-		@Required
-		public void setFilenameConverter(FilenameUtils fileUtils) {
-			this.fileUtils = fileUtils;
-		}
-
-		@Override
-		public SecurityContextDelegate create(RemoteRunDelegate run,
-				Principal owner) throws Exception {
-			return new SecurityContextDelegate(run, owner, this);
-		}
-
-		private Object readResolve() {
-			return (instance != null) ? instance : (instance = this);
-		}
 	}
 
 	@Override
@@ -481,87 +438,5 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 	@Override
 	public void setPermittedReaders(Set<String> readers) {
 		run.setReaders(readers, factory.db);
-	}
-}
-
-/**
- * Support class that factors out some of the messier parts of working with
- * X.500 identities and X.509 certificates.
- * 
- * @author Donal Fellows
- */
-class X500Utils {
-	private static final char DN_SEPARATOR = ',';
-	private static final char DN_ESCAPE = '\\';
-	private static final char DN_QUOTE = '"';
-
-	/**
-	 * Parse the DN from the Principal and extract the CN field.
-	 * 
-	 * @param id
-	 *            The identity to extract the distinguished name from.
-	 * @param fields
-	 *            The names to look at when finding the field to return. Each
-	 *            should be an upper-cased string.
-	 * @return The common-name part of the distinguished name, or the literal
-	 *         string "<tt>none</tt>" if there is no CN.
-	 */
-	public static String getName(X500Principal id, String... fields) {
-		String dn = id.getName(RFC2253);
-
-		int i = 0;
-		int startIndex = 0;
-		boolean ignoreThisChar = false;
-		boolean inQuotes = false;
-		HashMap<String, String> tokenized = new HashMap<String, String>();
-
-		for (i = 0; i < dn.length(); i++)
-			if (ignoreThisChar)
-				ignoreThisChar = false;
-			else if (dn.charAt(i) == DN_QUOTE)
-				inQuotes = !inQuotes;
-			else if (inQuotes)
-				continue;
-			else if (dn.charAt(i) == DN_ESCAPE)
-				ignoreThisChar = true;
-			else if ((dn.charAt(i) == DN_SEPARATOR) && !ignoreThisChar) {
-				storeDNField(tokenized, dn.substring(startIndex, i).trim()
-						.split("=", 2));
-				startIndex = i + 1;
-			}
-		if (inQuotes || ignoreThisChar)
-			log.warn("was parsing invalid DN format");
-		// Add last token - after the last delimiter
-		storeDNField(tokenized, dn.substring(startIndex).trim().split("=", 2));
-
-		for (String field : fields) {
-			String value = tokenized.get(field);
-			if (value != null)
-				return value;
-		}
-		return "none";
-	}
-
-	private static void storeDNField(HashMap<String, String> container,
-			String[] split) {
-		if (split == null || split.length != 2)
-			return;
-		String key = split[0].toUpperCase();
-		if (container.containsKey(key))
-			log.warn("duplicate field in DN: " + key);
-		// LATER: Should the field be de-quoted?
-		container.put(key, split[1]);
-	}
-
-	/**
-	 * Get the serial number from a certificate as a hex string.
-	 * 
-	 * @param cert
-	 *            The certificate to extract from.
-	 * @return A hex string, in upper-case.
-	 */
-	public static String getSerial(X509Certificate cert) {
-		return new BigInteger(1, cert.getSerialNumber().toByteArray())
-				.toString(16).toUpperCase();
 	}
 }

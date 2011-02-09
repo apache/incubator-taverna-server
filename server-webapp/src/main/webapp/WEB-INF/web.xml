@@ -109,4 +109,12 @@
 		<auth-method>BASIC</auth-method>
 		<!--<realm-name>tavernaserver</realm-name> --><!-- TODO: uncomment -->
 	</login-config>
+	<security-role>
+		<description>This role characterizes all users of Taverna Server.</description>
+		<role-name>tavernauser</role-name>
+	</security-role>
+	<security-role>
+		<description>This role characterizes users that have permission to access all non-security aspects of all workflow runs.</description>
+		<role-name>tavernasuperuser</role-name>
+	</security-role>
 </web-app>

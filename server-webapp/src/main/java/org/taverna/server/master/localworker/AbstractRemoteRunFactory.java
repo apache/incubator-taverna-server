@@ -37,6 +37,7 @@ import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.factories.ListenerFactory;
 import org.taverna.server.master.factories.RunFactory;
 import org.taverna.server.master.interfaces.Listener;
+import org.taverna.server.master.interfaces.SecurityContextFactory;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.localworker.RunDatabase.PerRunCallback;
 

@@ -37,9 +37,9 @@ import org.taverna.server.master.factories.RunFactory;
 import org.taverna.server.master.interfaces.Directory;
 import org.taverna.server.master.interfaces.Input;
 import org.taverna.server.master.interfaces.Listener;
+import org.taverna.server.master.interfaces.SecurityContextFactory;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
-import org.taverna.server.master.localworker.SecurityContextFactory;
 
 public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	String id;
