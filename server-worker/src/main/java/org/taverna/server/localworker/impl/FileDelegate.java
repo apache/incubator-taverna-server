@@ -1,12 +1,15 @@
 package org.taverna.server.localworker.impl;
 
 import static java.lang.System.arraycopy;
+import static java.net.InetAddress.getLocalHost;
+import static org.apache.commons.io.FileUtils.copyFile;
 import static org.apache.commons.io.FileUtils.forceDelete;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
@@ -109,5 +112,32 @@ public class FileDelegate extends UnicastRemoteObject implements RemoteFile {
 	@Override
 	public String getName() {
 		return file.getName();
+	}
+
+	@Override
+	public void copy(RemoteFile sourceFile) throws RemoteException, IOException {
+		String sourceHost = sourceFile.getNativeHost();
+		if (!getNativeHost().equals(sourceHost)) {
+			throw new IOException(
+					"cross-system copy not implemented; cannot copy from "
+							+ sourceHost + " to " + getNativeHost());
+		}
+		// Must copy; cannot count on other file to stay unmodified
+		copyFile(new File(sourceFile.getNativeName()), file);
+	}
+
+	@Override
+	public String getNativeName() {
+		return file.getAbsolutePath();
+	}
+
+	@Override
+	public String getNativeHost() {
+		try {
+			return getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			throw new RuntimeException(
+					"unexpected failure to resolve local host address", e);
+		}
 	}
 }

@@ -22,7 +22,7 @@ public interface RemoteFile extends RemoteDirectoryEntry {
 	 * @throws IOException
 	 *             If things go wrong.
 	 */
-	public byte[] getContents(int offset, int length) throws RemoteException,
+	byte[] getContents(int offset, int length) throws RemoteException,
 			IOException;
 
 	/**
@@ -33,7 +33,7 @@ public interface RemoteFile extends RemoteDirectoryEntry {
 	 * @throws IOException
 	 *             If things go wrong.
 	 */
-	public void setContents(byte[] data) throws RemoteException, IOException;
+	void setContents(byte[] data) throws RemoteException, IOException;
 
 	/**
 	 * Append the data to the file.
@@ -43,10 +43,30 @@ public interface RemoteFile extends RemoteDirectoryEntry {
 	 * @throws IOException
 	 *             If things go wrong.
 	 */
-	public void appendContents(byte[] data) throws RemoteException, IOException;
+	void appendContents(byte[] data) throws RemoteException, IOException;
 
 	/**
 	 * @return The length of the file, in bytes.
 	 */
-	public long getSize() throws RemoteException;
+	long getSize() throws RemoteException;
+
+	/**
+	 * Copy from another file to this one.
+	 * 
+	 * @param sourceFile
+	 *            The other file to copy from.
+	 * @throws IOException
+	 *             If things go wrong.
+	 */
+	void copy(RemoteFile sourceFile) throws RemoteException, IOException;
+
+	/**
+	 * @return The full native OS name for the file.
+	 */
+	String getNativeName() throws RemoteException;
+
+	/**
+	 * @return The host holding the file.
+	 */
+	String getNativeHost() throws RemoteException;
 }

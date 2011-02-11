@@ -46,6 +46,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
@@ -59,6 +60,8 @@ import javax.xml.ws.WebServiceContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.cxf.common.security.SimplePrincipal;
+import org.apache.cxf.jaxrs.impl.MetadataMap;
+import org.apache.cxf.jaxrs.model.URITemplate;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
@@ -101,6 +104,7 @@ import org.taverna.server.master.rest.DirectoryContents;
 import org.taverna.server.master.rest.ListenerDefinition;
 import org.taverna.server.master.rest.MakeOrUpdateDirEntry;
 import org.taverna.server.master.rest.MakeOrUpdateDirEntry.MakeDirectory;
+import org.taverna.server.master.rest.TavernaServerInputREST.InDesc.Reference;
 import org.taverna.server.master.rest.TavernaServerSecurityREST;
 import org.taverna.server.master.rest.TavernaServerDirectoryREST;
 import org.taverna.server.master.rest.TavernaServerInputREST;
@@ -733,11 +737,11 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 			}
 
 			@Override
-			public TavernaServerInputREST getInputs() {
+			public TavernaServerInputREST getInputs(final UriInfo ui) {
 				invokes++;
 				return new TavernaServerInputREST() {
 					@Override
-					public InputsDescriptor get(UriInfo ui) {
+					public InputsDescriptor get() {
 						invokes++;
 						return new InputsDescriptor(ui, run);
 					}
@@ -784,6 +788,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 									"bad input name");
 						if (ac == null)
 							throw new BadPropertyValueException("no content!");
+						if (ac instanceof InDesc.Reference)
+							return setRemoteInput(name, (InDesc.Reference) ac);
 						if (!(ac instanceof InDesc.File || ac instanceof InDesc.Value))
 							throw new BadPropertyValueException(
 									"unknown content type");
@@ -796,6 +802,38 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 						else
 							i.setValue(ac.contents);
 						return new InDesc(i);
+					}
+
+					private InDesc setRemoteInput(String name, Reference ref)
+							throws BadStateChangeException,
+							BadPropertyValueException,
+							FilesystemAccessException {
+						URITemplate t = new URITemplate(ui.getBaseUri()
+								+ "/runs/{runName}/wd/{path:.+}");
+						MultivaluedMap<String, String> mvm = new MetadataMap<String, String>();
+						if (!t.match(ref.contents, mvm)) {
+							throw new BadPropertyValueException(
+									"URI in reference does not refer to local disk resource");
+						}
+						try {
+							File from = fileUtils.getFile(
+									getRun(mvm.get("runName").get(0)),
+									FalseDE.make(mvm.get("path").get(0)));
+							File to = run.getWorkingDirectory().makeEmptyFile(
+									getPrincipal(), randomUUID().toString());
+							to.copy(from);
+							Input i = TavernaServerImpl.getInput(run, name);
+							if (i == null)
+								i = run.makeInput(name);
+							i.setFile(to.getFullName());
+							return new InDesc(i);
+						} catch (UnknownRunException e) {
+							throw new BadStateChangeException(
+									"may not copy from that run", e);
+						} catch (NoDirectoryEntryException e) {
+							throw new BadStateChangeException(
+									"source does not exist", e);
+						}
 					}
 				};
 			}
@@ -1857,5 +1895,31 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		if (context.getPermittedReaders().contains(id))
 			return Permission.Read;
 		return Permission.None;
+	}
+}
+
+class FalseDE implements DirectoryEntry {
+	public static DirEntryReference make(String path) {
+		return DirEntryReference.newInstance(new FalseDE(path));
+	}
+
+	private FalseDE(String p) {
+		this.p = p;
+	}
+
+	private String p;
+
+	@Override
+	public String getName() {
+		return null;
+	}
+
+	@Override
+	public String getFullName() {
+		return p;
+	}
+
+	@Override
+	public void destroy() throws FilesystemAccessException {
 	}
 }

@@ -50,4 +50,14 @@ public interface File extends DirectoryEntry {
 	 *             If the read of the file size goes wrong.
 	 */
 	public long getSize() throws FilesystemAccessException;
+
+	/**
+	 * Asks for the argument file to be copied to this one.
+	 * 
+	 * @param from
+	 *            The source file.
+	 * @throws FilesystemAccessException
+	 *             If anything goes wrong.
+	 */
+	public void copy(File from) throws FilesystemAccessException;
 }

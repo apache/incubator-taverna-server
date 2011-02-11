@@ -9,7 +9,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -38,16 +37,14 @@ import org.taverna.server.master.interfaces.TavernaRun;
 @Description("This represents how a Taverna Server workflow run's inputs looks to a RESTful API.")
 public interface TavernaServerInputREST {
 	/**
-	 * @param ui
-	 *            About the URI used to access this resource.
 	 * @return A description of the various URIs to inputs associated with a
 	 *         workflow run.
 	 */
 	@GET
 	@Path("/")
-	@Produces( { "application/xml", "application/json" })
+	@Produces({ "application/xml", "application/json" })
 	@Description("Describe the sub-URIs of this resource.")
-	public InputsDescriptor get(@Context UriInfo ui);
+	public InputsDescriptor get();
 
 	/**
 	 * @return The Baclava file that will supply all the inputs to the workflow
@@ -92,7 +89,7 @@ public interface TavernaServerInputREST {
 	 */
 	@GET
 	@Path("input/{name}")
-	@Produces( { "application/xml", "application/json" })
+	@Produces({ "application/xml", "application/json" })
 	@Description("Gives a description of what is used to supply a particular input.")
 	public InDesc getInput(@PathParam("name") String name)
 			throws BadInputPortNameException;
@@ -119,7 +116,7 @@ public interface TavernaServerInputREST {
 	 */
 	@PUT
 	@Path("input/{name}")
-	@Consumes( { "application/xml", "application/json" })
+	@Consumes({ "application/xml", "application/json" })
 	@Description("Sets the source for a particular input port.")
 	public InDesc setInput(@PathParam("name") String name,
 			InDesc inputDescriptor) throws NoUpdateException,
@@ -229,9 +226,8 @@ public interface TavernaServerInputREST {
 		}
 
 		/**
-		 * The the literal input to the port. The
-		 * {@link AbstractContents#contents contents} field is a literal input
-		 * value.
+		 * The literal input to the port. The {@link AbstractContents#contents
+		 * contents} field is a literal input value.
 		 * 
 		 * @author Donal Fellows
 		 */
@@ -240,9 +236,21 @@ public interface TavernaServerInputREST {
 		}
 
 		/**
+		 * A reference to a file elsewhere <i>on this server</i>. The
+		 * {@link AbstractContents#contents contents} field is a URL to the file
+		 * (using the RESTful notation).
+		 * 
+		 * @author Donal Fellows
+		 */
+		@XmlType(name = "")
+		public static class Reference extends AbstractContents {
+		}
+
+		/**
 		 * The assignment of input values to the port.
 		 */
-		@XmlElements( { @XmlElement(name = "file", type = File.class),
+		@XmlElements({ @XmlElement(name = "file", type = File.class),
+				@XmlElement(name = "reference", type = Reference.class),
 				@XmlElement(name = "value", type = Value.class) })
 		public AbstractContents assignment;
 	}

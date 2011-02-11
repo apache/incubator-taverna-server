@@ -212,11 +212,13 @@ public interface TavernaServerRunREST {
 	/**
 	 * Get a delegate for working with the inputs to this workflow run.
 	 * 
+	 * @param ui
+	 *            About the URI used to access this resource.
 	 * @return A RESTful delegate for the inputs.
 	 */
 	@Path("input")
 	@Description("Get the inputs to this workflow run.")
-	public TavernaServerInputREST getInputs();
+	public TavernaServerInputREST getInputs(@Context UriInfo ui);
 
 	/**
 	 * Get the output Baclava file for this workflow run.

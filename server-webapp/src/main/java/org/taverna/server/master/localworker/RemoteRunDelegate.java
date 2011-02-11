@@ -474,6 +474,24 @@ public class RemoteRunDelegate implements TavernaRun {
 						"failed to write file contents", e);
 			}
 		}
+
+		@Override
+		public void copy(File from) throws FilesystemAccessException {
+			FileDelegate fromFile;
+			try {
+				fromFile = (FileDelegate) from;
+			} catch (ClassCastException e) {
+				throw new FilesystemAccessException("different types of File?!");
+			}
+
+			try {
+				rf.copy(fromFile.rf);
+			} catch (Exception e) {
+				throw new FilesystemAccessException(
+						"failed to copy file contents", e);
+			}
+			return;
+		}
 	}
 
 	@Override
