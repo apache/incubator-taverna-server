@@ -42,6 +42,11 @@ public abstract class Credential {
 	 */
 	@XmlElement
 	public URI serviceURI;
+	/**
+	 * The encoded serialized keystore containing the credential.
+	 */
+	@XmlElement
+	public byte[] credentialBytes;
 	/** The key extracted from the keystore. */
 	@XmlTransient
 	public Key loadedKey;
@@ -71,7 +76,7 @@ public abstract class Credential {
 		 * The keystore file containing the credential. This is resolved with
 		 * respect to the workflow run working directory.
 		 */
-		@XmlElement(required = true)
+		@XmlElement
 		public String credentialFile;
 		/**
 		 * The type of keystore file. Defaults to <tt>JKS</tt> if unspecified.

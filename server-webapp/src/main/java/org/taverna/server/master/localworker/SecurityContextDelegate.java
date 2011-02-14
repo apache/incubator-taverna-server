@@ -152,6 +152,7 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 		c.loadedKey = new SecretKeySpec(keyToSave.getBytes(UTF8),
 				USERNAME_PASSWORD_KEY_ALGORITHM);
 		c.loadedTrustChain = null;
+		c.credentialBytes = null;
 	}
 
 	private void validateKeyCredential(Credential.KeyPair c)
@@ -160,16 +161,25 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 			throw new InvalidCredentialException(
 					"absent or empty credentialName");
 
-		if (c.credentialFile == null || c.credentialFile.trim().length() == 0)
+		InputStream contentsAsStream;
+		if (c.credentialBytes != null && c.credentialBytes.length > 0) {
+			contentsAsStream = new ByteArrayInputStream(c.credentialBytes);
+			c.credentialFile = null;
+		} else if (c.credentialFile == null
+				|| c.credentialFile.trim().length() == 0)
 			throw new InvalidCredentialException(
 					"absent or empty credentialFile");
+		else {
+			contentsAsStream = contents(c.credentialFile);
+			c.credentialBytes = new byte[0];
+		}
 		if (c.fileType == null || c.fileType.trim().length() == 0)
 			c.fileType = KeyStore.getDefaultType();
 		c.fileType = c.fileType.trim();
 		try {
 			KeyStore ks = KeyStore.getInstance(c.fileType);
 			char[] password = c.unlockPassword.toCharArray();
-			ks.load(contents(c.credentialFile), password);
+			ks.load(contentsAsStream, password);
 			try {
 				c.loadedKey = ks.getKey(c.credentialName, password);
 			} catch (UnrecoverableKeyException ignored) {
@@ -200,22 +210,32 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 
 	@Override
 	public void validateTrusted(Trust t) throws InvalidCredentialException {
-		if (t.certificateFile == null || t.certificateFile.trim().length() == 0)
+		InputStream contentsAsStream;
+		if (t.certificateBytes != null && t.certificateBytes.length > 0) {
+			contentsAsStream = new ByteArrayInputStream(t.certificateBytes);
+			t.certificateFile = null;
+		} else if (t.certificateFile == null
+				|| t.certificateFile.trim().length() == 0)
 			throw new InvalidCredentialException(
 					"absent or empty certificateFile");
+		else {
+			contentsAsStream = contents(t.certificateFile);
+			t.certificateBytes = null;
+		}
 		if (t.fileType == null || t.fileType.trim().length() == 0)
 			t.fileType = DEFAULT_CERTIFICATE_TYPE;
 		t.fileType = t.fileType.trim();
 		try {
 			t.loadedCertificates = CertificateFactory.getInstance(t.fileType)
-					.generateCertificates(contents(t.certificateFile));
+					.generateCertificates(contentsAsStream);
 		} catch (CertificateException e) {
 			throw new InvalidCredentialException(e);
 		}
 	}
 
 	@Override
-	public void initializeSecurityFromContext(ServletContext servletContext) throws Exception {
+	public void initializeSecurityFromContext(ServletContext servletContext)
+			throws Exception {
 		// do nothing in this implementation
 	}
 

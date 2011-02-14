@@ -39,13 +39,18 @@ public final class Trust {
 	 * The file containing the certificate(s). This is resolved with respect to
 	 * the workflow run working directory.
 	 */
-	@XmlElement(required = true)
+	@XmlElement
 	public String certificateFile;
 	/**
 	 * The type of certificate file. Defaults to <tt>X.509</tt> if unspecified.
 	 */
 	@XmlElement
 	public String fileType;
+	/**
+	 * The encoded serialized keystore containing the certificate(s).
+	 */
+	@XmlElement
+	public byte[] certificateBytes;
 	/**
 	 * The collection of certificates loaded from the specified file. This is
 	 * always <tt>null</tt> before validation.
