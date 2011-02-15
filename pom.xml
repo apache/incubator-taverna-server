@@ -394,5 +394,6 @@
 		<module>server-distribution</module>
 		<module>server-unix-forker</module>
 		<module>server-output-description</module>
+		<module>server-input-description</module>
 	</modules>
 </project>
