@@ -1,5 +1,6 @@
 package org.taverna.server.input_description;
 
+import static org.taverna.server.input_description.Namespaces.RDF;
 import static org.taverna.server.input_description.Namespaces.XLINK;
 
 import java.net.URI;
@@ -12,6 +13,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Input {
 	@XmlAttribute(namespace = XLINK)
 	public URI href;
+	@XmlAttribute(namespace = RDF)
+	public String about;
 	@XmlElement(required = true)
 	public String name;
 	@XmlElement

@@ -22,6 +22,8 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.springframework.beans.factory.annotation.Required;
+import org.taverna.server.input_description.Input;
+import org.taverna.server.input_description.InputDescription;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.interfaces.Directory;
@@ -36,6 +38,7 @@ import org.taverna.server.output_description.LeafValue;
 import org.taverna.server.output_description.ListValue;
 import org.taverna.server.output_description.Outputs.Contains;
 import org.taverna.server.output_description.RdfWrapper;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -61,6 +64,8 @@ public class ContentsDescriptorBuilder {
 
 	/** Namespace for use when pulling apart a .t2flow document. */
 	private static final String T2FLOW_NS = "http://taverna.sf.net/2008/xml/t2flow";
+	/** Where RDF names are rooted. */
+	private static final String RDF_BASE = "http://ns.taverna.org.uk/2010/run/";
 
 	/**
 	 * Build the contents description.
@@ -84,7 +89,7 @@ public class ContentsDescriptorBuilder {
 			return; // Not t2flow
 		String id = ((Element) nl.item(0)).getAttribute("id");
 		if (id != null && !id.isEmpty())
-			descriptor.run.about = "http://ns.taverna.org.uk/2010/run/" + id;
+			descriptor.run.about = RDF_BASE + id;
 		nl = ((Element) nl.item(0)).getElementsByTagNameNS(T2FLOW_NS,
 				"outputPorts");
 		if (nl.getLength() == 0)
@@ -242,5 +247,58 @@ public class ContentsDescriptorBuilder {
 			descriptor.outputs.add(v);
 		}
 		return descriptor;
+	}
+
+	/**
+	 * Constructs input descriptions.
+	 * 
+	 * @param run
+	 *            The run to build for.
+	 * @param ub
+	 *            The mechanism for building URIs.
+	 * @return The description of the <i>expected</i> inputs of the run.
+	 */
+	public InputDescription makeInputDescriptor(TavernaRun run, UriBuilder ub) {
+		NodeList nl;
+		InputDescription desc = new InputDescription();
+		ub = ub.path("{name}");
+		desc.input = new ArrayList<Input>();
+		try {
+			Element elem = run.getWorkflow().content[0];
+			nl = elem.getElementsByTagNameNS(T2FLOW_NS, "dataflow");
+			if (nl.getLength() == 0)
+				return desc; // Not t2flow
+			elem = (Element) nl.item(0);
+			if (elem.hasAttribute("id"))
+				desc.about = RDF_BASE + elem.getAttribute("id");
+
+			// Foreach "./inputPorts/port"
+			nl = elem.getElementsByTagNameNS(T2FLOW_NS, "inputPorts");
+			if (nl.getLength() == 0)
+				return desc; // Not t2flow or no inputs
+			elem = (Element) nl.item(0);
+			nl = elem.getElementsByTagNameNS(T2FLOW_NS, "port");
+			for (int i = 0; i < nl.getLength(); i++) {
+				Input in = new Input();
+				elem = (Element) nl.item(i);
+				NodeList names = elem.getElementsByTagNameNS(T2FLOW_NS, "name");
+				in.name = names.item(0).getTextContent();
+				in.href = ub.build(in.name);
+				if (desc.about != null)
+					in.about = desc.about + "/input/" + in.name;
+				try {
+					NodeList depths = elem.getElementsByTagNameNS(T2FLOW_NS,
+							"depth");
+					in.depth = Integer.valueOf(depths.item(0).getTextContent(),
+							10);
+				} catch (Exception ex) {
+					// Ignore all exceptions; just gives no depth
+				}
+				desc.input.add(in);
+			}
+		} catch (DOMException ex) {
+			// Ignore this exception; just results in failure to fill out desc
+		}
+		return desc;
 	}
 }

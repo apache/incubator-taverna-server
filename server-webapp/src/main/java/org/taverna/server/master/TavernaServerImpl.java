@@ -747,6 +747,16 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 					}
 
 					@Override
+					public org.taverna.server.input_description.InputDescription get(
+							String type) {
+						invokes++;
+						if (!type.equals("inputDescription"))
+							throw new RuntimeException("boom!");
+						return cdBuilder.makeInputDescriptor(run,
+								ui.getAbsolutePathBuilder());
+					}
+
+					@Override
 					public String getBaclavaFile() {
 						invokes++;
 						String i = run.getInputBaclavaFile();
@@ -1665,6 +1675,15 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		TavernaRun w = getRun(runName);
 		permitUpdate(w);
 		w.setOutputBaclavaFile(outputFile);
+	}
+
+	@Override
+	public org.taverna.server.input_description.InputDescription getRunInputDescriptor(
+			String runName) throws UnknownRunException {
+		invokes++;
+		TavernaRun run = getRun(runName);
+		return cdBuilder.makeInputDescriptor(run,
+				getRunUriBuilder(run).path("inputs"));
 	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

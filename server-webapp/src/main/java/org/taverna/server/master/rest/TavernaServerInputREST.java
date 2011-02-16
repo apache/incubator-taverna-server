@@ -9,6 +9,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -18,6 +19,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
 import org.apache.cxf.jaxrs.ext.Description;
+import org.taverna.server.input_description.InputDescription;
 import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.exceptions.BadInputPortNameException;
@@ -45,6 +47,16 @@ public interface TavernaServerInputREST {
 	@Produces({ "application/xml", "application/json" })
 	@Description("Describe the sub-URIs of this resource.")
 	public InputsDescriptor get();
+
+	/**
+	 * @return A description of the various URIs to inputs associated with a
+	 *         workflow run.
+	 */
+	@GET
+	@Path("/")
+	@Produces({ "application/xml", "application/json" })
+	@Description("Describe the expected inputs of this workflow run.")
+	InputDescription get(@QueryParam("type") String type);
 
 	/**
 	 * @return The Baclava file that will supply all the inputs to the workflow

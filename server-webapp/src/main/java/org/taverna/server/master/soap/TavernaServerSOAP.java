@@ -140,6 +140,11 @@ public interface TavernaServerSOAP {
 			@WebParam(name = "runName") String runName)
 			throws UnknownRunException;
 
+	@WebResult(name = "RunInputDescriptor")
+	org.taverna.server.input_description.InputDescription getRunInputDescriptor(
+			@WebParam(name = "runName") String runName)
+			throws UnknownRunException;
+
 	/**
 	 * Tells the run to use the given Baclava file for all inputs.
 	 * 
