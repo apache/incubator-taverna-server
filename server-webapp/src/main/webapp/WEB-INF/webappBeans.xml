@@ -3,9 +3,11 @@
 	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jaxrs="http://cxf.apache.org/jaxrs"
 	xmlns:jaxws="http://cxf.apache.org/jaxws" xmlns:cxf="http://cxf.apache.org/core"
+	xmlns:security="http://www.springframework.org/schema/security"
 	xsi:schemaLocation="
-	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+	http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd
 	http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
 	http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
 	http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd">
@@ -21,11 +23,13 @@
 
 	<import resource="beans.xml" />
 
-	<jaxws:endpoint id="master_SOAP" address="/soap">
-		<jaxws:implementor>
+	<jaxws:server id="master_SOAP"
+		serviceClass="org.taverna.server.master.TavernaServerImpl"
+		address="/soap">
+		<jaxws:serviceBean>
 			<ref bean="webapp" />
-		</jaxws:implementor>
-	</jaxws:endpoint>
+		</jaxws:serviceBean>
+	</jaxws:server>
 
 	<jaxrs:server id="root_REST" address="/">
 		<jaxrs:serviceBeans>
@@ -60,6 +64,7 @@
 			<ref bean="ExceptionProvider.UnknownRun" />
 			<ref bean="ExceptionProvider.NotOwner" />
 			<ref bean="ExceptionProvider.JAXBException" />
+			<ref bean="ExceptionProvider.AccessDenied" />
 			<ref bean="MessagingProvider.File" />
 			<ref bean="MessagingProvider.InputStream" />
 		</jaxrs:providers>
@@ -76,13 +81,24 @@
 	<context:mbean-export server="MBeanServer"
 		default-domain="${my.domain}" />
 
-	<bean id="timerFactory" class="org.springframework.scheduling.timer.TimerFactoryBean">
-		<description>Single point for handling scheduled tasks.</description>
-		<property name="scheduledTimerTasks">
-			<list>
-				<ref bean="timertask.1" />
-				<ref bean="timertask.2" />
-			</list>
-		</property>
-	</bean>
+	<security:http realm="tavernaserver">
+		<security:http-basic />
+		<security:intercept-url pattern="/" filters="none" />
+		<security:intercept-url pattern="/services" filters="none" />
+		<!-- These next two don't work; only authorized users may get schemas :-( -->
+<!--		<security:intercept-url pattern="/soap?wsdl**" filters="none" />-->
+<!--		<security:intercept-url pattern="/rest?_wadl**" filters="none" />-->
+		<security:intercept-url pattern="/soap/**" access="ROLE_tavernauser" requires-channel="https" />
+		<security:intercept-url pattern="/rest/**" access="ROLE_tavernauser" requires-channel="https" />
+	</security:http>
+	<security:global-method-security jsr250-annotations="enabled"/>
+	<security:authentication-manager>
+		<security:authentication-provider>
+			<security:user-service>
+				<!-- FIXME -->
+				<security:user name="taverna" password="taverna"
+					authorities="ROLE_tavernauser" />
+			</security:user-service>
+		</security:authentication-provider>
+	</security:authentication-manager>
 </beans>

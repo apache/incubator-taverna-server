@@ -25,6 +25,8 @@ import static org.apache.commons.logging.LogFactory.getLog;
 import static org.joda.time.format.ISODateTimeFormat.dateTime;
 import static org.joda.time.format.ISODateTimeFormat.dateTimeParser;
 import static org.taverna.server.master.common.DirEntryReference.newInstance;
+import static org.taverna.server.master.common.Roles.ADMIN;
+import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.common.Status.Initialized;
 
 import java.io.IOException;
@@ -40,10 +42,10 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Resource;
+import javax.annotation.security.DeclareRoles;
 import javax.jws.WebService;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -66,6 +68,7 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
+import org.taverna.server.master.ContentsDescriptorBuilder.UriBuilderFactory;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
@@ -125,9 +128,11 @@ import org.taverna.server.output_description.RdfWrapper;
  * @author Donal Fellows
  */
 @Path("/")
+@DeclareRoles({ USER, ADMIN })
 @WebService(endpointInterface = "org.taverna.server.master.soap.TavernaServerSOAP", serviceName = "TavernaServer", targetNamespace = Namespaces.SERVER_SOAP)
 @ManagedResource(objectName = TavernaServerImpl.JMX_ROOT + "Webapp", description = "The main web-application interface to Taverna Server.")
-public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
+public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
+		UriBuilderFactory {
 	public static final String JMX_ROOT = "Taverna:group=Server-v2,name=";
 	/** The logger for the server framework. */
 	public static Log log = getLog(TavernaServerImpl.class);
@@ -229,15 +234,24 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	// STATE VARIABLES AND SPRING SETTERS
 
-	@Resource
-	private WebServiceContext jaxwsContext;
-	@Resource
-	private SecurityContext jaxrsContext;
-	@Resource
-	private HttpHeaders jaxrsHeaders;
-	@Resource
-	@Context
-	ServletContext servletContext;
+	/** Adapter to make it practical to use injected contexts. */
+	static class Context {
+		@Resource
+		WebServiceContext jaxws;
+		@Resource
+		SecurityContext jaxrsSecurity;
+		@Resource
+		HttpHeaders jaxrsHeaders;
+		@Resource
+		ServletContext servlet;
+	}
+
+	private Context context;
+
+	@Required
+	public void setContext(Context context) {
+		this.context = context;
+	}
 
 	/** Encapsulates the policies applied by this server. */
 	Policy policy;
@@ -1715,13 +1729,16 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		try {
 			run = runFactory.create(p, workflow);
 			TavernaSecurityContext c = run.getSecurityContext();
-			if (servletContext != null)
-				c.initializeSecurityFromContext(servletContext);
-			if (jaxwsContext != null && jaxwsContext.getUserPrincipal() != null)
-				c.initializeSecurityFromSOAPContext(jaxwsContext
-						.getMessageContext());
-			else if (jaxrsHeaders != null)
-				c.initializeSecurityFromRESTContext(jaxrsHeaders);
+			if (context != null) {
+				if (context.servlet != null)
+					c.initializeSecurityFromContext(context.servlet);
+				if (context.jaxws != null
+						&& context.jaxws.getUserPrincipal() != null)
+					c.initializeSecurityFromSOAPContext(context.jaxws
+							.getMessageContext());
+				else if (context.jaxrsHeaders != null)
+					c.initializeSecurityFromRESTContext(context.jaxrsHeaders);
+			}
 		} catch (Exception e) {
 			log.error("failed to build workflow run worker", e);
 			throw new NoCreateException("failed to build workflow run worker");
@@ -1731,16 +1748,18 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	}
 
 	UriBuilder getRunUriBuilder() {
-		if (jaxwsContext == null || jaxwsContext.getMessageContext() == null)
+		if (context == null || context.jaxws == null
+				|| context.jaxws.getMessageContext() == null)
 			// Hack to make the test suite work
 			return fromUri("/taverna-server/rest/runs").path("{uuid}");
-		String pathInfo = (String) jaxwsContext.getMessageContext().get(
+		String pathInfo = (String) context.jaxws.getMessageContext().get(
 				PATH_INFO);
 		return fromUri(pathInfo.replaceFirst("/soap$", "/rest/runs")).path(
 				"{uuid}");
 	}
 
-	UriBuilder getRunUriBuilder(TavernaRun run) {
+	@Override
+	public UriBuilder getRunUriBuilder(TavernaRun run) {
 		return fromUri(getRunUriBuilder().build(run.getID()));
 	}
 
@@ -1803,21 +1822,21 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 	 */
 	Principal getPrincipal() {
 		Principal p = null;
-		if (jaxwsContext == null && jaxrsContext == null
+		if ((context == null || (context.jaxws == null && context.jaxrsSecurity == null))
 				&& logGetPrincipalFailures)
 			log.warn("no injected context");
 		try {
-			if (jaxwsContext != null
-					&& jaxwsContext.getMessageContext() != null)
-				p = jaxwsContext.getUserPrincipal();
+			if (context.jaxws != null
+					&& context.jaxws.getMessageContext() != null)
+				p = context.jaxws.getUserPrincipal();
 		} catch (NullPointerException e) {
 			if (logGetPrincipalFailures)
 				log.warn("failed to get user principal", e);
 		}
 		if (p == null)
 			try {
-				if (jaxrsContext != null)
-					p = jaxrsContext.getUserPrincipal();
+				if (context.jaxrsSecurity != null)
+					p = context.jaxrsSecurity.getUserPrincipal();
 			} catch (NullPointerException e) {
 				if (logGetPrincipalFailures)
 					log.warn("failed to get user principal", e);
@@ -1832,22 +1851,20 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST {
 		return p;
 	}
 
-	/** The name of the role of the super-user. */
-	public static final String SUPER_ROLE = "tavernasuperuser";
-
 	private boolean isSuperUser() {
-		if (jaxwsContext == null && jaxrsContext == null)
+		if (context == null
+				|| (context.jaxws == null && context.jaxrsSecurity == null))
 			return false;
 		try {
-			if (jaxwsContext != null)
-				return jaxwsContext.isUserInRole(SUPER_ROLE);
+			if (context.jaxws != null)
+				return context.jaxws.isUserInRole(ADMIN);
 		} catch (NullPointerException e) {
 			if (logGetPrincipalFailures)
 				log.warn("failed to get user principal via JAX-WS", e);
 		}
 		try {
-			if (jaxrsContext != null)
-				return jaxrsContext.isUserInRole(SUPER_ROLE);
+			if (context.jaxrsSecurity != null)
+				return context.jaxrsSecurity.isUserInRole(ADMIN);
 		} catch (NullPointerException e) {
 			if (logGetPrincipalFailures)
 				log.warn("failed to get user principal via JAX-RS", e);

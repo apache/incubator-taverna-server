@@ -6,9 +6,11 @@
 package org.taverna.server.master.soap;
 
 import static org.taverna.server.master.common.Namespaces.SERVER_SOAP;
+import static org.taverna.server.master.common.Roles.USER;
 
 import java.util.Date;
 
+import javax.annotation.security.RolesAllowed;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
@@ -41,6 +43,7 @@ import org.taverna.server.output_description.RdfWrapper;
  * @author Donal Fellows
  * @see TavernaServerREST
  */
+@RolesAllowed(USER)
 @WebService(name = "tavernaService", targetNamespace = SERVER_SOAP)
 public interface TavernaServerSOAP {
 	/**
@@ -72,7 +75,7 @@ public interface TavernaServerSOAP {
 	 *         of the old ones are destroyed.
 	 */
 	@WebResult(name = "MaxSimultaneousRuns")
-	public int getMaxSimultaneousRuns();
+	int getMaxSimultaneousRuns();
 
 	/**
 	 * Get the list of allowed workflows. If the list is empty, <i>any</i>
@@ -82,7 +85,7 @@ public interface TavernaServerSOAP {
 	 */
 	@WebMethod(operationName = "getPermittedWorkflows")
 	@WebResult(name = "PermittedWorkflow")
-	public Workflow[] getAllowedWorkflows();
+	Workflow[] getAllowedWorkflows();
 
 	/**
 	 * Get the list of allowed event listeners.
@@ -91,7 +94,7 @@ public interface TavernaServerSOAP {
 	 */
 	@WebMethod(operationName = "getPermittedListenerTypes")
 	@WebResult(name = "PermittedListenerType")
-	public String[] getAllowedListeners();
+	String[] getAllowedListeners();
 
 	/**
 	 * Destroy a run immediately. This might or might not actually relinquish
@@ -108,7 +111,7 @@ public interface TavernaServerSOAP {
 	 *             If the user isn't allowed to manipulate the lifetime of the
 	 *             run.
 	 */
-	public void destroyRun(@WebParam(name = "runName") String runName)
+	void destroyRun(@WebParam(name = "runName") String runName)
 			throws UnknownRunException, NoUpdateException;
 
 	/**
@@ -122,7 +125,7 @@ public interface TavernaServerSOAP {
 	 *             not permitted to see it.
 	 */
 	@WebResult(name = "CreationWorkflow")
-	public Workflow getRunWorkflow(@WebParam(name = "runName") String runName)
+	Workflow getRunWorkflow(@WebParam(name = "runName") String runName)
 			throws UnknownRunException;
 
 	/**
@@ -136,10 +139,20 @@ public interface TavernaServerSOAP {
 	 *             not permitted to see it.
 	 */
 	@WebResult(name = "RunInputDescription")
-	public InputDescription getRunInputs(
-			@WebParam(name = "runName") String runName)
+	InputDescription getRunInputs(@WebParam(name = "runName") String runName)
 			throws UnknownRunException;
 
+	/**
+	 * Get a description of what inputs the workflow run <i>expects</i> to
+	 * receive.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @return The description document.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 */
 	@WebResult(name = "RunInputDescriptor")
 	org.taverna.server.input_description.InputDescription getRunInputDescriptor(
 			@WebParam(name = "runName") String runName)
@@ -164,8 +177,7 @@ public interface TavernaServerSOAP {
 	 *             If the run is not in the {@link Status#Initialized
 	 *             Initialized} state
 	 */
-	public void setRunInputBaclavaFile(
-			@WebParam(name = "runName") String runName,
+	void setRunInputBaclavaFile(@WebParam(name = "runName") String runName,
 			@WebParam(name = "fileName") String fileName)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, BadStateChangeException;
@@ -196,7 +208,7 @@ public interface TavernaServerSOAP {
 	 *             If the input port may not be changed to the contents of the
 	 *             given file.
 	 */
-	public void setRunInputPortFile(@WebParam(name = "runName") String runName,
+	void setRunInputPortFile(@WebParam(name = "runName") String runName,
 			@WebParam(name = "portName") String portName,
 			@WebParam(name = "portFilename") String portFilename)
 			throws UnknownRunException, NoUpdateException,
@@ -227,8 +239,7 @@ public interface TavernaServerSOAP {
 	 *             If the input port may not be changed to the given literal
 	 *             value.
 	 */
-	public void setRunInputPortValue(
-			@WebParam(name = "runName") String runName,
+	void setRunInputPortValue(@WebParam(name = "runName") String runName,
 			@WebParam(name = "portName") String portName,
 			@WebParam(name = "portValue") String portValue)
 			throws UnknownRunException, NoUpdateException,
@@ -246,8 +257,7 @@ public interface TavernaServerSOAP {
 	 *             not permitted to see it.
 	 */
 	@WebResult(name = "OutputBaclavaFile")
-	public String getRunOutputBaclavaFile(
-			@WebParam(name = "runName") String runName)
+	String getRunOutputBaclavaFile(@WebParam(name = "runName") String runName)
 			throws UnknownRunException;
 
 	/**
@@ -271,8 +281,7 @@ public interface TavernaServerSOAP {
 	 *             If the run is not in the {@link Status#Initialized
 	 *             Initialized} state
 	 */
-	public void setRunOutputBaclavaFile(
-			@WebParam(name = "runName") String runName,
+	void setRunOutputBaclavaFile(@WebParam(name = "runName") String runName,
 			@WebParam(name = "outputFile") String outputFile)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, BadStateChangeException;
@@ -294,7 +303,8 @@ public interface TavernaServerSOAP {
 	 * @throws NoDirectoryEntryException
 	 *             If things are odd in the filesystem.
 	 */
-	public RdfWrapper getRunOutputDescription(
+	@WebResult(name = "OutputDescription")
+	RdfWrapper getRunOutputDescription(
 			@WebParam(name = "runName") String runName)
 			throws UnknownRunException, BadStateChangeException,
 			FilesystemAccessException, NoDirectoryEntryException;
@@ -312,7 +322,7 @@ public interface TavernaServerSOAP {
 	 *             not permitted to see it.
 	 */
 	@WebResult(name = "Expiry")
-	public Date getRunExpiry(@WebParam(name = "runName") String runName)
+	Date getRunExpiry(@WebParam(name = "runName") String runName)
 			throws UnknownRunException;
 
 	/**
@@ -331,7 +341,7 @@ public interface TavernaServerSOAP {
 	 *             If the user isn't allowed to manipulate the lifetime of the
 	 *             run.
 	 */
-	public void setRunExpiry(@WebParam(name = "runName") String runName,
+	void setRunExpiry(@WebParam(name = "runName") String runName,
 			@WebParam(name = "expiry") Date expiry) throws UnknownRunException,
 			NoUpdateException;
 
@@ -347,7 +357,7 @@ public interface TavernaServerSOAP {
 	 *             not permitted to see it.
 	 */
 	@WebResult(name = "CreationTime")
-	public Date getRunCreationTime(@WebParam(name = "runName") String runName)
+	Date getRunCreationTime(@WebParam(name = "runName") String runName)
 			throws UnknownRunException;
 
 	/**
@@ -362,7 +372,7 @@ public interface TavernaServerSOAP {
 	 *             not permitted to see it.
 	 */
 	@WebResult(name = "StartTime")
-	public Date getRunStartTime(@WebParam(name = "runName") String runName)
+	Date getRunStartTime(@WebParam(name = "runName") String runName)
 			throws UnknownRunException;
 
 	/**
@@ -378,7 +388,7 @@ public interface TavernaServerSOAP {
 	 *             not permitted to see it.
 	 */
 	@WebResult(name = "FinishTime")
-	public Date getRunFinishTime(@WebParam(name = "runName") String runName)
+	Date getRunFinishTime(@WebParam(name = "runName") String runName)
 			throws UnknownRunException;
 
 	/**
@@ -392,7 +402,7 @@ public interface TavernaServerSOAP {
 	 *             not permitted to see it.
 	 */
 	@WebResult(name = "Status")
-	public Status getRunStatus(@WebParam(name = "runName") String runName)
+	Status getRunStatus(@WebParam(name = "runName") String runName)
 			throws UnknownRunException;
 
 	/**
@@ -413,7 +423,7 @@ public interface TavernaServerSOAP {
 	 * @throws BadStateChangeException
 	 *             If the state change requested is impossible.
 	 */
-	public void setRunStatus(@WebParam(name = "runName") String runName,
+	void setRunStatus(@WebParam(name = "runName") String runName,
 			@WebParam(name = "status") Status status)
 			throws UnknownRunException, NoUpdateException,
 			BadStateChangeException;
@@ -429,7 +439,7 @@ public interface TavernaServerSOAP {
 	 *             not permitted to see it.
 	 */
 	@WebResult(name = "ListenerName")
-	public String[] getRunListeners(@WebParam(name = "runName") String runName)
+	String[] getRunListeners(@WebParam(name = "runName") String runName)
 			throws UnknownRunException;
 
 	/**
@@ -455,7 +465,7 @@ public interface TavernaServerSOAP {
 	 *             <b>configuration</b>).
 	 */
 	@WebResult(name = "ListenerName")
-	public String addRunListener(@WebParam(name = "runName") String runName,
+	String addRunListener(@WebParam(name = "runName") String runName,
 			@WebParam(name = "listenerType") String listenerType,
 			@WebParam(name = "configuration") String configuration)
 			throws UnknownRunException, NoUpdateException, NoListenerException;
@@ -471,7 +481,7 @@ public interface TavernaServerSOAP {
 	 *             not permitted to see it.
 	 */
 	@WebResult(name = "Owner")
-	public String getRunOwner(@WebParam(name = "runName") String runName)
+	String getRunOwner(@WebParam(name = "runName") String runName)
 			throws UnknownRunException;
 
 	/**
@@ -527,8 +537,7 @@ public interface TavernaServerSOAP {
 	 *             only the owner may see the credentials.
 	 */
 	@WebResult(name = "Credentials")
-	public Credential[] getRunCredentials(
-			@WebParam(name = "runName") String runName)
+	Credential[] getRunCredentials(@WebParam(name = "runName") String runName)
 			throws UnknownRunException, NotOwnerException;
 
 	/**
@@ -558,7 +567,7 @@ public interface TavernaServerSOAP {
 	 *             workflow has started running.
 	 */
 	@WebResult(name = "credentialID")
-	public String setRunCredential(@WebParam(name = "runName") String runName,
+	String setRunCredential(@WebParam(name = "runName") String runName,
 			@WebParam(name = "credentialID") String credentialID,
 			@WebParam(name = "credential") Credential credential)
 			throws UnknownRunException, NotOwnerException,
@@ -583,7 +592,7 @@ public interface TavernaServerSOAP {
 	 *             If an attempt to manipulate the credentials is done after the
 	 *             workflow has started running.
 	 */
-	public void deleteRunCredential(@WebParam(name = "runName") String runName,
+	void deleteRunCredential(@WebParam(name = "runName") String runName,
 			@WebParam(name = "credentialID") String credentialID)
 			throws UnknownRunException, NotOwnerException,
 			NoCredentialException, BadStateChangeException;
@@ -602,7 +611,7 @@ public interface TavernaServerSOAP {
 	 *             only the owner may see the credentials.
 	 */
 	@WebResult(name = "CertificateCollections")
-	public Trust[] getRunCertificates(@WebParam(name = "runName") String runName)
+	Trust[] getRunCertificates(@WebParam(name = "runName") String runName)
 			throws UnknownRunException, NotOwnerException;
 
 	/**
@@ -632,8 +641,7 @@ public interface TavernaServerSOAP {
 	 *             workflow has started running.
 	 */
 	@WebResult(name = "certificateID")
-	public String setRunCertificates(
-			@WebParam(name = "runName") String runName,
+	String setRunCertificates(@WebParam(name = "runName") String runName,
 			@WebParam(name = "certificateID") String certificateID,
 			@WebParam(name = "certificate") Trust certificate)
 			throws UnknownRunException, NotOwnerException,
@@ -658,8 +666,7 @@ public interface TavernaServerSOAP {
 	 *             If an attempt to manipulate the credentials is done after the
 	 *             workflow has started running.
 	 */
-	public void deleteRunCertificates(
-			@WebParam(name = "runName") String runName,
+	void deleteRunCertificates(@WebParam(name = "runName") String runName,
 			@WebParam(name = "certificateID") String certificateID)
 			throws UnknownRunException, NotOwnerException,
 			NoCredentialException, BadStateChangeException;
@@ -685,7 +692,7 @@ public interface TavernaServerSOAP {
 	 *             If the name of the directory can't be looked up.
 	 */
 	@WebResult(name = "DirectoryEntry")
-	public DirEntryReference[] getRunDirectoryContents(
+	DirEntryReference[] getRunDirectoryContents(
 			@WebParam(name = "runName") String runName,
 			@WebParam(name = "directory") DirEntryReference directory)
 			throws UnknownRunException, FilesystemAccessException,
@@ -712,8 +719,7 @@ public interface TavernaServerSOAP {
 	 *             If the name of the directory can't be looked up.
 	 */
 	@WebResult(name = "ZipFile")
-	public byte[] getRunDirectoryAsZip(
-			@WebParam(name = "runName") String runName,
+	byte[] getRunDirectoryAsZip(@WebParam(name = "runName") String runName,
 			@WebParam(name = "directory") DirEntryReference directory)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException;
@@ -746,7 +752,7 @@ public interface TavernaServerSOAP {
 	 *             If the name of the containing directory can't be looked up.
 	 */
 	@WebResult(name = "CreatedDirectory")
-	public DirEntryReference makeRunDirectory(
+	DirEntryReference makeRunDirectory(
 			@WebParam(name = "runName") String runName,
 			@WebParam(name = "parentDirectory") DirEntryReference parent,
 			@WebParam(name = "directoryName") String name)
@@ -780,8 +786,7 @@ public interface TavernaServerSOAP {
 	 *             If the name of the containing directory can't be looked up.
 	 */
 	@WebResult(name = "CreatedFile")
-	public DirEntryReference makeRunFile(
-			@WebParam(name = "runName") String runName,
+	DirEntryReference makeRunFile(@WebParam(name = "runName") String runName,
 			@WebParam(name = "parentDirectory") DirEntryReference parent,
 			@WebParam(name = "fileName") String name)
 			throws UnknownRunException, NoUpdateException,
@@ -808,8 +813,7 @@ public interface TavernaServerSOAP {
 	 * @throws NoDirectoryEntryException
 	 *             If the name of the file or directory can't be looked up.
 	 */
-	public void destroyRunDirectoryEntry(
-			@WebParam(name = "runName") String runName,
+	void destroyRunDirectoryEntry(@WebParam(name = "runName") String runName,
 			@WebParam(name = "directoryEntry") DirEntryReference dirEntry)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, NoDirectoryEntryException;
@@ -834,8 +838,7 @@ public interface TavernaServerSOAP {
 	 *             If the file doesn't exist.
 	 */
 	@WebResult(name = "FileContents")
-	public byte[] getRunFileContents(
-			@WebParam(name = "runName") String runName,
+	byte[] getRunFileContents(@WebParam(name = "runName") String runName,
 			@WebParam(name = "fileName") DirEntryReference file)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException;
@@ -862,7 +865,7 @@ public interface TavernaServerSOAP {
 	 * @throws NoDirectoryEntryException
 	 *             If the file doesn't exist.
 	 */
-	public void setRunFileContents(@WebParam(name = "runName") String runName,
+	void setRunFileContents(@WebParam(name = "runName") String runName,
 			@WebParam(name = "fileName") DirEntryReference file,
 			@WebParam(name = "contents") byte[] newContents)
 			throws UnknownRunException, NoUpdateException,
@@ -888,7 +891,7 @@ public interface TavernaServerSOAP {
 	 *             If the file doesn't exist.
 	 */
 	@WebResult(name = "FileLength")
-	public long getRunFileLength(@WebParam(name = "runName") String runName,
+	long getRunFileLength(@WebParam(name = "runName") String runName,
 			@WebParam(name = "fileName") DirEntryReference file)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException;
@@ -908,7 +911,7 @@ public interface TavernaServerSOAP {
 	 *             If no such listener exists.
 	 */
 	@WebResult(name = "ListenerConfiguration")
-	public String getRunListenerConfiguration(
+	String getRunListenerConfiguration(
 			@WebParam(name = "runName") String runName,
 			@WebParam(name = "listenerName") String listenerName)
 			throws UnknownRunException, NoListenerException;
@@ -929,7 +932,7 @@ public interface TavernaServerSOAP {
 	 *             If no such listener exists.
 	 */
 	@WebResult(name = "ListenerPropertyName")
-	public String[] getRunListenerProperties(
+	String[] getRunListenerProperties(
 			@WebParam(name = "runName") String runName,
 			@WebParam(name = "listenerName") String listenerName)
 			throws UnknownRunException, NoListenerException;
@@ -952,8 +955,7 @@ public interface TavernaServerSOAP {
 	 *             property.
 	 */
 	@WebResult(name = "ListenerPropertyValue")
-	public String getRunListenerProperty(
-			@WebParam(name = "runName") String runName,
+	String getRunListenerProperty(@WebParam(name = "runName") String runName,
 			@WebParam(name = "listenerName") String listenerName,
 			@WebParam(name = "propertyName") String propertyName)
 			throws UnknownRunException, NoListenerException;
@@ -979,8 +981,7 @@ public interface TavernaServerSOAP {
 	 * @throws NoUpdateException
 	 *             If the user is not allowed to make modifications to the run.
 	 */
-	public void setRunListenerProperty(
-			@WebParam(name = "runName") String runName,
+	void setRunListenerProperty(@WebParam(name = "runName") String runName,
 			@WebParam(name = "listenerName") String listenerName,
 			@WebParam(name = "propertName") String propertyName,
 			@WebParam(name = "value") String value) throws UnknownRunException,

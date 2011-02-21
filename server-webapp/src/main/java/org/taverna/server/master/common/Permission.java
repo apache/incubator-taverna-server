@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlType;
 /**
  * Description of a permission to access a particular workflow run. Note that
  * users always have full access to their own runs, as does any user with the "
- * <tt>tavernasuperuser</tt>" ability.
+ * <tt>{@value org.taverna.server.master.common.Roles#ADMIN}</tt>" ability.
  * 
  * @author Donal Fellows
  */

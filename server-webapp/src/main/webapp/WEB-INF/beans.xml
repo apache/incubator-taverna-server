@@ -3,7 +3,9 @@
 	for license terms. -->
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd">
 
 	<bean id="webapp" class="org.taverna.server.master.TavernaServerImpl">
 		<property name="policy" ref="localworker.policy" />
@@ -14,10 +16,13 @@
 		<property name="idMapper" ref="IdentityMapper" />
 		<property name="fileUtils" ref="fileUtils" />
 		<property name="contentsDescriptorBuilder" ref="contentsDescriptorBuilder" />
+		<property name="context">
+			<bean id="webapp.context.holder" class="org.taverna.server.master.TavernaServerImpl.Context" />
+		</property>
 	</bean>
 
 	<bean id="contentsDescriptorBuilder" class="org.taverna.server.master.ContentsDescriptorBuilder">
-		<property name="webapp" ref="webapp" />
+		<property name="uriBuilderFactory" ref="webapp" />
 		<property name="fileUtils" ref="fileUtils" />
 	</bean>
 
@@ -70,6 +75,9 @@
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
 	<bean id="ExceptionProvider.JAXBException" class="org.taverna.server.master.rest.JAXBExceptionHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.AccessDenied" class="org.taverna.server.master.rest.AccessDeniedHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
 	<bean id="MessagingProvider.File" class="org.taverna.server.master.rest.FileMessageHandler">
@@ -219,6 +227,12 @@
 		<property name="notifier" ref="localworker.notifier" />
 		<property name="notificationEngine" ref="notificationFabric" />
 	</bean>
+	<task:scheduled-tasks scheduler="taskScheduler">
+		<task:scheduled ref="localworker.runDB" method="cleanNow"
+			fixed-delay="30000" />
+		<task:scheduled ref="localworker.runDB" method="checkForFinishNow"
+			fixed-delay="10000" />
+	</task:scheduled-tasks>
 
 	<bean id="notificationFabric" class="org.taverna.server.master.NotificationEngine">
 		<property name="dispatchers">
@@ -239,28 +253,6 @@
 	</bean>
 	<bean id="dispatch.twitter" class="org.taverna.server.master.TwitterDispatcher" />
 
-	<bean id="localworker.runDB.cleaner" class="org.springframework.scheduling.timer.ScheduledTimerTask">
-		<property name="delay" value="10000" />
-		<property name="period" value="30000" />
-		<property name="timerTask">
-			<bean id="localworker.cleanDBNow"
-				class="org.springframework.scheduling.timer.MethodInvokingTimerTaskFactoryBean">
-				<property name="targetObject" ref="localworker.runDB" />
-				<property name="targetMethod" value="cleanNow" />
-			</bean>
-		</property>
-	</bean>
-	<bean id="localworker.runDB.scanner" class="org.springframework.scheduling.timer.ScheduledTimerTask">
-		<property name="delay" value="25000" />
-		<property name="period" value="12345" />
-		<property name="timerTask">
-			<bean id="localworker.scanRuns"
-				class="org.springframework.scheduling.timer.MethodInvokingTimerTaskFactoryBean">
-				<property name="targetObject" ref="localworker.runDB" />
-				<property name="targetMethod" value="checkForFinishNow" />
-			</bean>
-		</property>
-	</bean>
 	<bean id="localworker.notifier"
 		class="org.taverna.server.master.localworker.SimpleFormattedCompletionNotifier">
 		<property name="subject" value="Taverna workflow run finished" />
@@ -270,8 +262,7 @@
 	</bean>
 
 	<alias name="localworker.factory" alias="listenerFactory" />
-	<alias name="localworker.runDB.cleaner" alias="timertask.1" />
-	<alias name="localworker.runDB.scanner" alias="timertask.2" />
 
 	<bean id="fileUtils" class="org.taverna.server.master.utils.FilenameUtils" />
+	<task:scheduler id="taskScheduler" pool-size="2"/>
 </beans>

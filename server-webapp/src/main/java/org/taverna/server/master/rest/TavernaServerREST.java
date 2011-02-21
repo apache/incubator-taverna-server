@@ -1,12 +1,14 @@
 package org.taverna.server.master.rest;
 
 import static org.taverna.server.master.common.Namespaces.XLINK;
+import static org.taverna.server.master.common.Roles.USER;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -39,6 +41,7 @@ import org.taverna.server.master.soap.TavernaServerSOAP;
  * @author Donal Fellows
  * @see TavernaServerSOAP
  */
+@RolesAllowed(USER)
 @Description("This is REST service interface to Taverna 2 Server release 2")
 public interface TavernaServerREST {
 	// MASTER API
@@ -51,9 +54,9 @@ public interface TavernaServerREST {
 	 * @return The description.
 	 */
 	@GET
-	@Produces( { "application/xml", "application/json" })
+	@Produces({ "application/xml", "application/json" })
 	@Description("Produces the description of the service.")
-	public ServerDescription describeService(@Context UriInfo ui);
+	ServerDescription describeService(@Context UriInfo ui);
 
 	/**
 	 * Produces a description of the list of runs.
@@ -64,9 +67,9 @@ public interface TavernaServerREST {
 	 */
 	@GET
 	@Path("runs")
-	@Produces( { "application/xml", "application/json" })
+	@Produces({ "application/xml", "application/json" })
 	@Description("Produces a list of all runs visible to the user.")
-	public RunList listUsersRuns(@Context UriInfo ui);
+	RunList listUsersRuns(@Context UriInfo ui);
 
 	/**
 	 * Accepts (or not) a request to create a new run executing the given
@@ -84,9 +87,12 @@ public interface TavernaServerREST {
 	@Path("runs")
 	@Consumes("application/xml")
 	@Description("Accepts (or not) a request to create a new run executing the given workflow.")
-	public Response submitWorkflow(Workflow workflow, @Context UriInfo ui)
+	Response submitWorkflow(Workflow workflow, @Context UriInfo ui)
 			throws NoUpdateException;
 
+	/**
+	 * @return A description of the policies supported by this server.
+	 */
 	@Path("policy")
 	@Description("The policies supported by this server.")
 	PolicyView getPolicyDescription();
@@ -102,8 +108,8 @@ public interface TavernaServerREST {
 	 */
 	@Path("runs/{runName}")
 	@Description("Get a particular named run resource to dispatch to.")
-	public TavernaServerRunREST getRunResource(
-			@PathParam("runName") String runName) throws UnknownRunException;
+	TavernaServerRunREST getRunResource(@PathParam("runName") String runName)
+			throws UnknownRunException;
 
 	/**
 	 * Helper class for describing the server's user-facing management API via
@@ -155,21 +161,22 @@ public interface TavernaServerREST {
 
 	/**
 	 * How to discover the publicly-visible policies supported by this server.
-	 *
+	 * 
 	 * @author Donal Fellows
 	 */
+	@RolesAllowed(USER)
 	public interface PolicyView {
 		@GET
 		@Path("/")
-		@Produces({"application/xml", "application/json"})
+		@Produces({ "application/xml", "application/json" })
 		@Description("Describe the parts of this policy.")
 		public PolicyDescription getDescription(@Context UriInfo ui);
 
 		/**
-		 * Gets the maximum number of simultaneous runs that the user may create.
-		 * The <i>actual</i> number they can create may be lower than this. If this
-		 * number is lower than the number they currently have, they will be unable
-		 * to create any runs at all.
+		 * Gets the maximum number of simultaneous runs that the user may
+		 * create. The <i>actual</i> number they can create may be lower than
+		 * this. If this number is lower than the number they currently have,
+		 * they will be unable to create any runs at all.
 		 * 
 		 * @return The maximum number of runs.
 		 */
@@ -180,27 +187,27 @@ public interface TavernaServerREST {
 		public int getMaxSimultaneousRuns();
 
 		/**
-		 * Gets the list of permitted workflows. Any workflow may be submitted if
-		 * the list is empty, otherwise it must be one of the workflows on this
-		 * list.
+		 * Gets the list of permitted workflows. Any workflow may be submitted
+		 * if the list is empty, otherwise it must be one of the workflows on
+		 * this list.
 		 * 
 		 * @return The list of workflow documents.
 		 */
 		@GET
 		@Path("permittedWorkflows")
-		@Produces( { "application/xml", "application/json" })
+		@Produces({ "application/xml", "application/json" })
 		@Description("Gets the list of permitted workflows.")
 		public PermittedWorkflows getPermittedWorkflows();
 
 		/**
-		 * Gets the list of permitted event listener types. All event listeners must
-		 * be of a type described on this list.
+		 * Gets the list of permitted event listener types. All event listeners
+		 * must be of a type described on this list.
 		 * 
 		 * @return The types of event listeners allowed.
 		 */
 		@GET
 		@Path("permittedListenerTypes")
-		@Produces( { "application/xml", "application/json" })
+		@Produces({ "application/xml", "application/json" })
 		@Description("Gets the list of permitted event listener types.")
 		public PermittedListeners getPermittedListeners();
 

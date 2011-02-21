@@ -1,11 +1,13 @@
 package org.taverna.server.master.rest;
 
 import static org.taverna.server.master.common.Namespaces.XLINK;
+import static org.taverna.server.master.common.Roles.USER;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -36,6 +38,7 @@ import org.taverna.server.master.interfaces.Listener;
  * @author Donal Fellows
  * @see TavernaServerListenerREST
  */
+@RolesAllowed(USER)
 @Description("This represents all the event listeners attached to a workflow run.")
 public interface TavernaServerListenersREST {
 	/**
@@ -47,9 +50,9 @@ public interface TavernaServerListenersREST {
 	 */
 	@GET
 	@Path("/")
-	@Produces( { "application/xml", "application/json" })
+	@Produces({ "application/xml", "application/json" })
 	@Description("Get the listeners installed in the workflow run.")
-	public Listeners getDescription(@Context UriInfo ui);
+	Listeners getDescription(@Context UriInfo ui);
 
 	/**
 	 * Add a new event listener to the named workflow run.
@@ -68,9 +71,9 @@ public interface TavernaServerListenersREST {
 	 */
 	@POST
 	@Path("/")
-	@Consumes( { "application/xml", "application/json" })
+	@Consumes({ "application/xml", "application/json" })
 	@Description("Add a new event listener to the named workflow run.")
-	public Response addListener(ListenerDefinition typeAndConfiguration,
+	Response addListener(ListenerDefinition typeAndConfiguration,
 			@Context UriInfo ui) throws NoUpdateException, NoListenerException;
 
 	/**
@@ -84,7 +87,7 @@ public interface TavernaServerListenersREST {
 	 */
 	@Path("{name}")
 	@Description("Resolve a particular listener from its name.")
-	public TavernaServerListenerREST getListener(@PathParam("name") String name)
+	TavernaServerListenerREST getListener(@PathParam("name") String name)
 			throws NoListenerException;
 
 	/**
@@ -94,6 +97,7 @@ public interface TavernaServerListenersREST {
 	 * @see TavernaServerListenersREST
 	 * @see Property
 	 */
+	@RolesAllowed(USER)
 	@Description("This represents a single event listener attached to a workflow run.")
 	public interface TavernaServerListenerREST {
 		/**
@@ -105,9 +109,9 @@ public interface TavernaServerListenersREST {
 		 */
 		@GET
 		@Path("/")
-		@Produces( { "application/xml", "application/json" })
+		@Produces({ "application/xml", "application/json" })
 		@Description("Get the description of this listener.")
-		public ListenerDescription getDescription(@Context UriInfo ui);
+		ListenerDescription getDescription(@Context UriInfo ui);
 
 		/**
 		 * Get the configuration for the given event listener that is attached
@@ -119,7 +123,7 @@ public interface TavernaServerListenersREST {
 		@Path("configuration")
 		@Produces("text/plain")
 		@Description("Get the configuration for the given event listener that is attached to a workflow run.")
-		public String getConfiguration();
+		String getConfiguration();
 
 		/**
 		 * Get the list of properties supported by a given event listener
@@ -131,9 +135,9 @@ public interface TavernaServerListenersREST {
 		 */
 		@GET
 		@Path("properties")
-		@Produces( { "application/xml", "application/json" })
+		@Produces({ "application/xml", "application/json" })
 		@Description("Get the list of properties supported by a given event listener attached to a workflow run.")
-		public Properties getProperties(@Context UriInfo ui);
+		Properties getProperties(@Context UriInfo ui);
 
 		/**
 		 * Get an object representing a particular property.
@@ -145,8 +149,7 @@ public interface TavernaServerListenersREST {
 		 */
 		@Path("properties/{propertyName}")
 		@Description("Get an object representing a particular property.")
-		public Property getProperty(
-				@PathParam("propertyName") String propertyName)
+		Property getProperty(@PathParam("propertyName") String propertyName)
 				throws NoListenerException;
 	}
 
@@ -155,6 +158,7 @@ public interface TavernaServerListenersREST {
 	 * 
 	 * @author Donal Fellows
 	 */
+	@RolesAllowed(USER)
 	@Description("This represents a single property attached of an event listener.")
 	public interface Property {
 		/**
@@ -167,7 +171,7 @@ public interface TavernaServerListenersREST {
 		@Path("/")
 		@Produces("text/plain")
 		@Description("Get the value of the particular property of an event listener attached to a workflow run.")
-		public String getValue();
+		String getValue();
 
 		/**
 		 * Set the value of the particular property of an event listener
@@ -187,7 +191,7 @@ public interface TavernaServerListenersREST {
 		@Consumes("text/plain")
 		@Produces("text/plain")
 		@Description("Set the value of the particular property of an event listener attached to a workflow run.")
-		public String setValue(String value) throws NoUpdateException,
+		String setValue(String value) throws NoUpdateException,
 				NoListenerException;
 	}
 
@@ -241,8 +245,8 @@ public interface TavernaServerListenersREST {
 			type = listener.getType();
 			configuration = new Uri(ub.clone().path("configuration"));
 			UriBuilder ub2 = ub.clone().path("properties/{prop}");
-			properties = new ArrayList<PropertyDescription>(listener
-					.listProperties().length);
+			properties = new ArrayList<PropertyDescription>(
+					listener.listProperties().length);
 			for (String propName : listener.listProperties())
 				properties.add(new PropertyDescription(propName, ub2));
 		}

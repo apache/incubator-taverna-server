@@ -18,6 +18,14 @@
 		<description>The location of the Taverna2 workflow execution script.</description>
 	</context-param>
 
+	<filter>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
 	<listener>
 		<listener-class>
 			org.springframework.web.context.ContextLoaderListener
@@ -31,6 +39,14 @@
 			org.apache.cxf.transport.servlet.CXFServlet
 		</servlet-class>
 		<load-on-startup>1</load-on-startup>
+		<security-role-ref>
+			<role-name>tavernauser</role-name>
+			<role-link>user</role-link>
+		</security-role-ref>
+		<security-role-ref>
+			<role-name>tavernasuperuser</role-name>
+			<role-link>admin</role-link>
+		</security-role-ref>
 	</servlet>
 
 	<servlet-mapping>
@@ -50,6 +66,7 @@
 		<res-auth>Container</res-auth>
 	</resource-ref>
 
+<!-- 
 	<security-constraint>
 		<display-name>Totally unsecured</display-name>
 		<web-resource-collection>
@@ -107,14 +124,7 @@
 	</security-constraint>
 	<login-config>
 		<auth-method>BASIC</auth-method>
-		<!--<realm-name>tavernaserver</realm-name> --><!-- TODO: uncomment -->
+		<realm-name>tavernaserver</realm-name>
 	</login-config>
-	<security-role>
-		<description>This role characterizes all users of Taverna Server.</description>
-		<role-name>tavernauser</role-name>
-	</security-role>
-	<security-role>
-		<description>This role characterizes users that have permission to access all non-security aspects of all workflow runs.</description>
-		<role-name>tavernasuperuser</role-name>
-	</security-role>
+-->
 </web-app>

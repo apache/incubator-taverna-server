@@ -1,8 +1,11 @@
 package org.taverna.server.master.rest;
 
+import static org.taverna.server.master.common.Roles.USER;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -36,6 +39,7 @@ import org.taverna.server.master.interfaces.TavernaRun;
  * 
  * @author Donal Fellows.
  */
+@RolesAllowed(USER)
 @Description("This represents how a Taverna Server workflow run's inputs looks to a RESTful API.")
 public interface TavernaServerInputREST {
 	/**
@@ -46,7 +50,7 @@ public interface TavernaServerInputREST {
 	@Path("/")
 	@Produces({ "application/xml", "application/json" })
 	@Description("Describe the sub-URIs of this resource.")
-	public InputsDescriptor get();
+	InputsDescriptor get();
 
 	/**
 	 * @return A description of the various URIs to inputs associated with a
@@ -66,7 +70,7 @@ public interface TavernaServerInputREST {
 	@Path("baclava")
 	@Produces("text/plain")
 	@Description("Gives the Baclava file describing the inputs, or empty if individual files are used.")
-	public String getBaclavaFile();
+	String getBaclavaFile();
 
 	/**
 	 * Set the Baclava file that will supply all the inputs to the workflow run.
@@ -87,7 +91,7 @@ public interface TavernaServerInputREST {
 	@Consumes("text/plain")
 	@Produces("text/plain")
 	@Description("Sets the Baclava file describing the inputs.")
-	public String setBaclavaFile(String filename) throws NoUpdateException,
+	String setBaclavaFile(String filename) throws NoUpdateException,
 			BadStateChangeException, FilesystemAccessException;
 
 	/**
@@ -103,7 +107,7 @@ public interface TavernaServerInputREST {
 	@Path("input/{name}")
 	@Produces({ "application/xml", "application/json" })
 	@Description("Gives a description of what is used to supply a particular input.")
-	public InDesc getInput(@PathParam("name") String name)
+	InDesc getInput(@PathParam("name") String name)
 			throws BadInputPortNameException;
 
 	/**
@@ -130,10 +134,10 @@ public interface TavernaServerInputREST {
 	@Path("input/{name}")
 	@Consumes({ "application/xml", "application/json" })
 	@Description("Sets the source for a particular input port.")
-	public InDesc setInput(@PathParam("name") String name,
-			InDesc inputDescriptor) throws NoUpdateException,
-			BadStateChangeException, FilesystemAccessException,
-			BadPropertyValueException, BadInputPortNameException;
+	InDesc setInput(@PathParam("name") String name, InDesc inputDescriptor)
+			throws NoUpdateException, BadStateChangeException,
+			FilesystemAccessException, BadPropertyValueException,
+			BadInputPortNameException;
 
 	/**
 	 * A description of the structure of inputs to a Taverna workflow run, done

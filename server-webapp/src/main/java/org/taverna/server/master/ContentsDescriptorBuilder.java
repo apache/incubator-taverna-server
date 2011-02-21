@@ -50,11 +50,11 @@ import org.w3c.dom.NodeList;
  */
 public class ContentsDescriptorBuilder {
 	private FilenameUtils fileUtils;
-	private TavernaServerImpl webapp;
+	private UriBuilderFactory uriBuilderFactory;
 
 	@Required
-	public void setWebapp(TavernaServerImpl webapp) {
-		this.webapp = webapp;
+	public void setUriBuilderFactory(UriBuilderFactory uriBuilderFactory) {
+		this.uriBuilderFactory = uriBuilderFactory;
 	}
 
 	@Required
@@ -208,7 +208,7 @@ public class ContentsDescriptorBuilder {
 		RdfWrapper descriptor = new RdfWrapper();
 		UriBuilder ub;
 		if (ui == null)
-			ub = webapp.getRunUriBuilder(run);
+			ub = uriBuilderFactory.getRunUriBuilder(run);
 		else
 			ub = fromUri(ui.getAbsolutePathBuilder().path("..").build());
 		descriptor.run.href = ub.build();
@@ -300,5 +300,17 @@ public class ContentsDescriptorBuilder {
 			// Ignore this exception; just results in failure to fill out desc
 		}
 		return desc;
+	}
+
+	public interface UriBuilderFactory {
+		/**
+		 * Given a run, get a factory for RESTful URIs to resources associated
+		 * with it.
+		 * 
+		 * @param run
+		 *            The run in question.
+		 * @return The {@link URI} factory.
+		 */
+		UriBuilder getRunUriBuilder(TavernaRun run);
 	}
 }

@@ -5,12 +5,15 @@
  */
 package org.taverna.server.master.rest;
 
+import static org.taverna.server.master.common.Roles.USER;
+
 import java.net.URI;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -47,6 +50,7 @@ import org.taverna.server.output_description.RdfWrapper;
  * @author Donal Fellows.
  */
 @Description("This represents how a Taverna Server workflow run looks to a RESTful API.")
+@RolesAllowed(USER)
 public interface TavernaServerRunREST {
 	/**
 	 * Describes a workflow run.

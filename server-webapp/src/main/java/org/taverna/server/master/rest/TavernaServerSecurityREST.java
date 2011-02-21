@@ -7,6 +7,7 @@ package org.taverna.server.master.rest;
 
 import static java.util.Collections.emptyList;
 import static org.taverna.server.master.common.Namespaces.XLINK;
+import static org.taverna.server.master.common.Roles.USER;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -42,6 +44,8 @@ import org.taverna.server.master.exceptions.InvalidCredentialException;
 import org.taverna.server.master.exceptions.NoCredentialException;
 
 // FIXME document this interface (and its contained helper classes)
+@RolesAllowed(USER)
+@Description("Manages the security of the workflow run. In general, only the owner of a run may access this resource.")
 public interface TavernaServerSecurityREST {
 	@GET
 	@Path("/")
@@ -139,13 +143,13 @@ public interface TavernaServerSecurityREST {
 			throws BadStateChangeException;
 
 	@GET
-	@Produces({ "application/xml", "application/json" })
 	@Path("permissions")
+	@Produces({ "application/xml", "application/json" })
 	PermissionsDescription describePermissions(@Context UriInfo ui);
 
 	@GET
-	@Produces("text/plain")
 	@Path("permissions/{id}")
+	@Produces("text/plain")
 	Permission describePermission(@PathParam("id") String id);
 
 	@PUT
@@ -159,8 +163,8 @@ public interface TavernaServerSecurityREST {
 	Response deletePermission(@PathParam("id") String id, @Context UriInfo ui);
 
 	@POST
-	@Consumes("application/xml")
 	@Path("permissions")
+	@Consumes("application/xml")
 	Response makePermission(PermissionDescription desc, @Context UriInfo ui);
 
 	@XmlRootElement(name = "securityDescriptor")

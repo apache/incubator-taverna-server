@@ -41,7 +41,8 @@
 
 	<properties>
 		<version.cxf>2.2.11</version.cxf>
-		<version.spring>2.5.6.SEC02</version.spring>
+		<version.spring>3.0.5.RELEASE</version.spring>
+		<version.spring-security>3.0.2.RELEASE</version.spring-security>
 		<version.datanucleus>2.2.2</version.datanucleus>
 		<version.asm>3.3</version.asm>
 		<forker.module>server-unix-forker</forker.module>
@@ -73,6 +74,21 @@
 			<artifactId>spring-aop</artifactId>
 			<version>${version.spring}</version>
 			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-core</artifactId>
+			<version>${version.spring-security}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-web</artifactId>
+			<version>${version.spring-security}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-config</artifactId>
+			<version>${version.spring-security}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -129,7 +145,6 @@
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-annotations</artifactId>
 			<version>3.4.0.GA</version>
-			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
 		-->
@@ -138,7 +153,6 @@
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-validator</artifactId>
 			<version>4.0.2.GA</version>
-			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
 		-->
@@ -146,14 +160,12 @@
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derby</artifactId>
 			<version>10.6.1.0</version>
-			<type>jar</type>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>commons-dbcp</groupId>
 			<artifactId>commons-dbcp</artifactId>
 			<version>1.4</version>
-			<type>jar</type>
 		</dependency>
 		<dependency>
 			<groupId>javax.jdo</groupId>
@@ -173,22 +185,16 @@
 			<groupId>org.apache.jdo</groupId>
 			<artifactId>jdo2-core</artifactId>
 			<version>2.0</version>
-			<type>jar</type>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
 			<version>1.6.2</version>
-			<type>jar</type>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.mime-util</groupId>
 			<artifactId>mime-util</artifactId>
 			<version>1.2</version>
-			<type>jar</type>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>net.unto.twitter</groupId>
@@ -253,6 +259,26 @@
 				<groupId>org.datanucleus</groupId>
 				<artifactId>datanucleus-rdbms</artifactId>
 				<version>${version.datanucleus}</version>
+			</dependency>
+			<dependency>
+				<groupId>joda-time</groupId>
+				<artifactId>joda-time</artifactId>
+				<version>1.6.2</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-lang</groupId>
+				<artifactId>commons-lang</artifactId>
+				<version>2.5</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-codec</groupId>
+				<artifactId>commons-codec</artifactId>
+				<version>1.4</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-expression</artifactId>
+				<version>${version.spring}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
