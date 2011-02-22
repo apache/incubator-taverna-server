@@ -251,7 +251,15 @@
 		<property name="from" value="taverna.server@localhost" />
 		<property name="messageContentType" value="text/plain" />
 	</bean>
-	<bean id="dispatch.twitter" class="org.taverna.server.master.TwitterDispatcher" />
+	<bean id="dispatch.twitter" class="org.taverna.server.master.TwitterDispatcher">
+		<property name="properties">
+			<description>See twitter4j.conf.PropertyConfiguration</description>
+			<props>
+				<prop key="oauth.accessToken"></prop>
+				<prop key="oauth.accessTokenSecret"></prop>
+			</props>
+		</property>
+	</bean>
 
 	<bean id="localworker.notifier"
 		class="org.taverna.server.master.localworker.SimpleFormattedCompletionNotifier">

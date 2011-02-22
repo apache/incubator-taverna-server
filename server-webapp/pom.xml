@@ -25,11 +25,6 @@
 			<name>DataNucleus Repository</name>
 			<url>http://www.datanucleus.org/downloads/maven2</url>
 		</repository>
-		<repository>
-			<id>java-twitter-repository</id>
-			<url>http://java-twitter.googlecode.com/svn/repository/</url>
-			<name>java-twitter maven repository</name>
-		</repository>
 	</repositories>
 	<pluginRepositories>
 		<pluginRepository>
@@ -197,9 +192,9 @@
 			<version>1.2</version>
 		</dependency>
 		<dependency>
-			<groupId>net.unto.twitter</groupId>
-			<artifactId>java-twitter</artifactId>
-			<version>0.9-SNAPSHOT</version>
+			<groupId>org.twitter4j</groupId>
+			<artifactId>twitter4j-core</artifactId>
+			<version>[2.1,)</version>
 		</dependency>
 	</dependencies>
 
@@ -279,6 +274,13 @@
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-expression</artifactId>
 				<version>${version.spring}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-collections</groupId>
+				<artifactId>commons-collections</artifactId>
+				<version>3.2.1</version>
+				<type>jar</type>
+				<scope>compile</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
