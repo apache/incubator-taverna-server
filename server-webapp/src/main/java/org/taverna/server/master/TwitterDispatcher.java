@@ -10,11 +10,14 @@ import static twitter4j.conf.PropertyConfiguration.OAUTH_ACCESS_TOKEN_SECRET;
 import static twitter4j.conf.PropertyConfiguration.OAUTH_CONSUMER_KEY;
 import static twitter4j.conf.PropertyConfiguration.OAUTH_CONSUMER_SECRET;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 
+import org.joda.time.DateTime;
 import org.taverna.server.master.interfaces.MessageDispatcher;
 
 import twitter4j.Twitter;
@@ -36,6 +39,8 @@ public class TwitterDispatcher implements MessageDispatcher {
 	public static final char ELLIPSIS = '\u2026';
 
 	private Properties props = new Properties();
+	private int cooldownSeconds;
+	private Map<String, DateTime> lastSend = new HashMap<String, DateTime>();
 
 	public void setProperties(Properties properties) {
 		props = properties;
@@ -57,6 +62,18 @@ public class TwitterDispatcher implements MessageDispatcher {
 				|| p.getProperty(ACCESS_SECRET_PROP, "").isEmpty())
 			throw new NotConfiguredException();
 		return p;
+	}
+
+	/**
+	 * Set how long must elapse between updates to the status of any particular
+	 * user. Calls before that time are just silently dropped. This is so we can
+	 * be a better Twitter-enabled citizen.
+	 * 
+	 * @param cooldownSeconds
+	 *            Time to elapse, in seconds.
+	 */
+	public void setCooldownSeconds(int cooldownSeconds) {
+		this.cooldownSeconds = cooldownSeconds;
 	}
 
 	public static final String ACCESS_TOKEN_PROP = OAUTH_ACCESS_TOKEN;
@@ -90,7 +107,17 @@ public class TwitterDispatcher implements MessageDispatcher {
 		String[] target = targetParameter.split(":", 2);
 		if (target == null || target.length != 2)
 			throw new Exception("missing consumer key or secret");
-		Twitter twitter = getTwitter(target[0], target[1]);
+		String who = target[0];
+		synchronized (lastSend) {
+			DateTime last = lastSend.get(who);
+			if (last != null) {
+				DateTime now = new DateTime();
+				if (!now.isAfter(last.plusSeconds(cooldownSeconds)))
+					return;
+				lastSend.put(who, now);
+			}
+		}
+		Twitter twitter = getTwitter(who, target[1]);
 
 		if (messageContent.length() > MAX_MESSAGE_LENGTH)
 			messageContent = messageContent

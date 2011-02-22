@@ -259,6 +259,7 @@
 				<prop key="oauth.accessTokenSecret"></prop>
 			</props>
 		</property>
+		<property name="cooldownSeconds" value="300"/>
 	</bean>
 
 	<bean id="localworker.notifier"
