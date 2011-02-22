@@ -7,6 +7,12 @@ package org.taverna.server.master.interfaces;
 
 public interface MessageDispatcher {
 	/**
+	 * @return Whether this message dispatcher is actually available (fully
+	 *         configured, etc.)
+	 */
+	boolean isAvailable();
+
+	/**
 	 * Dispatch a message to a recipient.
 	 * 
 	 * @param messageSubject

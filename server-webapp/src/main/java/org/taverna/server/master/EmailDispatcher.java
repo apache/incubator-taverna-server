@@ -17,12 +17,14 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.interfaces.MessageDispatcher;
 
 /**
  * How to send a plain text message by email to someone.
+ * 
  * @author Donal Fellows
  */
 public class EmailDispatcher implements MessageDispatcher {
@@ -49,6 +51,10 @@ public class EmailDispatcher implements MessageDispatcher {
 	private InternetAddress from;
 	private String contentType = TEXT_PLAIN;
 
+	private Context env() throws NamingException {
+		return (Context) new InitialContext().lookup("java:comp/env");
+	}
+
 	@Override
 	public void dispatch(String messageSubject, String messageContent, String to)
 			throws Exception {
@@ -59,8 +65,7 @@ public class EmailDispatcher implements MessageDispatcher {
 			return;
 		}
 
-		Context envCtx = (Context) new InitialContext().lookup("java:comp/env");
-		Session session = (Session) envCtx.lookup("mail/Session");
+		Session session = (Session) env().lookup("mail/Session");
 
 		if (session == null)
 			return;
@@ -70,5 +75,15 @@ public class EmailDispatcher implements MessageDispatcher {
 		message.setSubject(messageSubject);
 		message.setContent(messageContent, contentType);
 		send(message);
+	}
+
+	@Override
+	public boolean isAvailable() {
+		try {
+			return from != null
+					&& null != (Session) env().lookup("mail/Session");
+		} catch (Exception e) {
+			return false;
+		}
 	}
 }

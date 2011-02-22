@@ -52,7 +52,7 @@ public class NotificationEngine {
 		try {
 			URI toURI = new URI(destination.trim());
 			MessageDispatcher d = dispatchers.get(toURI.getScheme());
-			if (d != null)
+			if (d != null && d.isAvailable())
 				d.dispatch(subject, message, toURI.getSchemeSpecificPart());
 			else
 				log.warn("no such notification dispatcher for "
@@ -62,8 +62,10 @@ public class NotificationEngine {
 			Exception e2 = null;
 			for (MessageDispatcher d : dispatchers.values())
 				try {
-					d.dispatch(subject, message, destination);
-					return;
+					if (d.isAvailable()) {
+						d.dispatch(subject, message, destination);
+						return;
+					}
 				} catch (Exception ex) {
 					log.debug("failed in pseudo-directed dispatch of "
 							+ destination, ex);

@@ -33,25 +33,15 @@ import twitter4j.http.AuthorizationFactory;
  */
 public class TwitterDispatcher implements MessageDispatcher {
 	public static final int MAX_MESSAGE_LENGTH = 140;
-	public static final char ELLIPSIS = 8230;
+	public static final char ELLIPSIS = '\u2026';
 
 	private Properties props = new Properties();
 
 	public void setProperties(Properties properties) {
 		props = properties;
-		synchronized (this) {
-			factory = null;
-		}
 	}
 
-	private TwitterFactory factory;
-	public static final String ACCESS_TOKEN_PROP = OAUTH_ACCESS_TOKEN;
-	public static final String ACCESS_SECRET_PROP = OAUTH_ACCESS_TOKEN_SECRET;
-
-	@Context
-	private ServletConfig config;
-
-	private Twitter getTwitter(String key, String secret) throws Exception {
+	private Properties getProperties() throws NotConfiguredException {
 		Properties p = (Properties) props.clone();
 
 		if (config != null) {
@@ -66,12 +56,25 @@ public class TwitterDispatcher implements MessageDispatcher {
 		if (p.getProperty(ACCESS_TOKEN_PROP, "").isEmpty()
 				|| p.getProperty(ACCESS_SECRET_PROP, "").isEmpty())
 			throw new NotConfiguredException();
-		p.setProperty(OAUTH_CONSUMER_KEY, key);
-		p.setProperty(OAUTH_CONSUMER_SECRET, secret);
+		return p;
+	}
+
+	public static final String ACCESS_TOKEN_PROP = OAUTH_ACCESS_TOKEN;
+	public static final String ACCESS_SECRET_PROP = OAUTH_ACCESS_TOKEN_SECRET;
+
+	@Context
+	private ServletConfig config;
+
+	private Twitter getTwitter(String key, String secret) throws Exception {
 		if (key.isEmpty() || secret.isEmpty())
 			throw new NoCredentialsException();
+
+		Properties p = getProperties();
+		p.setProperty(OAUTH_CONSUMER_KEY, key);
+		p.setProperty(OAUTH_CONSUMER_SECRET, secret);
+
 		Configuration config = new PropertyConfiguration(p);
-		factory = new TwitterFactory(config);
+		TwitterFactory factory = new TwitterFactory(config);
 		Twitter t = factory.getInstance(AuthorizationFactory
 				.getInstance(config));
 		// Verify that we can connect!
@@ -79,7 +82,7 @@ public class TwitterDispatcher implements MessageDispatcher {
 		return t;
 	}
 
-	// TODO: Get password from credential manager
+	// TODO: Get secret from credential manager
 	@Override
 	public void dispatch(String messageSubject, String messageContent,
 			String targetParameter) throws Exception {
@@ -93,6 +96,20 @@ public class TwitterDispatcher implements MessageDispatcher {
 			messageContent = messageContent
 					.substring(0, MAX_MESSAGE_LENGTH - 1) + ELLIPSIS;
 		twitter.updateStatus(messageContent);
+	}
+
+	@Override
+	public boolean isAvailable() {
+		try {
+			// Try to create the configuration and push it through as far as
+			// confirming that we can build an access object (even if it isn't
+			// bound to a user)
+			new TwitterFactory(new PropertyConfiguration(getProperties()))
+					.getInstance();
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	public static class NotConfiguredException extends Exception {
