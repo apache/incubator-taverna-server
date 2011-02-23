@@ -60,6 +60,6 @@ public class TestUR {
 		JAXBContext.newInstance(JobUsageRecord.class).createMarshaller()
 				.marshal(ur, writer);
 		Assert.assertNotSame("", result());
-		System.out.println(result());
+		//System.out.println(result());
 	}
 }

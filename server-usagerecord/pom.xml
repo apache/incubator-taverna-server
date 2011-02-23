@@ -5,9 +5,11 @@
 		<artifactId>server</artifactId>
 		<groupId>uk.org.taverna.server</groupId>
 		<version>2.2b1-SNAPSHOT</version>
+		<relativePath>..</relativePath>
 	</parent>
 	<groupId>uk.org.taverna.server</groupId>
 	<artifactId>server-usagerecord</artifactId>
+	<name>Usage Record Support</name>
 	<version>2.2b1-SNAPSHOT</version>
 	<dependencies>
 		<dependency>
@@ -18,6 +20,7 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<description>Basic Java bindings for the OGF Usage Record Format, version 1.0, plus a simple wrapper to make working with it easier.</description>
 	<build>
 		<plugins>
 			<plugin>
