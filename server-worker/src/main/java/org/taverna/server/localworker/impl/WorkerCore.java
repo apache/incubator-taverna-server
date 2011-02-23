@@ -24,6 +24,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
@@ -291,8 +293,11 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			ur.addStartAndEnd(start, now);
 			ur.addWallDuration(now.getTime() - start.getTime());
 			ur.setStatus(status);
+			ur.addHost(InetAddress.getLocalHost().getHostName());
 			// TODO: Push back to webapp side
 		} catch (DatatypeConfigurationException e) {
+			e.printStackTrace();
+		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
 	}
