@@ -9,8 +9,8 @@ import static java.io.File.createTempFile;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.System.out;
 import static org.apache.commons.io.IOUtils.copy;
-import static org.taverna.server.localworker.impl.LocalWorker.SYSTEM_ENCODING;
 import static org.taverna.server.localworker.impl.LocalWorker.PASSWORD_FILE;
+import static org.taverna.server.localworker.impl.LocalWorker.SYSTEM_ENCODING;
 import static org.taverna.server.localworker.remote.RemoteStatus.Finished;
 import static org.taverna.server.localworker.remote.RemoteStatus.Initialized;
 import static org.taverna.server.localworker.remote.RemoteStatus.Operating;
@@ -26,9 +26,15 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.datatype.DatatypeConfigurationException;
+
+import org.ogf.usage.JobUsageRecord;
 import org.taverna.server.localworker.remote.RemoteListener;
 import org.taverna.server.localworker.remote.RemoteStatus;
 
@@ -52,7 +58,8 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 
 	enum Property {
 		STDOUT("stdout"), STDERR("stderr"), EXIT_CODE("exitcode"), READY_TO_NOTIFY(
-				"readyToNotify"), EMAIL("notificationAddress");
+				"readyToNotify"), EMAIL("notificationAddress"), USAGE(
+				"usageRecord");
 
 		private String s;
 
@@ -82,6 +89,9 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	Integer exitCode;
 	boolean readyToSendEmail;
 	String emailAddress;
+	JobUsageRecord ur;
+
+	private Date start;
 
 	/**
 	 * @throws RemoteException
@@ -234,6 +244,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		subprocess = pb.start();
 		if (subprocess == null)
 			throw new IOException("unknown failure creating process");
+		start = new Date();
 
 		// Capture its stdout and stderr
 		new AsyncCopy(subprocess.getInputStream(), stdout);
@@ -250,6 +261,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			try {
 				// Check if the workflow terminated of its own accord
 				code = subprocess.exitValue();
+				buildUR(code == 0 ? "Completed" : "Failed");
 			} catch (IllegalThreadStateException e) {
 				subprocess.destroy();
 				try {
@@ -258,8 +270,9 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 					e1.printStackTrace(out); // not expected
 					return;
 				}
-				finished = true;
+				buildUR(code == 0 ? "Completed" : "Aborted");
 			}
+			finished = true;
 			exitCode = code;
 			readyToSendEmail = true;
 			if (code > 128) {
@@ -267,6 +280,20 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			} else {
 				out.println("workflow exited, code=" + code);
 			}
+		}
+	}
+
+	private void buildUR(String status) {
+		try {
+			Date now = new Date();
+			ur = new JobUsageRecord();
+			ur.addUser(System.getProperty("user.name"), null);
+			ur.addStartAndEnd(start, now);
+			ur.addWallDuration(now.getTime() - start.getTime());
+			ur.setStatus(status);
+			// TODO: Push back to webapp side
+		} catch (DatatypeConfigurationException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -308,6 +335,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			exitCode = subprocess.exitValue();
 			finished = true;
 			readyToSendEmail = true;
+			buildUR(exitCode.intValue() == 0 ? "Completed" : "Failed");
 			return Finished;
 		} catch (IllegalThreadStateException e) {
 			return Operating;
@@ -337,6 +365,18 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			return emailAddress;
 		case READY_TO_NOTIFY:
 			return Boolean.toString(readyToSendEmail);
+		case USAGE:
+			if (ur == null)
+				return "";
+			try {
+				StringWriter writer = new StringWriter();
+				JAXBContext.newInstance(ur.getClass()).createMarshaller()
+						.marshal(ur, writer);
+				return writer.toString();
+			} catch (JAXBException e) {
+				e.printStackTrace();
+				return "";
+			}
 		default:
 			throw new RemoteException("unknown property");
 		}
@@ -365,6 +405,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		case STDOUT:
 		case STDERR:
 		case EXIT_CODE:
+		case USAGE:
 			throw new RemoteException("property is read only");
 		default:
 			throw new RemoteException("unknown property");
