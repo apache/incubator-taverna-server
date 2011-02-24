@@ -11,6 +11,9 @@ import static java.lang.System.out;
 import static org.apache.commons.io.IOUtils.copy;
 import static org.taverna.server.localworker.impl.LocalWorker.PASSWORD_FILE;
 import static org.taverna.server.localworker.impl.LocalWorker.SYSTEM_ENCODING;
+import static org.taverna.server.localworker.impl.WorkerCore.Status.Aborted;
+import static org.taverna.server.localworker.impl.WorkerCore.Status.Completed;
+import static org.taverna.server.localworker.impl.WorkerCore.Status.Failed;
 import static org.taverna.server.localworker.remote.RemoteStatus.Finished;
 import static org.taverna.server.localworker.remote.RemoteStatus.Initialized;
 import static org.taverna.server.localworker.remote.RemoteStatus.Operating;
@@ -32,8 +35,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 
 import org.ogf.usage.JobUsageRecord;
@@ -81,6 +82,18 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 
 		public static String[] names() {
 			return pmap.keySet().toArray(new String[pmap.size()]);
+		}
+	}
+
+	enum Status {
+		Completed("Completed"), Aborted("Aborted"), Failed("Failed");
+		private String s;
+		private Status(String s) {
+			this.s = s;
+		}
+		@Override
+		public String toString() {
+			return s;
 		}
 	}
 
@@ -263,7 +276,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			try {
 				// Check if the workflow terminated of its own accord
 				code = subprocess.exitValue();
-				buildUR(code == 0 ? "Completed" : "Failed");
+				buildUR(code == 0 ? Completed : Failed);
 			} catch (IllegalThreadStateException e) {
 				subprocess.destroy();
 				try {
@@ -272,7 +285,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 					e1.printStackTrace(out); // not expected
 					return;
 				}
-				buildUR(code == 0 ? "Completed" : "Aborted");
+				buildUR(code == 0 ? Completed : Aborted);
 			}
 			finished = true;
 			exitCode = code;
@@ -285,14 +298,14 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		}
 	}
 
-	private void buildUR(String status) {
+	private void buildUR(Status status) {
 		try {
 			Date now = new Date();
 			ur = new JobUsageRecord();
 			ur.addUser(System.getProperty("user.name"), null);
 			ur.addStartAndEnd(start, now);
 			ur.addWallDuration(now.getTime() - start.getTime());
-			ur.setStatus(status);
+			ur.setStatus(status.toString());
 			ur.addHost(InetAddress.getLocalHost().getHostName());
 			// TODO: Push back to webapp side
 		} catch (DatatypeConfigurationException e) {
@@ -340,7 +353,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			exitCode = subprocess.exitValue();
 			finished = true;
 			readyToSendEmail = true;
-			buildUR(exitCode.intValue() == 0 ? "Completed" : "Failed");
+			buildUR(exitCode.intValue() == 0 ? Completed : Failed);
 			return Finished;
 		} catch (IllegalThreadStateException e) {
 			return Operating;
@@ -371,14 +384,19 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		case READY_TO_NOTIFY:
 			return Boolean.toString(readyToSendEmail);
 		case USAGE:
-			if (ur == null)
+			JobUsageRecord toReturn = ur;
+			if (subprocess == null)
 				return "";
 			try {
-				StringWriter writer = new StringWriter();
-				JAXBContext.newInstance(ur.getClass()).createMarshaller()
-						.marshal(ur, writer);
-				return writer.toString();
-			} catch (JAXBException e) {
+				if (toReturn == null) {
+					toReturn = new JobUsageRecord();
+					toReturn.setStatus("Started");
+					toReturn.addStartAndEnd(start, new Date());
+					toReturn.addUser(System.getProperty("user.name"), null);
+					// Note that this record is not to be pushed to the server
+				}
+				return toReturn.marshal();
+			} catch (Exception e) {
 				e.printStackTrace();
 				return "";
 			}

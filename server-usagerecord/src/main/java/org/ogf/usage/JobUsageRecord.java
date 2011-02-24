@@ -2,10 +2,13 @@ package org.ogf.usage;
 
 import static java.util.UUID.randomUUID;
 
+import java.io.StringWriter;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -47,6 +50,7 @@ public class JobUsageRecord extends org.ogf.usage.v1_0.UsageRecordType {
 				.newXMLGregorianCalendar(new GregorianCalendar()));
 		setRecordIdentity(recid);
 	}
+
 	public JobUsageRecord(String name) throws DatatypeConfigurationException {
 		this();
 		setJobName(name);
@@ -149,17 +153,6 @@ public class JobUsageRecord extends org.ogf.usage.v1_0.UsageRecordType {
 		getWallDurationOrCpuDurationOrNodeCount().add(resource);
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T> T getOfType(Class<T> clazz) {
-		for (Object o : getWallDurationOrCpuDurationOrNodeCount())
-			if (clazz.isInstance(o))
-				return (T) o;
-		for (Object o : getDiskOrMemoryOrSwap())
-			if (clazz.isInstance(o))
-				return (T) o;
-		return null;
-	}
-
 	public ServiceLevel addServiceLevel(String service) {
 		ServiceLevel sl = new ServiceLevel();
 		sl.setValue(service);
@@ -233,5 +226,23 @@ public class JobUsageRecord extends org.ogf.usage.v1_0.UsageRecordType {
 		c.setValue(value);
 		this.setCharge(c);
 		return c;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T getOfType(Class<T> clazz) {
+		for (Object o : getWallDurationOrCpuDurationOrNodeCount())
+			if (clazz.isInstance(o))
+				return (T) o;
+		for (Object o : getDiskOrMemoryOrSwap())
+			if (clazz.isInstance(o))
+				return (T) o;
+		return null;
+	}
+
+	public String marshal() throws JAXBException {
+		StringWriter writer = new StringWriter();
+		JAXBContext.newInstance(getClass()).createMarshaller()
+				.marshal(this, writer);
+		return writer.toString();
 	}
 }
