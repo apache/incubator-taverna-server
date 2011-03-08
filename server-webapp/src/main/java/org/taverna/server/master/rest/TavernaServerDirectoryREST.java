@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.rest;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
@@ -27,6 +32,7 @@ import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.Directory;
 import org.taverna.server.master.interfaces.File;
+import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 /**
  * Representation of how a workflow run's working directory tree looks.
@@ -49,6 +55,7 @@ public interface TavernaServerDirectoryREST {
 	@GET
 	@Path("/")
 	@Description("Describes the working directory of the workflow run.")
+	@CallCounted
 	DirectoryContents getDescription(@Context UriInfo ui)
 			throws FilesystemAccessException;
 
@@ -74,6 +81,7 @@ public interface TavernaServerDirectoryREST {
 	@Produces({ "application/xml", "application/json",
 			"application/octet-stream", "application/zip" })
 	@Description("Gives a description of the named entity in or beneath the working directory of the workflow run (either a Directory or File).")
+	@CallCounted
 	Response getDirectoryOrFileContents(
 			@PathParam("path") List<PathSegment> path, @Context UriInfo ui,
 			@Context HttpHeaders headers) throws NoDirectoryEntryException,
@@ -102,6 +110,7 @@ public interface TavernaServerDirectoryREST {
 	@POST
 	@Path("{path:.*}")
 	@Description("Creates a directory in the filesystem beneath the working directory of the workflow run, or creates or updates a file's contents, where that file is in or below the working directory of a workflow run.")
+	@CallCounted
 	Response makeDirectoryOrUpdateFile(
 			@PathParam("path") List<PathSegment> parent,
 			MakeOrUpdateDirEntry operation, @Context UriInfo ui)
@@ -132,6 +141,7 @@ public interface TavernaServerDirectoryREST {
 	@Path("{path:(.+/)?}{name}")
 	@Consumes(APPLICATION_OCTET_STREAM)
 	@Description("Creates or updates a file in a particular location beneath the working directory of the workflow run.")
+	@CallCounted
 	Response setFileContents(@PathParam("path") List<PathSegment> file,
 			@PathParam("name") String name, InputStream contents,
 			@Context UriInfo ui) throws NoDirectoryEntryException,
@@ -154,6 +164,7 @@ public interface TavernaServerDirectoryREST {
 	@DELETE
 	@Path("{path:.*}")
 	@Description("Deletes a file or directory that is in or below the working directory of a workflow run.")
+	@CallCounted
 	Response destroyDirectoryEntry(@PathParam("path") List<PathSegment> path)
 			throws NoUpdateException, FilesystemAccessException,
 			NoDirectoryEntryException;

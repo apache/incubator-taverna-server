@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.taverna.server.localworker.remote.RemoteListener;
 import org.taverna.server.localworker.remote.RemoteStatus;
+import org.taverna.server.localworker.server.UsageRecordReceiver;
 
 /**
  * The interface between the connectivity layer and the thunk to the
@@ -46,7 +47,7 @@ public interface Worker {
 	 * @throws Exception
 	 *             If any of quite a large number of things goes wrong.
 	 */
-	public void initWorker(String executeWorkflowCommand, String workflow,
+	void initWorker(String executeWorkflowCommand, String workflow,
 			File workingDir, File inputBaclavaFile,
 			Map<String, File> inputRealFiles, Map<String, String> inputValues,
 			File outputBaclavaFile, File contextDirectory,
@@ -59,7 +60,7 @@ public interface Worker {
 	 *             if anything goes badly wrong when the worker is being killed
 	 *             off.
 	 */
-	public void killWorker() throws Exception;
+	void killWorker() throws Exception;
 
 	/**
 	 * Move the worker out of the stopped state and back to operating.
@@ -68,7 +69,7 @@ public interface Worker {
 	 *             if it fails (which it always does; operation currently
 	 *             unsupported).
 	 */
-	public void startWorker() throws Exception;
+	void startWorker() throws Exception;
 
 	/**
 	 * Move the worker into the stopped state from the operating state.
@@ -77,17 +78,24 @@ public interface Worker {
 	 *             if it fails (which it always does; operation currently
 	 *             unsupported).
 	 */
-	public void stopWorker() throws Exception;
+	void stopWorker() throws Exception;
 
 	/**
 	 * @return The status of the workflow run. Note that this can be an
 	 *         expensive operation.
 	 */
-	public RemoteStatus getWorkerStatus();
+	RemoteStatus getWorkerStatus();
 
 	/**
 	 * @return The listener that is registered by default, in addition to all
 	 *         those that are explicitly registered by the user.
 	 */
-	public RemoteListener getDefaultListener();
+	RemoteListener getDefaultListener();
+
+	/**
+	 * @param receiver
+	 *            The destination where any final usage records are to be
+	 *            written in order to log them back to the server.
+	 */
+	void setURReceiver(UsageRecordReceiver receiver);
 }

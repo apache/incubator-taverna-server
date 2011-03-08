@@ -1,10 +1,18 @@
+/*
+ * Copyright (C) 2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.localworker;
 
 import java.io.Serializable;
 import java.security.Principal;
 
+import javax.annotation.PreDestroy;
+
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.utils.FilenameUtils;
+import org.taverna.server.master.utils.X500Utils;
 
 /**
  * Singleton factory. Really is a singleton (and is also very trivial); the
@@ -18,6 +26,13 @@ public class SecurityContextFactory implements org.taverna.server.master.interfa
 	private static SecurityContextFactory instance;
 	transient RunDatabase db;
 	transient FilenameUtils fileUtils;
+	transient X500Utils x500Utils;
+
+	@SuppressWarnings("unused")
+	@PreDestroy
+	private void closeLog() {
+		instance = null;
+	}
 
 	public SecurityContextFactory() {
 		if (instance == null)
@@ -32,6 +47,11 @@ public class SecurityContextFactory implements org.taverna.server.master.interfa
 	@Required
 	public void setFilenameConverter(FilenameUtils fileUtils) {
 		this.fileUtils = fileUtils;
+	}
+
+	@Required
+	public void setX500Utils(X500Utils x500Utils) {
+		this.x500Utils = x500Utils;
 	}
 
 	@Override

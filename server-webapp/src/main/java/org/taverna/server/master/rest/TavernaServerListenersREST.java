@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.rest;
 
 import static org.taverna.server.master.common.Namespaces.XLINK;
@@ -31,6 +36,7 @@ import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.Listener;
+import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 /**
  * This represents <i>all</i> the event listeners attached to a workflow run.
@@ -52,6 +58,7 @@ public interface TavernaServerListenersREST {
 	@Path("/")
 	@Produces({ "application/xml", "application/json" })
 	@Description("Get the listeners installed in the workflow run.")
+	@CallCounted
 	Listeners getDescription(@Context UriInfo ui);
 
 	/**
@@ -73,6 +80,7 @@ public interface TavernaServerListenersREST {
 	@Path("/")
 	@Consumes({ "application/xml", "application/json" })
 	@Description("Add a new event listener to the named workflow run.")
+	@CallCounted
 	Response addListener(ListenerDefinition typeAndConfiguration,
 			@Context UriInfo ui) throws NoUpdateException, NoListenerException;
 
@@ -87,6 +95,7 @@ public interface TavernaServerListenersREST {
 	 */
 	@Path("{name}")
 	@Description("Resolve a particular listener from its name.")
+	@CallCounted
 	TavernaServerListenerREST getListener(@PathParam("name") String name)
 			throws NoListenerException;
 
@@ -111,6 +120,7 @@ public interface TavernaServerListenersREST {
 		@Path("/")
 		@Produces({ "application/xml", "application/json" })
 		@Description("Get the description of this listener.")
+		@CallCounted
 		ListenerDescription getDescription(@Context UriInfo ui);
 
 		/**
@@ -123,6 +133,7 @@ public interface TavernaServerListenersREST {
 		@Path("configuration")
 		@Produces("text/plain")
 		@Description("Get the configuration for the given event listener that is attached to a workflow run.")
+		@CallCounted
 		String getConfiguration();
 
 		/**
@@ -137,6 +148,7 @@ public interface TavernaServerListenersREST {
 		@Path("properties")
 		@Produces({ "application/xml", "application/json" })
 		@Description("Get the list of properties supported by a given event listener attached to a workflow run.")
+		@CallCounted
 		Properties getProperties(@Context UriInfo ui);
 
 		/**
@@ -149,6 +161,7 @@ public interface TavernaServerListenersREST {
 		 */
 		@Path("properties/{propertyName}")
 		@Description("Get an object representing a particular property.")
+		@CallCounted
 		Property getProperty(@PathParam("propertyName") String propertyName)
 				throws NoListenerException;
 	}
@@ -171,6 +184,7 @@ public interface TavernaServerListenersREST {
 		@Path("/")
 		@Produces("text/plain")
 		@Description("Get the value of the particular property of an event listener attached to a workflow run.")
+		@CallCounted
 		String getValue();
 
 		/**
@@ -191,6 +205,7 @@ public interface TavernaServerListenersREST {
 		@Consumes("text/plain")
 		@Produces("text/plain")
 		@Description("Set the value of the particular property of an event listener attached to a workflow run.")
+		@CallCounted
 		String setValue(String value) throws NoUpdateException,
 				NoListenerException;
 	}

@@ -24,6 +24,7 @@ import org.taverna.server.localworker.remote.RemoteDirectory;
 import org.taverna.server.localworker.remote.RemoteInput;
 import org.taverna.server.localworker.remote.RemoteListener;
 import org.taverna.server.localworker.remote.RemoteStatus;
+import org.taverna.server.localworker.server.UsageRecordReceiver;
 
 public class LocalWorkerTest {
 	LocalWorker lw;
@@ -116,11 +117,16 @@ public class LocalWorkerTest {
 		public void stopWorker() throws Exception {
 			events.add("stop");
 		}
+
+		@Override
+		public void setURReceiver(UsageRecordReceiver receiver) {
+			// We just ignore this
+		}
 	}
 
 	@Before
 	public void setUp() throws Exception {
-		lw = new LocalWorker("XWC", "WF", DummyWorker.class);
+		lw = new LocalWorker("XWC", "WF", DummyWorker.class, null);
 		events = new ArrayList<String>();
 		returnThisStatus = RemoteStatus.Operating;
 	}

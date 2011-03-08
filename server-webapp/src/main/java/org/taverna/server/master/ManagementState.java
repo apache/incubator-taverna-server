@@ -1,5 +1,11 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master;
 
+import javax.annotation.PostConstruct;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
@@ -34,6 +40,12 @@ class ManagementState implements ManagementModel {
 	 * responses.
 	 */
 	private boolean logOutgoingExceptions = false;
+
+	/**
+	 * The file that all usage records should be appended to, or <tt>null</tt>
+	 * if they should be just dropped.
+	 */
+	private String usageRecordLogFile = null;
 
 	@Override
 	public void setLogIncomingWorkflows(boolean logIncomingWorkflows) {
@@ -71,6 +83,18 @@ class ManagementState implements ManagementModel {
 		return logOutgoingExceptions;
 	}
 
+	@Override
+	public String getUsageRecordLogFile() {
+		load();
+		return usageRecordLogFile;
+	}
+
+	@Override
+	public void setUsageRecordLogFile(String usageRecordLogFile) {
+		this.usageRecordLogFile = usageRecordLogFile;
+		store();
+	}
+
 	private static final int KEY = 42; // whatever
 
 	private WebappState get() {
@@ -81,6 +105,8 @@ class ManagementState implements ManagementModel {
 	}
 
 	private boolean loadedState;
+
+	@PostConstruct
 	public void load() {
 		if (loadedState || persistenceManager == null)
 			return;
@@ -93,6 +119,7 @@ class ManagementState implements ManagementModel {
 			allowNewWorkflowRuns = state.getAllowNewWorkflowRuns();
 			logIncomingWorkflows = state.getLogIncomingWorkflows();
 			logOutgoingExceptions = state.getLogOutgoingExceptions();
+			usageRecordLogFile = state.getUsageRecordLogFile();
 			persistenceManager.currentTransaction().commit();
 			ok = true;
 			loadedState = true;
@@ -118,6 +145,7 @@ class ManagementState implements ManagementModel {
 			state.setAllowNewWorkflowRuns(allowNewWorkflowRuns);
 			state.setLogIncomingWorkflows(logIncomingWorkflows);
 			state.setLogOutgoingExceptions(logOutgoingExceptions);
+			state.setUsageRecordLogFile(usageRecordLogFile);
 			persistenceManager.currentTransaction().commit();
 			ok = true;
 			loadedState = true;
@@ -126,58 +154,72 @@ class ManagementState implements ManagementModel {
 				persistenceManager.currentTransaction().rollback();
 		}
 	}
+}
 
-	@PersistenceCapable(table="MANAGEMENTSTATE__WEBAPPSTATE")
-	private static class WebappState implements ManagementModel {
-		public WebappState() {}
+@PersistenceCapable(table = "MANAGEMENTSTATE__WEBAPPSTATE")
+class WebappState implements ManagementModel {
+	public WebappState() {
+	}
+	
+	@PrimaryKey
+	protected int id;
+	
+	/** Whether we should log all workflows sent to us. */
+	@Persistent
+	private boolean logIncomingWorkflows;
+	
+	/** Whether we allow the creation of new workflow runs. */
+	@Persistent
+	private boolean allowNewWorkflowRuns;
+	
+	/**
+	 * Whether outgoing exceptions should be logged before being converted
+	 * to responses.
+	 */
+	@Persistent
+	private boolean logOutgoingExceptions;
 
-		@PrimaryKey
-		@SuppressWarnings("unused") // Is used, but Eclipse doesn't know
-		protected int id;
-
-		/** Whether we should log all workflows sent to us. */
-		@Persistent
-		private boolean logIncomingWorkflows;
-
-		/** Whether we allow the creation of new workflow runs. */
-		@Persistent
-		private boolean allowNewWorkflowRuns;
-
-		/**
-		 * Whether outgoing exceptions should be logged before being converted
-		 * to responses.
-		 */
-		@Persistent
-		private boolean logOutgoingExceptions;
-
-		@Override
-		public void setLogIncomingWorkflows(boolean logIncomingWorkflows) {
-			this.logIncomingWorkflows = logIncomingWorkflows;
-		}
-
-		@Override
-		public boolean getLogIncomingWorkflows() {
-			return logIncomingWorkflows;
-		}
-
-		@Override
-		public void setAllowNewWorkflowRuns(boolean allowNewWorkflowRuns) {
-			this.allowNewWorkflowRuns = allowNewWorkflowRuns;
-		}
-
-		@Override
-		public boolean getAllowNewWorkflowRuns() {
-			return allowNewWorkflowRuns;
-		}
-
-		@Override
-		public void setLogOutgoingExceptions(boolean logOutgoingExceptions) {
-			this.logOutgoingExceptions = logOutgoingExceptions;
-		}
-
-		@Override
-		public boolean getLogOutgoingExceptions() {
-			return logOutgoingExceptions;
-		}
+	/** Where to write usage records. */
+	@Persistent
+	private String usageRecordLogFile;
+	
+	@Override
+	public void setLogIncomingWorkflows(boolean logIncomingWorkflows) {
+		this.logIncomingWorkflows = logIncomingWorkflows;
+	}
+	
+	@Override
+	public boolean getLogIncomingWorkflows() {
+		return logIncomingWorkflows;
+	}
+	
+	@Override
+	public void setAllowNewWorkflowRuns(boolean allowNewWorkflowRuns) {
+		this.allowNewWorkflowRuns = allowNewWorkflowRuns;
+	}
+	
+	@Override
+	public boolean getAllowNewWorkflowRuns() {
+		return allowNewWorkflowRuns;
+	}
+	
+	@Override
+	public void setLogOutgoingExceptions(boolean logOutgoingExceptions) {
+		this.logOutgoingExceptions = logOutgoingExceptions;
+	}
+	
+	@Override
+	public boolean getLogOutgoingExceptions() {
+		return logOutgoingExceptions;
+	}
+	
+	@Override
+	public String getUsageRecordLogFile() {
+		return usageRecordLogFile;
+	}
+	
+	@Override
+	public void setUsageRecordLogFile(String usageRecordLogFile) {
+		this.usageRecordLogFile = usageRecordLogFile;
 	}
 }

@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.ogf.usage;
 
 import static java.util.UUID.randomUUID;
@@ -42,6 +47,13 @@ import org.ogf.usage.v1_0.WallDuration;
 
 @XmlRootElement(name = "UsageRecord", namespace = "http://schema.ogf.org/urf/2003/09/urf")
 public class JobUsageRecord extends org.ogf.usage.v1_0.UsageRecordType {
+	/**
+	 * Create a new usage record with a random UUID as its identity.
+	 * 
+	 * @throws DatatypeConfigurationException
+	 *             If the factory for XML-relevant datatypes fails to build; not
+	 *             expected.
+	 */
 	public JobUsageRecord() throws DatatypeConfigurationException {
 		datatypeFactory = DatatypeFactory.newInstance();
 		RecordIdentity recid = new RecordIdentity();
@@ -51,6 +63,15 @@ public class JobUsageRecord extends org.ogf.usage.v1_0.UsageRecordType {
 		setRecordIdentity(recid);
 	}
 
+	/**
+	 * Create a new usage record with a random UUID as its identity.
+	 * 
+	 * @param name
+	 *            The name of the job to which this record pertains.
+	 * @throws DatatypeConfigurationException
+	 *             If the factory for XML-relevant datatypes fails to build; not
+	 *             expected.
+	 */
 	public JobUsageRecord(String name) throws DatatypeConfigurationException {
 		this();
 		setJobName(name);
@@ -245,4 +266,6 @@ public class JobUsageRecord extends org.ogf.usage.v1_0.UsageRecordType {
 				.marshal(this, writer);
 		return writer.toString();
 	}
+
+	// TODO: Add signing support
 }

@@ -26,6 +26,7 @@ import javax.xml.ws.Holder;
 
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
+import org.taverna.server.localworker.server.UsageRecordReceiver;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -127,8 +128,8 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	}
 
 	@Override
-	public RemoteSingleRun make(String workflow, Principal creator)
-			throws RemoteException {
+	public RemoteSingleRun make(String workflow, Principal creator,
+			UsageRecordReceiver urReceiver) throws RemoteException {
 		if (creator == null)
 			throw new RemoteException("no creator principal");
 		try {
@@ -137,14 +138,14 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 			// TODO: Do something properly with creator
 			out.println("Creating run from workflow <" + wfid.value + "> for <"
 					+ creator.getName() + ">");
-			return cons.newInstance(command, workflow, workerClass);
+			return cons.newInstance(command, workflow, workerClass, urReceiver);
 		} catch (RemoteException e) {
 			throw e;
 		} catch (InvocationTargetException e) {
 			if (e.getTargetException() instanceof RemoteException)
 				throw (RemoteException) e.getTargetException();
-			throw new RemoteException("unexpected exception", e
-					.getTargetException());
+			throw new RemoteException("unexpected exception",
+					e.getTargetException());
 		} catch (Exception e) {
 			throw new RemoteException("bad instance construction", e);
 		}
@@ -188,6 +189,10 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	 */
 	public static final String SECURITY_POLICY_FILE = "security.policy";
 
+	private static final String SEC_POLICY_PROP = "java.security.policy";
+	private static final String UNSECURE_PROP = "taverna.suppressrestrictions.rmi";
+	private static final String RMI_HOST_PROP = "java.rmi.server.hostname";
+
 	/**
 	 * @param args
 	 *            The arguments from the command line invocation.
@@ -199,17 +204,21 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	public static void main(String[] args) throws Exception {
 		if (args.length != 2)
 			throw new Exception("wrong # args: must be \"" + usage + "\"");
-		setProperty("java.security.policy", LocalWorker.class.getClassLoader()
-				.getResource(SECURITY_POLICY_FILE).toExternalForm());
-		if (!getProperty("taverna.suppressrestrictions.rmi","no").equals("yes"))
-			setProperty("java.rmi.server.hostname", "127.0.0.1");
+		if (!getProperty(UNSECURE_PROP, "no").equals("yes")) {
+			setProperty(SEC_POLICY_PROP, LocalWorker.class.getClassLoader()
+					.getResource(SECURITY_POLICY_FILE).toExternalForm());
+			setProperty(RMI_HOST_PROP, "127.0.0.1");
+		}
 		setSecurityManager(new RMISecurityManager());
 		String command = args[0];
 		factoryName = args[1];
 		registry = getRegistry();
-		registry.bind(factoryName, new TavernaRunManager(command,
-				LocalWorker.class.getDeclaredConstructor(String.class,
-						String.class, Class.class), WorkerCore.class));
+		registry.bind(
+				factoryName,
+				new TavernaRunManager(command, LocalWorker.class
+						.getDeclaredConstructor(String.class, String.class,
+								Class.class, UsageRecordReceiver.class),
+						WorkerCore.class));
 		getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {

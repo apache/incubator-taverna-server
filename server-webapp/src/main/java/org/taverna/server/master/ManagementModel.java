@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master;
 
 /**
@@ -9,35 +14,48 @@ public interface ManagementModel {
 	/**
 	 * @return whether we allow the creation of new workflow runs.
 	 */
-	public boolean getAllowNewWorkflowRuns();
+	boolean getAllowNewWorkflowRuns();
 
 	/**
 	 * @return whether we should log all workflows sent to us.
 	 */
-	public boolean getLogIncomingWorkflows();
+	boolean getLogIncomingWorkflows();
 
 	/**
 	 * @return whether outgoing exceptions should be logged before being
 	 *         converted to responses.
 	 */
-	public boolean getLogOutgoingExceptions();
+	boolean getLogOutgoingExceptions();
+
+	/**
+	 * @return the file that all usage records should be appended to, or
+	 *         <tt>null</tt> if they should be just dropped.
+	 */
+	String getUsageRecordLogFile();
 
 	/**
 	 * @param logIncomingWorkflows
 	 *            whether we should log all workflows sent to us.
 	 */
-	public void setLogIncomingWorkflows(boolean logIncomingWorkflows);
+	void setLogIncomingWorkflows(boolean logIncomingWorkflows);
 
 	/**
 	 * @param allowNewWorkflowRuns
 	 *            whether we allow the creation of new workflow runs.
 	 */
-	public void setAllowNewWorkflowRuns(boolean allowNewWorkflowRuns);
+	void setAllowNewWorkflowRuns(boolean allowNewWorkflowRuns);
 
 	/**
 	 * @param logOutgoingExceptions
 	 *            whether outgoing exceptions should be logged before being
 	 *            converted to responses.
 	 */
-	public void setLogOutgoingExceptions(boolean logOutgoingExceptions);
+	void setLogOutgoingExceptions(boolean logOutgoingExceptions);
+
+	/**
+	 * @param usageRecordLogFile
+	 *            the file that all usage records should be appended to, or
+	 *            <tt>null</tt> if they should be just dropped.
+	 */
+	void setUsageRecordLogFile(String usageRecordLogFile);
 }

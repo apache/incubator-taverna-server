@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beansProjectDescription>
 	<version>1</version>
-	<pluginVersion><![CDATA[2.2.6.200908051215-RELEASE]]></pluginVersion>
+	<pluginVersion><![CDATA[2.5.2.201102280943-SR3]]></pluginVersion>
 	<configSuffixes>
 		<configSuffix><![CDATA[xml]]></configSuffix>
 	</configSuffixes>
@@ -9,6 +9,7 @@
 	<configs>
 		<config>src/main/webapp/WEB-INF/webappBeans.xml</config>
 		<config>src/main/webapp/WEB-INF/beans.xml</config>
+		<config>src/main/webapp/WEB-INF/providers.xml</config>
 	</configs>
 	<configSets>
 		<configSet>

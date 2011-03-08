@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.localworker;
 
 import static java.lang.System.getProperty;
@@ -16,7 +21,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.rmi.ConnectException;
 import java.rmi.ConnectIOException;
 import java.rmi.NotBoundException;
@@ -29,8 +33,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.servlet.ServletContext;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
@@ -51,7 +56,6 @@ import org.taverna.server.master.interfaces.LocalIdentityMapper;
 @ManagedResource(objectName = JMX_ROOT + "IdAwareForkRunFactory", description = "The factory for simple singleton forked run.")
 public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 		ServletContextAware {
-	private JAXBContext context;
 	private int totalRuns;
 	private MetaFactory forker;
 	private Map<String, RemoteRunFactory> factory;
@@ -64,7 +68,6 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	 *             Shouldn't happen.
 	 */
 	public IdAwareForkRunFactory() throws JAXBException {
-		context = JAXBContext.newInstance(Workflow.class);
 		factory = new HashMap<String, RemoteRunFactory>();
 		factoryProcessName = new HashMap<String, String>();
 	}
@@ -251,8 +254,8 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	@ManagedAttribute(description = "The mapping of user names to RMI factory IDs.", currencyTimeLimit = 60)
 	public String[] getFactoryProcessMapping() {
 		ArrayList<String> result = new ArrayList<String>();
-		ArrayList<String> keys = new ArrayList<String>(factoryProcessName
-				.keySet());
+		ArrayList<String> keys = new ArrayList<String>(
+				factoryProcessName.keySet());
 		String[] ks = keys.toArray(new String[keys.size()]);
 		Arrays.sort(ks);
 		for (String k : ks) {
@@ -350,8 +353,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 							try {
 								code = process.waitFor();
 							} catch (InterruptedException e1) {
-								log
-										.info("interrupted waiting for natural death of secure-fork process?!");
+								log.info("interrupted waiting for natural death of secure-fork process?!");
 								process.destroy();
 								code = process.waitFor();
 							}
@@ -362,9 +364,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 							log.info("secure-fork process died with signal="
 									+ (code - 128));
 						} else if (code >= 0) {
-							log
-									.info("secure-fork process killed: code="
-											+ code);
+							log.info("secure-fork process killed: code=" + code);
 						} else {
 							log.warn("secure-fork process not yet dead");
 						}
@@ -461,6 +461,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	 * @throws IOException
 	 *             If the connection fails.
 	 */
+	@PostConstruct
 	public void initMetaFactory() throws IOException {
 		forker = new MetaFactoryImpl();
 	}
@@ -489,12 +490,12 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	}
 
 	private static class OutputLogger implements Runnable {
-		private static final Log log = getLog(OutputLogger.class);
+		private final Log log = getLog(OutputLogger.class);
 
 		OutputLogger(String name, Process process) {
 			this.uniqueName = name;
-			this.br = new BufferedReader(new InputStreamReader(process
-					.getInputStream()));
+			this.br = new BufferedReader(new InputStreamReader(
+					process.getInputStream()));
 		}
 
 		private String uniqueName;
@@ -526,6 +527,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	/**
 	 * Destroys the subprocess that manufactures runs.
 	 */
+	@PreDestroy
 	public void killFactories() {
 		if (!factory.isEmpty()) {
 			Iterator<String> keys = factory.keySet().iterator();
@@ -546,10 +548,9 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 			try {
 				sleep(700);
 			} catch (InterruptedException e) {
-				log
-						.debug(
-								"interrupted during wait after asking factories to shut down",
-								e);
+				log.debug(
+						"interrupted during wait after asking factories to shut down",
+						e);
 			}
 		}
 
@@ -575,8 +576,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	@Override
 	protected RemoteSingleRun getRealRun(Principal creator, Workflow workflow)
 			throws Exception {
-		StringWriter sw = new StringWriter();
-		context.createMarshaller().marshal(workflow, sw);
+		String wf = serializeWorkflow(workflow);
 		String username = mapper.getUsernameForPrincipal(creator);
 		if (username == null)
 			throw new Exception("cannot determine who to run workflow as; "
@@ -587,8 +587,8 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 			try {
 				if (creator != null && !(creator instanceof Serializable))
 					creator = null;
-				RemoteSingleRun rsr = factory.get(username).make(sw.toString(),
-						creator);
+				RemoteSingleRun rsr = factory.get(username).make(wf, creator,
+						makeURReciver());
 				totalRuns++;
 				return rsr;
 			} catch (ConnectException e) {

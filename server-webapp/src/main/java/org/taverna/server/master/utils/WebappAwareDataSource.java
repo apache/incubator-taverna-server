@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.utils;
 
 import static org.taverna.server.master.TavernaServerImpl.log;
@@ -6,6 +11,8 @@ import static org.taverna.server.master.utils.Contextualizer.SUBSTITUAND;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+
+import javax.annotation.PreDestroy;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.springframework.beans.factory.annotation.Required;
@@ -70,5 +77,11 @@ public class WebappAwareDataSource extends BasicDataSource {
 	public int getLoginTimeout() throws SQLException {
 		doInit();
 		return super.getLoginTimeout();
+	}
+
+	@Override
+	@PreDestroy
+	public void close() throws SQLException {
+		super.close();
 	}
 }

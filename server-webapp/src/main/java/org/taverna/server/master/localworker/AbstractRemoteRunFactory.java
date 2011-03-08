@@ -14,15 +14,21 @@ import static java.rmi.registry.Registry.REGISTRY_PORT;
 import static java.util.Collections.emptyList;
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.PreDestroy;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.ws.Holder;
 
 import org.apache.commons.logging.Log;
@@ -31,6 +37,8 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
+import org.taverna.server.localworker.server.UsageRecordReceiver;
+import org.taverna.server.master.UsageRecordRecorder;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoListenerException;
@@ -49,7 +57,15 @@ import org.taverna.server.master.localworker.RunDatabase.PerRunCallback;
 @ManagedResource(objectName = JMX_ROOT + "Factory", description = "The factory for runs")
 public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		RunFactory {
-	static final Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
+	static Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
+	private JAXBContext context;
+	UsageRecordRecorder usageRecordSink;
+
+	@SuppressWarnings("unused")
+	@PreDestroy
+	private void closeLog() {
+		log = null;
+	}
 
 	/**
 	 * @return A handle to the current RMI registry.
@@ -164,6 +180,21 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		state.setRegistryPort(port);
 	}
 
+	/**
+	 * @param usageRecordSink
+	 *            the usageRecordSink to set
+	 */
+	public void setUsageRecordSink(UsageRecordRecorder usageRecordSink) {
+		this.usageRecordSink = usageRecordSink;
+	}
+
+	/**
+	 * @return the usageRecordSink
+	 */
+	public UsageRecordRecorder getUsageRecordSink() {
+		return usageRecordSink;
+	}
+
 	static {
 		if (getSecurityManager() == null) {
 			setProperty("java.security.policy", AbstractRemoteRunFactory.class
@@ -175,8 +206,11 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 
 	/**
 	 * Set up the run expiry management engine.
+	 * 
+	 * @throws JAXBException
 	 */
-	public AbstractRemoteRunFactory() {
+	public AbstractRemoteRunFactory() throws JAXBException {
+		context = Workflow.getContext();
 		try {
 			registry = LocateRegistry.getRegistry();
 			registry.list();
@@ -291,5 +325,51 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	@ManagedAttribute
 	public void setDefaultLifetime(int defaultLifetime) {
 		state.setDefaultLifetime(defaultLifetime);
+	}
+
+	/**
+	 * How to convert a wrapped workflow into XML.
+	 * 
+	 * @param workflow
+	 *            The wrapped workflow.
+	 * @return The XML version of the document.
+	 * @throws JAXBException
+	 *             If serialization fails.
+	 */
+	protected String serializeWorkflow(Workflow workflow) throws JAXBException {
+		StringWriter sw = new StringWriter();
+		context.createMarshaller().marshal(workflow, sw);
+		return sw.toString();
+	}
+
+	/**
+	 * Make a Remote object that can act as a consumer for usage records.
+	 * 
+	 * @return The receiver, or <tt>null</tt> if the construction fails.
+	 */
+	protected UsageRecordReceiver makeURReciver() {
+		try {
+			class URReceiver extends UnicastRemoteObject implements
+					UsageRecordReceiver {
+				public URReceiver(UsageRecordRecorder destination)
+						throws RemoteException {
+					super();
+				}
+
+				@Override
+				public void acceptUsageRecord(String usageRecord) {
+					try {
+						if (usageRecordSink != null)
+							usageRecordSink.storeUsageRecord(usageRecord);
+					} catch (IOException e) {
+						log.warn("failed to store usage record", e);
+					}
+				}
+			}
+			return new URReceiver(usageRecordSink);
+		} catch (RemoteException e) {
+			log.warn("failed to build usage record receiver", e);
+			return null;
+		}
 	}
 }

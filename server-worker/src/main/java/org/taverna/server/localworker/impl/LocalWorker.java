@@ -43,6 +43,7 @@ import org.taverna.server.localworker.remote.RemoteListener;
 import org.taverna.server.localworker.remote.RemoteSecurityContext;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.localworker.remote.RemoteStatus;
+import org.taverna.server.localworker.server.UsageRecordReceiver;
 
 /**
  * This class implements one side of the connection between the Taverna Server
@@ -87,7 +88,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	 *             If registration of the worker fails.
 	 */
 	protected LocalWorker(String executeWorkflowCommand, String workflow,
-			Class<? extends Worker> workerClass) throws RemoteException {
+			Class<? extends Worker> workerClass, UsageRecordReceiver urReceiver)
+			throws RemoteException {
 		super();
 		masterToken = randomUUID().toString();
 		this.workflow = workflow;
@@ -111,6 +113,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			throw new RuntimeException(
 					"problem when creating core worker implementation", e);
 		}
+		core.setURReceiver(urReceiver);
 		Thread t = new Thread(new Runnable() {
 			/**
 			 * Kill off the worker launched by the core.
@@ -310,7 +313,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			if (status != Initialized)
 				throw new RemoteException("not initializing");
 			keystorePassword = password;
-			//write(PASSWORD_FILE, password); // Written later
+			// write(PASSWORD_FILE, password); // Written later
 		}
 
 		@Override

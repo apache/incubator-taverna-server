@@ -13,24 +13,15 @@ import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML_TYPE;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.created;
-import static javax.ws.rs.core.Response.noContent;
-import static javax.ws.rs.core.Response.notAcceptable;
-import static javax.ws.rs.core.Response.ok;
-import static javax.ws.rs.core.Response.seeOther;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static javax.xml.ws.handler.MessageContext.PATH_INFO;
 import static org.apache.commons.logging.LogFactory.getLog;
-import static org.joda.time.format.ISODateTimeFormat.dateTime;
-import static org.joda.time.format.ISODateTimeFormat.dateTimeParser;
 import static org.taverna.server.master.common.DirEntryReference.newInstance;
 import static org.taverna.server.master.common.Roles.ADMIN;
 import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.common.Status.Initialized;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
 import java.security.Principal;
@@ -43,14 +34,13 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
+import javax.annotation.security.RolesAllowed;
 import javax.jws.WebService;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Path;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.PathSegment;
-import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
@@ -62,13 +52,13 @@ import javax.xml.ws.WebServiceContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.cxf.common.security.SimplePrincipal;
-import org.apache.cxf.jaxrs.impl.MetadataMap;
-import org.apache.cxf.jaxrs.model.URITemplate;
-import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
-import org.taverna.server.master.ContentsDescriptorBuilder.UriBuilderFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.taverna.server.master.TavernaServerImpl.WebappAware;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
@@ -78,8 +68,6 @@ import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.common.Workflow;
-import org.taverna.server.master.exceptions.BadInputPortNameException;
-import org.taverna.server.master.exceptions.BadPropertyValueException;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.InvalidCredentialException;
@@ -103,23 +91,15 @@ import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
-import org.taverna.server.master.rest.DirectoryContents;
-import org.taverna.server.master.rest.ListenerDefinition;
-import org.taverna.server.master.rest.MakeOrUpdateDirEntry;
-import org.taverna.server.master.rest.MakeOrUpdateDirEntry.MakeDirectory;
-import org.taverna.server.master.rest.TavernaServerInputREST.InDesc.Reference;
-import org.taverna.server.master.rest.TavernaServerSecurityREST;
-import org.taverna.server.master.rest.TavernaServerDirectoryREST;
-import org.taverna.server.master.rest.TavernaServerInputREST;
-import org.taverna.server.master.rest.TavernaServerInputREST.InDesc.AbstractContents;
-import org.taverna.server.master.rest.TavernaServerListenersREST;
-import org.taverna.server.master.rest.TavernaServerListenersREST.ListenerDescription;
-import org.taverna.server.master.rest.TavernaServerListenersREST.TavernaServerListenerREST;
 import org.taverna.server.master.rest.TavernaServerREST;
+import org.taverna.server.master.rest.TavernaServerREST.PermittedListeners;
+import org.taverna.server.master.rest.TavernaServerREST.PermittedWorkflows;
+import org.taverna.server.master.rest.TavernaServerREST.PolicyView;
 import org.taverna.server.master.rest.TavernaServerRunREST;
 import org.taverna.server.master.soap.PermissionList;
 import org.taverna.server.master.soap.TavernaServerSOAP;
 import org.taverna.server.master.utils.FilenameUtils;
+import org.taverna.server.master.utils.InvocationCounter;
 import org.taverna.server.output_description.RdfWrapper;
 
 /**
@@ -131,8 +111,8 @@ import org.taverna.server.output_description.RdfWrapper;
 @DeclareRoles({ USER, ADMIN })
 @WebService(endpointInterface = "org.taverna.server.master.soap.TavernaServerSOAP", serviceName = "TavernaServer", targetNamespace = Namespaces.SERVER_SOAP)
 @ManagedResource(objectName = TavernaServerImpl.JMX_ROOT + "Webapp", description = "The main web-application interface to Taverna Server.")
-public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
-		UriBuilderFactory {
+public abstract class TavernaServerImpl implements TavernaServerSOAP,
+		TavernaServerREST, TavernaServer {
 	public static final String JMX_ROOT = "Taverna:group=Server-v2,name=";
 	/** The logger for the server framework. */
 	public static Log log = getLog(TavernaServerImpl.class);
@@ -141,11 +121,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	// CONNECTIONS TO JMX, SPRING AND CXF
 
 	/**
-	 * Simple count of number of times the service has been invoked. Rate of
-	 * increase is how busy this service is.
-	 */
-	static int invokes;
-	/**
 	 * The XML serialization engine for workflows.
 	 */
 	private JAXBContext workflowSerializer;
@@ -153,7 +128,7 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	 * Whether to log failures during principal retrieval. Should be normally on
 	 * as it indicates a serious problem, but can be switched off for testing.
 	 */
-	private transient boolean logGetPrincipalFailures = true;
+	private boolean logGetPrincipalFailures = true;
 
 	/**
 	 * @throws JAXBException
@@ -162,96 +137,70 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 		workflowSerializer = JAXBContext.newInstance(Workflow.class);
 	}
 
-	/**
-	 * @return Count of the number of external calls into this webapp.
-	 */
+	@Override
 	@ManagedAttribute(description = "Count of the number of external calls into this webapp.")
 	public int getInvocationCount() {
-		return invokes;
+		return counter.getCount();
 	}
 
-	/**
-	 * @return Current number of runs.
-	 */
+	@Override
 	@ManagedAttribute(description = "Current number of runs.")
 	public int getCurrentRunCount() {
 		return runStore.listRuns(null, policy).size();
 	}
 
-	/**
-	 * @return Whether to write submitted workflows to the log.
-	 */
+	@Override
 	@ManagedAttribute(description = "Whether to write submitted workflows to the log.")
 	public boolean getLogIncomingWorkflows() {
 		return stateModel.getLogIncomingWorkflows();
 	}
 
-	/**
-	 * @param logIncomingWorkflows
-	 *            Whether to write submitted workflows to the log.
-	 */
+	@Override
 	@ManagedAttribute(description = "Whether to write submitted workflows to the log.")
 	public void setLogIncomingWorkflows(boolean logIncomingWorkflows) {
 		stateModel.setLogIncomingWorkflows(logIncomingWorkflows);
 	}
 
-	/**
-	 * @return Whether outgoing exceptions should be logged before being
-	 *         converted to responses.
-	 */
+	@Override
 	@ManagedAttribute(description = "Whether outgoing exceptions should be logged before being converted to responses.")
 	public boolean getLogOutgoingExceptions() {
 		return stateModel.getLogOutgoingExceptions();
 	}
 
-	/**
-	 * @param logOutgoing
-	 *            Whether outgoing exceptions should be logged before being
-	 *            converted to responses.
-	 */
+	@Override
 	@ManagedAttribute(description = "Whether outgoing exceptions should be logged before being converted to responses.")
 	public void setLogOutgoingExceptions(boolean logOutgoing) {
 		stateModel.setLogOutgoingExceptions(logOutgoing);
 	}
 
-	/**
-	 * @return Whether to permit any new workflow runs to be created.
-	 */
+	@Override
 	@ManagedAttribute(description = "Whether to permit any new workflow runs to be created; has no effect on existing runs.")
 	public boolean getAllowNewWorkflowRuns() {
 		return stateModel.getAllowNewWorkflowRuns();
 	}
 
-	/**
-	 * @param allowNewWorkflowRuns
-	 *            Whether to permit any new workflow runs to be created.
-	 */
+	@Override
 	@ManagedAttribute(description = "Whether to permit any new workflow runs to be created; has no effect on existing runs.")
 	public void setAllowNewWorkflowRuns(boolean allowNewWorkflowRuns) {
 		stateModel.setAllowNewWorkflowRuns(allowNewWorkflowRuns);
 	}
 
-	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	// STATE VARIABLES AND SPRING SETTERS
+	@Resource
+	WebServiceContext jaxws;
+	@Context
+	SecurityContext jaxrsSecurity;
+	@Context
+	HttpHeaders jaxrsHeaders;
+	@Resource
+	private ServletContext context;
 
-	/** Adapter to make it practical to use injected contexts. */
-	static class Context {
-		@Resource
-		WebServiceContext jaxws;
-		@Resource
-		SecurityContext jaxrsSecurity;
-		@Resource
-		HttpHeaders jaxrsHeaders;
-		@Resource
-		ServletContext servlet;
-	}
-
-	private Context context;
-
-	@Required
-	public void setContext(Context context) {
+	@Override
+	public void setServletContext(ServletContext context) {
 		this.context = context;
 	}
+
+	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	// STATE VARIABLES AND SPRING SETTERS
 
 	/** Encapsulates the policies applied by this server. */
 	Policy policy;
@@ -265,79 +214,69 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	private ManagementModel stateModel;
 	/** How to map the user ID to who to run as. */
 	private LocalIdentityMapper idMapper;
-	transient ContentsDescriptorBuilder cdBuilder;
-	transient FilenameUtils fileUtils;
-
+	private InvocationCounter counter;
 	/**
-	 * @param policy
-	 *            The policy being installed by Spring.
+	 * For building descriptions of the expected inputs and actual outputs of a
+	 * workflow.
 	 */
+	private ContentsDescriptorBuilder cdBuilder;
+	/**
+	 * Utilities for accessing files on the local-worker.
+	 */
+	private FilenameUtils fileUtils;
+
+	@Override
 	@Required
 	public void setPolicy(Policy policy) {
 		this.policy = policy;
 	}
 
-	/**
-	 * @param listenerFactory
-	 *            The listener factory being installed by Spring.
-	 */
+	@Override
 	@Required
 	public void setListenerFactory(ListenerFactory listenerFactory) {
 		this.listenerFactory = listenerFactory;
 	}
 
-	/**
-	 * @param runFactory
-	 *            The run factory being installed by Spring.
-	 */
+	@Override
 	@Required
 	public void setRunFactory(RunFactory runFactory) {
 		this.runFactory = runFactory;
 	}
 
-	/**
-	 * @param runStore
-	 *            The run store being installed by Spring.
-	 */
+	@Override
 	@Required
 	public void setRunStore(RunStore runStore) {
 		this.runStore = runStore;
 	}
 
-	/**
-	 * @param stateModel
-	 *            The state model engine being installed by Spring.
-	 */
+	@Override
 	@Required
 	public void setStateModel(ManagementModel stateModel) {
 		this.stateModel = stateModel;
 	}
 
-	/**
-	 * @param mapper
-	 *            The identity mapper being installed by Spring.
-	 */
+	@Override
 	@Required
 	public void setIdMapper(LocalIdentityMapper mapper) {
 		this.idMapper = mapper;
 	}
 
-	/**
-	 * @param converter
-	 *            The filename converter being installed by Spring.
-	 */
+	@Override
 	@Required
 	public void setFileUtils(FilenameUtils converter) {
 		this.fileUtils = converter;
 	}
 
-	/**
-	 * @param cdBuilder
-	 *            The contents descriptor builder being installed by Spring.
-	 */
+	@Override
 	@Required
 	public void setContentsDescriptorBuilder(ContentsDescriptorBuilder cdBuilder) {
 		this.cdBuilder = cdBuilder;
+	}
+
+	@Override
+	@Required
+	public void setInvocationCounter(InvocationCounter counter) {
+		this.counter = counter;
 	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -345,7 +284,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 
 	@Override
 	public ServerDescription describeService(UriInfo ui) {
-		invokes++;
 		return new ServerDescription(runs(), ui);
 	}
 
@@ -357,7 +295,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	@Override
 	public Response submitWorkflow(Workflow workflow, UriInfo ui)
 			throws NoUpdateException {
-		invokes++;
 		String name = buildWorkflow(workflow, getPrincipal());
 		return created(ui.getAbsolutePathBuilder().path("{uuid}").build(name))
 				.build();
@@ -365,7 +302,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 
 	@Override
 	public int getMaxSimultaneousRuns() {
-		invokes++;
 		Integer limit = policy.getMaxRuns(getPrincipal());
 		if (limit == null)
 			return policy.getMaxRuns();
@@ -373,592 +309,19 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	}
 
 	@Override
-	public PolicyView getPolicyDescription() {
-		return new PolicyView() {
-			@Override
-			public PolicyDescription getDescription(UriInfo ui) {
-				return new PolicyDescription(ui);
-			}
-
-			@Override
-			public int getMaxSimultaneousRuns() {
-				invokes++;
-				Integer limit = policy.getMaxRuns(getPrincipal());
-				if (limit == null)
-					return policy.getMaxRuns();
-				return min(limit.intValue(), policy.getMaxRuns());
-			}
-
-			@Override
-			public PermittedListeners getPermittedListeners() {
-				invokes++;
-				return new PermittedListeners(
-						listenerFactory.getSupportedListenerTypes());
-			}
-
-			@Override
-			public PermittedWorkflows getPermittedWorkflows() {
-				invokes++;
-				return new PermittedWorkflows(
-						policy.listPermittedWorkflows(getPrincipal()));
-			}
-		};
-	}
-
-	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	// REST INTERFACE - Workflow run
-
-	@Override
 	public TavernaServerRunREST getRunResource(final String runName)
 			throws UnknownRunException {
-		invokes++;
-		final TavernaRun run = getRun(runName);
-		return new TavernaServerRunREST() {
-			@Override
-			public RunDescription getDescription(UriInfo ui) {
-				invokes++;
-				return new RunDescription(run, ui);
-			}
-
-			@Override
-			public Response destroy() throws NoUpdateException {
-				invokes++;
-				try {
-					unregisterRun(runName, run);
-				} catch (UnknownRunException e) {
-					log.fatal("can't happen", e);
-				}
-				return noContent().build();
-			}
-
-			@Override
-			public TavernaServerListenersREST getListeners() {
-				invokes++;
-				return new TavernaServerListenersREST() {
-					@Override
-					public Response addListener(
-							ListenerDefinition typeAndConfiguration, UriInfo ui)
-							throws NoUpdateException, NoListenerException {
-						invokes++;
-						String name = makeListener(run,
-								typeAndConfiguration.type,
-								typeAndConfiguration.configuration).getName();
-						return created(
-								ui.getAbsolutePathBuilder()
-										.path("{listenerName}").build(name))
-								.build();
-					}
-
-					@Override
-					public TavernaServerListenerREST getListener(String name)
-							throws NoListenerException {
-						invokes++;
-						Listener l = TavernaServerImpl.getListener(run, name);
-						if (l == null)
-							throw new NoListenerException();
-						return new ListenerIfcImpl(l);
-					}
-
-					@Override
-					public Listeners getDescription(UriInfo ui) {
-						List<ListenerDescription> result = new ArrayList<ListenerDescription>();
-						invokes++;
-						UriBuilder ub = ui.getAbsolutePathBuilder().path(
-								"{name}");
-						for (Listener l : run.getListeners()) {
-							URI base = ub.build(l.getName());
-							result.add(new ListenerDescription(l, fromUri(base)));
-						}
-						return new Listeners(result, ub);
-					}
-				};
-			}
-
-			@Override
-			public TavernaServerSecurityREST getSecurity()
-					throws NotOwnerException {
-				invokes++;
-				final TavernaSecurityContext context = run.getSecurityContext();
-				if (!getPrincipal().equals(context.getOwner()))
-					throw new NotOwnerException();
-
-				return new TavernaServerSecurityREST() {
-					@Override
-					public Descriptor describe(UriInfo ui) {
-						invokes++;
-						return new Descriptor(ui.getAbsolutePathBuilder().path(
-								"{element}"), context.getOwner().getName(),
-								context.getCredentials(), context.getTrusted());
-					}
-
-					@Override
-					public String getOwner() {
-						invokes++;
-						return context.getOwner().getName();
-					}
-
-					@Override
-					public CredentialList listCredentials() {
-						invokes++;
-						return new CredentialList(context.getCredentials());
-					}
-
-					@Override
-					public Credential getParticularCredential(String id)
-							throws NoCredentialException {
-						invokes++;
-						for (Credential c : context.getCredentials())
-							if (c.id.equals(id))
-								return c;
-						throw new NoCredentialException();
-					}
-
-					@Override
-					public Credential setParticularCredential(String id,
-							Credential c, UriInfo ui)
-							throws InvalidCredentialException,
-							BadStateChangeException {
-						invokes++;
-						if (run.getStatus() != Initialized)
-							throw new BadStateChangeException();
-						c.id = id;
-						c.href = ui.getAbsolutePath().toString();
-						context.validateCredential(c);
-						context.deleteCredential(c);
-						context.addCredential(c);
-						return c;
-					}
-
-					@Override
-					public Response addCredential(Credential c, UriInfo ui)
-							throws InvalidCredentialException,
-							BadStateChangeException {
-						invokes++;
-						if (run.getStatus() != Initialized)
-							throw new BadStateChangeException();
-						c.id = randomUUID().toString();
-						URI uri = ui.getAbsolutePathBuilder().path("{id}")
-								.build(c.id);
-						c.href = uri.toString();
-						context.validateCredential(c);
-						context.addCredential(c);
-						return created(uri).build();
-					}
-
-					@Override
-					public Response deleteAllCredentials(UriInfo ui)
-							throws BadStateChangeException {
-						invokes++;
-						if (run.getStatus() != Initialized)
-							throw new BadStateChangeException();
-						for (Credential c : context.getCredentials())
-							context.deleteCredential(c);
-						return noContent().build();
-					}
-
-					@Override
-					public Response deleteCredential(String id, UriInfo ui)
-							throws BadStateChangeException {
-						invokes++;
-						if (run.getStatus() != Initialized)
-							throw new BadStateChangeException();
-						Credential toDelete = new Credential() {
-						};
-						toDelete.id = id;
-						context.deleteCredential(toDelete);
-						return noContent().build();
-					}
-
-					@Override
-					public TrustList listTrusted() {
-						invokes++;
-						return new TrustList(context.getTrusted());
-					}
-
-					@Override
-					public Trust getParticularTrust(String id)
-							throws NoCredentialException {
-						invokes++;
-						for (Trust t : context.getTrusted())
-							if (t.id.equals(id))
-								return t;
-						throw new NoCredentialException();
-					}
-
-					@Override
-					public Trust setParticularTrust(String id, Trust t,
-							UriInfo ui) throws InvalidCredentialException,
-							BadStateChangeException {
-						invokes++;
-						if (run.getStatus() != Initialized)
-							throw new BadStateChangeException();
-						t.id = id;
-						t.href = ui.getAbsolutePath().toString();
-						context.validateTrusted(t);
-						context.deleteTrusted(t);
-						context.addTrusted(t);
-						return t;
-					}
-
-					@Override
-					public Response addTrust(Trust t, UriInfo ui)
-							throws InvalidCredentialException,
-							BadStateChangeException {
-						invokes++;
-						if (run.getStatus() != Initialized)
-							throw new BadStateChangeException();
-						t.id = randomUUID().toString();
-						URI uri = ui.getAbsolutePathBuilder().path("{id}")
-								.build(t.id);
-						t.href = uri.toString();
-						context.validateTrusted(t);
-						context.addTrusted(t);
-						return created(uri).build();
-					}
-
-					@Override
-					public Response deleteAllTrusts(UriInfo ui)
-							throws BadStateChangeException {
-						invokes++;
-						if (run.getStatus() != Initialized)
-							throw new BadStateChangeException();
-						for (Trust t : context.getTrusted())
-							context.deleteTrusted(t);
-						return noContent().build();
-					}
-
-					@Override
-					public Response deleteTrust(String id, UriInfo ui)
-							throws BadStateChangeException {
-						invokes++;
-						if (run.getStatus() != Initialized)
-							throw new BadStateChangeException();
-						Trust toDelete = new Trust();
-						toDelete.id = id;
-						context.deleteTrusted(toDelete);
-						return noContent().build();
-					}
-
-					@Override
-					public PermissionsDescription describePermissions(UriInfo ui) {
-						invokes++;
-						Map<String, Permission> perm = new HashMap<String, Permission>();
-						for (String u : context.getPermittedReaders())
-							perm.put(u, Permission.Read);
-						for (String u : context.getPermittedUpdaters())
-							perm.put(u, Permission.Update);
-						for (String u : context.getPermittedDestroyers())
-							perm.put(u, Permission.Destroy);
-						return new PermissionsDescription(ui
-								.getAbsolutePathBuilder().path("{id}"), perm);
-					}
-
-					@Override
-					public Permission describePermission(String id) {
-						invokes++;
-						return getPerm(context, id);
-					}
-
-					@Override
-					public Permission setPermission(String id, Permission perm) {
-						invokes++;
-						setPerm(context, id, perm);
-						return getPerm(context, id);
-					}
-
-					@Override
-					public Response deletePermission(String id, UriInfo ui) {
-						invokes++;
-						setPerm(context, id, Permission.None);
-						return noContent().build();
-					}
-
-					@Override
-					public Response makePermission(PermissionDescription desc,
-							UriInfo ui) {
-						invokes++;
-						setPerm(context, desc.userName, desc.permission);
-						return created(
-								ui.getAbsolutePathBuilder().path("{user}")
-										.build(desc.userName)).build();
-					}
-				};
-			}
-
-			@Override
-			public String getExpiryTime() {
-				invokes++;
-				return dateTime().print(new DateTime(run.getExpiry()));
-			}
-
-			@Override
-			public String getCreateTime() {
-				invokes++;
-				return dateTime().print(
-						new DateTime(run.getCreationTimestamp()));
-			}
-
-			@Override
-			public String getFinishTime() {
-				invokes++;
-				Date f = run.getFinishTimestamp();
-				return f == null ? "" : dateTime().print(new DateTime(f));
-			}
-
-			@Override
-			public String getStartTime() {
-				invokes++;
-				Date f = run.getStartTimestamp();
-				return f == null ? "" : dateTime().print(new DateTime(f));
-			}
-
-			@Override
-			public String getStatus() {
-				invokes++;
-				return run.getStatus().toString();
-			}
-
-			@Override
-			public Workflow getWorkflow() {
-				invokes++;
-				return run.getWorkflow();
-			}
-
-			@Override
-			public DirectoryREST getWorkingDirectory() {
-				invokes++;
-				return new DirectoryREST(run);
-			}
-
-			@Override
-			public String setExpiryTime(String expiry) throws NoUpdateException {
-				invokes++;
-				try {
-					return dateTime().print(
-							new DateTime(updateExpiry(run, dateTimeParser()
-									.parseDateTime(expiry.trim()).toDate())));
-				} catch (IllegalArgumentException e) {
-					throw new NoUpdateException(e.getMessage(), e);
-				}
-			}
-
-			@Override
-			public String setStatus(String status) throws NoUpdateException {
-				invokes++;
-				permitUpdate(run);
-				run.setStatus(Status.valueOf(status.trim()));
-				return run.getStatus().toString();
-			}
-
-			@Override
-			public TavernaServerInputREST getInputs(final UriInfo ui) {
-				invokes++;
-				return new TavernaServerInputREST() {
-					@Override
-					public InputsDescriptor get() {
-						invokes++;
-						return new InputsDescriptor(ui, run);
-					}
-
-					@Override
-					public org.taverna.server.input_description.InputDescription get(
-							String type) {
-						invokes++;
-						if (!type.equals("inputDescription"))
-							throw new RuntimeException("boom!");
-						return cdBuilder.makeInputDescriptor(run,
-								ui.getAbsolutePathBuilder());
-					}
-
-					@Override
-					public String getBaclavaFile() {
-						invokes++;
-						String i = run.getInputBaclavaFile();
-						return i == null ? "" : i;
-					}
-
-					@Override
-					public InDesc getInput(String name)
-							throws BadInputPortNameException {
-						invokes++;
-						Input i = TavernaServerImpl.getInput(run, name);
-						if (i == null)
-							throw new BadInputPortNameException(
-									"unknown input port name");
-						return new InDesc(i);
-					}
-
-					@Override
-					public String setBaclavaFile(String filename)
-							throws NoUpdateException, BadStateChangeException,
-							FilesystemAccessException {
-						invokes++;
-						permitUpdate(run);
-						run.setInputBaclavaFile(filename);
-						String i = run.getInputBaclavaFile();
-						return i == null ? "" : i;
-					}
-
-					@Override
-					public InDesc setInput(String name, InDesc inputDescriptor)
-							throws NoUpdateException, BadStateChangeException,
-							FilesystemAccessException,
-							BadInputPortNameException,
-							BadPropertyValueException {
-						invokes++;
-						AbstractContents ac = inputDescriptor.assignment;
-						if (name == null || name.isEmpty())
-							throw new BadInputPortNameException(
-									"bad input name");
-						if (ac == null)
-							throw new BadPropertyValueException("no content!");
-						if (ac instanceof InDesc.Reference)
-							return setRemoteInput(name, (InDesc.Reference) ac);
-						if (!(ac instanceof InDesc.File || ac instanceof InDesc.Value))
-							throw new BadPropertyValueException(
-									"unknown content type");
-						permitUpdate(run);
-						Input i = TavernaServerImpl.getInput(run, name);
-						if (i == null)
-							i = run.makeInput(name);
-						if (ac instanceof InDesc.File)
-							i.setFile(ac.contents);
-						else
-							i.setValue(ac.contents);
-						return new InDesc(i);
-					}
-
-					private InDesc setRemoteInput(String name, Reference ref)
-							throws BadStateChangeException,
-							BadPropertyValueException,
-							FilesystemAccessException {
-						URITemplate t = new URITemplate(ui.getBaseUri()
-								+ "/runs/{runName}/wd/{path:.+}");
-						MultivaluedMap<String, String> mvm = new MetadataMap<String, String>();
-						if (!t.match(ref.contents, mvm)) {
-							throw new BadPropertyValueException(
-									"URI in reference does not refer to local disk resource");
-						}
-						try {
-							File from = fileUtils.getFile(
-									getRun(mvm.get("runName").get(0)),
-									FalseDE.make(mvm.get("path").get(0)));
-							File to = run.getWorkingDirectory().makeEmptyFile(
-									getPrincipal(), randomUUID().toString());
-							to.copy(from);
-							Input i = TavernaServerImpl.getInput(run, name);
-							if (i == null)
-								i = run.makeInput(name);
-							i.setFile(to.getFullName());
-							return new InDesc(i);
-						} catch (UnknownRunException e) {
-							throw new BadStateChangeException(
-									"may not copy from that run", e);
-						} catch (NoDirectoryEntryException e) {
-							throw new BadStateChangeException(
-									"source does not exist", e);
-						}
-					}
-				};
-			}
-
-			@Override
-			public String getOutputFile() {
-				invokes++;
-				String o = run.getOutputBaclavaFile();
-				return o == null ? "" : o;
-			}
-
-			@Override
-			public String setOutputFile(String filename)
-					throws NoUpdateException, FilesystemAccessException,
-					BadStateChangeException {
-				invokes++;
-				permitUpdate(run);
-				if (filename != null && filename.length() == 0)
-					filename = null;
-				run.setOutputBaclavaFile(filename);
-				String o = run.getOutputBaclavaFile();
-				return o == null ? "" : o;
-			}
-
-			class ListenerIfcImpl implements TavernaServerListenerREST {
-				Listener listen;
-
-				ListenerIfcImpl(Listener l) {
-					this.listen = l;
-				}
-
-				@Override
-				public String getConfiguration() {
-					invokes++;
-					return listen.getConfiguration();
-				}
-
-				@Override
-				public ListenerDescription getDescription(UriInfo ui) {
-					invokes++;
-					return new ListenerDescription(listen,
-							ui.getAbsolutePathBuilder());
-				}
-
-				@Override
-				public TavernaServerListenersREST.Properties getProperties(
-						UriInfo ui) {
-					invokes++;
-					return new TavernaServerListenersREST.Properties(ui
-							.getAbsolutePathBuilder().path("{prop}"),
-							listen.listProperties());
-				}
-
-				@Override
-				public TavernaServerListenersREST.Property getProperty(
-						final String propertyName) throws NoListenerException {
-					invokes++;
-					List<String> p = asList(listen.listProperties());
-					if (p.contains(propertyName))
-						return new TavernaServerListenersREST.Property() {
-							@Override
-							public String getValue() {
-								invokes++;
-								try {
-									return listen.getProperty(propertyName);
-								} catch (NoListenerException e) {
-									log.error(
-											"unexpected exception; property \""
-													+ propertyName
-													+ "\" should exist", e);
-									return null;
-								}
-							}
-
-							@Override
-							public String setValue(String value)
-									throws NoUpdateException,
-									NoListenerException {
-								invokes++;
-								permitUpdate(run);
-								listen.setProperty(propertyName, value);
-								return listen.getProperty(propertyName);
-							}
-						};
-
-					throw new NoListenerException("no such property");
-				}
-			}
-
-			@Override
-			public RdfWrapper getOutputDescription(UriInfo ui)
-					throws BadStateChangeException, FilesystemAccessException,
-					NoDirectoryEntryException {
-				invokes++;
-				if (run.getStatus() == Initialized)
-					throw new BadStateChangeException(
-							"may not get output description in initial state");
-				return cdBuilder.makeOutputDescriptor(run, ui);
-			}
-		};
+		RunREST rr = makeRunInterface();
+		rr.setRun(getRun(runName));
+		rr.setRunName(runName);
+		return rr;
 	}
+
+	@Override
+	public abstract PolicyView getPolicyDescription();
+
+	/** Construct a RESTful interface to a run. */
+	protected abstract RunREST makeRunInterface();
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	// REST INTERFACE - Filesystem connection
@@ -973,233 +336,15 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	static final List<Variant> fileVariants = singletonList(new Variant(
 			APPLICATION_OCTET_STREAM_TYPE, null, null));
 
-	class DirectoryREST implements TavernaServerDirectoryREST {
-		private TavernaRun run;
-
-		DirectoryREST(TavernaRun w) {
-			this.run = w;
-		}
-
-		@Override
-		public Response destroyDirectoryEntry(List<PathSegment> path)
-				throws NoUpdateException, FilesystemAccessException,
-				NoDirectoryEntryException {
-			invokes++;
-			permitUpdate(run);
-			fileUtils.getDirEntry(run, path).destroy();
-			return noContent().build();
-		}
-
-		@Override
-		public DirectoryContents getDescription(UriInfo ui)
-				throws FilesystemAccessException {
-			invokes++;
-			return new DirectoryContents(ui, run.getWorkingDirectory()
-					.getContents());
-		}
-
-		// Nasty! This can have several different responses...
-		// @Override
-		public Response getDirectoryOrFileContents(List<PathSegment> path,
-				UriInfo ui, Request req) throws FilesystemAccessException,
-				NoDirectoryEntryException {
-			invokes++;
-			DirectoryEntry de = fileUtils.getDirEntry(run, path);
-
-			// How did the user want the result?
-			List<Variant> variants;
-			if (de instanceof File)
-				variants = fileVariants;
-			else if (de instanceof Directory)
-				variants = directoryVariants;
-			else
-				throw new FilesystemAccessException("not a directory or file!");
-			Variant v = req.selectVariant(variants);
-			if (v == null)
-				return notAcceptable(variants)
-						.type(TEXT_PLAIN)
-						.entity("Do not know what type of response to produce.")
-						.build();
-
-			// Produce the content to deliver up
-			Object result;
-			if (v.getMediaType().equals(APPLICATION_OCTET_STREAM_TYPE))
-				// Only for files...
-				result = de;
-			else if (v.getMediaType().equals(APPLICATION_ZIP_TYPE))
-				// Only for directories...
-				result = ((Directory) de).getContentsAsZip();
-			else
-				// Only for directories...
-				// XML or JSON; let CXF pick what to do
-				result = new DirectoryContents(ui,
-						((Directory) de).getContents());
-			return ok(result).type(v.getMediaType()).build();
-		}
-
-		private boolean matchType(MediaType a, MediaType b) {
-			log.debug("comparing " + a.getType() + "/" + a.getSubtype()
-					+ " and " + b.getType() + "/" + b.getSubtype());
-			return (a.isWildcardType() || b.isWildcardType() || a.getType()
-					.equals(b.getType()))
-					&& (a.isWildcardSubtype() || b.isWildcardSubtype() || a
-							.getSubtype().equals(b.getSubtype()));
-		}
-
-		@Override
-		public Response getDirectoryOrFileContents(List<PathSegment> path,
-				UriInfo ui, HttpHeaders headers)
-				throws FilesystemAccessException, NoDirectoryEntryException {
-			invokes++;
-			DirectoryEntry de = fileUtils.getDirEntry(run, path);
-
-			// How did the user want the result?
-			List<Variant> variants;
-			if (de instanceof File)
-				variants = fileVariants;
-			else if (de instanceof Directory)
-				variants = directoryVariants;
-			else
-				throw new FilesystemAccessException("not a directory or file!");
-			MediaType wanted = null;
-			log.info("wanted this " + headers.getAcceptableMediaTypes());
-			// Manual content negotiation!!! Ugh!
-			outer: for (MediaType mt : headers.getAcceptableMediaTypes()) {
-				for (Variant v : variants) {
-					if (matchType(mt, v.getMediaType())) {
-						wanted = v.getMediaType();
-						break outer;
-					}
-				}
-			}
-			if (wanted == null)
-				return notAcceptable(variants)
-						.type(TEXT_PLAIN)
-						.entity("Do not know what type of response to produce.")
-						.build();
-
-			// Produce the content to deliver up
-			Object result;
-			if (wanted.equals(APPLICATION_OCTET_STREAM_TYPE))
-				// Only for files...
-				result = de;
-			else if (wanted.equals(APPLICATION_ZIP_TYPE))
-				// Only for directories...
-				result = ((Directory) de).getContentsAsZip();
-			else
-				// Only for directories...
-				// XML or JSON; let CXF pick what to do
-				result = new DirectoryContents(ui,
-						((Directory) de).getContents());
-			return ok(result).type(wanted).build();
-		}
-
-		@Override
-		public Response makeDirectoryOrUpdateFile(List<PathSegment> parent,
-				MakeOrUpdateDirEntry op, UriInfo ui) throws NoUpdateException,
-				FilesystemAccessException, NoDirectoryEntryException {
-			invokes++;
-			permitUpdate(run);
-			DirectoryEntry container = fileUtils.getDirEntry(run, parent);
-			if (!(container instanceof Directory))
-				throw new FilesystemAccessException(
-						"You may not "
-								+ ((op instanceof MakeDirectory) ? "make a subdirectory of"
-										: "place a file in") + " a file.");
-			if (op.name == null || op.name.length() == 0)
-				throw new FilesystemAccessException("missing name attribute");
-			Directory d = (Directory) container;
-			UriBuilder ub = ui.getAbsolutePathBuilder().path("{name}");
-
-			// Make a directory in the context directory
-
-			if (op instanceof MakeDirectory) {
-				Directory target = d.makeSubdirectory(getPrincipal(), op.name);
-				return created(ub.build(target.getName())).build();
-			}
-
-			// Make or set the contents of a file
-
-			File f = null;
-			for (DirectoryEntry e : d.getContents()) {
-				if (e.getName().equals(op.name)) {
-					if (e instanceof Directory)
-						throw new FilesystemAccessException(
-								"You may not overwrite a directory with a file.");
-					f = (File) e;
-					break;
-				}
-			}
-			if (f == null) {
-				f = d.makeEmptyFile(getPrincipal(), op.name);
-				f.setContents(op.contents);
-				return created(ub.build(f.getName())).build();
-			}
-			f.setContents(op.contents);
-			return seeOther(ub.build(f.getName())).build();
-		}
-
-		@Override
-		public Response setFileContents(List<PathSegment> filePath,
-				String name, InputStream contents, UriInfo ui)
-				throws NoDirectoryEntryException, NoUpdateException,
-				FilesystemAccessException {
-			invokes++;
-			permitUpdate(run);
-			Directory d;
-			if (filePath != null && filePath.size() > 0) {
-				DirectoryEntry e = fileUtils.getDirEntry(run, filePath);
-				if (!(e instanceof Directory)) {
-					throw new FilesystemAccessException(
-							"Cannot create a file that is not in a directory.");
-				}
-				d = (Directory) e;
-			} else {
-				d = run.getWorkingDirectory();
-			}
-
-			File f = null;
-			for (DirectoryEntry e : d.getContents()) {
-				if (e.getName().equals(name)) {
-					if (e instanceof File) {
-						f = (File) e;
-						break;
-					}
-					throw new FilesystemAccessException(
-							"Cannot create a file that is not in a directory.");
-				}
-			}
-			if (f == null)
-				f = d.makeEmptyFile(getPrincipal(), name);
-
-			try {
-				byte[] buffer = new byte[65536];
-				int len = contents.read(buffer);
-				if (len >= 0) {
-					if (len < buffer.length) {
-						byte[] newBuf = new byte[len];
-						System.arraycopy(buffer, 0, newBuf, 0, len);
-						buffer = newBuf;
-					}
-					f.setContents(buffer);
-					while (len == 65536) {
-						len = contents.read(buffer);
-						if (len < 1)
-							break;
-						if (len < buffer.length) {
-							byte[] newBuf = new byte[len];
-							System.arraycopy(buffer, 0, newBuf, 0, len);
-							buffer = newBuf;
-						}
-						f.appendContents(buffer);
-					}
-				}
-			} catch (IOException exn) {
-				throw new FilesystemAccessException("failed to transfer bytes",
-						exn);
-			}
-			return seeOther(ui.getAbsolutePath()).build();
-		}
+	/**
+	 * Indicates that this is a class that wants to be told by Spring about the
+	 * main webapp.
+	 * 
+	 * @author Donal Fellows
+	 */
+	interface WebappAware {
+		@Required
+		void setWebapp(TavernaServer webapp);
 	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -1207,7 +352,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 
 	@Override
 	public RunReference[] listRuns() {
-		invokes++;
 		ArrayList<RunReference> ws = new ArrayList<RunReference>();
 		UriBuilder ub = getRunUriBuilder();
 		for (String runName : runs().keySet())
@@ -1218,7 +362,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	@Override
 	public RunReference submitWorkflow(Workflow workflow)
 			throws NoUpdateException {
-		invokes++;
 		String name = buildWorkflow(workflow, getPrincipal());
 		return new RunReference(name, getRunUriBuilder());
 	}
@@ -1227,14 +370,12 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 
 	@Override
 	public Workflow[] getAllowedWorkflows() {
-		invokes++;
 		return policy.listPermittedWorkflows(getPrincipal()).toArray(
 				WORKFLOW_ARRAY_TYPE);
 	}
 
 	@Override
 	public String[] getAllowedListeners() {
-		invokes++;
 		return listenerFactory.getSupportedListenerTypes().toArray(
 				new String[0]);
 	}
@@ -1242,57 +383,48 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	@Override
 	public void destroyRun(String runName) throws UnknownRunException,
 			NoUpdateException {
-		invokes++;
 		unregisterRun(runName, null);
 	}
 
 	@Override
 	public Workflow getRunWorkflow(String runName) throws UnknownRunException {
-		invokes++;
 		return getRun(runName).getWorkflow();
 	}
 
 	@Override
 	public Date getRunExpiry(String runName) throws UnknownRunException {
-		invokes++;
 		return getRun(runName).getExpiry();
 	}
 
 	@Override
 	public void setRunExpiry(String runName, Date d)
 			throws UnknownRunException, NoUpdateException {
-		invokes++;
 		updateExpiry(getRun(runName), d);
 	}
 
 	@Override
 	public Date getRunCreationTime(String runName) throws UnknownRunException {
-		invokes++;
 		return getRun(runName).getCreationTimestamp();
 	}
 
 	@Override
 	public Date getRunFinishTime(String runName) throws UnknownRunException {
-		invokes++;
 		return getRun(runName).getFinishTimestamp();
 	}
 
 	@Override
 	public Date getRunStartTime(String runName) throws UnknownRunException {
-		invokes++;
 		return getRun(runName).getStartTimestamp();
 	}
 
 	@Override
 	public Status getRunStatus(String runName) throws UnknownRunException {
-		invokes++;
 		return getRun(runName).getStatus();
 	}
 
 	@Override
 	public void setRunStatus(String runName, Status s)
 			throws UnknownRunException, NoUpdateException {
-		invokes++;
 		TavernaRun w = getRun(runName);
 		permitUpdate(w);
 		w.setStatus(s);
@@ -1303,7 +435,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 
 	@Override
 	public String getRunOwner(String runName) throws UnknownRunException {
-		invokes++;
 		return getRun(runName).getSecurityContext().getOwner().getName();
 	}
 
@@ -1335,7 +466,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	@Override
 	public Credential[] getRunCredentials(String runName)
 			throws UnknownRunException, NotOwnerException {
-		invokes++;
 		try {
 			return getRunSecurityContext(runName, false).getCredentials();
 		} catch (BadStateChangeException e) {
@@ -1350,7 +480,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 			Credential credential) throws UnknownRunException,
 			NotOwnerException, InvalidCredentialException,
 			NoCredentialException, BadStateChangeException {
-		invokes++;
 		TavernaSecurityContext c = getRunSecurityContext(runName, true);
 		if (credentialID == null || credentialID.isEmpty()) {
 			credential.id = randomUUID().toString();
@@ -1375,7 +504,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	public void deleteRunCredential(String runName, String credentialID)
 			throws UnknownRunException, NotOwnerException,
 			NoCredentialException, BadStateChangeException {
-		invokes++;
 		TavernaSecurityContext c = getRunSecurityContext(runName, true);
 		Credential toDelete = new Credential() {
 		};
@@ -1386,7 +514,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	@Override
 	public Trust[] getRunCertificates(String runName)
 			throws UnknownRunException, NotOwnerException {
-		invokes++;
 		try {
 			return getRunSecurityContext(runName, false).getTrusted();
 		} catch (BadStateChangeException e) {
@@ -1401,7 +528,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 			Trust certificate) throws UnknownRunException, NotOwnerException,
 			InvalidCredentialException, NoCredentialException,
 			BadStateChangeException {
-		invokes++;
 		TavernaSecurityContext c = getRunSecurityContext(runName, true);
 		if (certificateID == null || certificateID.isEmpty()) {
 			certificate.id = randomUUID().toString();
@@ -1426,7 +552,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	public void deleteRunCertificates(String runName, String certificateID)
 			throws UnknownRunException, NotOwnerException,
 			NoCredentialException, BadStateChangeException {
-		invokes++;
 		TavernaSecurityContext c = getRunSecurityContext(runName, true);
 		Trust toDelete = new Trust();
 		toDelete.id = certificateID;
@@ -1465,7 +590,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 			Permission permission) throws UnknownRunException,
 			NotOwnerException {
 		try {
-			setPerm(getRunSecurityContext(runName, false), userName, permission);
+			setPermission(getRunSecurityContext(runName, false), userName,
+					permission);
 		} catch (BadStateChangeException e) {
 			log.error("unexpected error from internal API", e);
 		}
@@ -1478,7 +604,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	public RdfWrapper getRunOutputDescription(String runName)
 			throws UnknownRunException, BadStateChangeException,
 			FilesystemAccessException, NoDirectoryEntryException {
-		invokes++;
 		TavernaRun run = getRun(runName);
 		if (run.getStatus() == Initialized) {
 			throw new BadStateChangeException(
@@ -1491,7 +616,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	public DirEntryReference[] getRunDirectoryContents(String runName,
 			DirEntryReference d) throws UnknownRunException,
 			FilesystemAccessException, NoDirectoryEntryException {
-		invokes++;
 		List<DirEntryReference> result = new ArrayList<DirEntryReference>();
 		for (DirectoryEntry e : fileUtils.getDirectory(getRun(runName), d)
 				.getContents())
@@ -1503,7 +627,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	public byte[] getRunDirectoryAsZip(String runName, DirEntryReference d)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException {
-		invokes++;
 		return fileUtils.getDirectory(getRun(runName), d).getContentsAsZip();
 	}
 
@@ -1512,7 +635,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 			DirEntryReference parent, String name) throws UnknownRunException,
 			NoUpdateException, FilesystemAccessException,
 			NoDirectoryEntryException {
-		invokes++;
 		TavernaRun w = getRun(runName);
 		permitUpdate(w);
 		Directory dir = fileUtils.getDirectory(w, parent).makeSubdirectory(
@@ -1525,7 +647,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 			DirEntryReference parent, String name) throws UnknownRunException,
 			NoUpdateException, FilesystemAccessException,
 			NoDirectoryEntryException {
-		invokes++;
 		TavernaRun w = getRun(runName);
 		permitUpdate(w);
 		File f = fileUtils.getDirectory(w, parent).makeEmptyFile(
@@ -1537,7 +658,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	public void destroyRunDirectoryEntry(String runName, DirEntryReference d)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, NoDirectoryEntryException {
-		invokes++;
 		TavernaRun w = getRun(runName);
 		permitUpdate(w);
 		fileUtils.getDirEntry(w, d).destroy();
@@ -1547,7 +667,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	public byte[] getRunFileContents(String runName, DirEntryReference d)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException {
-		invokes++;
 		File f = fileUtils.getFile(getRun(runName), d);
 		return f.getContents(0, -1);
 	}
@@ -1556,7 +675,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	public void setRunFileContents(String runName, DirEntryReference d,
 			byte[] newContents) throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, NoDirectoryEntryException {
-		invokes++;
 		TavernaRun w = getRun(runName);
 		permitUpdate(w);
 		fileUtils.getFile(w, d).setContents(newContents);
@@ -1566,7 +684,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	public long getRunFileLength(String runName, DirEntryReference d)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException {
-		invokes++;
 		return fileUtils.getFile(getRun(runName), d).getSize();
 	}
 
@@ -1575,7 +692,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 
 	@Override
 	public String[] getRunListeners(String runName) throws UnknownRunException {
-		invokes++;
 		TavernaRun w = getRun(runName);
 		List<String> result = new ArrayList<String>();
 		for (Listener l : w.getListeners())
@@ -1587,7 +703,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	public String addRunListener(String runName, String listenerType,
 			String configuration) throws UnknownRunException,
 			NoUpdateException, NoListenerException {
-		invokes++;
 		return makeListener(getRun(runName), listenerType, configuration)
 				.getName();
 	}
@@ -1596,21 +711,18 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	public String getRunListenerConfiguration(String runName,
 			String listenerName) throws UnknownRunException,
 			NoListenerException {
-		invokes++;
 		return getListener(runName, listenerName).getConfiguration();
 	}
 
 	@Override
 	public String[] getRunListenerProperties(String runName, String listenerName)
 			throws UnknownRunException, NoListenerException {
-		invokes++;
 		return getListener(runName, listenerName).listProperties().clone();
 	}
 
 	@Override
 	public String getRunListenerProperty(String runName, String listenerName,
 			String propName) throws UnknownRunException, NoListenerException {
-		invokes++;
 		return getListener(runName, listenerName).getProperty(propName);
 	}
 
@@ -1618,7 +730,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	public void setRunListenerProperty(String runName, String listenerName,
 			String propName, String value) throws UnknownRunException,
 			NoUpdateException, NoListenerException {
-		invokes++;
 		TavernaRun w = getRun(runName);
 		permitUpdate(w);
 		Listener l = getListener(w, listenerName);
@@ -1634,14 +745,12 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	@Override
 	public InputDescription getRunInputs(String runName)
 			throws UnknownRunException {
-		invokes++;
 		return new InputDescription(getRun(runName));
 	}
 
 	@Override
 	public String getRunOutputBaclavaFile(String runName)
 			throws UnknownRunException {
-		invokes++;
 		return getRun(runName).getOutputBaclavaFile();
 	}
 
@@ -1649,7 +758,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	public void setRunInputBaclavaFile(String runName, String fileName)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, BadStateChangeException {
-		invokes++;
 		TavernaRun w = getRun(runName);
 		permitUpdate(w);
 		w.setInputBaclavaFile(fileName);
@@ -1659,7 +767,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	public void setRunInputPortFile(String runName, String portName,
 			String portFilename) throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, BadStateChangeException {
-		invokes++;
 		TavernaRun w = getRun(runName);
 		permitUpdate(w);
 		Input i = getInput(w, portName);
@@ -1672,7 +779,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	public void setRunInputPortValue(String runName, String portName,
 			String portValue) throws UnknownRunException, NoUpdateException,
 			BadStateChangeException {
-		invokes++;
 		TavernaRun w = getRun(runName);
 		permitUpdate(w);
 		Input i = getInput(w, portName);
@@ -1685,7 +791,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	public void setRunOutputBaclavaFile(String runName, String outputFile)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, BadStateChangeException {
-		invokes++;
 		TavernaRun w = getRun(runName);
 		permitUpdate(w);
 		w.setOutputBaclavaFile(outputFile);
@@ -1694,7 +799,6 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	@Override
 	public org.taverna.server.input_description.InputDescription getRunInputDescriptor(
 			String runName) throws UnknownRunException {
-		invokes++;
 		TavernaRun run = getRun(runName);
 		return cdBuilder.makeInputDescriptor(run,
 				getRunUriBuilder(run).path("inputs"));
@@ -1729,16 +833,12 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 		try {
 			run = runFactory.create(p, workflow);
 			TavernaSecurityContext c = run.getSecurityContext();
-			if (context != null) {
-				if (context.servlet != null)
-					c.initializeSecurityFromContext(context.servlet);
-				if (context.jaxws != null
-						&& context.jaxws.getUserPrincipal() != null)
-					c.initializeSecurityFromSOAPContext(context.jaxws
-							.getMessageContext());
-				else if (context.jaxrsHeaders != null)
-					c.initializeSecurityFromRESTContext(context.jaxrsHeaders);
-			}
+			if (context != null)
+				c.initializeSecurityFromContext(context);
+			if (jaxws != null && jaxws.getUserPrincipal() != null)
+				c.initializeSecurityFromSOAPContext(jaxws.getMessageContext());
+			else if (jaxrsHeaders != null)
+				c.initializeSecurityFromRESTContext(jaxrsHeaders);
 		} catch (Exception e) {
 			log.error("failed to build workflow run worker", e);
 			throw new NoCreateException("failed to build workflow run worker");
@@ -1748,12 +848,10 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	}
 
 	UriBuilder getRunUriBuilder() {
-		if (context == null || context.jaxws == null
-				|| context.jaxws.getMessageContext() == null)
+		if (jaxws == null || jaxws.getMessageContext() == null)
 			// Hack to make the test suite work
 			return fromUri("/taverna-server/rest/runs").path("{uuid}");
-		String pathInfo = (String) context.jaxws.getMessageContext().get(
-				PATH_INFO);
+		String pathInfo = (String) jaxws.getMessageContext().get(PATH_INFO);
 		return fromUri(pathInfo.replaceFirst("/soap$", "/rest/runs")).path(
 				"{uuid}");
 	}
@@ -1767,13 +865,15 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 		return runStore.listRuns(getPrincipal(), policy);
 	}
 
-	TavernaRun getRun(String runName) throws UnknownRunException {
+	@Override
+	public TavernaRun getRun(String runName) throws UnknownRunException {
 		if (isSuperUser())
 			return runStore.getRun(runName);
 		return runStore.getRun(getPrincipal(), policy, runName);
 	}
 
-	void unregisterRun(String runName, TavernaRun run)
+	@Override
+	public void unregisterRun(String runName, TavernaRun run)
 			throws NoDestroyException, UnknownRunException {
 		if (run == null)
 			run = getRun(runName);
@@ -1782,7 +882,9 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 		run.destroy();
 	}
 
-	Date updateExpiry(TavernaRun run, Date target) throws NoDestroyException {
+	@Override
+	public Date updateExpiry(TavernaRun run, Date target)
+			throws NoDestroyException {
 		policy.permitDestroy(getPrincipal(), run);
 		run.setExpiry(target);
 		return run.getExpiry();
@@ -1808,7 +910,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 		throw new NoListenerException();
 	}
 
-	Listener makeListener(TavernaRun run, String type, String config)
+	@Override
+	public Listener makeListener(TavernaRun run, String type, String config)
 			throws NoListenerException, NoUpdateException {
 		permitUpdate(run);
 		return listenerFactory.makeListener(run, type, config);
@@ -1820,59 +923,47 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	 * 
 	 * @return The identity of the user accessing the webapp.
 	 */
-	Principal getPrincipal() {
-		Principal p = null;
-		if ((context == null || (context.jaxws == null && context.jaxrsSecurity == null))
-				&& logGetPrincipalFailures)
-			log.warn("no injected context");
+	@Override
+	public Principal getPrincipal() {
 		try {
-			if (context.jaxws != null
-					&& context.jaxws.getMessageContext() != null)
-				p = context.jaxws.getUserPrincipal();
-		} catch (NullPointerException e) {
-			if (logGetPrincipalFailures)
-				log.warn("failed to get user principal", e);
-		}
-		if (p == null)
-			try {
-				if (context.jaxrsSecurity != null)
-					p = context.jaxrsSecurity.getUserPrincipal();
-			} catch (NullPointerException e) {
+			Authentication auth = SecurityContextHolder.getContext()
+					.getAuthentication();
+			if (auth == null || !auth.isAuthenticated()) {
 				if (logGetPrincipalFailures)
-					log.warn("failed to get user principal", e);
+					log.warn("failed to get auth; going with <NOBODY>");
+				return new SimplePrincipal("<NOBODY>");
 			}
-		if (p != null)
-			log.info("service being accessed by " + p.getName());
-		else {
+			Object principal = auth.getPrincipal();
+			if (principal instanceof Principal)
+				return (Principal) principal;
+			String username;
+			if (principal instanceof UserDetails)
+				username = ((UserDetails) principal).getUsername();
+			else
+				username = principal.toString();
+			return new SimplePrincipal(username);
+		} catch (RuntimeException e) {
 			if (logGetPrincipalFailures)
-				log.info("service being accessed by <NOBODY>");
-			p = new SimplePrincipal("<NOBODY>");
+				log.info("failed to map principal", e);
+			throw e;
 		}
-		return p;
 	}
 
 	private boolean isSuperUser() {
-		if (context == null
-				|| (context.jaxws == null && context.jaxrsSecurity == null))
+		try {
+			adminAuthorizedThunk();
+			return true;
+		} catch (Exception e) {
 			return false;
-		try {
-			if (context.jaxws != null)
-				return context.jaxws.isUserInRole(ADMIN);
-		} catch (NullPointerException e) {
-			if (logGetPrincipalFailures)
-				log.warn("failed to get user principal via JAX-WS", e);
 		}
-		try {
-			if (context.jaxrsSecurity != null)
-				return context.jaxrsSecurity.isUserInRole(ADMIN);
-		} catch (NullPointerException e) {
-			if (logGetPrincipalFailures)
-				log.warn("failed to get user principal via JAX-RS", e);
-		}
-		return false;
 	}
 
-	void permitUpdate(TavernaRun run) throws NoUpdateException {
+	@RolesAllowed(ADMIN)
+	protected final void adminAuthorizedThunk() {
+	}
+
+	@Override
+	public void permitUpdate(TavernaRun run) throws NoUpdateException {
 		if (isSuperUser())
 			return; // Superusers are fully authorized to access others things
 		policy.permitUpdate(getPrincipal(), run);
@@ -1884,11 +975,14 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 		policy.permitDestroy(getPrincipal(), run);
 	}
 
+	@Override
 	public void setLogGetPrincipalFailures(boolean logthem) {
 		logGetPrincipalFailures = logthem;
 	}
 
-	void setPerm(TavernaSecurityContext context, String id, Permission perm) {
+	@Override
+	public void setPermission(TavernaSecurityContext context, String id,
+			Permission perm) {
 		Set<String> permSet;
 		boolean doRead = false, doWrite = false, doKill = false;
 
@@ -1923,7 +1017,8 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 		context.setPermittedDestroyers(permSet);
 	}
 
-	Permission getPerm(TavernaSecurityContext context, String id) {
+	@Override
+	public Permission getPermission(TavernaSecurityContext context, String id) {
 		if (context.getPermittedDestroyers().contains(id))
 			return Permission.Destroy;
 		if (context.getPermittedUpdaters().contains(id))
@@ -1934,28 +1029,53 @@ public class TavernaServerImpl implements TavernaServerSOAP, TavernaServerREST,
 	}
 }
 
-class FalseDE implements DirectoryEntry {
-	public static DirEntryReference make(String path) {
-		return DirEntryReference.newInstance(new FalseDE(path));
-	}
-
-	private FalseDE(String p) {
-		this.p = p;
-	}
-
-	private String p;
-
-	@Override
-	public String getName() {
-		return null;
-	}
+/**
+ * RESTful interface to the policies of a Taverna Server installation.
+ * 
+ * @author Donal Fellows
+ */
+class PolicyREST implements PolicyView, WebappAware {
+	private TavernaServer webapp;
+	private Policy policy;
+	private ListenerFactory listenerFactory;
 
 	@Override
-	public String getFullName() {
-		return p;
+	public void setWebapp(TavernaServer webapp) {
+		this.webapp = webapp;
+	}
+
+	@Required
+	public void setPolicy(Policy policy) {
+		this.policy = policy;
+	}
+
+	@Required
+	public void setListenerFactory(ListenerFactory listenerFactory) {
+		this.listenerFactory = listenerFactory;
 	}
 
 	@Override
-	public void destroy() throws FilesystemAccessException {
+	public PolicyDescription getDescription(UriInfo ui) {
+		return new PolicyDescription(ui);
+	}
+
+	@Override
+	public int getMaxSimultaneousRuns() {
+		Integer limit = policy.getMaxRuns(webapp.getPrincipal());
+		if (limit == null)
+			return policy.getMaxRuns();
+		return min(limit.intValue(), policy.getMaxRuns());
+	}
+
+	@Override
+	public PermittedListeners getPermittedListeners() {
+		return new PermittedListeners(
+				listenerFactory.getSupportedListenerTypes());
+	}
+
+	@Override
+	public PermittedWorkflows getPermittedWorkflows() {
+		return new PermittedWorkflows(policy.listPermittedWorkflows(webapp
+				.getPrincipal()));
 	}
 }

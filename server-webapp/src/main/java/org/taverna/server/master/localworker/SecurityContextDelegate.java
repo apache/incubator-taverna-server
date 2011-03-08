@@ -43,7 +43,6 @@ import org.taverna.server.master.exceptions.InvalidCredentialException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.interfaces.File;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
-import org.taverna.server.master.utils.X500Utils;
 
 /**
  * Implementation of a security context.
@@ -369,14 +368,14 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 	protected void addCertificateToTruststore(KeyStore ts, Certificate cert)
 			throws KeyStoreException {
 		X509Certificate c = (X509Certificate) cert;
-		String owner = X500Utils.getName(c.getSubjectX500Principal(), "CN",
+		String owner = factory.x500Utils.getName(c.getSubjectX500Principal(), "CN",
 				"COMMONNAME", "OU", "ORGANIZATIONALUNITNAME", "O",
 				"ORGANIZATIONNAME");
-		String issuer = X500Utils.getName(c.getIssuerX500Principal(), "CN",
+		String issuer = factory.x500Utils.getName(c.getIssuerX500Principal(), "CN",
 				"COMMONNAME", "OU", "ORGANIZATIONALUNITNAME", "O",
 				"ORGANIZATIONNAME");
 		String alias = "trustedcert#" + owner + "#" + issuer + "#"
-				+ X500Utils.getSerial(c);
+				+ factory.x500Utils.getSerial(c);
 		ts.setCertificateEntry(alias, c);
 	}
 
@@ -398,9 +397,9 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 		X500Principal subject = subjectCert.getSubjectX500Principal();
 		X500Principal issuer = subjectCert.getIssuerX500Principal();
 		String alias = "keypair#"
-				+ X500Utils.getName(subject, "CN", "COMMONNAME") + "#"
-				+ X500Utils.getName(issuer, "CN", "COMMONNAME") + "#"
-				+ X500Utils.getSerial(subjectCert);
+				+ factory.x500Utils.getName(subject, "CN", "COMMONNAME") + "#"
+				+ factory.x500Utils.getName(issuer, "CN", "COMMONNAME") + "#"
+				+ factory.x500Utils.getSerial(subjectCert);
 		addKeypairToKeystore(alias, c);
 	}
 

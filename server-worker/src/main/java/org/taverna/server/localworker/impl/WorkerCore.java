@@ -14,6 +14,8 @@ import static org.taverna.server.localworker.impl.LocalWorker.SYSTEM_ENCODING;
 import static org.taverna.server.localworker.impl.WorkerCore.Status.Aborted;
 import static org.taverna.server.localworker.impl.WorkerCore.Status.Completed;
 import static org.taverna.server.localworker.impl.WorkerCore.Status.Failed;
+import static org.taverna.server.localworker.impl.WorkerCore.Status.Held;
+import static org.taverna.server.localworker.impl.WorkerCore.Status.Started;
 import static org.taverna.server.localworker.remote.RemoteStatus.Finished;
 import static org.taverna.server.localworker.remote.RemoteStatus.Initialized;
 import static org.taverna.server.localworker.remote.RemoteStatus.Operating;
@@ -40,6 +42,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import org.ogf.usage.JobUsageRecord;
 import org.taverna.server.localworker.remote.RemoteListener;
 import org.taverna.server.localworker.remote.RemoteStatus;
+import org.taverna.server.localworker.server.UsageRecordReceiver;
 
 /**
  * The core class that connects to a Taverna command-line workflow execution
@@ -86,15 +89,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	}
 
 	enum Status {
-		Completed("Completed"), Aborted("Aborted"), Failed("Failed");
-		private String s;
-		private Status(String s) {
-			this.s = s;
-		}
-		@Override
-		public String toString() {
-			return s;
-		}
+		Aborted, Completed, Failed, Held, Queued, Started, Suspended
 	}
 
 	Process subprocess;
@@ -104,9 +99,11 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	Integer exitCode;
 	boolean readyToSendEmail;
 	String emailAddress;
-	JobUsageRecord ur;
-
+	
 	private Date start;
+	private JobUsageRecord ur;
+	private File wd;
+	private UsageRecordReceiver urreceiver;
 
 	/**
 	 * @throws RemoteException
@@ -253,6 +250,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 
 		// Indicate what working directory to use
 		pb.directory(workingDir);
+		wd = workingDir;
 
 		// Start the subprocess
 		out.println("starting " + pb.command() + " in directory " + workingDir);
@@ -301,13 +299,18 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	private void buildUR(Status status) {
 		try {
 			Date now = new Date();
-			ur = new JobUsageRecord();
+			ur = new JobUsageRecord(wd.getName());
 			ur.addUser(System.getProperty("user.name"), null);
 			ur.addStartAndEnd(start, now);
 			ur.addWallDuration(now.getTime() - start.getTime());
 			ur.setStatus(status.toString());
 			ur.addHost(InetAddress.getLocalHost().getHostName());
-			// TODO: Push back to webapp side
+			try {
+				if (urreceiver != null)
+					urreceiver.acceptUsageRecord(ur.marshal());
+			} catch (Exception e) {
+				// Ignore
+			}
 		} catch (DatatypeConfigurationException e) {
 			e.printStackTrace();
 		} catch (UnknownHostException e) {
@@ -384,17 +387,21 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		case READY_TO_NOTIFY:
 			return Boolean.toString(readyToSendEmail);
 		case USAGE:
-			JobUsageRecord toReturn = ur;
-			if (subprocess == null)
-				return "";
 			try {
-				if (toReturn == null) {
-					toReturn = new JobUsageRecord();
-					toReturn.setStatus("Started");
+				JobUsageRecord toReturn;
+				if (subprocess == null) {
+					toReturn = new JobUsageRecord(wd.getName());
+					toReturn.setStatus(Held.toString());
+				} else if (ur == null) {
+					toReturn = new JobUsageRecord(wd.getName());
+					toReturn.setStatus(Started.toString());
 					toReturn.addStartAndEnd(start, new Date());
 					toReturn.addUser(System.getProperty("user.name"), null);
-					// Note that this record is not to be pushed to the server
+				} else {
+					toReturn = ur;
 				}
+				// Note that this record is not to be pushed to the server
+				// That is done elsewhere (when a proper record is produced)
 				return toReturn.marshal();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -438,5 +445,10 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	@Override
 	public RemoteListener getDefaultListener() {
 		return this;
+	}
+
+	@Override
+	public void setURReceiver(UsageRecordReceiver receiver) {
+		urreceiver = receiver;
 	}
 }

@@ -16,9 +16,15 @@
 		<property name="idMapper" ref="IdentityMapper" />
 		<property name="fileUtils" ref="fileUtils" />
 		<property name="contentsDescriptorBuilder" ref="contentsDescriptorBuilder" />
-		<property name="context">
-			<bean id="webapp.context.holder" class="org.taverna.server.master.TavernaServerImpl.Context" />
-		</property>
+		<property name="invocationCounter" ref="webapp.invocationCounter" />
+		<lookup-method name="makeRunInterface" bean="run.coreView.prototype" />
+		<lookup-method name="getPolicyDescription" bean="webapp.policyView" />
+	</bean>
+
+	<bean id="webapp.policyView" class="org.taverna.server.master.PolicyREST">
+		<property name="webapp" ref="webapp" />
+		<property name="policy" ref="localworker.policy" />
+		<property name="listenerFactory" ref="listenerFactory" />
 	</bean>
 
 	<bean id="contentsDescriptorBuilder" class="org.taverna.server.master.ContentsDescriptorBuilder">
@@ -26,8 +32,7 @@
 		<property name="fileUtils" ref="fileUtils" />
 	</bean>
 
-	<bean id="webapp.state" class="org.taverna.server.master.ManagementState"
-		init-method="load">
+	<bean id="webapp.state" class="org.taverna.server.master.ManagementState">
 		<description>The initial state of the webapp.</description>
 		<property name="logIncomingWorkflows" value="false" />
 		<property name="allowNewWorkflowRuns" value="true" />
@@ -35,57 +40,52 @@
 		<property name="persistenceManagerFactory" ref="pmf" />
 	</bean>
 
-	<bean id="ExceptionProvider.BadInputPortName" class="org.taverna.server.master.rest.BadInputPortNameHandler">
-		<property name="managementModel" ref="webapp.state" />
+	<bean id="webapp.invocationCounter" class="org.taverna.server.master.utils.InvocationCounter" />
+
+	<bean id="run.coreView.prototype" scope="prototype"
+		class="org.taverna.server.master.RunREST">
+		<property name="webapp" ref="webapp" />
+		<property name="cdBuilder" ref="contentsDescriptorBuilder" />
+		<lookup-method name="makeSecurityInterface" bean="run.securityView.prototype" />
+		<lookup-method name="makeInputInterface" bean="run.inputView.prototype" />
+		<lookup-method name="makeListenersInterface" bean="run.listenersView.prototype" />
+		<lookup-method name="makeDirectoryInterface" bean="run.directoryView.prototype" />
 	</bean>
-	<bean id="ExceptionProvider.BadPropertyValue" class="org.taverna.server.master.rest.BadPropertyValueHandler">
-		<property name="managementModel" ref="webapp.state" />
+
+	<bean id="run.directoryView.prototype" scope="prototype"
+		class="org.taverna.server.master.DirectoryREST">
+		<property name="webapp" ref="webapp" />
+		<property name="fileUtils" ref="fileUtils" />
 	</bean>
-	<bean id="ExceptionProvider.BadStateChange" class="org.taverna.server.master.rest.BadStateChangeHandler">
-		<property name="managementModel" ref="webapp.state" />
+
+	<bean id="run.listenersView.prototype" scope="prototype"
+		class="org.taverna.server.master.ListenersREST">
+		<property name="webapp" ref="webapp" />
+		<lookup-method name="makeListenerInterface" bean="run.singleListenerView.prototype" />
 	</bean>
-	<bean id="ExceptionProvider.FilesystemAccess" class="org.taverna.server.master.rest.FilesystemAccessHandler">
-		<property name="managementModel" ref="webapp.state" />
+
+	<bean id="run.singleListenerView.prototype" scope="prototype"
+		class="org.taverna.server.master.SingleListenerREST">
+		<lookup-method name="makePropertyInterface" bean="run.propertyView.prototype" />
 	</bean>
-	<bean id="ExceptionProvider.InvalidCredential" class="org.taverna.server.master.rest.InvalidCredentialHandler">
-		<property name="managementModel" ref="webapp.state" />
+
+	<bean id="run.propertyView.prototype" scope="prototype"
+		class="org.taverna.server.master.ListenerPropertyREST">
+		<property name="webapp" ref="webapp" />
 	</bean>
-	<bean id="ExceptionProvider.NoCreate" class="org.taverna.server.master.rest.NoCreateHandler">
-		<property name="managementModel" ref="webapp.state" />
+
+	<bean id="run.inputView.prototype" scope="prototype"
+		class="org.taverna.server.master.InputREST">
+		<property name="webapp" ref="webapp" />
+		<property name="cdBuilder" ref="contentsDescriptorBuilder" />
+		<property name="fileUtils" ref="fileUtils" />
 	</bean>
-	<bean id="ExceptionProvider.NoCredential" class="org.taverna.server.master.rest.NoCredentialHandler">
-		<property name="managementModel" ref="webapp.state" />
+
+	<bean id="run.securityView.prototype" scope="prototype"
+		class="org.taverna.server.master.RunSecurityREST">
+		<property name="webapp" ref="webapp" />
 	</bean>
-	<bean id="ExceptionProvider.NoDestroy" class="org.taverna.server.master.rest.NoDestroyHandler">
-		<property name="managementModel" ref="webapp.state" />
-	</bean>
-	<bean id="ExceptionProvider.NoDirectoryEntry" class="org.taverna.server.master.rest.NoDirectoryEntryHandler">
-		<property name="managementModel" ref="webapp.state" />
-	</bean>
-	<bean id="ExceptionProvider.NoListener" class="org.taverna.server.master.rest.NoListenerHandler">
-		<property name="managementModel" ref="webapp.state" />
-	</bean>
-	<bean id="ExceptionProvider.NoUpdate" class="org.taverna.server.master.rest.NoUpdateHandler">
-		<property name="managementModel" ref="webapp.state" />
-	</bean>
-	<bean id="ExceptionProvider.NotOwner" class="org.taverna.server.master.rest.NotOwnerHandler">
-		<property name="managementModel" ref="webapp.state" />
-	</bean>
-	<bean id="ExceptionProvider.UnknownRun" class="org.taverna.server.master.rest.UnknownRunHandler">
-		<property name="managementModel" ref="webapp.state" />
-	</bean>
-	<bean id="ExceptionProvider.JAXBException" class="org.taverna.server.master.rest.JAXBExceptionHandler">
-		<property name="managementModel" ref="webapp.state" />
-	</bean>
-	<bean id="ExceptionProvider.AccessDenied" class="org.taverna.server.master.rest.AccessDeniedHandler">
-		<property name="managementModel" ref="webapp.state" />
-	</bean>
-	<bean id="MessagingProvider.File" class="org.taverna.server.master.rest.FileMessageHandler">
-		<property name="maxChunkSize" value="65536" />
-	</bean>
-	<bean id="MessagingProvider.InputStream"
-		class="org.taverna.server.master.rest.InputStreamMessageHandler">
-	</bean>
+
 
 	<bean id="IdentityMapper" class="org.taverna.server.master.CompositeIDMapper">
 		<property name="identityMappers">
@@ -137,8 +137,7 @@
 
 	<!-- TODO: control the location of the database properly, or move to JNDI 
 		TODO: review whether what we are doing now is correct! -->
-	<bean id="dataSource" class="org.taverna.server.master.utils.WebappAwareDataSource"
-		destroy-method="close">
+	<bean id="dataSource" class="org.taverna.server.master.utils.WebappAwareDataSource">
 		<property name="driverClassName" value="org.apache.derby.jdbc.EmbeddedDriver" />
 		<property name="url"
 			value="jdbc:derby:directory:%{WEBAPPROOT}tavernaserver;create=true" />
@@ -149,10 +148,13 @@
 
 	<bean id="contextualizer" class="org.taverna.server.master.utils.Contextualizer" />
 
-	<bean id="localworker.factory"
-		class="org.taverna.server.master.localworker.IdAwareForkRunFactory"
-		scope="singleton" lazy-init="false" init-method="initMetaFactory"
-		destroy-method="killFactories">
+	<bean id="usageRecordSink" class="org.taverna.server.master.UsageRecordRecorder">
+		<property name="state" ref="webapp.state" />
+		<property name="contextualizer" ref="contextualizer" />
+	</bean>
+
+	<bean id="localworker.factory" scope="singleton" lazy-init="false"
+		class="org.taverna.server.master.localworker.IdAwareForkRunFactory">
 		<description>
 			The simple policy manager and factory for the baseline
 			localworker case.
@@ -161,12 +163,14 @@
 		<property name="runDB" ref="localworker.runDB" />
 		<property name="idMapper" ref="IdentityMapper" />
 		<property name="securityContextFactory" ref="localworker.securityContext" />
+		<property name="usageRecordSink" ref="usageRecordSink" />
 	</bean>
 
 	<bean id="localworker.securityContext"
 		class="org.taverna.server.master.localworker.SecurityContextFactory">
 		<property name="runDatabase" ref="localworker.runDB" />
 		<property name="filenameConverter" ref="fileUtils" />
+		<property name="x500Utils" ref="x500Utils" />
 	</bean>
 
 	<bean id="localworker.state" class="org.taverna.server.master.localworker.LocalWorkerState"
@@ -211,8 +215,7 @@
 	<bean id="localworker.policy" class="org.taverna.server.master.localworker.PolicyImpl">
 		<description>
 			The implementation of the access control policy
-			supported
-			by the localworker run engine.
+			supported by the localworker run engine.
 		</description>
 		<property name="state" ref="localworker.state" />
 		<property name="runDB" ref="localworker.runDB" />
@@ -273,5 +276,6 @@
 	<alias name="localworker.factory" alias="listenerFactory" />
 
 	<bean id="fileUtils" class="org.taverna.server.master.utils.FilenameUtils" />
+	<bean id="x500Utils" class="org.taverna.server.master.utils.X500Utils" />
 	<task:scheduler id="taskScheduler" pool-size="2"/>
 </beans>

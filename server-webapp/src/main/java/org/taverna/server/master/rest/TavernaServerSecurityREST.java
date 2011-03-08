@@ -42,6 +42,7 @@ import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.InvalidCredentialException;
 import org.taverna.server.master.exceptions.NoCredentialException;
+import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 // FIXME document this interface (and its contained helper classes)
 @RolesAllowed(USER)
@@ -50,6 +51,7 @@ public interface TavernaServerSecurityREST {
 	@GET
 	@Path("/")
 	@Produces("application/xml")
+	@CallCounted
 	Descriptor describe(@Context UriInfo ui);
 
 	/**
@@ -61,6 +63,7 @@ public interface TavernaServerSecurityREST {
 	@Path("owner")
 	@Produces("text/plain")
 	@Description("Gives the identity of who owns the workflow run.")
+	@CallCounted
 	String getOwner();
 
 	/*
@@ -68,18 +71,23 @@ public interface TavernaServerSecurityREST {
 	 * 
 	 * @Path("/")
 	 * 
-	 * @Consumes(APPLICATION_OCTET_STREAM) public void set(InputStream contents,
+	 * @Consumes(APPLICATION_OCTET_STREAM)
+	 * 
+	 * @CallCounted public void set(InputStream contents,
+	 * 
 	 * @Context UriInfo ui);
 	 */
 
 	@GET
 	@Path("credentials")
 	@Produces("application/xml")
+	@CallCounted
 	CredentialList listCredentials();
 
 	@GET
 	@Path("credentials/{id}")
 	@Produces("application/xml")
+	@CallCounted
 	Credential getParticularCredential(@PathParam("id") String id)
 			throws NoCredentialException;
 
@@ -87,6 +95,7 @@ public interface TavernaServerSecurityREST {
 	@Path("credentials/{id}")
 	@Consumes("appplication/xml")
 	@Produces("application/xml")
+	@CallCounted
 	Credential setParticularCredential(@PathParam("id") String id,
 			Credential c, @Context UriInfo ui)
 			throws InvalidCredentialException, BadStateChangeException;
@@ -94,27 +103,32 @@ public interface TavernaServerSecurityREST {
 	@POST
 	@Path("credentials")
 	@Consumes("application/xml")
+	@CallCounted
 	Response addCredential(Credential c, @Context UriInfo ui)
 			throws InvalidCredentialException, BadStateChangeException;
 
 	@DELETE
 	@Path("credentials")
+	@CallCounted
 	Response deleteAllCredentials(@Context UriInfo ui)
 			throws BadStateChangeException;
 
 	@DELETE
 	@Path("credentials/{id}")
+	@CallCounted
 	Response deleteCredential(@PathParam("id") String id, @Context UriInfo ui)
 			throws BadStateChangeException;
 
 	@GET
 	@Path("trusts")
 	@Produces("application/xml")
+	@CallCounted
 	TrustList listTrusted();
 
 	@GET
 	@Path("trusts/{id}")
 	@Produces("application/xml")
+	@CallCounted
 	Trust getParticularTrust(@PathParam("id") String id)
 			throws NoCredentialException;
 
@@ -122,6 +136,7 @@ public interface TavernaServerSecurityREST {
 	@Path("trusts/{id}")
 	@Consumes("appplication/xml")
 	@Produces("application/xml")
+	@CallCounted
 	Trust setParticularTrust(@PathParam("id") String id, Trust t,
 			@Context UriInfo ui) throws InvalidCredentialException,
 			BadStateChangeException;
@@ -129,42 +144,50 @@ public interface TavernaServerSecurityREST {
 	@POST
 	@Path("trusts")
 	@Consumes("application/xml")
+	@CallCounted
 	Response addTrust(Trust c, @Context UriInfo ui)
 			throws InvalidCredentialException, BadStateChangeException;
 
 	@DELETE
 	@Path("trusts")
+	@CallCounted
 	Response deleteAllTrusts(@Context UriInfo ui)
 			throws BadStateChangeException;
 
 	@DELETE
 	@Path("trusts/{id}")
+	@CallCounted
 	Response deleteTrust(@PathParam("id") String id, @Context UriInfo ui)
 			throws BadStateChangeException;
 
 	@GET
 	@Path("permissions")
 	@Produces({ "application/xml", "application/json" })
+	@CallCounted
 	PermissionsDescription describePermissions(@Context UriInfo ui);
 
 	@GET
 	@Path("permissions/{id}")
 	@Produces("text/plain")
+	@CallCounted
 	Permission describePermission(@PathParam("id") String id);
 
 	@PUT
 	@Consumes("text/plain")
 	@Produces("text/plain")
 	@Path("permissions/{id}")
+	@CallCounted
 	Permission setPermission(@PathParam("id") String id, Permission perm);
 
 	@DELETE
 	@Path("permissions/{id}")
+	@CallCounted
 	Response deletePermission(@PathParam("id") String id, @Context UriInfo ui);
 
 	@POST
 	@Path("permissions")
 	@Consumes("application/xml")
+	@CallCounted
 	Response makePermission(PermissionDescription desc, @Context UriInfo ui);
 
 	@XmlRootElement(name = "securityDescriptor")

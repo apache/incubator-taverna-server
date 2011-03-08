@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.localworker;
 
 import static java.lang.System.getProperty;
@@ -13,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.rmi.ConnectException;
 import java.rmi.ConnectIOException;
 import java.rmi.NotBoundException;
@@ -22,7 +26,6 @@ import java.security.Principal;
 import java.util.Calendar;
 
 import javax.servlet.ServletContext;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
@@ -42,7 +45,6 @@ import org.taverna.server.master.exceptions.NoCreateException;
 @ManagedResource(objectName = JMX_ROOT + "ForkRunFactory", description = "The factory for simple singleton forked run.")
 public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		ServletContextAware {
-	private JAXBContext context;
 	private int lastStartupCheckCount;
 	private Integer lastExitCode;
 	private int totalRuns;
@@ -57,7 +59,6 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	 *             Shouldn't happen.
 	 */
 	public ForkRunFactory() throws JAXBException {
-		context = JAXBContext.newInstance(Workflow.class);
 	}
 
 	private void reinitFactory() {
@@ -282,7 +283,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	}
 
 	private static class OutputLogger implements Runnable {
-		private static final Log log = getLog(OutputLogger.class);
+		private final Log log = getLog(OutputLogger.class);
 
 		OutputLogger(String name, Process process) {
 			this.uniqueName = name;
@@ -371,15 +372,14 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	@Override
 	protected RemoteSingleRun getRealRun(Principal creator, Workflow workflow)
 			throws Exception {
-		StringWriter sw = new StringWriter();
-		context.createMarshaller().marshal(workflow, sw);
+		String wf = serializeWorkflow(workflow);
 		for (int i = 0; i < 3; i++) {
 			if (factory == null)
 				initFactory();
 			try {
 				if (creator != null && !(creator instanceof Serializable))
 					creator = null;
-				RemoteSingleRun rsr = factory.make(sw.toString(), creator);
+				RemoteSingleRun rsr = factory.make(wf, creator, makeURReciver());
 				totalRuns++;
 				return rsr;
 			} catch (ConnectException e) {

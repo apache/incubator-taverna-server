@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.rest;
 
 import static org.taverna.server.master.common.Roles.USER;
@@ -32,6 +37,7 @@ import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.Input;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 /**
  * This represents how a Taverna Server workflow run's inputs looks to a RESTful
@@ -50,6 +56,7 @@ public interface TavernaServerInputREST {
 	@Path("/")
 	@Produces({ "application/xml", "application/json" })
 	@Description("Describe the sub-URIs of this resource.")
+	@CallCounted
 	InputsDescriptor get();
 
 	/**
@@ -60,6 +67,7 @@ public interface TavernaServerInputREST {
 	@Path("/")
 	@Produces({ "application/xml", "application/json" })
 	@Description("Describe the expected inputs of this workflow run.")
+	@CallCounted
 	InputDescription get(@QueryParam("type") String type);
 
 	/**
@@ -70,6 +78,7 @@ public interface TavernaServerInputREST {
 	@Path("baclava")
 	@Produces("text/plain")
 	@Description("Gives the Baclava file describing the inputs, or empty if individual files are used.")
+	@CallCounted
 	String getBaclavaFile();
 
 	/**
@@ -91,6 +100,7 @@ public interface TavernaServerInputREST {
 	@Consumes("text/plain")
 	@Produces("text/plain")
 	@Description("Sets the Baclava file describing the inputs.")
+	@CallCounted
 	String setBaclavaFile(String filename) throws NoUpdateException,
 			BadStateChangeException, FilesystemAccessException;
 
@@ -107,6 +117,7 @@ public interface TavernaServerInputREST {
 	@Path("input/{name}")
 	@Produces({ "application/xml", "application/json" })
 	@Description("Gives a description of what is used to supply a particular input.")
+	@CallCounted
 	InDesc getInput(@PathParam("name") String name)
 			throws BadInputPortNameException;
 
@@ -134,6 +145,7 @@ public interface TavernaServerInputREST {
 	@Path("input/{name}")
 	@Consumes({ "application/xml", "application/json" })
 	@Description("Sets the source for a particular input port.")
+	@CallCounted
 	InDesc setInput(@PathParam("name") String name, InDesc inputDescriptor)
 			throws NoUpdateException, BadStateChangeException,
 			FilesystemAccessException, BadPropertyValueException,

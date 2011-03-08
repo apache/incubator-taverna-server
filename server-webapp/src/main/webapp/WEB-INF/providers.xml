@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (C) 2010-2011 The University of Manchester See the file "LICENSE.txt" 
+	for license terms. -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<import resource="beans.xml" />
+
+	<bean id="ExceptionProvider.BadInputPortName" class="org.taverna.server.master.rest.BadInputPortNameHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.BadPropertyValue" class="org.taverna.server.master.rest.BadPropertyValueHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.BadStateChange" class="org.taverna.server.master.rest.BadStateChangeHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.FilesystemAccess" class="org.taverna.server.master.rest.FilesystemAccessHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.InvalidCredential" class="org.taverna.server.master.rest.InvalidCredentialHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.NoCreate" class="org.taverna.server.master.rest.NoCreateHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.NoCredential" class="org.taverna.server.master.rest.NoCredentialHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.NoDestroy" class="org.taverna.server.master.rest.NoDestroyHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.NoDirectoryEntry" class="org.taverna.server.master.rest.NoDirectoryEntryHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.NoListener" class="org.taverna.server.master.rest.NoListenerHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.NoUpdate" class="org.taverna.server.master.rest.NoUpdateHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.NotOwner" class="org.taverna.server.master.rest.NotOwnerHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.UnknownRun" class="org.taverna.server.master.rest.UnknownRunHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.JAXBException" class="org.taverna.server.master.rest.JAXBExceptionHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.AccessDenied" class="org.taverna.server.master.rest.AccessDeniedHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="MessagingProvider.File" class="org.taverna.server.master.rest.FileMessageHandler">
+		<property name="maxChunkSize" value="65536" />
+	</bean>
+	<bean id="MessagingProvider.InputStream"
+		class="org.taverna.server.master.rest.InputStreamMessageHandler">
+	</bean>
+</beans>

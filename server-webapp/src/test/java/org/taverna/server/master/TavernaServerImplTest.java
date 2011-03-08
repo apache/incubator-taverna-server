@@ -71,7 +71,51 @@ public class TavernaServerImplTest {
 	@Before
 	public void wireup() throws Exception {
 		// Wire everything up; ought to be done with Spring, but this works...
-		server = new TavernaServerImpl();
+		server = new TavernaServerImpl() {
+			@Override
+			protected RunREST makeRunInterface() {
+				return new RunREST() {
+					@Override
+					protected ListenersREST makeListenersInterface() {
+						return new ListenersREST() {
+							@Override
+							protected SingleListenerREST makeListenerInterface() {
+								return new SingleListenerREST() {
+									@Override
+									protected ListenerPropertyREST makePropertyInterface() {
+										return new ListenerPropertyREST() {
+										};
+									}
+								};
+							}
+						};
+					}
+
+					@Override
+					protected RunSecurityREST makeSecurityInterface() {
+						return new RunSecurityREST() {
+						};
+					}
+
+					@Override
+					protected DirectoryREST makeDirectoryInterface() {
+						return new DirectoryREST() {
+						};
+					}
+
+					@Override
+					protected InputREST makeInputInterface() {
+						return new InputREST() {
+						};
+					}
+				};
+			}
+
+			@Override
+			public PolicyView getPolicyDescription() {
+				return new PolicyREST();
+			}
+		};
 		server.setLogGetPrincipalFailures(false);
 		server.setStateModel(new ManagementModel() {
 			@Override
@@ -100,23 +144,30 @@ public class TavernaServerImplTest {
 			@Override
 			public void setLogOutgoingExceptions(boolean logOutgoingExceptions) {
 			}
+
+			@Override
+			public String getUsageRecordLogFile() {
+				return null;
+			}
+
+			@Override
+			public void setUsageRecordLogFile(String usageRecordLogFile) {
+			}
 		});
 		server.setPolicy(policy = new MockPolicy());
 		server.setRunStore(store = new SimpleNonpersistentRunStore());
 		store.setPolicy(policy);
 		server.setRunFactory(runFactory = new ExampleRun.Builder(1));
 		server.setListenerFactory(lFactory = new SimpleListenerFactory());
-		lFactory
-				.setBuilders(singletonMap(
-						"foo",
-						(SimpleListenerFactory.Builder) new SimpleListenerFactory.Builder() {
-							@Override
-							public Listener build(TavernaRun run,
-									String configuration)
-									throws NoListenerException {
-								return makeListener(run, configuration);
-							}
-						}));
+		lFactory.setBuilders(singletonMap(
+				"foo",
+				(SimpleListenerFactory.Builder) new SimpleListenerFactory.Builder() {
+					@Override
+					public Listener build(TavernaRun run, String configuration)
+							throws NoListenerException {
+						return makeListener(run, configuration);
+					}
+				}));
 	}
 
 	@Test
@@ -168,8 +219,8 @@ public class TavernaServerImplTest {
 			assertEquals("bar", l);
 			assertEquals("foobar", lrunconf);
 			assertEquals(lrunname, server.getRun(run.name).toString());
-			assertEquals(asList("default", "bar"), asList(server
-					.getRunListeners(run.name)));
+			assertEquals(asList("default", "bar"),
+					asList(server.getRunListeners(run.name)));
 			assertEquals(0,
 					server.getRunListenerProperties(run.name, "bar").length);
 		} finally {

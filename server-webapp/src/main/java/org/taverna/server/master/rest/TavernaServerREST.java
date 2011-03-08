@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.rest;
 
 import static org.taverna.server.master.common.Namespaces.XLINK;
@@ -34,6 +39,7 @@ import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.soap.TavernaServerSOAP;
+import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 /**
  * The REST service interface to Taverna 2 Server release 2.
@@ -56,6 +62,7 @@ public interface TavernaServerREST {
 	@GET
 	@Produces({ "application/xml", "application/json" })
 	@Description("Produces the description of the service.")
+	@CallCounted
 	ServerDescription describeService(@Context UriInfo ui);
 
 	/**
@@ -69,6 +76,7 @@ public interface TavernaServerREST {
 	@Path("runs")
 	@Produces({ "application/xml", "application/json" })
 	@Description("Produces a list of all runs visible to the user.")
+	@CallCounted
 	RunList listUsersRuns(@Context UriInfo ui);
 
 	/**
@@ -87,6 +95,7 @@ public interface TavernaServerREST {
 	@Path("runs")
 	@Consumes("application/xml")
 	@Description("Accepts (or not) a request to create a new run executing the given workflow.")
+	@CallCounted
 	Response submitWorkflow(Workflow workflow, @Context UriInfo ui)
 			throws NoUpdateException;
 
@@ -95,6 +104,7 @@ public interface TavernaServerREST {
 	 */
 	@Path("policy")
 	@Description("The policies supported by this server.")
+	@CallCounted
 	PolicyView getPolicyDescription();
 
 	/**
@@ -108,6 +118,7 @@ public interface TavernaServerREST {
 	 */
 	@Path("runs/{runName}")
 	@Description("Get a particular named run resource to dispatch to.")
+	@CallCounted
 	TavernaServerRunREST getRunResource(@PathParam("runName") String runName)
 			throws UnknownRunException;
 
@@ -170,6 +181,7 @@ public interface TavernaServerREST {
 		@Path("/")
 		@Produces({ "application/xml", "application/json" })
 		@Description("Describe the parts of this policy.")
+		@CallCounted
 		public PolicyDescription getDescription(@Context UriInfo ui);
 
 		/**
@@ -184,6 +196,7 @@ public interface TavernaServerREST {
 		@Path("runLimit")
 		@Produces("text/plain")
 		@Description("Gets the maximum number of simultaneous runs that the user may create.")
+		@CallCounted
 		public int getMaxSimultaneousRuns();
 
 		/**
@@ -197,6 +210,7 @@ public interface TavernaServerREST {
 		@Path("permittedWorkflows")
 		@Produces({ "application/xml", "application/json" })
 		@Description("Gets the list of permitted workflows.")
+		@CallCounted
 		public PermittedWorkflows getPermittedWorkflows();
 
 		/**
@@ -209,6 +223,7 @@ public interface TavernaServerREST {
 		@Path("permittedListenerTypes")
 		@Produces({ "application/xml", "application/json" })
 		@Description("Gets the list of permitted event listener types.")
+		@CallCounted
 		public PermittedListeners getPermittedListeners();
 
 		/**

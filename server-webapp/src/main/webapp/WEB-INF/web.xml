@@ -3,6 +3,8 @@
     PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
     "http://java.sun.com/dtd/web-app_2_3.dtd">
 
+<!-- Copyright (C) 2010-2011 The University of Manchester See the file "LICENSE.txt" 
+	for license terms. -->
 <web-app id="TAVSERV-2.R2">
 	<display-name>Taverna 2 Server release 2</display-name>
 	<description>This is the front-end server engine for Taverna 2 Server.</description>
