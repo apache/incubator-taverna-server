@@ -5,10 +5,8 @@
  */
 package org.taverna.server.master.rest;
 
-import static org.taverna.server.master.common.Namespaces.XLINK;
 import static org.taverna.server.master.common.Roles.USER;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +22,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -75,6 +72,7 @@ public interface TavernaServerREST {
 	@GET
 	@Path("runs")
 	@Produces({ "application/xml", "application/json" })
+	@RolesAllowed(USER)
 	@Description("Produces a list of all runs visible to the user.")
 	@CallCounted
 	RunList listUsersRuns(@Context UriInfo ui);
@@ -94,6 +92,7 @@ public interface TavernaServerREST {
 	@POST
 	@Path("runs")
 	@Consumes("application/xml")
+	@RolesAllowed(USER)
 	@Description("Accepts (or not) a request to create a new run executing the given workflow.")
 	@CallCounted
 	Response submitWorkflow(Workflow workflow, @Context UriInfo ui)
@@ -117,6 +116,7 @@ public interface TavernaServerREST {
 	 *             If the run handle is unknown to the current user.
 	 */
 	@Path("runs/{runName}")
+	@RolesAllowed(USER)
 	@Description("Get a particular named run resource to dispatch to.")
 	@CallCounted
 	TavernaServerRunREST getRunResource(@PathParam("runName") String runName)
@@ -132,10 +132,10 @@ public interface TavernaServerREST {
 	@XmlType(name = "")
 	public static class ServerDescription extends VersionedElement {
 		/**
-		 * References to the runs (known about by the current user) in this
-		 * server.
+		 * References to the collection of runs (known about by the current
+		 * user) in this server.
 		 */
-		public PointingRunList runs;
+		public Uri runs;
 		/**
 		 * Reference to the policy description part of this server.
 		 */
@@ -154,18 +154,14 @@ public interface TavernaServerREST {
 		/**
 		 * Make a description of the server.
 		 * 
-		 * @param ws
-		 *            The mapping of run names to runs.
 		 * @param ui
 		 *            The factory for URIs.
 		 */
-		public ServerDescription(Map<String, TavernaRun> ws, UriInfo ui) {
+		public ServerDescription(UriInfo ui) {
 			super(true);
-			runs = new PointingRunList(ws, ui.getAbsolutePathBuilder().path(
-					"runs/{uuid}"), ui.getAbsolutePathBuilder().path("runs")
-					.build());
+			runs = new Uri(ui, true, "runs");
 			policy = new Uri(ui, "policy");
-			// database = new Uri(ui, "database");
+			// database = new Uri(ui, true, "database");
 			// TODO make the database point to something real
 		}
 	}
@@ -175,7 +171,6 @@ public interface TavernaServerREST {
 	 * 
 	 * @author Donal Fellows
 	 */
-	@RolesAllowed(USER)
 	public interface PolicyView {
 		@GET
 		@Path("/")
@@ -195,6 +190,7 @@ public interface TavernaServerREST {
 		@GET
 		@Path("runLimit")
 		@Produces("text/plain")
+		@RolesAllowed(USER)
 		@Description("Gets the maximum number of simultaneous runs that the user may create.")
 		@CallCounted
 		public int getMaxSimultaneousRuns();
@@ -209,6 +205,7 @@ public interface TavernaServerREST {
 		@GET
 		@Path("permittedWorkflows")
 		@Produces({ "application/xml", "application/json" })
+		@RolesAllowed(USER)
 		@Description("Gets the list of permitted workflows.")
 		@CallCounted
 		public PermittedWorkflows getPermittedWorkflows();
@@ -222,6 +219,7 @@ public interface TavernaServerREST {
 		@GET
 		@Path("permittedListenerTypes")
 		@Produces({ "application/xml", "application/json" })
+		@RolesAllowed(USER)
 		@Description("Gets the list of permitted event listener types.")
 		@CallCounted
 		public PermittedListeners getPermittedListeners();
@@ -254,9 +252,10 @@ public interface TavernaServerREST {
 			/** Make a server description. */
 			public PolicyDescription(UriInfo ui) {
 				super(true);
-				runLimit = new Uri(ui, "runLimit");
-				permittedWorkflows = new Uri(ui, "permittedWorkflows");
-				permittedListenerTypes = new Uri(ui, "permittedListenerTypes");
+				runLimit = new Uri(ui, true, "runLimit");
+				permittedWorkflows = new Uri(ui, true, "permittedWorkflows");
+				permittedListenerTypes = new Uri(ui, true,
+						"permittedListenerTypes");
 			}
 		}
 	}
@@ -348,34 +347,6 @@ public interface TavernaServerREST {
 			run = new ArrayList<RunReference>(runs.size());
 			for (String name : runs.keySet())
 				run.add(new RunReference(name, ub));
-		}
-	}
-
-	@XmlType(name = "RunList")
-	public static class PointingRunList {
-		/** The reference to the real list of runs. */
-		@XmlAttribute(name = "href", namespace = XLINK)
-		public URI href;
-		/** The references to the workflow runs. */
-		@XmlElement
-		public List<Uri> run;
-
-		/**
-		 * Make an empty list of run references.
-		 */
-		public PointingRunList() {
-			run = new ArrayList<Uri>();
-		}
-
-		/**
-		 * Make a list of references to workflow runs.
-		 */
-		public PointingRunList(Map<String, TavernaRun> runs, UriBuilder ub,
-				URI uri) {
-			run = new ArrayList<Uri>(runs.size());
-			for (String name : runs.keySet())
-				run.add(new Uri(ub.build(name)));
-			href = uri;
 		}
 	}
 }

@@ -284,7 +284,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	@Override
 	public ServerDescription describeService(UriInfo ui) {
-		return new ServerDescription(runs(), ui);
+		return new ServerDescription(ui);
 	}
 
 	@Override

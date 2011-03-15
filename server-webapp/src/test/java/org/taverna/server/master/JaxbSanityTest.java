@@ -16,7 +16,6 @@ import javax.xml.bind.SchemaOutputResolver;
 import javax.xml.transform.Result;
 import javax.xml.transform.stream.StreamResult;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.taverna.server.master.common.Credential;
@@ -24,15 +23,13 @@ import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
 import org.taverna.server.master.common.Permission;
 import org.taverna.server.master.common.RunReference;
-import org.taverna.server.master.common.Trust;
-import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.common.Status;
+import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.common.Uri;
+import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.rest.DirectoryContents;
 import org.taverna.server.master.rest.ListenerDefinition;
 import org.taverna.server.master.rest.MakeOrUpdateDirEntry;
-import org.taverna.server.master.rest.TavernaServerSecurityREST;
-import org.taverna.server.master.rest.TavernaServerREST.PolicyView.PolicyDescription;
 import org.taverna.server.master.rest.TavernaServerInputREST.InDesc;
 import org.taverna.server.master.rest.TavernaServerInputREST.InputsDescriptor;
 import org.taverna.server.master.rest.TavernaServerListenersREST.ListenerDescription;
@@ -41,10 +38,11 @@ import org.taverna.server.master.rest.TavernaServerListenersREST.Properties;
 import org.taverna.server.master.rest.TavernaServerListenersREST.PropertyDescription;
 import org.taverna.server.master.rest.TavernaServerREST.PermittedListeners;
 import org.taverna.server.master.rest.TavernaServerREST.PermittedWorkflows;
-import org.taverna.server.master.rest.TavernaServerREST.PointingRunList;
+import org.taverna.server.master.rest.TavernaServerREST.PolicyView.PolicyDescription;
 import org.taverna.server.master.rest.TavernaServerREST.RunList;
 import org.taverna.server.master.rest.TavernaServerREST.ServerDescription;
 import org.taverna.server.master.rest.TavernaServerRunREST.RunDescription;
+import org.taverna.server.master.rest.TavernaServerSecurityREST;
 import org.taverna.server.master.soap.PermissionList;
 
 /**
@@ -187,11 +185,6 @@ public class JaxbSanityTest {
 	}
 
 	@Test
-	public void testJAXBForPointingRunList() throws Exception {
-		testJAXB(PointingRunList.class);
-	}
-
-	@Test
 	public void testJAXBForPolicyDescription() throws Exception {
 		testJAXB(PolicyDescription.class);
 	}
@@ -252,8 +245,8 @@ public class JaxbSanityTest {
 				Listeners.class, Properties.class, PropertyDescription.class,
 				PermittedListeners.class, PermittedWorkflows.class,
 				ServerDescription.class, RunDescription.class, Uri.class,
-				RunList.class, PointingRunList.class, PolicyDescription.class,
-				PermissionList.class, Credential.class, Trust.class,
+				RunList.class, PolicyDescription.class, PermissionList.class,
+				Credential.class, Trust.class,
 				TavernaServerSecurityREST.CredentialList.class,
 				TavernaServerSecurityREST.TrustList.class, Permission.class,
 				TavernaServerSecurityREST.Descriptor.class,

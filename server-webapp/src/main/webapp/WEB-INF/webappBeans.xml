@@ -3,10 +3,9 @@
 	for license terms. -->
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:aop="http://www.springframework.org/schema/aop"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jaxrs="http://cxf.apache.org/jaxrs"
-	xmlns:jaxws="http://cxf.apache.org/jaxws" xmlns:cxf="http://cxf.apache.org/core"
-	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs" xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xmlns:cxf="http://cxf.apache.org/core" xmlns:security="http://www.springframework.org/schema/security"
 	xsi:schemaLocation="
 	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
@@ -29,8 +28,7 @@
 	<import resource="providers.xml" />
 
 	<jaxws:server id="master_SOAP"
-		serviceClass="org.taverna.server.master.TavernaServerImpl"
-		address="/soap">
+		serviceClass="org.taverna.server.master.TavernaServerImpl" address="/soap">
 		<jaxws:serviceBean>
 			<ref bean="webapp" />
 		</jaxws:serviceBean>
@@ -84,21 +82,35 @@
 		<property name="locateExistingServerIfPossible" value="true" />
 	</bean>
 	<context:mbean-export server="MBeanServer"
-		default-domain="${my.domain}" registration="ignoreExisting"/>
+		default-domain="${my.domain}" registration="ignoreExisting" />
 
 	<bean id="invokation.counter" class="org.taverna.server.master.utils.InvocationCounter" />
 	<aop:aspectj-autoproxy proxy-target-class="true" />
 	<security:http realm="tavernaserver">
 		<security:http-basic />
 		<security:intercept-url pattern="/" filters="none" />
-		<security:intercept-url pattern="/services" filters="none" />
-		<!-- These next two don't work; only authorized users may get schemas :-( -->
-<!--		<security:intercept-url pattern="/soap?wsdl**" filters="none" />-->
-<!--		<security:intercept-url pattern="/rest?_wadl**" filters="none" />-->
-		<security:intercept-url pattern="/soap/**" access="ROLE_tavernauser" requires-channel="https" />
-		<security:intercept-url pattern="/rest/**" access="ROLE_tavernauser" requires-channel="https" />
+		<security:intercept-url pattern="/services"
+			filters="none" />
+		<!-- These next one doesn't work; only authorized users may get schemas 
+			:-( -->
+		<!-- <security:intercept-url pattern="/soap?wsdl**" filters="none" /> -->
+		<security:intercept-url pattern="/soap/**"
+			access="ROLE_tavernauser" requires-channel="https" />
+		<security:intercept-url pattern="/rest"
+			filters="none" />
+		<security:intercept-url pattern="/rest/runs"
+			access="ROLE_tavernauser" requires-channel="https" />
+		<security:intercept-url pattern="/rest/runs/**"
+			access="ROLE_tavernauser" requires-channel="https" />
+		<security:intercept-url pattern="/rest/policy"
+			filters="none" />
+		<security:intercept-url pattern="/rest/policy/**"
+			access="ROLE_tavernauser" requires-channel="https" />
 	</security:http>
-	<security:global-method-security jsr250-annotations="enabled"/>
+	<bean class="org.taverna.server.master.common.Uri.Rewriter"
+		autowire="byType" id="URI-Rewriter-Thunk"/>
+	<security:global-method-security
+		jsr250-annotations="enabled" />
 	<security:authentication-manager>
 		<security:authentication-provider>
 			<security:user-service>
