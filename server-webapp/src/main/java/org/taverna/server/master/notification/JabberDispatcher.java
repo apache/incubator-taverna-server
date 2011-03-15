@@ -8,7 +8,6 @@ package org.taverna.server.master.notification;
 
 import static org.taverna.server.master.TavernaServerImpl.log;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.servlet.ServletConfig;
 
@@ -27,7 +26,6 @@ import org.taverna.server.master.interfaces.MessageDispatcher;
  */
 public class JabberDispatcher implements MessageDispatcher, ServletConfigAware {
 	private XMPPConnection conn;
-	private ServletConfig config;
 
 	public static final String SERVICE_PROPERTY_NAME = "xmpp.service";
 	public static final String USER_PROPERTY_NAME = "xmpp.user";
@@ -35,23 +33,35 @@ public class JabberDispatcher implements MessageDispatcher, ServletConfigAware {
 
 	@Override
 	public void setServletConfig(ServletConfig servletConfig) {
-		config = servletConfig;
-	}
-
-	@PostConstruct
-	public void init() {
+		close();
 		try {
-			String host = config.getInitParameter(SERVICE_PROPERTY_NAME);
-			String user = config.getInitParameter(USER_PROPERTY_NAME);
-			String pass = config.getInitParameter(PASSWORD_PROPERTY_NAME);
-			if (host == null || user == null || pass == null)
+			String host = servletConfig.getInitParameter(SERVICE_PROPERTY_NAME);
+			if (host == null) {
+				log.debug("no " + SERVICE_PROPERTY_NAME
+						+ " property in servlet config; disabling XMPP support");
 				return;
+			}
+			String user = servletConfig.getInitParameter(USER_PROPERTY_NAME);
+			if (user == null) {
+				log.debug("no " + USER_PROPERTY_NAME
+						+ " property in servlet config; disabling XMPP support");
+				return;
+			}
+			String pass = servletConfig
+					.getInitParameter(PASSWORD_PROPERTY_NAME);
+			if (pass == null) {
+				log.debug("no " + PASSWORD_PROPERTY_NAME
+						+ " property in servlet config; disabling XMPP support");
+				return;
+			}
 			ConnectionConfiguration cfg = new ConnectionConfiguration(host);
 			cfg.setSendPresence(false);
 			XMPPConnection c = new XMPPConnection(cfg);
 			c.connect();
 			c.login(user, pass, "TavernaServer");
 			conn = c;
+			log.info("connected to XMPP service <" + host + "> as user <"
+					+ user + ">");
 		} catch (Exception e) {
 			log.info("failed to connect to XMPP server", e);
 		}
@@ -74,13 +84,17 @@ public class JabberDispatcher implements MessageDispatcher, ServletConfigAware {
 			String targetParameter) throws Exception {
 		Chat chat = conn.getChatManager().createChat(targetParameter,
 				new DroppingListener());
-		chat.sendMessage(messageContent);
+		Message m = new Message();
+		m.addBody(null, messageContent);
+		m.setSubject(messageSubject);
+		chat.sendMessage(m);
 	}
 
 	static class DroppingListener implements MessageListener {
 		@Override
 		public void processMessage(Chat chat, Message message) {
-			// Just ignore the message
+			log.debug("unexpectedly received XMPP message from <"
+					+ message.getFrom() + ">; ignoring");
 		}
 	}
 }

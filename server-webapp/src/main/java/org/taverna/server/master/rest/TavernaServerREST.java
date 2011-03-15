@@ -252,6 +252,10 @@ public interface TavernaServerREST {
 			 * Where to go to find out about what listeners are allowed.
 			 */
 			public Uri permittedListenerTypes;
+			/**
+			 * How notifications may be sent.
+			 */
+			public Uri enabledNotificationFabrics;
 
 			/** Make a blank server description. */
 			public PolicyDescription() {
@@ -264,6 +268,8 @@ public interface TavernaServerREST {
 				permittedWorkflows = new Uri(ui, true, "permittedWorkflows");
 				permittedListenerTypes = new Uri(ui, true,
 						"permittedListenerTypes");
+				this.enabledNotificationFabrics = new Uri(ui, true,
+						"enabledNotificationFabrics");
 			}
 		}
 	}
