@@ -36,6 +36,7 @@ import org.taverna.server.master.rest.TavernaServerListenersREST.ListenerDescrip
 import org.taverna.server.master.rest.TavernaServerListenersREST.Listeners;
 import org.taverna.server.master.rest.TavernaServerListenersREST.Properties;
 import org.taverna.server.master.rest.TavernaServerListenersREST.PropertyDescription;
+import org.taverna.server.master.rest.TavernaServerREST.EnabledNotificationFabrics;
 import org.taverna.server.master.rest.TavernaServerREST.PermittedListeners;
 import org.taverna.server.master.rest.TavernaServerREST.PermittedWorkflows;
 import org.taverna.server.master.rest.TavernaServerREST.PolicyView.PolicyDescription;
@@ -170,6 +171,11 @@ public class JaxbSanityTest {
 	}
 
 	@Test
+	public void testJAXBForEnabledNotifiers() throws Exception {
+		testJAXB(EnabledNotificationFabrics.class);
+	}
+
+	@Test
 	public void testJAXBForServerDescription() throws Exception {
 		testJAXB(ServerDescription.class);
 	}
@@ -244,8 +250,9 @@ public class JaxbSanityTest {
 				InputsDescriptor.class, ListenerDescription.class,
 				Listeners.class, Properties.class, PropertyDescription.class,
 				PermittedListeners.class, PermittedWorkflows.class,
-				ServerDescription.class, RunDescription.class, Uri.class,
-				RunList.class, PolicyDescription.class, PermissionList.class,
+				EnabledNotificationFabrics.class, ServerDescription.class,
+				RunDescription.class, Uri.class, RunList.class,
+				PolicyDescription.class, PermissionList.class,
 				Credential.class, Trust.class,
 				TavernaServerSecurityREST.CredentialList.class,
 				TavernaServerSecurityREST.TrustList.class, Permission.class,

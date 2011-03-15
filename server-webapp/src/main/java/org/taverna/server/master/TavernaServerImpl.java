@@ -91,7 +91,9 @@ import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
+import org.taverna.server.master.notification.NotificationEngine;
 import org.taverna.server.master.rest.TavernaServerREST;
+import org.taverna.server.master.rest.TavernaServerREST.EnabledNotificationFabrics;
 import org.taverna.server.master.rest.TavernaServerREST.PermittedListeners;
 import org.taverna.server.master.rest.TavernaServerREST.PermittedWorkflows;
 import org.taverna.server.master.rest.TavernaServerREST.PolicyView;
@@ -224,6 +226,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	 * Utilities for accessing files on the local-worker.
 	 */
 	private FilenameUtils fileUtils;
+	private NotificationEngine notificationEngine;
 
 	@Override
 	@Required
@@ -279,6 +282,12 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		this.counter = counter;
 	}
 
+	@Override
+	@Required
+	public void setNotificationEngine(NotificationEngine notificationEngine) {
+		this.notificationEngine = notificationEngine;
+	}
+	
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	// REST INTERFACE
 
@@ -374,10 +383,18 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 				WORKFLOW_ARRAY_TYPE);
 	}
 
+	private static final String[] STRING_ARRAY_TYPE = new String[0];
+
 	@Override
 	public String[] getAllowedListeners() {
 		return listenerFactory.getSupportedListenerTypes().toArray(
-				new String[0]);
+				STRING_ARRAY_TYPE);
+	}
+
+	@Override
+	public String[] getEnabledNotifiers() {
+		return notificationEngine.listAvailableDispatchers().toArray(
+				STRING_ARRAY_TYPE);
 	}
 
 	@Override
@@ -1038,6 +1055,7 @@ class PolicyREST implements PolicyView, WebappAware {
 	private TavernaServer webapp;
 	private Policy policy;
 	private ListenerFactory listenerFactory;
+	private NotificationEngine notificationEngine;
 
 	@Override
 	public void setWebapp(TavernaServer webapp) {
@@ -1052,6 +1070,11 @@ class PolicyREST implements PolicyView, WebappAware {
 	@Required
 	public void setListenerFactory(ListenerFactory listenerFactory) {
 		this.listenerFactory = listenerFactory;
+	}
+
+	@Required
+	public void setNotificationEngine(NotificationEngine notificationEngine) {
+		this.notificationEngine = notificationEngine;
 	}
 
 	@Override
@@ -1077,5 +1100,11 @@ class PolicyREST implements PolicyView, WebappAware {
 	public PermittedWorkflows getPermittedWorkflows() {
 		return new PermittedWorkflows(policy.listPermittedWorkflows(webapp
 				.getPrincipal()));
+	}
+
+	@Override
+	public EnabledNotificationFabrics getEnabledNotifiers() {
+		return new EnabledNotificationFabrics(
+				notificationEngine.listAvailableDispatchers());
 	}
 }

@@ -9,6 +9,8 @@ import static org.taverna.server.master.TavernaServerImpl.log;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Required;
@@ -74,5 +76,19 @@ public class NotificationEngine {
 			if (e2 != null)
 				throw e2;
 		}
+	}
+
+	/**
+	 * What message dispatchers are actually available (i.e., not disabled by
+	 * configuration somewhere).
+	 */
+	public List<String> listAvailableDispatchers() {
+		ArrayList<String> result = new ArrayList<String>();
+		for (Map.Entry<String, MessageDispatcher> entry : dispatchers
+				.entrySet()) {
+			if (entry.getValue().isAvailable())
+				result.add(entry.getKey());
+		}
+		return result;
 	}
 }

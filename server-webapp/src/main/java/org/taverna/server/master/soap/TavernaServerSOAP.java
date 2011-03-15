@@ -103,6 +103,16 @@ public interface TavernaServerSOAP {
 	String[] getAllowedListeners();
 
 	/**
+	 * Get the list of allowed event listeners.
+	 * 
+	 * @return A list of listener names.
+	 */
+	@WebMethod(operationName = "getEnabledNotificationFabrics")
+	@WebResult(name = "EnabledNotifierFabric")
+	@CallCounted
+	String[] getEnabledNotifiers();
+
+	/**
 	 * Destroy a run immediately. This might or might not actually relinquish
 	 * resources; that's up to the service implementation and deployment. This
 	 * does <i>not</i> remove any entries associated with the handle in the

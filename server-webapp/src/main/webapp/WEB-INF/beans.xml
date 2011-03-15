@@ -17,6 +17,7 @@
 		<property name="fileUtils" ref="fileUtils" />
 		<property name="contentsDescriptorBuilder" ref="contentsDescriptorBuilder" />
 		<property name="invocationCounter" ref="webapp.invocationCounter" />
+		<property name="notificationEngine" ref="notificationFabric" />
 		<lookup-method name="makeRunInterface" bean="run.coreView.prototype" />
 		<lookup-method name="getPolicyDescription" bean="webapp.policyView" />
 	</bean>
@@ -25,6 +26,7 @@
 		<property name="webapp" ref="webapp" />
 		<property name="policy" ref="localworker.policy" />
 		<property name="listenerFactory" ref="listenerFactory" />
+		<property name="notificationEngine" ref="notificationFabric" />
 	</bean>
 
 	<bean id="contentsDescriptorBuilder" class="org.taverna.server.master.ContentsDescriptorBuilder">

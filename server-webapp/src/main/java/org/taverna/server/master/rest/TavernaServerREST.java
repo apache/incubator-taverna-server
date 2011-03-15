@@ -224,6 +224,14 @@ public interface TavernaServerREST {
 		@CallCounted
 		public PermittedListeners getPermittedListeners();
 
+		@GET
+		@Path("enabledNotificationFabrics")
+		@Produces({ "application/xml", "application/json" })
+		@RolesAllowed(USER)
+		@Description("Gets the list of supported, enabled notification fabrics. Each corresponds (approximately) to a protocol, e.g., email.")
+		@CallCounted
+		public EnabledNotificationFabrics getEnabledNotifiers();
+
 		/**
 		 * A description of the parts of a server policy.
 		 * 
@@ -347,6 +355,35 @@ public interface TavernaServerREST {
 			run = new ArrayList<RunReference>(runs.size());
 			for (String name : runs.keySet())
 				run.add(new RunReference(name, ub));
+		}
+	}
+
+	/**
+	 * Helper class for describing the listener types that are allowed via JAXB.
+	 * 
+	 * @author Donal Fellows
+	 */
+	@XmlRootElement
+	@XmlType(name = "")
+	public static class EnabledNotificationFabrics {
+		/** The notification fabrics that are enabled. */
+		@XmlElement
+		public List<String> notifier;
+
+		/**
+		 * Make an empty list of enabled notifiers.
+		 */
+		public EnabledNotificationFabrics() {
+			notifier = new ArrayList<String>();
+		}
+
+		/**
+		 * Make a list of enabled notifiers.
+		 * 
+		 * @param enabledNodifiers
+		 */
+		public EnabledNotificationFabrics(List<String> enabledNodifiers) {
+			notifier = enabledNodifiers;
 		}
 	}
 }
