@@ -79,7 +79,7 @@ public interface TavernaServerDirectoryREST {
 	@GET
 	@Path("{path:.+}")
 	@Produces({ "application/xml", "application/json",
-			"application/octet-stream", "application/zip" })
+			"application/octet-stream", "application/zip", "*/*" })
 	@Description("Gives a description of the named entity in or beneath the working directory of the workflow run (either a Directory or File).")
 	@CallCounted
 	Response getDirectoryOrFileContents(

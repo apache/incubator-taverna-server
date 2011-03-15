@@ -5,6 +5,9 @@
  */
 package org.taverna.server.master;
 
+import static eu.medsea.util.MimeUtil.getMimeType;
+import static java.nio.charset.Charset.defaultCharset;
+import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.created;
@@ -17,8 +20,10 @@ import static org.taverna.server.master.TavernaServerImpl.directoryVariants;
 import static org.taverna.server.master.TavernaServerImpl.fileVariants;
 import static org.taverna.server.master.TavernaServerImpl.log;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -130,6 +135,9 @@ abstract class DirectoryREST implements TavernaServerDirectoryREST, WebappAware 
 						.getSubtype().equals(b.getSubtype()));
 	}
 
+	private static final MediaType BACLAVA_MEDIA_TYPE = new MediaType(
+			"application", "vnd.taverna.baclava+xml");
+
 	@Override
 	public Response getDirectoryOrFileContents(List<PathSegment> path,
 			UriInfo ui, HttpHeaders headers) throws FilesystemAccessException,
@@ -138,9 +146,24 @@ abstract class DirectoryREST implements TavernaServerDirectoryREST, WebappAware 
 
 		// How did the user want the result?
 		List<Variant> variants;
-		if (de instanceof File)
-			variants = fileVariants;
-		else if (de instanceof Directory)
+		if (de instanceof File) {
+			variants = new ArrayList<Variant>(fileVariants);
+			if (de.getName().endsWith(".baclava"))
+				variants.add(0, new Variant(BACLAVA_MEDIA_TYPE, null, null));
+			else
+				try {
+					File f = (File) de;
+					byte[] head = f.getContents(0, 1024);
+					String contentType = getMimeType(new ByteArrayInputStream(
+							head));
+					String[] ct = contentType.split("/");
+					if (!contentType.equals(APPLICATION_OCTET_STREAM))
+						variants.add(0, new Variant(
+								new MediaType(ct[0], ct[1]), null, null));
+				} catch (FilesystemAccessException e) {
+					// Ignore; fall back to just serving as bytes
+				}
+		} else if (de instanceof Directory)
 			variants = directoryVariants;
 		else
 			throw new FilesystemAccessException("not a directory or file!");
@@ -162,10 +185,16 @@ abstract class DirectoryREST implements TavernaServerDirectoryREST, WebappAware 
 
 		// Produce the content to deliver up
 		Object result;
-		if (wanted.equals(APPLICATION_OCTET_STREAM_TYPE))
+		if (de instanceof File) {
 			// Only for files...
 			result = de;
-		else if (wanted.equals(APPLICATION_ZIP_TYPE))
+			if (wanted.getType().equals("text")) {
+				File f = (File) de;
+				result = new String(f.getContents(0, (int) f.getSize()),
+						defaultCharset());
+				// Explicitly assumed that the system's charset is correct
+			}
+		} else if (wanted.equals(APPLICATION_ZIP_TYPE))
 			// Only for directories...
 			result = ((Directory) de).getContentsAsZip();
 		else
