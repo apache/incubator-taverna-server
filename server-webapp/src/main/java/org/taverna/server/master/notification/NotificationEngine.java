@@ -3,7 +3,7 @@
  * 
  * See the file "LICENSE.txt" for license terms.
  */
-package org.taverna.server.master;
+package org.taverna.server.master.notification;
 
 import static org.taverna.server.master.TavernaServerImpl.log;
 

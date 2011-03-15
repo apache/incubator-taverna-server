@@ -18,7 +18,7 @@
 							type CDATA #REQUIRED
 							description CDATA #IMPLIED>
 	<!ATTLIST Resource		auth NMTOKEN #IMPLIED
-							name NMTOKEN #REQUIRED
+							name CDATA #REQUIRED
 							override CDATA "false"
 							scope NMTOKEN "Shareable"
 							type CDATA #REQUIRED
@@ -46,7 +46,16 @@
 		description="The fully-qualified location of the program to run a workflow." />
 	<Parameter name="secureForkPasswordFile" value="/usr/local/tomcat6.0/conf/sudopass.txt"
 		description="The fully-qualified location of a file containing the password to use with sudo. The password is assumed to be the first line of the file." />
+	<!-- For email-dispatched notifications. -->
 	<Resource name="mail/Session" auth="Container" type="javax.mail.Session"
 		mail.smtp.host="localhost"
 		description="Where the SMTP server for sending notification emails is located." />
+	<!-- The next three parameters may be omitted if dispatch via Jabber/XMPP 
+		is not wanted. -->
+	<Parameter name="xmpp.service" value="jabber.org"
+		description="Description of an XMPP service that Jabber notifications will be dispatched via." />
+	<Parameter name="xmpp.user" value="tavernaserver"
+		description="User name to use for XMPP notifications." />
+	<Parameter name="xmpp.password" value="CHANGEME!"
+		description="Password to use for XMPP notifications." />
 </Context>

@@ -237,7 +237,7 @@
 			fixed-delay="10000" />
 	</task:scheduled-tasks>
 
-	<bean id="notificationFabric" class="org.taverna.server.master.NotificationEngine">
+	<bean id="notificationFabric" class="org.taverna.server.master.notification.NotificationEngine">
 		<property name="dispatchers">
 			<map>
 				<entry key="mailto">
@@ -246,15 +246,18 @@
 				<entry key="twitter">
 					<ref bean="dispatch.twitter" />
 				</entry>
+				<entry key="xmpp">
+					<ref bean="dispatch.xmpp" />
+				</entry>
 			</map>
 		</property>
 	</bean>
 
-	<bean id="dispatch.email" class="org.taverna.server.master.EmailDispatcher">
+	<bean id="dispatch.email" class="org.taverna.server.master.notification.EmailDispatcher">
 		<property name="from" value="taverna.server@localhost" />
 		<property name="messageContentType" value="text/plain" />
 	</bean>
-	<bean id="dispatch.twitter" class="org.taverna.server.master.TwitterDispatcher">
+	<bean id="dispatch.twitter" class="org.taverna.server.master.notification.TwitterDispatcher">
 		<property name="properties">
 			<description>See twitter4j.conf.PropertyConfiguration</description>
 			<props>
@@ -264,6 +267,7 @@
 		</property>
 		<property name="cooldownSeconds" value="300"/>
 	</bean>
+	<bean id="dispatch.xmpp" class="org.taverna.server.master.notification.JabberDispatcher" />
 
 	<bean id="localworker.notifier"
 		class="org.taverna.server.master.localworker.SimpleFormattedCompletionNotifier">

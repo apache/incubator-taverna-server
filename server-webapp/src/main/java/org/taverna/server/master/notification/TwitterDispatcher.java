@@ -3,7 +3,7 @@
  * 
  * See the file "LICENSE.txt" for license terms.
  */
-package org.taverna.server.master;
+package org.taverna.server.master.notification;
 
 import static twitter4j.conf.PropertyConfiguration.OAUTH_ACCESS_TOKEN;
 import static twitter4j.conf.PropertyConfiguration.OAUTH_ACCESS_TOKEN_SECRET;

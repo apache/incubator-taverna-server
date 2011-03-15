@@ -30,7 +30,6 @@ import javax.jdo.annotations.PrimaryKey;
 import javax.jdo.annotations.Value;
 
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.NotificationEngine;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.interfaces.Listener;
@@ -39,6 +38,7 @@ import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.localworker.PersistentContext.Action;
 import org.taverna.server.master.localworker.PersistentContext.Function;
+import org.taverna.server.master.notification.NotificationEngine;
 
 /**
  * This handles storing runs, interfacing with the underlying state engine as
