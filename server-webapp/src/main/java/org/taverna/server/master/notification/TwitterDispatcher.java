@@ -5,6 +5,7 @@
  */
 package org.taverna.server.master.notification;
 
+import static org.taverna.server.master.notification.NotificationEngine.log;
 import static twitter4j.conf.PropertyConfiguration.OAUTH_ACCESS_TOKEN;
 import static twitter4j.conf.PropertyConfiguration.OAUTH_ACCESS_TOKEN_SECRET;
 import static twitter4j.conf.PropertyConfiguration.OAUTH_CONSUMER_KEY;
@@ -15,9 +16,9 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.servlet.ServletConfig;
-import javax.ws.rs.core.Context;
 
 import org.joda.time.DateTime;
+import org.springframework.web.context.ServletConfigAware;
 import org.taverna.server.master.interfaces.MessageDispatcher;
 
 import twitter4j.Twitter;
@@ -34,7 +35,7 @@ import twitter4j.http.AuthorizationFactory;
  * 
  * @author Donal Fellows
  */
-public class TwitterDispatcher implements MessageDispatcher {
+public class TwitterDispatcher implements MessageDispatcher, ServletConfigAware {
 	public static final int MAX_MESSAGE_LENGTH = 140;
 	public static final char ELLIPSIS = '\u2026';
 
@@ -79,8 +80,16 @@ public class TwitterDispatcher implements MessageDispatcher {
 	public static final String ACCESS_TOKEN_PROP = OAUTH_ACCESS_TOKEN;
 	public static final String ACCESS_SECRET_PROP = OAUTH_ACCESS_TOKEN_SECRET;
 
-	@Context
 	private ServletConfig config;
+	@Override
+	public void setServletConfig(ServletConfig servletConfig) {
+		config = servletConfig;
+		try {
+			getProperties();
+		} catch (NotConfiguredException e) {
+			log.warn("incomplete configuration; disabling Twitter dispatcher");
+		}
+	}
 
 	private Twitter getTwitter(String key, String secret) throws Exception {
 		if (key.isEmpty() || secret.isEmpty())

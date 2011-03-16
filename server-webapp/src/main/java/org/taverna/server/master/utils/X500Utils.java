@@ -11,6 +11,7 @@ import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 
+import javax.annotation.PreDestroy;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.logging.Log;
@@ -23,7 +24,13 @@ import org.apache.commons.logging.LogFactory;
  * @author Donal Fellows
  */
 public class X500Utils {
-	Log log = LogFactory.getLog("Taverna.Server.Utils");
+	private Log log = LogFactory.getLog("Taverna.Server.Utils");
+
+	@PreDestroy
+	void closeLog() {
+		log = null;
+	}
+
 	private static final char DN_SEPARATOR = ',';
 	private static final char DN_ESCAPE = '\\';
 	private static final char DN_QUOTE = '"';

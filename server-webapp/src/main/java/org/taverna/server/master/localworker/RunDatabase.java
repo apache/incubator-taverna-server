@@ -7,7 +7,7 @@ package org.taverna.server.master.localworker;
 
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
-import static org.taverna.server.master.TavernaServerImpl.log;
+import static org.taverna.server.master.localworker.AbstractRemoteRunFactory.log;
 import static org.taverna.server.master.localworker.RunConnections.KEY;
 import static org.taverna.server.master.localworker.RunConnections.makeInstance;
 

@@ -6,7 +6,7 @@
 
 package org.taverna.server.master.notification;
 
-import static org.taverna.server.master.TavernaServerImpl.log;
+import static org.taverna.server.master.notification.NotificationEngine.log;
 
 import javax.annotation.PreDestroy;
 import javax.servlet.ServletConfig;

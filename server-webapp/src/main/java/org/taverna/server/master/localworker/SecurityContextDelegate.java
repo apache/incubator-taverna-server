@@ -35,6 +35,8 @@ import javax.servlet.ServletContext;
 import javax.ws.rs.core.HttpHeaders;
 import javax.xml.ws.handler.MessageContext;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.taverna.server.localworker.remote.RemoteSecurityContext;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.Trust;
@@ -235,7 +237,11 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 	@Override
 	public void initializeSecurityFromContext(ServletContext servletContext)
 			throws Exception {
-		// do nothing in this implementation
+		// This is how to get the info from Spring Security
+		Authentication auth = SecurityContextHolder.getContext()
+				.getAuthentication();
+		auth.getPrincipal();
+		// do nothing else in this implementation
 	}
 
 	@Override
@@ -368,11 +374,11 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 	protected void addCertificateToTruststore(KeyStore ts, Certificate cert)
 			throws KeyStoreException {
 		X509Certificate c = (X509Certificate) cert;
-		String owner = factory.x500Utils.getName(c.getSubjectX500Principal(), "CN",
-				"COMMONNAME", "OU", "ORGANIZATIONALUNITNAME", "O",
+		String owner = factory.x500Utils.getName(c.getSubjectX500Principal(),
+				"CN", "COMMONNAME", "OU", "ORGANIZATIONALUNITNAME", "O",
 				"ORGANIZATIONNAME");
-		String issuer = factory.x500Utils.getName(c.getIssuerX500Principal(), "CN",
-				"COMMONNAME", "OU", "ORGANIZATIONALUNITNAME", "O",
+		String issuer = factory.x500Utils.getName(c.getIssuerX500Principal(),
+				"CN", "COMMONNAME", "OU", "ORGANIZATIONALUNITNAME", "O",
 				"ORGANIZATIONNAME");
 		String alias = "trustedcert#" + owner + "#" + issuer + "#"
 				+ factory.x500Utils.getSerial(c);

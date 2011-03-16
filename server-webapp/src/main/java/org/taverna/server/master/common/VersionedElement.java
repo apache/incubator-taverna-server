@@ -1,5 +1,6 @@
 package org.taverna.server.master.common;
 
+import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.common.Namespaces.SERVER;
 
 import java.io.IOException;
@@ -9,7 +10,7 @@ import java.util.Properties;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
-import org.taverna.server.master.TavernaServerImpl;
+import org.apache.commons.logging.Log;
 
 /**
  * The type of an element that declares the version of the server that produced
@@ -30,19 +31,20 @@ public abstract class VersionedElement {
 	public String serverBuildTimestamp;
 	static final String VERSION, REVISION, TIMESTAMP;
 	static {
+		Log log = getLog("Taverna.Server.Webapp");
 		Properties p = new Properties();
 		InputStream is = null;
 		try {
 			p.load(is = VersionedElement.class
 					.getResourceAsStream("/version.properties"));
 		} catch (IOException e) {
-			TavernaServerImpl.log.warn("failed to read /version.properties", e);
+			log.warn("failed to read /version.properties", e);
 		} finally {
 			try {
 				if (is != null)
 					is.close();
 			} catch (IOException e) {
-				TavernaServerImpl.log.warn("failed to close channel", e);
+				log.warn("failed to close channel", e);
 			}
 		}
 		VERSION = p.getProperty("tavernaserver.version", "unknownVersion");

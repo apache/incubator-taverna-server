@@ -7,17 +7,18 @@ package org.taverna.server.master;
 
 import static eu.medsea.util.MimeUtil.getMimeType;
 import static java.nio.charset.Charset.defaultCharset;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
+import static javax.ws.rs.core.MediaType.APPLICATION_XML_TYPE;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.created;
 import static javax.ws.rs.core.Response.noContent;
 import static javax.ws.rs.core.Response.notAcceptable;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.seeOther;
-import static org.taverna.server.master.TavernaServerImpl.APPLICATION_ZIP_TYPE;
-import static org.taverna.server.master.TavernaServerImpl.directoryVariants;
-import static org.taverna.server.master.TavernaServerImpl.fileVariants;
 import static org.taverna.server.master.TavernaServerImpl.log;
 
 import java.io.ByteArrayInputStream;
@@ -135,6 +136,16 @@ abstract class DirectoryREST implements TavernaServerDirectoryREST, WebappAware 
 						.getSubtype().equals(b.getSubtype()));
 	}
 
+	/** "application/zip" */
+	static final MediaType APPLICATION_ZIP_TYPE = new MediaType("application",
+			"zip");
+	static final List<Variant> directoryVariants = asList(new Variant(
+			APPLICATION_XML_TYPE, null, null), new Variant(
+			APPLICATION_JSON_TYPE, null, null), new Variant(
+			APPLICATION_ZIP_TYPE, null, null));
+	static final List<Variant> fileVariants = singletonList(new Variant(
+			APPLICATION_OCTET_STREAM_TYPE, null, null));
+	/** "application/vnd.taverna.baclava+xml" */
 	private static final MediaType BACLAVA_MEDIA_TYPE = new MediaType(
 			"application", "vnd.taverna.baclava+xml");
 

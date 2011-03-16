@@ -6,18 +6,15 @@
 package org.taverna.server.master;
 
 import static java.lang.Math.min;
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 import static java.util.Collections.sort;
 import static java.util.UUID.randomUUID;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
-import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
-import static javax.ws.rs.core.MediaType.APPLICATION_XML_TYPE;
 import static javax.ws.rs.core.Response.created;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static javax.xml.ws.handler.MessageContext.PATH_INFO;
 import static org.apache.commons.logging.LogFactory.getLog;
+import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 import static org.taverna.server.master.common.DirEntryReference.newInstance;
+import static org.taverna.server.master.common.Namespaces.SERVER_SOAP;
 import static org.taverna.server.master.common.Roles.ADMIN;
 import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.common.Status.Initialized;
@@ -40,12 +37,9 @@ import javax.servlet.ServletContext;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.core.Variant;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.ws.WebServiceContext;
@@ -62,7 +56,6 @@ import org.taverna.server.master.TavernaServerImpl.WebappAware;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
-import org.taverna.server.master.common.Namespaces;
 import org.taverna.server.master.common.Permission;
 import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Status;
@@ -111,19 +104,23 @@ import org.taverna.server.output_description.RdfWrapper;
  */
 @Path("/")
 @DeclareRoles({ USER, ADMIN })
-@WebService(endpointInterface = "org.taverna.server.master.soap.TavernaServerSOAP", serviceName = "TavernaServer", targetNamespace = Namespaces.SERVER_SOAP)
-@ManagedResource(objectName = TavernaServerImpl.JMX_ROOT + "Webapp", description = "The main web-application interface to Taverna Server.")
+@WebService(endpointInterface = "org.taverna.server.master.soap.TavernaServerSOAP", serviceName = "TavernaServer", targetNamespace = SERVER_SOAP)
+@ManagedResource(objectName = JMX_ROOT + "Webapp", description = "The main web-application interface to Taverna Server.")
 public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		TavernaServerREST, TavernaServer {
 	public static final String JMX_ROOT = "Taverna:group=Server-v2,name=";
+	// For converting lists to arrays
+	private static final Workflow[] WORKFLOW_ARRAY_TYPE = new Workflow[0];
+	private static final String[] STRING_ARRAY_TYPE = new String[0];
+
 	/** The logger for the server framework. */
-	public static Log log = getLog(TavernaServerImpl.class);
+	public static Log log = getLog("Taverna.Server.Webapp");
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	// CONNECTIONS TO JMX, SPRING AND CXF
 
 	/**
-	 * The XML serialization engine for workflows.
+	 * The XML serialisation engine for workflows.
 	 */
 	private JAXBContext workflowSerializer;
 	/**
@@ -190,10 +187,8 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	@Resource
 	WebServiceContext jaxws;
 	@Context
-	SecurityContext jaxrsSecurity;
-	@Context
-	HttpHeaders jaxrsHeaders;
-	@Resource
+	private HttpHeaders jaxrsHeaders;
+
 	private ServletContext context;
 
 	@Override
@@ -216,6 +211,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	private ManagementModel stateModel;
 	/** How to map the user ID to who to run as. */
 	private LocalIdentityMapper idMapper;
+	/** Bean used to log counts of external calls. */
 	private InvocationCounter counter;
 	/**
 	 * For building descriptions of the expected inputs and actual outputs of a
@@ -226,6 +222,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	 * Utilities for accessing files on the local-worker.
 	 */
 	private FilenameUtils fileUtils;
+	/** How notifications are dispatched. */
 	private NotificationEngine notificationEngine;
 
 	@Override
@@ -332,19 +329,6 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	/** Construct a RESTful interface to a run. */
 	protected abstract RunREST makeRunInterface();
 
-	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	// REST INTERFACE - Filesystem connection
-
-	/** "application/zip" */
-	static final MediaType APPLICATION_ZIP_TYPE = new MediaType("application",
-			"zip");
-	static final List<Variant> directoryVariants = asList(new Variant(
-			APPLICATION_XML_TYPE, null, null), new Variant(
-			APPLICATION_JSON_TYPE, null, null), new Variant(
-			APPLICATION_ZIP_TYPE, null, null));
-	static final List<Variant> fileVariants = singletonList(new Variant(
-			APPLICATION_OCTET_STREAM_TYPE, null, null));
-
 	/**
 	 * Indicates that this is a class that wants to be told by Spring about the
 	 * main webapp.
@@ -375,15 +359,11 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		return new RunReference(name, getRunUriBuilder());
 	}
 
-	private static final Workflow[] WORKFLOW_ARRAY_TYPE = new Workflow[0];
-
 	@Override
 	public Workflow[] getAllowedWorkflows() {
 		return policy.listPermittedWorkflows(getPrincipal()).toArray(
 				WORKFLOW_ARRAY_TYPE);
 	}
-
-	private static final String[] STRING_ARRAY_TYPE = new String[0];
 
 	@Override
 	public String[] getAllowedListeners() {

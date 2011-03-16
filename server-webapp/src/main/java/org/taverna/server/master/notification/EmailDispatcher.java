@@ -8,8 +8,9 @@ package org.taverna.server.master.notification;
 import static javax.mail.Message.RecipientType.TO;
 import static javax.mail.Transport.send;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
-import static org.taverna.server.master.TavernaServerImpl.log;
+import static org.taverna.server.master.notification.NotificationEngine.log;
 
+import javax.annotation.PostConstruct;
 import javax.mail.Message;
 import javax.mail.Session;
 import javax.mail.internet.AddressException;
@@ -55,6 +56,22 @@ public class EmailDispatcher implements MessageDispatcher {
 		return (Context) new InitialContext().lookup("java:comp/env");
 	}
 
+	private Session mail() throws NamingException {
+		return (Session) env().lookup("mail/Session");
+	}
+
+	@PostConstruct
+	public void tryLookup() {
+		try {
+			if (mail() == null)
+				log.warn("failed to look up mail library in JNDI; "
+						+ "disabling email dispatch");
+		} catch (Exception e) {
+			log.warn("failed to look up mail library in JNDI; "
+					+ "disabling email dispatch", e);
+		}
+	}
+
 	@Override
 	public void dispatch(String messageSubject, String messageContent, String to)
 			throws Exception {
@@ -65,7 +82,7 @@ public class EmailDispatcher implements MessageDispatcher {
 			return;
 		}
 
-		Session session = (Session) env().lookup("mail/Session");
+		Session session = mail();
 
 		if (session == null)
 			return;
@@ -80,8 +97,7 @@ public class EmailDispatcher implements MessageDispatcher {
 	@Override
 	public boolean isAvailable() {
 		try {
-			return from != null
-					&& null != (Session) env().lookup("mail/Session");
+			return from != null && null != mail();
 		} catch (Exception e) {
 			return false;
 		}

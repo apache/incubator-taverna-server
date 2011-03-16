@@ -283,9 +283,10 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	}
 
 	private static class OutputLogger implements Runnable {
-		private final Log log = getLog(OutputLogger.class);
+		private final Log log;
 
 		OutputLogger(String name, Process process) {
+			log = getLog("Taverna.Server.LocalWorker." + name);
 			this.uniqueName = name;
 			this.br = new BufferedReader(new InputStreamReader(process
 					.getInputStream()));

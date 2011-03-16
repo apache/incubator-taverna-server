@@ -5,7 +5,6 @@
  */
 package org.taverna.server.master.utils;
 
-import static org.taverna.server.master.TavernaServerImpl.log;
 import static org.taverna.server.master.utils.Contextualizer.SUBSTITUAND;
 
 import java.io.PrintWriter;
@@ -15,6 +14,8 @@ import java.sql.SQLException;
 import javax.annotation.PreDestroy;
 
 import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 /**
@@ -24,8 +25,10 @@ import org.springframework.beans.factory.annotation.Required;
  * @author Donal Fellows
  */
 public class WebappAwareDataSource extends BasicDataSource {
+	Log log = LogFactory.getLog("Taverna.Server.Utils");
 	private transient boolean init;
 	private Contextualizer ctxt;
+
 	@Required
 	public void setContextualizer(Contextualizer ctxt) {
 		this.ctxt = ctxt;
@@ -79,8 +82,17 @@ public class WebappAwareDataSource extends BasicDataSource {
 		return super.getLoginTimeout();
 	}
 
-	@Override
 	@PreDestroy
+	void realClose() {
+		try {
+			close();
+		} catch (SQLException e) {
+			log.warn("problem shutting down DB connection", e);
+		}
+		log = null;
+	}
+
+	@Override
 	public void close() throws SQLException {
 		super.close();
 	}
