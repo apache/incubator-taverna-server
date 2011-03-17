@@ -19,6 +19,9 @@
 		The Taverna Server bean, plus supporting configuration.
 	</description>
 
+	<context:annotation-config />
+	<context:component-scan base-package="org.taverna.server" />
+
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
 	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
 	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
@@ -57,6 +60,7 @@
 			<ref bean="ExceptionProvider.BadPropertyValue" />
 			<ref bean="ExceptionProvider.BadStateChange" />
 			<ref bean="ExceptionProvider.FilesystemAccess" />
+			<ref bean="ExceptionProvider.IllegalArgument" />
 			<ref bean="ExceptionProvider.InvalidCredential" />
 			<ref bean="ExceptionProvider.NoCreate" />
 			<ref bean="ExceptionProvider.NoCredential" />
@@ -84,7 +88,6 @@
 	<context:mbean-export server="MBeanServer"
 		default-domain="${my.domain}" registration="ignoreExisting" />
 
-	<bean id="invokation.counter" class="org.taverna.server.master.utils.InvocationCounter" />
 	<aop:aspectj-autoproxy proxy-target-class="true" />
 	<security:http realm="tavernaserver">
 		<security:http-basic />

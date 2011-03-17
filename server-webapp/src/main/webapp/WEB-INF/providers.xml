@@ -19,6 +19,9 @@
 	<bean id="ExceptionProvider.FilesystemAccess" class="org.taverna.server.master.rest.FilesystemAccessHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
+	<bean id="ExceptionProvider.IllegalArgument" class="org.taverna.server.master.rest.IllegalArgumentHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
 	<bean id="ExceptionProvider.InvalidCredential" class="org.taverna.server.master.rest.InvalidCredentialHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>

@@ -139,14 +139,11 @@ abstract class RunREST implements TavernaServerRunREST, WebappAware {
 	}
 
 	@Override
-	public String setExpiryTime(String expiry) throws NoUpdateException {
-		try {
-			return dateTime().print(
-					new DateTime(webapp.updateExpiry(run, dateTimeParser()
-							.parseDateTime(expiry.trim()).toDate())));
-		} catch (IllegalArgumentException e) {
-			throw new NoUpdateException(e.getMessage(), e);
-		}
+	public String setExpiryTime(String expiry) throws NoUpdateException,
+			IllegalArgumentException {
+		DateTime wanted = dateTimeParser().parseDateTime(expiry.trim());
+		Date achieved = webapp.updateExpiry(run, wanted.toDate());
+		return dateTime().print(new DateTime(achieved));
 	}
 
 	@Override
