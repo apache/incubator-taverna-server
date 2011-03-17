@@ -22,9 +22,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.web.context.ServletConfigAware;
-import org.taverna.server.master.interfaces.MessageDispatcher;
 
-public class SMSDispatcher implements MessageDispatcher, ServletConfigAware {
+public class SMSDispatcher extends RateLimitedDispatcher implements ServletConfigAware {
 	public static final String DEFAULT_SMS_GATEWAY = "https://www.intellisoftware.co.uk/smsgateway/sendmsg.aspx";
 	private HttpClient client;
 	private URI service;
@@ -103,6 +102,9 @@ public class SMSDispatcher implements MessageDispatcher, ServletConfigAware {
 		// Sanity check
 		if (!targetParameter.matches("[^0-9]+"))
 			throw new Exception("invalid phone number");
+
+		if (!isSendAllowed("anyone"))
+			return;
 
 		// Build the message to send
 		List<NameValuePair> params = new ArrayList<NameValuePair>();

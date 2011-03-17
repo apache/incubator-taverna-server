@@ -280,6 +280,7 @@
 		<property name="passwordField" value="password" />
 		<property name="destinationField" value="to" />
 		<property name="messageField" value="text" />
+		<property name="cooldownSeconds" value="300" />
 	</bean>
 
 	<bean id="localworker.notifier"
