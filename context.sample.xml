@@ -58,4 +58,12 @@
 		description="User name to use for XMPP notifications." />
 	<Parameter name="xmpp.password" value="CHANGEME!"
 		description="Password to use for XMPP notifications." />
+	<!-- The next three parameters are for dispatch via SMS. -->
+	<Parameter name="sms.service"
+		value="https://www.intellisoftware.co.uk/smsgateway/sendmsg.aspx"
+		description="The SMS gateway. This is the default value." />
+	<Parameter name="sms.user" value="CHANGEME!"
+		description="The account with the SMS gateway to send the messages by. This needs to have funds associated with it!" />
+	<Parameter name="sms.pass" value="CHANGEME!"
+		description="The password for the account." />
 </Context>

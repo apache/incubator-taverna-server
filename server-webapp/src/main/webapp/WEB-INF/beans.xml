@@ -251,6 +251,9 @@
 				<entry key="xmpp">
 					<ref bean="dispatch.xmpp" />
 				</entry>
+				<entry key="sms">
+					<ref bean="dispatch.sms" />
+				</entry>
 			</map>
 		</property>
 	</bean>
@@ -271,6 +274,12 @@
 	</bean>
 	<bean id="dispatch.xmpp" class="org.taverna.server.master.notification.JabberDispatcher">
 		<property name="resource" value="TavernaServer" />
+	</bean>
+	<bean id="dispatch.sms" class="org.taverna.server.master.notification.SMSDispatcher">
+		<property name="usernameField" value="username" />
+		<property name="passwordField" value="password" />
+		<property name="destinationField" value="to" />
+		<property name="messageField" value="text" />
 	</bean>
 
 	<bean id="localworker.notifier"
