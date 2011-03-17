@@ -31,6 +31,17 @@ public class JabberDispatcher implements MessageDispatcher, ServletConfigAware {
 	public static final String USER_PROPERTY_NAME = "xmpp.user";
 	public static final String PASSWORD_PROPERTY_NAME = "xmpp.password";
 
+	private String resource = "TavernaServer";
+
+	/**
+	 * @param resource
+	 *            The XMPP resource to use when connecting the server. This
+	 *            defaults to "<tt>TavernaServer</tt>".
+	 */
+	public void setResource(String resource) {
+		this.resource = resource;
+	}
+
 	@Override
 	public void setServletConfig(ServletConfig servletConfig) {
 		close();
@@ -58,7 +69,7 @@ public class JabberDispatcher implements MessageDispatcher, ServletConfigAware {
 			cfg.setSendPresence(false);
 			XMPPConnection c = new XMPPConnection(cfg);
 			c.connect();
-			c.login(user, pass, "TavernaServer");
+			c.login(user, pass, resource);
 			conn = c;
 			log.info("connected to XMPP service <" + host + "> as user <"
 					+ user + ">");

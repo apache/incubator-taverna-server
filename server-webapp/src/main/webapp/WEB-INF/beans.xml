@@ -269,7 +269,9 @@
 		</property>
 		<property name="cooldownSeconds" value="300"/>
 	</bean>
-	<bean id="dispatch.xmpp" class="org.taverna.server.master.notification.JabberDispatcher" />
+	<bean id="dispatch.xmpp" class="org.taverna.server.master.notification.JabberDispatcher">
+		<property name="resource" value="TavernaServer" />
+	</bean>
 
 	<bean id="localworker.notifier"
 		class="org.taverna.server.master.localworker.SimpleFormattedCompletionNotifier">
