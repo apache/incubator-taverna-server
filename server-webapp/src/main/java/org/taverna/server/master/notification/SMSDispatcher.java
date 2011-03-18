@@ -11,7 +11,6 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.servlet.ServletConfig;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -24,10 +23,14 @@ import org.apache.http.message.BasicNameValuePair;
 import org.springframework.web.context.ServletConfigAware;
 
 public class SMSDispatcher extends RateLimitedDispatcher implements ServletConfigAware {
+	public SMSDispatcher() {
+		super("sms");
+	}
+
 	public static final String DEFAULT_SMS_GATEWAY = "https://www.intellisoftware.co.uk/smsgateway/sendmsg.aspx";
 	private HttpClient client;
 	private URI service;
-	private String user, pass;
+	private String user = "", pass = "";
 	private String usernameField = "username", passwordField = "password",
 			destinationField = "to", messageField = "text";
 
@@ -69,31 +72,26 @@ public class SMSDispatcher extends RateLimitedDispatcher implements ServletConfi
 
 	// username=MyUsername&password=MyPassword&to=44771012345&text=TheMessage
 	@Override
-	public void setServletConfig(ServletConfig servletConfig) {
+	public void reconfigured() {
+		String s = getParam("service");
 		try {
-			String s = servletConfig.getInitParameter("sms.service");
-			if (s == null) {
+			if (s.isEmpty()) {
 				log.warn("did not get sms.service from servlet config; using default ("
 						+ DEFAULT_SMS_GATEWAY + ")");
 				s = DEFAULT_SMS_GATEWAY;
 			}
 			service = new URI(s);
+			user = getParam("user");
+			pass = getParam("pass");
 		} catch (Exception e) {
-			log.warn(
-					"got bad sms.service from servlet config; disabling SMS dispatcher",
-					e);
 			service = null;
-			return;
+			user = pass = "";
 		}
-		user = servletConfig.getInitParameter("sms.user");
-		pass = servletConfig.getInitParameter("sms.pass");
-		if (service == null || user == null || pass == null)
-			log.warn("did not get sms.user and sms.pass from servlet config; disabling SMS dispatcher");
 	}
 
 	@Override
 	public boolean isAvailable() {
-		return service != null && user != null && pass != null;
+		return service != null && !user.isEmpty() && !pass.isEmpty();
 	}
 
 	@Override

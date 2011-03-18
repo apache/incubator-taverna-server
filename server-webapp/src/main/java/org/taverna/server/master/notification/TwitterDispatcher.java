@@ -5,15 +5,12 @@
  */
 package org.taverna.server.master.notification;
 
-import static org.taverna.server.master.notification.NotificationEngine.log;
 import static twitter4j.conf.PropertyConfiguration.OAUTH_ACCESS_TOKEN;
 import static twitter4j.conf.PropertyConfiguration.OAUTH_ACCESS_TOKEN_SECRET;
 import static twitter4j.conf.PropertyConfiguration.OAUTH_CONSUMER_KEY;
 import static twitter4j.conf.PropertyConfiguration.OAUTH_CONSUMER_SECRET;
 
 import java.util.Properties;
-
-import javax.servlet.ServletConfig;
 
 import org.springframework.web.context.ServletConfigAware;
 
@@ -31,28 +28,25 @@ import twitter4j.http.AuthorizationFactory;
  * 
  * @author Donal Fellows
  */
-public class TwitterDispatcher extends RateLimitedDispatcher implements ServletConfigAware {
+public class TwitterDispatcher extends RateLimitedDispatcher implements
+		ServletConfigAware {
+	public TwitterDispatcher() {
+		super("twitter");
+	}
+
 	public static final int MAX_MESSAGE_LENGTH = 140;
 	public static final char ELLIPSIS = '\u2026';
 
-	private Properties props = new Properties();
+	private Properties getConfig() throws NotConfiguredException {
+		Properties p = super.getProperties();
 
-	public void setProperties(Properties properties) {
-		props = properties;
-	}
-
-	private Properties getProperties() throws NotConfiguredException {
-		Properties p = (Properties) props.clone();
-
-		if (config != null) {
-			String str;
-			str = config.getInitParameter(ACCESS_TOKEN_PROP);
-			if (str != null)
-				p.setProperty(ACCESS_TOKEN_PROP, str);
-			str = config.getInitParameter(ACCESS_SECRET_PROP);
-			if (str != null)
-				p.setProperty(ACCESS_SECRET_PROP, str);
-		}
+		String str;
+		str = getParam(ACCESS_TOKEN_PROP);
+		if (!str.isEmpty())
+			p.setProperty(ACCESS_TOKEN_PROP, str);
+		str = getParam(ACCESS_SECRET_PROP);
+		if (!str.isEmpty())
+			p.setProperty(ACCESS_SECRET_PROP, str);
 		if (p.getProperty(ACCESS_TOKEN_PROP, "").isEmpty()
 				|| p.getProperty(ACCESS_SECRET_PROP, "").isEmpty())
 			throw new NotConfiguredException();
@@ -62,22 +56,11 @@ public class TwitterDispatcher extends RateLimitedDispatcher implements ServletC
 	public static final String ACCESS_TOKEN_PROP = OAUTH_ACCESS_TOKEN;
 	public static final String ACCESS_SECRET_PROP = OAUTH_ACCESS_TOKEN_SECRET;
 
-	private ServletConfig config;
-	@Override
-	public void setServletConfig(ServletConfig servletConfig) {
-		config = servletConfig;
-		try {
-			getProperties();
-		} catch (NotConfiguredException e) {
-			log.warn("incomplete configuration; disabling Twitter dispatcher");
-		}
-	}
-
 	private Twitter getTwitter(String key, String secret) throws Exception {
 		if (key.isEmpty() || secret.isEmpty())
 			throw new NoCredentialsException();
 
-		Properties p = getProperties();
+		Properties p = getConfig();
 		p.setProperty(OAUTH_CONSUMER_KEY, key);
 		p.setProperty(OAUTH_CONSUMER_SECRET, secret);
 
@@ -115,7 +98,7 @@ public class TwitterDispatcher extends RateLimitedDispatcher implements ServletC
 			// Try to create the configuration and push it through as far as
 			// confirming that we can build an access object (even if it isn't
 			// bound to a user)
-			new TwitterFactory(new PropertyConfiguration(getProperties()))
+			new TwitterFactory(new PropertyConfiguration(getConfig()))
 					.getInstance();
 			return true;
 		} catch (Exception e) {

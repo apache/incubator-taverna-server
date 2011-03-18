@@ -50,6 +50,12 @@
 	<Resource name="mail/Session" auth="Container" type="javax.mail.Session"
 		mail.smtp.host="localhost"
 		description="Where the SMTP server for sending notification emails is located." />
+	<!-- The next two are for Twitter-brokered notification; they may be omitted 
+		if support is not wanted. -->
+	<Parameter name="twitter.oauth.accessToken" value=""
+		description="The access token got from Twitter by registering this *installation* of Taverna Server as an application." />
+	<Parameter name="twitter.oauth.accessTokenSecret" value=""
+		description="The cryptographic secret associated with the access token got from Twitter by registering this *installation* of Taverna Server as an application." />
 	<!-- The next three parameters may be omitted if dispatch via Jabber/XMPP 
 		is not wanted. -->
 	<Parameter name="xmpp.service" value="jabber.org"

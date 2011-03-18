@@ -9,28 +9,24 @@ package org.taverna.server.master.notification;
 import static org.taverna.server.master.notification.NotificationEngine.log;
 
 import javax.annotation.PreDestroy;
-import javax.servlet.ServletConfig;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Message;
-import org.springframework.web.context.ServletConfigAware;
-import org.taverna.server.master.interfaces.MessageDispatcher;
 
 /**
  * Send notifications by Jabber/XMPP.
  * 
  * @author Donal Fellows
  */
-public class JabberDispatcher implements MessageDispatcher, ServletConfigAware {
+public class JabberDispatcher extends AbstractConfiguredDispatcher {
+	public JabberDispatcher() {
+		super("xmpp");
+	}
+
 	private XMPPConnection conn;
-
-	public static final String SERVICE_PROPERTY_NAME = "xmpp.service";
-	public static final String USER_PROPERTY_NAME = "xmpp.user";
-	public static final String PASSWORD_PROPERTY_NAME = "xmpp.password";
-
 	private String resource = "TavernaServer";
 
 	/**
@@ -43,26 +39,14 @@ public class JabberDispatcher implements MessageDispatcher, ServletConfigAware {
 	}
 
 	@Override
-	public void setServletConfig(ServletConfig servletConfig) {
+	public void reconfigured() {
 		close();
 		try {
-			String host = servletConfig.getInitParameter(SERVICE_PROPERTY_NAME);
-			if (host == null) {
-				log.debug("no " + SERVICE_PROPERTY_NAME
-						+ " property in servlet config; disabling XMPP support");
-				return;
-			}
-			String user = servletConfig.getInitParameter(USER_PROPERTY_NAME);
-			if (user == null) {
-				log.debug("no " + USER_PROPERTY_NAME
-						+ " property in servlet config; disabling XMPP support");
-				return;
-			}
-			String pass = servletConfig
-					.getInitParameter(PASSWORD_PROPERTY_NAME);
-			if (pass == null) {
-				log.debug("no " + PASSWORD_PROPERTY_NAME
-						+ " property in servlet config; disabling XMPP support");
+			String host = getParam("service");
+			String user = getParam("user");
+			String pass = getParam("password");
+			if (host.isEmpty() || user.isEmpty() || pass.isEmpty()) {
+				log.info("disabling XMPP support; incomplete configuration");
 				return;
 			}
 			ConnectionConfiguration cfg = new ConnectionConfiguration(host);

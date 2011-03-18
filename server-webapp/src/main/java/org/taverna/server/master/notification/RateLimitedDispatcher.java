@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.joda.time.DateTime;
-import org.taverna.server.master.interfaces.MessageDispatcher;
 
 /**
  * Rate-limiting support. Some message fabrics simply should not be used to send
@@ -17,7 +16,11 @@ import org.taverna.server.master.interfaces.MessageDispatcher;
  * 
  * @author Donal Fellows
  */
-public abstract class RateLimitedDispatcher implements MessageDispatcher {
+public abstract class RateLimitedDispatcher extends AbstractConfiguredDispatcher {
+	public RateLimitedDispatcher(String prefix) {
+		super(prefix);
+	}
+
 	private int cooldownSeconds;
 	private Map<String, DateTime> lastSend = new HashMap<String, DateTime>();
 
