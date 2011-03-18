@@ -17,7 +17,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -64,11 +63,11 @@ public interface TavernaServerInputREST {
 	 *         workflow run.
 	 */
 	@GET
-	@Path("/")
+	@Path("expected")
 	@Produces({ "application/xml", "application/json" })
 	@Description("Describe the expected inputs of this workflow run.")
 	@CallCounted
-	InputDescription get(@QueryParam("type") String type);
+	InputDescription getExpected();
 
 	/**
 	 * @return The Baclava file that will supply all the inputs to the workflow
@@ -158,8 +157,13 @@ public interface TavernaServerInputREST {
 	 * @author Donal Fellows
 	 */
 	@XmlRootElement(name = "runInputs")
-	@XmlType(name = "TavernaRunInputs")
+	@XmlType(name = "TavernaRunInputs", propOrder = {})
 	public static class InputsDescriptor extends VersionedElement {
+		/**
+		 * Where to find a description of the expected inputs to this workflow
+		 * run.
+		 */
+		public Uri expected;
 		/**
 		 * Where to find the overall Baclava document filename (if set).
 		 */
@@ -185,6 +189,7 @@ public interface TavernaServerInputREST {
 		 */
 		public InputsDescriptor(UriInfo ui, TavernaRun run) {
 			super(true);
+			expected = new Uri(ui, "expected");
 			baclava = new Uri(ui, "baclava");
 			input = new ArrayList<Uri>();
 			for (Input i : run.getInputs()) {
