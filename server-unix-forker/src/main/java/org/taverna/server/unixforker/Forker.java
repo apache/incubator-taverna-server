@@ -12,7 +12,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -75,11 +74,9 @@ public class Forker extends Thread {
 		ProcessBuilder pb = new ProcessBuilder();
 		pb.command()
 				.addAll(asList("sudo", "-u", vals.get(0), "-S", "-H", "--"));
-		List<String> l = new ArrayList<String>(asList(args));
-		l.remove(0);
-		pb.command().addAll(l);
+		pb.command().addAll(asList(args));
 		pb.command().add(vals.get(1));
-		Forker f = new Forker(pb.start());
+		Forker f = new Forker(pb);
 		f.setDaemon(true);
 		f.start();
 		return true;
@@ -116,8 +113,9 @@ public class Forker extends Thread {
 
 	private Process p;
 
-	public Forker(Process p) {
-		this.p = p;
+	public Forker(ProcessBuilder pb) throws IOException {
+		out.println("Starting subprocess: " + pb.command());
+		this.p = pb.start();
 	}
 
 	protected void interactWithSudo() throws Exception {
