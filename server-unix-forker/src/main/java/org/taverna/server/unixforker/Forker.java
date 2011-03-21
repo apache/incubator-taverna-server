@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.List;
@@ -116,12 +117,38 @@ public class Forker extends Thread {
 	public Forker(ProcessBuilder pb) throws IOException {
 		out.println("Starting subprocess: " + pb.command());
 		this.p = pb.start();
+		Thread t = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					copyFromSudo();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		t.setDaemon(true);
+		t.start();
 	}
 
 	protected void interactWithSudo() throws Exception {
-		p.getInputStream().read(new byte[1024]);
 		OutputStreamWriter os = new OutputStreamWriter(p.getOutputStream());
 		os.write(password + "\n");
+	}
+
+	protected void copyFromSudo() throws Exception {
+		InputStream sudo = p.getInputStream();
+		int b = '\n';
+		while (true) {
+			if (b == '\n')
+				out.print("Subprocess: ");
+			b = sudo.read();
+			if (b == -1)
+				break;
+			out.write(b);
+			out.flush();
+		}
+		sudo.close();
 	}
 
 	@Override
