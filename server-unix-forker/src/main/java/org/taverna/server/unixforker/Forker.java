@@ -12,6 +12,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.List;
 
@@ -112,36 +113,65 @@ public class Forker extends Thread {
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-	private Process p;
-
 	public Forker(ProcessBuilder pb) throws IOException {
 		out.println("Starting subprocess: " + pb.command());
-		this.p = pb.start();
-		Thread t = new Thread(new Runnable() {
+		final Process p = pb.start();
+		Thread tFromSudoStdout = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					copyFromSudo();
+					copyFromSudo("Subprocess(out):", p.getInputStream());
+					p.waitFor();
 				} catch (Exception e) {
-					e.printStackTrace();
+					p.destroy();
+					e.printStackTrace(err);
 				}
 			}
 		});
-		t.setDaemon(true);
-		t.start();
+		tFromSudoStdout.setDaemon(true);
+		tFromSudoStdout.start();
+		Thread tFromSudoStderr = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					copyFromSudo("Subprocess(err):", p.getErrorStream());
+					p.waitFor();
+				} catch (Exception e) {
+					p.destroy();
+					e.printStackTrace(err);
+				}
+			}
+		});
+		tFromSudoStderr.setDaemon(true);
+		tFromSudoStderr.start();
+		Thread tToSudoStdin = new Thread(new Runnable() {
+			@Override
+			public final void run() {
+				try {
+					interactWithSudo(p.getOutputStream());
+					p.waitFor();
+				} catch (Exception e) {
+					p.destroy();
+					e.printStackTrace(err);
+				}
+			}
+		});
+		tToSudoStdin.setDaemon(true);
+		tToSudoStdin.start();
 	}
 
-	protected void interactWithSudo() throws Exception {
-		OutputStreamWriter os = new OutputStreamWriter(p.getOutputStream());
-		os.write(password + "\n");
+	protected void interactWithSudo(OutputStream os) throws Exception {
+		OutputStreamWriter osw = new OutputStreamWriter(os);
+		osw.write(password + "\n");
+		osw.flush();
 	}
 
-	protected void copyFromSudo() throws Exception {
-		InputStream sudo = p.getInputStream();
+	protected void copyFromSudo(String header, InputStream sudo)
+			throws Exception {
 		int b = '\n';
 		while (true) {
 			if (b == '\n')
-				out.print("Subprocess: ");
+				out.print(header);
 			b = sudo.read();
 			if (b == -1)
 				break;
@@ -149,16 +179,5 @@ public class Forker extends Thread {
 			out.flush();
 		}
 		sudo.close();
-	}
-
-	@Override
-	public final void run() {
-		try {
-			interactWithSudo();
-			p.waitFor();
-		} catch (Exception e) {
-			p.destroy();
-			e.printStackTrace(err);
-		}
 	}
 }
