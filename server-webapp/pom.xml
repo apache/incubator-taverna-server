@@ -24,6 +24,9 @@
 			<id>datanucleus</id>
 			<name>DataNucleus Repository</name>
 			<url>http://www.datanucleus.org/downloads/maven2</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
 		</repository>
 		<repository>
 			<id>twitter4j</id>
@@ -39,6 +42,9 @@
 			<id>datanucleus</id>
 			<name>DataNucleus Repository</name>
 			<url>http://www.datanucleus.org/downloads/maven2</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
 
@@ -313,6 +319,12 @@
 				<version>3.2.1</version>
 				<type>jar</type>
 				<scope>compile</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.geronimo.specs</groupId>
+				<artifactId>geronimo-javamail_1.4_spec</artifactId>
+				<version>1.6</version>
+				<scope>provided</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

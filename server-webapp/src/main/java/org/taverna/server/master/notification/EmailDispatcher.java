@@ -8,11 +8,14 @@ package org.taverna.server.master.notification;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static org.taverna.server.master.notification.NotificationEngine.log;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import javax.annotation.PostConstruct;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 
 import org.springframework.beans.factory.annotation.Required;
@@ -30,14 +33,7 @@ public class EmailDispatcher implements MessageDispatcher {
 	 */
 	@Required
 	public void setFrom(String from) {
-		try {
-			if (ADDRESS_CLS != null)
-			this.from = ADDRESS_CLS.getConstructor(String.class).newInstance(from);
-		} catch (InvocationTargetException e) {
-			log.warn("failed to construct address", e.getTargetException());
-		} catch (Exception e) {
-			log.warn("failed to make an instance of " + ADDRESS_CLS.getName(), e);
-		}
+		this.from = from;
 	}
 
 	/**
@@ -49,30 +45,64 @@ public class EmailDispatcher implements MessageDispatcher {
 		this.contentType = contentType;
 	}
 
-	private Object from;
+	private String from;
 	private String contentType = TEXT_PLAIN;
-	private static Class<?> SESSION_CLS, MESSAGE_CLS, ADDRESS_CLS, RECIP_CLS,
-			TRANSPORT_CLS;
-	private static Object TO_HDR;
-	static {
-		try {
-			SESSION_CLS = Class.forName("javax.mail.Session");
-			MESSAGE_CLS = Class.forName("javax.mail.internet.MimeMessage");
-			ADDRESS_CLS = Class.forName("javax.mail.internet.InternetAddress");
-			RECIP_CLS = Class.forName("javax.mail.Message.RecipientType");
-			TRANSPORT_CLS = Class.forName("javax.mail.Transport");
-			TO_HDR = RECIP_CLS.getField("TO");
-		} catch (Exception e) {
-			NotificationEngine.log.fatal("failed to look up mail classes", e);
-		}
+
+	private Object recipientTo;
+	private Constructor<?> makeMessage, makeAddress;
+	private Method setFrom, setRecipient, setSubject, setContent, send;
+	private Class<?> session;
+
+	/**
+	 * Load the mail API from the given class loader.
+	 */
+	private void initAPI(ClassLoader cl) throws ClassNotFoundException,
+			NoSuchMethodException, NoSuchFieldException {
+		/*
+		 * OMG! This is nasty! Don't know who will be providing the Java Mail
+		 * API (there are potentially multiple providers!) so we must soft-code
+		 * the whole use of the API so it uses the class loader that provided
+		 * the entry point. This makes the code more than a little demented...
+		 */
+		Class<?> string, message, address, transport, recipient;
+
+		string = String.class;
+		session = cl.loadClass("javax.mail.Session");
+		message = cl.loadClass("javax.mail.internet.MimeMessage");
+		address = cl.loadClass("javax.mail.internet.InternetAddress");
+		recipient = cl.loadClass("javax.mail.Message.RecipientType");
+		transport = cl.loadClass("javax.mail.Transport");
+
+		makeMessage = message.getConstructor(session);
+		makeAddress = address.getConstructor(string);
+		setFrom = message.getMethod("setFrom", address);
+		setRecipient = message.getMethod("setRecipient", recipient, address);
+		setSubject = message.getMethod("setSubject", string);
+		setContent = message.getMethod("setContent", string, string);
+		send = transport.getMethod("send", message);
+		recipientTo = recipient.getField("TO");
 	}
 
-	private Object mail() throws NamingException {
+	private Object mail() throws NamingException, NoSuchFieldException,
+			ClassNotFoundException, NoSuchMethodException {
 		Context env = (Context) new InitialContext().lookup("java:comp/env");
-		Object o = env.lookup("mail/Session");
-		if (SESSION_CLS.isInstance(o))
-			return o;
-		throw new NamingException("unexpected type?! " + o.getClass());
+		try {
+			Object o = env.lookup("mail/Session");
+			if (o == null) {
+				log.info("no mail/Sesssion in JNDI");
+				return null;
+			}
+			if (recipientTo == null) {
+				initAPI(o.getClass().getClassLoader());
+				assert recipientTo != null;
+			}
+			if (session.isInstance(o))
+				return o;
+			throw new NamingException("unexpected type?! " + o.getClass());
+		} catch (NameNotFoundException e) {
+			log.info("no mail/Sesssion in JNDI");
+			return null;
+		}
 	}
 
 	@PostConstruct
@@ -97,27 +127,29 @@ public class EmailDispatcher implements MessageDispatcher {
 			return;
 		}
 
-		Object session = mail();
+		Object theSession = mail();
 
-		if (session == null)
+		if (theSession == null)
 			return;
-		Object m = MESSAGE_CLS.getConstructor(SESSION_CLS).newInstance(session);
-		MESSAGE_CLS.getMethod("setFrom", ADDRESS_CLS).invoke(m, from);
-		Object realto = ADDRESS_CLS.getConstructor(String.class).newInstance(
-				to.trim());
-		MESSAGE_CLS.getMethod("setRecipient", RECIP_CLS, ADDRESS_CLS).invoke(m,
-				TO_HDR, realto);
-		MESSAGE_CLS.getMethod("setSubject", String.class).invoke(m,
-				messageSubject);
-		MESSAGE_CLS.getMethod("setContent", String.class, String.class).invoke(
-				m, messageContent, contentType);
-		TRANSPORT_CLS.getMethod("send", MESSAGE_CLS).invoke(null, m);
+		try {
+			Object realfrom = makeAddress.newInstance(from);
+			Object realto = makeAddress.newInstance(to.trim());
+			Object msg = makeMessage.newInstance(theSession);
+
+			setFrom.invoke(msg, realfrom);
+			setRecipient.invoke(msg, recipientTo, realto);
+			setSubject.invoke(msg, messageSubject);
+			setContent.invoke(msg, messageContent, contentType);
+
+			send.invoke(null, msg);
+		} catch (InvocationTargetException e) {
+			throw (Exception) e.getTargetException();
+		}
 	}
 
 	@Override
 	public boolean isAvailable() {
-		if (SESSION_CLS == null || MESSAGE_CLS == null || ADDRESS_CLS == null
-				|| RECIP_CLS == null || TRANSPORT_CLS == null || TO_HDR == null)
+		if (session == null || recipientTo == null)
 			return false;
 		try {
 			return from != null && null != mail();
