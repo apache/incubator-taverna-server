@@ -133,6 +133,7 @@
 				<prop key="datanucleus.autoCreateConstraints">true</prop>
 				<prop key="datanucleus.validateConstraints">true</prop>
 				<prop key="datanucleus.autoCreateSchema">true</prop>
+				<prop key="datanucleus.managedRuntime">true</prop>
 			</props>
 		</property>
 	</bean>
@@ -150,9 +151,10 @@
 
 	<bean id="contextualizer" class="org.taverna.server.master.utils.Contextualizer" />
 
-	<bean id="usageRecordSink" class="org.taverna.server.master.UsageRecordRecorder">
+	<bean id="usageRecordSink" class="org.taverna.server.master.usage.UsageRecordRecorder">
 		<property name="state" ref="webapp.state" />
 		<property name="contextualizer" ref="contextualizer" />
+		<property name="persistenceManagerFactory" ref="pmf" />
 	</bean>
 
 	<bean id="localworker.factory" scope="singleton" lazy-init="false"

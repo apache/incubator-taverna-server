@@ -46,6 +46,11 @@
 		description="The fully-qualified location of the program to run a workflow." />
 	<Parameter name="secureForkPasswordFile" value="/usr/local/tomcat6.0/conf/sudopass.txt"
 		description="The fully-qualified location of a file containing the password to use with sudo. The password is assumed to be the first line of the file." />
+	<!-- Controls whether URs are logged. -->
+	<Parameter name="usage.logFile" value="%{WEBAPPROOT}/usage.log"
+		description="Full path to name of file that usage records for executed workflow runs will be dumped to. To make it relative to the webapp root, prefix with '%{WEBAPPROOT}/'." />
+	<Parameter name="usage.disableDB" value="no"
+		description="Set to yes to disable writing of URs to the database." />
 	<!-- For email-dispatched notifications. -->
 	<Resource name="mail/Session" auth="Container" type="javax.mail.Session"
 		mail.smtp.host="localhost"

@@ -66,6 +66,7 @@ public class SimpleServerPolicy implements Policy {
 			store.cleanerIntervalUpdated(intervalInSeconds);
 	}
 
+	@Override
 	public List<Workflow> listPermittedWorkflows(Principal p) {
 		return emptyList();
 	}

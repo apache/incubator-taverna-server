@@ -168,7 +168,7 @@
 		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derby</artifactId>
-			<version>10.6.1.0</version>
+			<version>10.7.1.1</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
@@ -233,6 +233,12 @@
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
 			<version>4.1</version>
+		</dependency>
+		<dependency>
+			<groupId>uk.org.taverna.server</groupId>
+			<artifactId>server-usagerecord</artifactId>
+			<version>${project.parent.version}</version>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 
@@ -419,7 +425,7 @@
 				<groupId>org.datanucleus</groupId>
 				<artifactId>maven-datanucleus-plugin</artifactId>
 				<configuration>
-					<metadataIncludes>org/taverna/server/master/*.class,org/taverna/server/master/localworker/*.class</metadataIncludes>
+					<metadataIncludes>org/taverna/server/master/*.class,org/taverna/server/master/localworker/*.class,org/taverna/server/master/usage/*.class</metadataIncludes>
 				</configuration>
 				<version>2.1.1</version>
 				<executions>

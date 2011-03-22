@@ -38,7 +38,6 @@ import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.localworker.server.UsageRecordReceiver;
-import org.taverna.server.master.UsageRecordRecorder;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoListenerException;
@@ -48,6 +47,7 @@ import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.SecurityContextFactory;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.localworker.RunDatabase.PerRunCallback;
+import org.taverna.server.master.usage.UsageRecordRecorder;
 
 /**
  * Bridge to remote runs via RMI.

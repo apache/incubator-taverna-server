@@ -7,6 +7,7 @@ package org.ogf.usage;
 
 import static java.util.UUID.randomUUID;
 
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.util.Date;
@@ -265,6 +266,12 @@ public class JobUsageRecord extends org.ogf.usage.v1_0.UsageRecordType {
 		JAXBContext.newInstance(getClass()).createMarshaller()
 				.marshal(this, writer);
 		return writer.toString();
+	}
+
+	public static JobUsageRecord unmarshal(String s) throws JAXBException {
+		StringReader reader = new StringReader(s);
+		return (JobUsageRecord) JAXBContext.newInstance(JobUsageRecord.class)
+				.createUnmarshaller().unmarshal(reader);
 	}
 
 	// TODO: Add signing support
