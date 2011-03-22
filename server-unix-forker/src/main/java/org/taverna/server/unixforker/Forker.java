@@ -40,11 +40,15 @@ public class Forker extends Thread {
 			throw new IllegalArgumentException(
 					"wrong # args: must be \"program ?argument ...?\"");
 		FileReader fr = null;
+		File f = null;
 		try {
-			fr = new FileReader(new File(getProperty("password.file")));
+			f = new File(getProperty("password.file"));
+			fr = new FileReader(f);
 			password = new BufferedReader(fr).readLine();
+			err.println("read password from " + f + " of length "
+					+ password.length());
 		} catch (IOException e) {
-			err.println("failed to read password from file "
+			err.println("failed to read password from file " + f
 					+ "described in password.file property");
 			throw e;
 		} finally {
@@ -116,68 +120,66 @@ public class Forker extends Thread {
 	public Forker(ProcessBuilder pb) throws IOException {
 		out.println("Starting subprocess: " + pb.command());
 		final Process p = pb.start();
-		Thread tFromSudoStdout = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					copyFromSudo("Subprocess(out):", p.getInputStream());
-					p.waitFor();
-				} catch (Exception e) {
-					p.destroy();
-					e.printStackTrace(err);
-				}
+		abstract class ProcessAttachedDaemon extends Thread {
+			public ProcessAttachedDaemon() {
+				setDaemon(true);
+				start();
 			}
-		});
-		tFromSudoStdout.setDaemon(true);
-		tFromSudoStdout.start();
-		Thread tFromSudoStderr = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					copyFromSudo("Subprocess(err):", p.getErrorStream());
-					p.waitFor();
-				} catch (Exception e) {
-					p.destroy();
-					e.printStackTrace(err);
-				}
-			}
-		});
-		tFromSudoStderr.setDaemon(true);
-		tFromSudoStderr.start();
-		Thread tToSudoStdin = new Thread(new Runnable() {
+
+			abstract void act() throws Exception;
+
 			@Override
 			public final void run() {
 				try {
-					interactWithSudo(p.getOutputStream());
+					act();
 					p.waitFor();
+				} catch (InterruptedException e) {
+					// Just drop
 				} catch (Exception e) {
 					p.destroy();
 					e.printStackTrace(err);
 				}
 			}
-		});
-		tToSudoStdin.setDaemon(true);
-		tToSudoStdin.start();
+		}
+		new ProcessAttachedDaemon() {
+			@Override
+			void act() throws Exception {
+				copyFromSudo("Subprocess(out):", p.getInputStream());
+			}
+		};
+		new ProcessAttachedDaemon() {
+			@Override
+			void act() throws Exception {
+				copyFromSudo("Subprocess(err):", p.getErrorStream());
+			}
+		};
+		new ProcessAttachedDaemon() {
+			@Override
+			void act() throws Exception {
+				interactWithSudo(p.getOutputStream());
+			}
+		};
 	}
 
 	protected void interactWithSudo(OutputStream os) throws Exception {
 		OutputStreamWriter osw = new OutputStreamWriter(os);
 		osw.write(password + "\n");
 		osw.flush();
+		os.close();
 	}
 
-	protected void copyFromSudo(String header, InputStream sudo)
+	protected void copyFromSudo(String header, InputStream sudoStream)
 			throws Exception {
 		int b = '\n';
 		while (true) {
 			if (b == '\n')
 				out.print(header);
-			b = sudo.read();
+			b = sudoStream.read();
 			if (b == -1)
 				break;
 			out.write(b);
 			out.flush();
 		}
-		sudo.close();
+		sudoStream.close();
 	}
 }
