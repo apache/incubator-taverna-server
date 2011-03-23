@@ -41,19 +41,24 @@ public class Forker extends Thread {
 					"wrong # args: must be \"program ?argument ...?\"");
 		FileReader fr = null;
 		File f = null;
-		try {
-			f = new File(getProperty("password.file"));
-			fr = new FileReader(f);
-			password = new BufferedReader(fr).readLine();
-			err.println("read password from " + f + " of length "
-					+ password.length());
-		} catch (IOException e) {
-			err.println("failed to read password from file " + f
-					+ "described in password.file property");
-			throw e;
-		} finally {
-			if (fr != null)
-				fr.close();
+		if (getProperty("password.file") != null) {
+			try {
+				f = new File(getProperty("password.file"));
+				fr = new FileReader(f);
+				password = new BufferedReader(fr).readLine();
+				err.println("read password from " + f + " of length "
+						+ password.length());
+			} catch (IOException e) {
+				err.println("failed to read password from file " + f
+						+ "described in password.file property");
+				throw e;
+			} finally {
+				if (fr != null)
+					fr.close();
+			}
+		} else {
+			err.println("no password.file property; "
+					+ "assuming password-less sudo is configured");
 		}
 		br = new BufferedReader(new InputStreamReader(in));
 	}
@@ -162,9 +167,11 @@ public class Forker extends Thread {
 	}
 
 	protected void interactWithSudo(OutputStream os) throws Exception {
-		OutputStreamWriter osw = new OutputStreamWriter(os);
-		osw.write(password + "\n");
-		osw.flush();
+		if (password != null) {
+			OutputStreamWriter osw = new OutputStreamWriter(os);
+			osw.write(password + "\n");
+			osw.flush();
+		}
 		os.close();
 	}
 

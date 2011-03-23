@@ -35,13 +35,13 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.servlet.ServletContext;
+import javax.servlet.ServletConfig;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
-import org.springframework.web.context.ServletContextAware;
+import org.springframework.web.context.ServletConfigAware;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.master.common.Workflow;
@@ -55,7 +55,7 @@ import org.taverna.server.master.interfaces.LocalIdentityMapper;
  */
 @ManagedResource(objectName = JMX_ROOT + "IdAwareForkRunFactory", description = "The factory for simple singleton forked run.")
 public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
-		ServletContextAware {
+		ServletConfigAware {
 	private int totalRuns;
 	private MetaFactory forker;
 	private Map<String, RemoteRunFactory> factory;
@@ -309,12 +309,9 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 		MetaFactoryImpl() throws IOException {
 			ProcessBuilder p = new ProcessBuilder(getJavaBinary());
 			String pwf = getPasswordFile();
-			if (pwf == null) {
-				throw new IllegalStateException(
-						"no configured secureForkPasswordFile, "
-								+ "and no override of passwordFile");
+			if (pwf != null) {
+				p.command().add("-Dpassword.file=" + pwf);
 			}
-			p.command().add("-Dpassword.file=" + pwf);
 			p.command().add("-jar");
 			p.command().add(getServerForkerJar());
 			p.command().add(getJavaBinary());
@@ -604,18 +601,18 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	}
 
 	@Override
-	public void setServletContext(ServletContext servletContext) {
-		if (servletContext == null)
+	public void setServletConfig(ServletConfig servletConfig) {
+		if (servletConfig == null)
 			return;
 		if (state.defaultExecuteWorkflowScript == null) {
-			state.defaultExecuteWorkflowScript = servletContext
+			state.defaultExecuteWorkflowScript = servletConfig
 					.getInitParameter("executeWorkflowScript");
 			if (state.getExecuteWorkflowScript() != null)
 				log.info("configured executeWorkflowScript from context as "
 						+ state.getExecuteWorkflowScript());
 		}
 		if (state.defaultPasswordFile == null) {
-			state.defaultPasswordFile = servletContext
+			state.defaultPasswordFile = servletConfig
 					.getInitParameter("secureForkPasswordFile");
 			if (state.getPasswordFile() != null)
 				log.info("configured secureForkPasswordFile from context as "

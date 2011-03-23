@@ -15,11 +15,11 @@ import javax.annotation.PreDestroy;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Transaction;
-import javax.servlet.ServletContext;
+import javax.servlet.ServletConfig;
 import javax.xml.bind.JAXBException;
 
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.web.context.ServletContextAware;
+import org.springframework.web.context.ServletConfigAware;
 import org.taverna.server.master.ManagementModel;
 import org.taverna.server.master.utils.Contextualizer;
 
@@ -29,13 +29,14 @@ import org.taverna.server.master.utils.Contextualizer;
  * 
  * @author Donal Fellows
  */
-public class UsageRecordRecorder implements ServletContextAware {
+public class UsageRecordRecorder implements ServletConfigAware {
 	private ManagementModel state;
 	private Contextualizer contextualizer;
-	private ServletContext servlet;
+	private ServletConfig config;
 	private PersistenceManager persistenceManager;
 	private String logDestination;
 	private PrintWriter writer;
+	private Object lock = new Object();
 
 	/**
 	 * @param persistenceManagerFactory
@@ -66,52 +67,63 @@ public class UsageRecordRecorder implements ServletContextAware {
 	}
 
 	@Override
-	public void setServletContext(ServletContext servletContext) {
-		this.servlet = servletContext;
+	public void setServletConfig(ServletConfig servletConfig) {
+		this.config = servletConfig;
 	}
 
-	public synchronized void storeUsageRecord(String usageRecord)
-			throws IOException {
+	public void storeUsageRecord(String usageRecord) throws IOException {
 		String logfile = state.getUsageRecordLogFile();
-		if (logfile == null && servlet != null) {
-			logfile = servlet.getInitParameter("usage.logFile");
+		if (logfile == null && config != null) {
+			logfile = config.getInitParameter("usage.logFile");
 		}
-		if (logfile == null)
-			return;
-		logfile = contextualizer.contextualize(logfile);
-		if (!logfile.equals(logDestination)) {
-			if (writer != null) {
-				writer.close();
-				writer = null;
-			}
-			writer = new PrintWriter(new FileWriter(logfile));
-			logDestination = logfile;
-		}
-		writer.println(usageRecord);
-		writer.flush();
-
-		if ("yes".equals(servlet.getInitParameter("usage.disableDB"))
-				&& persistenceManager != null)
-			try {
-				UsageRecord ur = new UsageRecord(usageRecord);
-				Transaction tx = persistenceManager.currentTransaction();
-				if (tx.isActive())
-					tx = null;
-				else
-					tx.begin();
-				try {
-					ur = persistenceManager.makePersistent(ur);
-				} catch (RuntimeException e) {
-					if (tx != null)
-						tx.rollback();
-					throw e;
-				} finally {
-					if (tx != null)
-						tx.commit();
+		if (logfile != null) {
+			logfile = contextualizer.contextualize(logfile);
+			synchronized (lock) {
+				if (!logfile.equals(logDestination)) {
+					if (writer != null) {
+						writer.close();
+						writer = null;
+					}
+					try {
+						writer = new PrintWriter(new FileWriter(logfile));
+						logDestination = logfile;
+					} catch (IOException e) {
+						log.warn("failed to open usage record log file", e);
+					}
 				}
-			} catch (JAXBException e) {
-				log.warn("failed to deserialize usage record", e);
+				if (writer != null) {
+					writer.println(usageRecord);
+					writer.flush();
+				}
 			}
+		}
+
+		if ("yes".equals(config.getInitParameter("usage.disableDB"))
+				&& persistenceManager != null)
+			saveURtoDB(usageRecord);
+	}
+
+	protected void saveURtoDB(String usageRecord) {
+		try {
+			UsageRecord ur = new UsageRecord(usageRecord);
+			Transaction tx = persistenceManager.currentTransaction();
+			if (tx.isActive())
+				tx = null;
+			else
+				tx.begin();
+			try {
+				ur = persistenceManager.makePersistent(ur);
+			} catch (RuntimeException e) {
+				if (tx != null)
+					tx.rollback();
+				throw e;
+			} finally {
+				if (tx != null)
+					tx.commit();
+			}
+		} catch (JAXBException e) {
+			log.warn("failed to deserialize usage record", e);
+		}
 	}
 
 	@PreDestroy

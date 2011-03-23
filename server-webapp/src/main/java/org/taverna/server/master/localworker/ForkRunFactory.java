@@ -25,13 +25,13 @@ import java.rmi.RemoteException;
 import java.security.Principal;
 import java.util.Calendar;
 
-import javax.servlet.ServletContext;
+import javax.servlet.ServletConfig;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
-import org.springframework.web.context.ServletContextAware;
+import org.springframework.web.context.ServletConfigAware;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.master.common.Workflow;
@@ -44,7 +44,7 @@ import org.taverna.server.master.exceptions.NoCreateException;
  */
 @ManagedResource(objectName = JMX_ROOT + "ForkRunFactory", description = "The factory for simple singleton forked run.")
 public class ForkRunFactory extends AbstractRemoteRunFactory implements
-		ServletContextAware {
+		ServletConfigAware {
 	private int lastStartupCheckCount;
 	private Integer lastExitCode;
 	private int totalRuns;
@@ -395,9 +395,9 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	}
 
 	@Override
-	public void setServletContext(ServletContext servletContext) {
-		if (state.getExecuteWorkflowScript() == null && servletContext != null) {
-			state.defaultExecuteWorkflowScript = servletContext
+	public void setServletConfig(ServletConfig servletConfig) {
+		if (state.getExecuteWorkflowScript() == null && servletConfig != null) {
+			state.defaultExecuteWorkflowScript = servletConfig
 					.getInitParameter("executeWorkflowScript");
 			if (state.getExecuteWorkflowScript() != null)
 				log.info("configured executeWorkflowScript from context as "
