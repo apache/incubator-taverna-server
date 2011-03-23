@@ -445,7 +445,7 @@
 				<executions>
 					<execution>
 						<id>buildinfo</id>
-						<phase>validate</phase>
+						<phase>generate-resources</phase>
 						<goals>
 							<goal>create</goal>
 						</goals>
@@ -465,7 +465,7 @@
 				<executions>
 					<execution>
 						<id>buildinfo</id>
-						<phase>validate</phase>
+						<phase>generate-resources</phase>
 						<goals>
 							<goal>revision</goal>
 						</goals>
