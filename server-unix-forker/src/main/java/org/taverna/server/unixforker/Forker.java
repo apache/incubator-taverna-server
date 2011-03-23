@@ -28,6 +28,31 @@ public class Forker extends Thread {
 	private static BufferedReader br;
 
 	/**
+	 * Helper to make reading a password from a file clearer. The password must
+	 * be the first line of the file.
+	 * 
+	 * @param passwordFile
+	 *            The file to load from.
+	 * @throws IOException
+	 *             If anything goes wrong.
+	 */
+	private static void loadPassword(File passwordFile) throws IOException {
+		FileReader fr = null;
+		try {
+			err.println("attempting to load password from " + passwordFile);
+			fr = new FileReader(passwordFile);
+			password = new BufferedReader(fr).readLine();
+		} catch (IOException e) {
+			err.println("failed to read password from file " + passwordFile
+					+ "described in password.file property");
+			throw e;
+		} finally {
+			if (fr != null)
+				fr.close();
+		}
+	}
+
+	/**
 	 * Initialization code, which runs before the main loop starts processing.
 	 * 
 	 * @param args
@@ -39,27 +64,13 @@ public class Forker extends Thread {
 		if (args.length < 1)
 			throw new IllegalArgumentException(
 					"wrong # args: must be \"program ?argument ...?\"");
-		FileReader fr = null;
-		File f = null;
-		if (getProperty("password.file") != null) {
-			try {
-				f = new File(getProperty("password.file"));
-				fr = new FileReader(f);
-				password = new BufferedReader(fr).readLine();
-				err.println("read password from " + f + " of length "
-						+ password.length());
-			} catch (IOException e) {
-				err.println("failed to read password from file " + f
-						+ "described in password.file property");
-				throw e;
-			} finally {
-				if (fr != null)
-					fr.close();
-			}
-		} else {
-			err.println("no password.file property; "
+		if (getProperty("password.file") != null)
+			loadPassword(new File(getProperty("password.file")));
+		if (password == null)
+			err.println("no password.file property or empty file; "
 					+ "assuming password-less sudo is configured");
-		}
+		else
+			err.println("password is of length " + password.length());
 		br = new BufferedReader(new InputStreamReader(in));
 	}
 

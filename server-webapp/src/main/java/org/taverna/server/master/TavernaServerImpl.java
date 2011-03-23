@@ -97,6 +97,8 @@ import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.InvocationCounter;
 import org.taverna.server.output_description.RdfWrapper;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * The core implementation of the web application.
  * 
@@ -978,6 +980,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@SuppressWarnings("SF_SWITCH_FALLTHROUGH")
 	public void setPermission(TavernaSecurityContext context, String id,
 			Permission perm) {
 		Set<String> permSet;

@@ -33,6 +33,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * The registered factory for runs, this class is responsible for constructing
  * runs that are suitable for particular users. It is also the entry point for
@@ -41,6 +43,7 @@ import org.xml.sax.InputSource;
  * @author Donal Fellows
  * @see LocalWorker
  */
+@SuppressWarnings({"SE_BAD_FIELD", "SE_NO_SERIALVERSIONID"})
 public class TavernaRunManager extends UnicastRemoteObject implements
 		RemoteRunFactory {
 	DocumentBuilderFactory dbf;
@@ -172,6 +175,7 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 		unregisterFactory();
 		new Thread() {
 			@Override
+			@SuppressWarnings("DM_EXIT")
 			public void run() {
 				try {
 					sleep(1000);

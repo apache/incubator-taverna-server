@@ -36,6 +36,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 
@@ -43,6 +44,8 @@ import org.ogf.usage.JobUsageRecord;
 import org.taverna.server.localworker.remote.RemoteListener;
 import org.taverna.server.localworker.remote.RemoteStatus;
 import org.taverna.server.localworker.server.UsageRecordReceiver;
+
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
  * The core class that connects to a Taverna command-line workflow execution
@@ -53,6 +56,7 @@ import org.taverna.server.localworker.server.UsageRecordReceiver;
  * 
  * @author Donal Fellows
  */
+@SuppressWarnings({"SE_BAD_FIELD", "SE_NO_SERIALVERSIONID"})
 public class WorkerCore extends UnicastRemoteObject implements Worker,
 		RemoteListener {
 	/**
@@ -200,23 +204,21 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			if (!inputBaclava.exists())
 				throw new IOException("input baclava file doesn't exist");
 		} else {
-			for (String port : inputFiles.keySet()) {
-				File f = inputFiles.get(port);
-				if (f != null) {
+			for (Entry<String,File> port : inputFiles.entrySet()) {
+				if (port.getValue() != null) {
 					pb.command().add("-inputfile");
-					pb.command().add(port);
-					pb.command().add(f.getAbsolutePath());
-					if (!f.exists())
+					pb.command().add(port.getKey());
+					pb.command().add(port.getValue().getAbsolutePath());
+					if (!port.getValue().exists())
 						throw new IOException("input file for port \"" + port
 								+ "\" doesn't exist");
 				}
 			}
-			for (String port : inputValues.keySet()) {
-				String v = inputValues.get(port);
-				if (v != null) {
+			for (Entry<String,String> port : inputValues.entrySet()) {
+				if (port.getValue() != null) {
 					pb.command().add("-inputvalue");
-					pb.command().add(port);
-					pb.command().add(v);
+					pb.command().add(port.getKey());
+					pb.command().add(port.getValue());
 				}
 			}
 		}
@@ -235,7 +237,10 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			if (!out.mkdir()) {
 				throw new IOException("failed to make output directory \"out\"");
 			}
-			out.delete(); // Taverna needs the dir to *not* exist now
+			if (!out.delete()) {
+				// Taverna needs the dir to *not* exist now
+				throw new IOException("failed to delete output directory \"out\"");
+			}
 			pb.command().add("-outputdir");
 			pb.command().add(out.getAbsolutePath());
 		}

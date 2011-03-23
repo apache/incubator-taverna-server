@@ -35,6 +35,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.taverna.server.localworker.remote.IllegalStateTransitionException;
 import org.taverna.server.localworker.remote.RemoteDirectory;
@@ -44,6 +45,8 @@ import org.taverna.server.localworker.remote.RemoteSecurityContext;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.localworker.remote.RemoteStatus;
 import org.taverna.server.localworker.server.UsageRecordReceiver;
+
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
  * This class implements one side of the connection between the Taverna Server
@@ -55,6 +58,7 @@ import org.taverna.server.localworker.server.UsageRecordReceiver;
  * @see FileDelegate
  * @see WorkerCore
  */
+@SuppressWarnings({ "SE_BAD_FIELD", "SE_NO_SERIALVERSIONID" })
 public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun {
 	private String executeWorkflowCommand;
 	private String workflow;
@@ -233,9 +237,12 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			contextDirectory = new File(SECURITY_DIR, token);
 			if (DO_MKDIR) {
 				forceMkdir(contextDirectory);
-				contextDirectory.setReadable(true, true);
-				contextDirectory.setExecutable(true, true);
-				contextDirectory.setWritable(true, true);
+				if (!contextDirectory.setReadable(true, true)
+						|| !contextDirectory.setExecutable(true, true)
+						|| !contextDirectory.setWritable(true, true)) {
+					System.err.println("warning: "
+							+ "failed to set permissions on security context directory");
+				}
 				track(contextDirectory, LocalWorker.this);
 			}
 		}
@@ -329,8 +336,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			if (status != Initialized)
 				throw new RemoteException("not initializing");
 			ArrayList<String> lines = new ArrayList<String>();
-			for (URI site : uriToAliasMap.keySet())
-				lines.add(site.toASCIIString() + " " + uriToAliasMap.get(site));
+			for (Entry<URI, String> site : uriToAliasMap.entrySet())
+				lines.add(site.getKey().toASCIIString() + " " + site.getValue());
 			// write(URI_ALIAS_MAP, lines);
 		}
 	}

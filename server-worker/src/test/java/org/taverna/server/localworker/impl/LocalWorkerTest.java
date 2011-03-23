@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.junit.After;
@@ -26,6 +27,9 @@ import org.taverna.server.localworker.remote.RemoteListener;
 import org.taverna.server.localworker.remote.RemoteStatus;
 import org.taverna.server.localworker.server.UsageRecordReceiver;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
+@SuppressWarnings
 public class LocalWorkerTest {
 	LocalWorker lw;
 	static List<String> events;
@@ -90,10 +94,9 @@ public class LocalWorkerTest {
 			events.add(inputBaclava == null ? "<null>" : inputBaclava
 					.toString().substring(dirLen));
 			Map<String, String> in = new TreeMap<String, String>();
-			for (String name : inputFiles.keySet()) {
-				File f = inputFiles.get(name);
-				in.put(name,
-						f == null ? "<null>" : f.toString().substring(dirLen));
+			for (Entry<String, File> name : inputFiles.entrySet()) {
+				in.put(name.getKey(), name.getValue() == null ? "<null>" : name
+						.getValue().toString().substring(dirLen));
 			}
 			events.add(in.toString());
 			events.add(new TreeMap<String, String>(inputValues).toString());
