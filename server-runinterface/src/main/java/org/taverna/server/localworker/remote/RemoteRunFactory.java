@@ -7,9 +7,11 @@ package org.taverna.server.localworker.remote;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.security.Principal;
 
 import org.taverna.server.localworker.server.UsageRecordReceiver;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
  * The main RMI-enabled interface for creating runs.
@@ -29,8 +31,11 @@ public interface RemoteRunFactory extends Remote {
 	 *            cause them to not be written.
 	 * @return A remote handle for the run.
 	 */
-	public RemoteSingleRun make(String workflow, Principal creator,
-			UsageRecordReceiver usageRecordReceiver) throws RemoteException;
+	@NonNull
+	public RemoteSingleRun make(@NonNull String workflow,
+			@NonNull String creator,
+			@Nullable UsageRecordReceiver usageRecordReceiver)
+			throws RemoteException;
 
 	/**
 	 * Asks this factory to unregister itself from the registry and cease

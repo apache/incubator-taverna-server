@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Collection;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 /**
  * Represents a directory that is the working directory of a workflow run, or a
  * sub-directory of it.
@@ -15,6 +17,7 @@ public interface RemoteDirectory extends RemoteDirectoryEntry {
 	/**
 	 * @return A list of the contents of the directory.
 	 */
+	@NonNull
 	public Collection<RemoteDirectoryEntry> getContents()
 			throws RemoteException, IOException;
 
@@ -27,7 +30,8 @@ public interface RemoteDirectory extends RemoteDirectoryEntry {
 	 * @throws IOException
 	 *             If things go wrong.
 	 */
-	public RemoteDirectory makeSubdirectory(String name)
+	@NonNull
+	public RemoteDirectory makeSubdirectory(@NonNull String name)
 			throws RemoteException, IOException;
 
 	/**
@@ -37,6 +41,7 @@ public interface RemoteDirectory extends RemoteDirectoryEntry {
 	 *            The name of the file to create.
 	 * @return A handle to the newly-created file.
 	 */
-	public RemoteFile makeEmptyFile(String name) throws RemoteException,
-			IOException;
+	@NonNull
+	public RemoteFile makeEmptyFile(@NonNull String name)
+			throws RemoteException, IOException;
 }

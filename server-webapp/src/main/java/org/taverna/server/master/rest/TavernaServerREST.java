@@ -38,6 +38,8 @@ import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.soap.TavernaServerSOAP;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 /**
  * The REST service interface to Taverna 2 Server release 2.
  * 
@@ -60,7 +62,8 @@ public interface TavernaServerREST {
 	@Produces({ "application/xml", "application/json" })
 	@Description("Produces the description of the service.")
 	@CallCounted
-	ServerDescription describeService(@Context UriInfo ui);
+	@NonNull
+	ServerDescription describeService(@NonNull @Context UriInfo ui);
 
 	/**
 	 * Produces a description of the list of runs.
@@ -75,7 +78,8 @@ public interface TavernaServerREST {
 	@RolesAllowed(USER)
 	@Description("Produces a list of all runs visible to the user.")
 	@CallCounted
-	RunList listUsersRuns(@Context UriInfo ui);
+	@NonNull
+	RunList listUsersRuns(@NonNull @Context UriInfo ui);
 
 	/**
 	 * Accepts (or not) a request to create a new run executing the given
@@ -95,8 +99,9 @@ public interface TavernaServerREST {
 	@RolesAllowed(USER)
 	@Description("Accepts (or not) a request to create a new run executing the given workflow.")
 	@CallCounted
-	Response submitWorkflow(Workflow workflow, @Context UriInfo ui)
-			throws NoUpdateException;
+	@NonNull
+	Response submitWorkflow(@NonNull Workflow workflow,
+			@NonNull @Context UriInfo ui) throws NoUpdateException;
 
 	/**
 	 * @return A description of the policies supported by this server.
@@ -104,6 +109,7 @@ public interface TavernaServerREST {
 	@Path("policy")
 	@Description("The policies supported by this server.")
 	@CallCounted
+	@NonNull
 	PolicyView getPolicyDescription();
 
 	/**
@@ -119,7 +125,9 @@ public interface TavernaServerREST {
 	@RolesAllowed(USER)
 	@Description("Get a particular named run resource to dispatch to.")
 	@CallCounted
-	TavernaServerRunREST getRunResource(@PathParam("runName") String runName)
+	@NonNull
+	TavernaServerRunREST getRunResource(
+			@NonNull @PathParam("runName") String runName)
 			throws UnknownRunException;
 
 	/**
@@ -177,7 +185,8 @@ public interface TavernaServerREST {
 		@Produces({ "application/xml", "application/json" })
 		@Description("Describe the parts of this policy.")
 		@CallCounted
-		public PolicyDescription getDescription(@Context UriInfo ui);
+		@NonNull
+		public PolicyDescription getDescription(@NonNull @Context UriInfo ui);
 
 		/**
 		 * Gets the maximum number of simultaneous runs that the user may
@@ -193,6 +202,7 @@ public interface TavernaServerREST {
 		@RolesAllowed(USER)
 		@Description("Gets the maximum number of simultaneous runs that the user may create.")
 		@CallCounted
+		@NonNull
 		public int getMaxSimultaneousRuns();
 
 		/**
@@ -208,6 +218,7 @@ public interface TavernaServerREST {
 		@RolesAllowed(USER)
 		@Description("Gets the list of permitted workflows.")
 		@CallCounted
+		@NonNull
 		public PermittedWorkflows getPermittedWorkflows();
 
 		/**
@@ -222,14 +233,23 @@ public interface TavernaServerREST {
 		@RolesAllowed(USER)
 		@Description("Gets the list of permitted event listener types.")
 		@CallCounted
+		@NonNull
 		public PermittedListeners getPermittedListeners();
 
+		/**
+		 * Gets the list of supported, enabled notification fabrics. Each
+		 * corresponds (approximately) to a protocol, e.g., email.
+		 * 
+		 * @return List of notifier names; each is the scheme of a notification
+		 *         destination URI.
+		 */
 		@GET
 		@Path("enabledNotificationFabrics")
 		@Produces({ "application/xml", "application/json" })
 		@RolesAllowed(USER)
 		@Description("Gets the list of supported, enabled notification fabrics. Each corresponds (approximately) to a protocol, e.g., email.")
 		@CallCounted
+		@NonNull
 		public EnabledNotificationFabrics getEnabledNotifiers();
 
 		/**

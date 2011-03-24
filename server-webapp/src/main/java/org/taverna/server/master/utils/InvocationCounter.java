@@ -31,7 +31,7 @@ public class InvocationCounter {
 		count++;
 	}
 
-	public int getCount() {
+	public synchronized int getCount() {
 		return count;
 	}
 

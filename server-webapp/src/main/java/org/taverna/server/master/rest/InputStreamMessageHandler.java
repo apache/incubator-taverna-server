@@ -2,6 +2,7 @@ package org.taverna.server.master.rest;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -34,36 +35,43 @@ public class InputStreamMessageHandler implements
 	@Override
 	public InputStream readFrom(Class<InputStream> type, Type genericType,
 			Annotation[] annotations, MediaType mediaType,
-			MultivaluedMap<String, String> httpHeaders,
-			final InputStream entityStream) throws IOException,
-			WebApplicationException {
-		List<String> cl = httpHeaders.get("Content-Length");
-		final long limit = cl != null && cl.size() > 0 ? Long.parseLong(cl
+			MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
+			throws IOException, WebApplicationException {
+		return new TransferStream(entityStream,
+				httpHeaders.get("Content-Length"));
+	}
+}
+
+class TransferStream extends InputStream {
+	public TransferStream(InputStream entityStream, List<String> limit) {
+		this.entityStream = new BufferedInputStream(entityStream);
+		this.limit = limit != null && limit.size() > 0 ? Long.parseLong(limit
 				.get(0)) : -1;
-		return new InputStream() {
-			long doneBytes = 0;
+	}
 
-			@Override
-			public int read() throws IOException {
-				doneBytes++;
-				if (limit >= 0 && doneBytes >= limit)
-					return -1;
-				return entityStream.read();
-			}
+	InputStream entityStream;
+	long limit;
+	long doneBytes = 0;
 
-			@Override
-			public int read(byte[] ary, int off, int len) throws IOException {
-				if (limit >= 0) {
-					if (doneBytes >= limit)
-						return -1;
-					if (doneBytes + len > limit)
-						len = (int) (limit - doneBytes);
-				}
-				int readBytes = entityStream.read(ary, off, len);
-				if (readBytes > 0)
-					doneBytes += readBytes;
-				return readBytes;
-			}
-		};
+	@Override
+	public int read() throws IOException {
+		doneBytes++;
+		if (limit >= 0 && doneBytes >= limit)
+			return -1;
+		return entityStream.read();
+	}
+
+	@Override
+	public int read(byte[] ary, int off, int len) throws IOException {
+		if (limit >= 0) {
+			if (doneBytes >= limit)
+				return -1;
+			if (doneBytes + len > limit)
+				len = (int) (limit - doneBytes);
+		}
+		int readBytes = entityStream.read(ary, off, len);
+		if (readBytes > 0)
+			doneBytes += readBytes;
+		return readBytes;
 	}
 }

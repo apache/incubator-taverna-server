@@ -1,10 +1,9 @@
 package org.taverna.server.master.factories;
 
-import java.security.Principal;
-
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * How to construct a Taverna Server Workflow Run.
@@ -23,5 +22,5 @@ public interface RunFactory {
 	 * @return An object representing the run.
 	 * @throws NoCreateException On failure.
 	 */
-	public TavernaRun create(Principal creator, Workflow workflow) throws NoCreateException;
+	public TavernaRun create(UsernamePrincipal creator, Workflow workflow) throws NoCreateException;
 }

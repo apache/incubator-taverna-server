@@ -5,7 +5,6 @@
  */
 package org.taverna.server.master;
 
-import java.security.Principal;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Required;
@@ -30,6 +29,9 @@ import org.taverna.server.master.rest.TavernaServerREST;
 import org.taverna.server.master.soap.TavernaServerSOAP;
 import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.InvocationCounter;
+import org.taverna.server.master.utils.UsernamePrincipal;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * The methods of the webapp that are accessed by beans other than itself or
@@ -161,12 +163,13 @@ public interface TavernaServer extends TavernaServerSOAP, TavernaServerREST,
 	 * @param run
 	 *            The workflow run to do the test on.
 	 */
-	void permitUpdate(TavernaRun run) throws NoUpdateException;
+	void permitUpdate(@NonNull TavernaRun run) throws NoUpdateException;
 
 	/**
 	 * @return The principal of the user currently accessing the webapp.
 	 */
-	Principal getPrincipal();
+	@NonNull
+	UsernamePrincipal getPrincipal();
 
 	/**
 	 * Obtain the workflow run with a particular name.
@@ -179,7 +182,8 @@ public interface TavernaServer extends TavernaServerSOAP, TavernaServerREST,
 	 *             If the workflow run doesn't exist or the current user doesn't
 	 *             have permission to see it.
 	 */
-	TavernaRun getRun(String name) throws UnknownRunException;
+	@NonNull
+	TavernaRun getRun(@NonNull String name) throws UnknownRunException;
 
 	/**
 	 * Construct a listener attached to the given run.
@@ -200,8 +204,10 @@ public interface TavernaServer extends TavernaServerSOAP, TavernaServerREST,
 	 *             If the run does not permit the current user to add listeners
 	 *             (or perform other types of update).
 	 */
-	Listener makeListener(TavernaRun run, String type, String configuration)
-			throws NoListenerException, NoUpdateException;
+	@NonNull
+	Listener makeListener(@NonNull TavernaRun run, @NonNull String type,
+			@NonNull String configuration) throws NoListenerException,
+			NoUpdateException;
 
 	/**
 	 * Get the permission description for the given user.
@@ -214,7 +220,9 @@ public interface TavernaServer extends TavernaServerSOAP, TavernaServerREST,
 	 *            The name of the user to look up the permission for.
 	 * @return A permission description.
 	 */
-	Permission getPermission(TavernaSecurityContext context, String userName);
+	@NonNull
+	Permission getPermission(@NonNull TavernaSecurityContext context,
+			@NonNull String userName);
 
 	/**
 	 * Set the permissions for the given user.
@@ -231,8 +239,8 @@ public interface TavernaServer extends TavernaServerSOAP, TavernaServerREST,
 	 *            {@link Permission#Destroy}; this is always enforced before
 	 *            checking for other permissions.
 	 */
-	void setPermission(TavernaSecurityContext context, String userName,
-			Permission permission);
+	void setPermission(@NonNull TavernaSecurityContext context,
+			@NonNull String userName, @NonNull Permission permission);
 
 	/**
 	 * Stops a run from being possible to be looked up and destroys it.
@@ -247,7 +255,7 @@ public interface TavernaServer extends TavernaServerSOAP, TavernaServerREST,
 	 *             If the run is unknown (e.g., because it is already
 	 *             destroyed).
 	 */
-	void unregisterRun(String runName, TavernaRun run)
+	void unregisterRun(@NonNull String runName, @NonNull TavernaRun run)
 			throws NoDestroyException, UnknownRunException;
 
 	/**
@@ -264,7 +272,9 @@ public interface TavernaServer extends TavernaServerSOAP, TavernaServerREST,
 	 *             (Note that lifespan management requires the ability to
 	 *             destroy.)
 	 */
-	Date updateExpiry(TavernaRun run, Date date) throws NoDestroyException;
+	@NonNull
+	Date updateExpiry(@NonNull TavernaRun run, @NonNull Date date)
+			throws NoDestroyException;
 
 	/**
 	 * @param counter

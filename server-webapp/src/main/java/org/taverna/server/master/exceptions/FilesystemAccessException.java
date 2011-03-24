@@ -3,6 +3,8 @@
  */
 package org.taverna.server.master.exceptions;
 
+import java.rmi.RemoteException;
+
 import javax.xml.ws.WebFault;
 
 @WebFault(name = "FilesystemAccessFault")
@@ -14,6 +16,17 @@ public class FilesystemAccessException extends Exception {
 	}
 
 	public FilesystemAccessException(String string, Throwable cause) {
-		super(string, cause);
+		super(string, getRealCause(cause));
+	}
+
+	private static Throwable getRealCause(Throwable t) {
+		if (t instanceof RemoteException) {
+			RemoteException remote = (RemoteException) t;
+			if (remote.detail != null)
+				return remote.detail;
+		}
+		if (t.getCause() != null)
+			return t.getCause();
+		return t;
 	}
 }

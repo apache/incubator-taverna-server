@@ -16,18 +16,24 @@ import org.taverna.server.master.utils.X500Utils;
 
 /**
  * Singleton factory. Really is a singleton (and is also very trivial); the
- * singleton-ness is just about limiting the number of instances of this
- * around even when lots of serialization is going on.
+ * singleton-ness is just about limiting the number of instances of this around
+ * even when lots of serialization is going on.
  * 
  * @see Serializable
  * @author Donal Fellows
  */
-public class SecurityContextFactory implements org.taverna.server.master.interfaces.SecurityContextFactory {
+@edu.umd.cs.findbugs.annotations.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE")
+public class SecurityContextFactory implements
+		org.taverna.server.master.interfaces.SecurityContextFactory {
+	private static final long serialVersionUID = 12345678987654321L;
 	private static SecurityContextFactory instance;
 	transient RunDatabase db;
 	transient FilenameUtils fileUtils;
 	transient X500Utils x500Utils;
 
+	@edu.umd.cs.findbugs.annotations.SuppressWarnings({
+			"ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
+			"UPM_UNCALLED_PRIVATE_METHOD" })
 	@SuppressWarnings("unused")
 	@PreDestroy
 	private void closeLog() {
@@ -55,8 +61,8 @@ public class SecurityContextFactory implements org.taverna.server.master.interfa
 	}
 
 	@Override
-	public SecurityContextDelegate create(RemoteRunDelegate run,
-			Principal owner) throws Exception {
+	public SecurityContextDelegate create(RemoteRunDelegate run, Principal owner)
+			throws Exception {
 		return new SecurityContextDelegate(run, owner, this);
 	}
 

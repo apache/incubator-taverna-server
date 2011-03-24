@@ -6,7 +6,6 @@
 package org.taverna.server.master.localworker;
 
 import static java.util.UUID.randomUUID;
-import static org.taverna.server.master.localworker.AbstractRemoteRunFactory.log;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -35,6 +34,8 @@ import javax.servlet.ServletContext;
 import javax.ws.rs.core.HttpHeaders;
 import javax.xml.ws.handler.MessageContext;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.taverna.server.localworker.remote.RemoteSecurityContext;
@@ -52,6 +53,7 @@ import org.taverna.server.master.interfaces.TavernaSecurityContext;
  * @author Donal Fellows
  */
 public class SecurityContextDelegate implements TavernaSecurityContext {
+	private Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
 	private final Principal owner;
 	private final List<Credential> credentials = new ArrayList<Credential>();
 	private final List<Trust> trusted = new ArrayList<Trust>();

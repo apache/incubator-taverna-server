@@ -121,8 +121,8 @@ public class SimpleNonpersistentRunStore implements RunStore {
 	@Override
 	public String registerRun(TavernaRun run) {
 		synchronized (lock) {
-			store.put(run.getID(), run);
-			return run.getID();
+			store.put(run.getId(), run);
+			return run.getId();
 		}
 	}
 

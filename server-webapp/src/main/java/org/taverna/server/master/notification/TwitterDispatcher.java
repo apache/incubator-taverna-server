@@ -12,8 +12,6 @@ import static twitter4j.conf.PropertyConfiguration.OAUTH_CONSUMER_SECRET;
 
 import java.util.Properties;
 
-import org.springframework.web.context.ServletConfigAware;
-
 import twitter4j.Twitter;
 import twitter4j.TwitterFactory;
 import twitter4j.conf.Configuration;
@@ -28,8 +26,7 @@ import twitter4j.http.AuthorizationFactory;
  * 
  * @author Donal Fellows
  */
-public class TwitterDispatcher extends RateLimitedDispatcher implements
-		ServletConfigAware {
+public class TwitterDispatcher extends RateLimitedDispatcher {
 	public TwitterDispatcher() {
 		super("twitter");
 	}

@@ -17,7 +17,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.rmi.ConnectException;
 import java.rmi.ConnectIOException;
 import java.rmi.NotBoundException;
@@ -25,13 +24,13 @@ import java.rmi.RemoteException;
 import java.security.Principal;
 import java.util.Calendar;
 
-import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
-import org.springframework.web.context.ServletConfigAware;
+import org.springframework.web.context.ServletContextAware;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.master.common.Workflow;
@@ -44,7 +43,7 @@ import org.taverna.server.master.exceptions.NoCreateException;
  */
 @ManagedResource(objectName = JMX_ROOT + "ForkRunFactory", description = "The factory for simple singleton forked run.")
 public class ForkRunFactory extends AbstractRemoteRunFactory implements
-		ServletConfigAware {
+		ServletContextAware {
 	private int lastStartupCheckCount;
 	private Integer lastExitCode;
 	private int totalRuns;
@@ -288,8 +287,8 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		OutputLogger(String name, Process process) {
 			log = getLog("Taverna.Server.LocalWorker." + name);
 			this.uniqueName = name;
-			this.br = new BufferedReader(new InputStreamReader(process
-					.getInputStream()));
+			this.br = new BufferedReader(new InputStreamReader(
+					process.getInputStream()));
 		}
 
 		private String uniqueName;
@@ -342,13 +341,14 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 			try {
 				lastExitCode = code = factoryProcess.exitValue();
 				log.info(factoryProcessName + " already dead?");
-			} catch (Exception e) {
+			} catch (RuntimeException e) {
 				log.info("trying to force death of " + factoryProcessName);
 				try {
 					factoryProcess.destroy();
 					sleep(350); // takes a little time, even normally
 					lastExitCode = code = factoryProcess.exitValue();
 				} catch (Exception e2) {
+					code = -1;
 				}
 			} finally {
 				factoryProcess = null;
@@ -378,9 +378,11 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 			if (factory == null)
 				initFactory();
 			try {
-				if (creator != null && !(creator instanceof Serializable))
-					creator = null;
-				RemoteSingleRun rsr = factory.make(wf, creator, makeURReciver());
+				String globaluser = "Unknown Person";
+				if (creator != null)
+					globaluser = creator.getName();
+				RemoteSingleRun rsr = factory.make(wf, globaluser,
+						makeURReciver());
 				totalRuns++;
 				return rsr;
 			} catch (ConnectException e) {
@@ -395,9 +397,9 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	}
 
 	@Override
-	public void setServletConfig(ServletConfig servletConfig) {
-		if (state.getExecuteWorkflowScript() == null && servletConfig != null) {
-			state.defaultExecuteWorkflowScript = servletConfig
+	public void setServletContext(ServletContext servletContext) {
+		if (state.getExecuteWorkflowScript() == null && servletContext != null) {
+			state.defaultExecuteWorkflowScript = servletContext
 					.getInitParameter("executeWorkflowScript");
 			if (state.getExecuteWorkflowScript() != null)
 				log.info("configured executeWorkflowScript from context as "

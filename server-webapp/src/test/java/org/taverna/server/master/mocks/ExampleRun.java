@@ -40,7 +40,11 @@ import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.SecurityContextFactory;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
+@SuppressWarnings
 public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	String id;
 	List<Listener> listeners;
@@ -129,7 +133,7 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 		}
 
 		@Override
-		public TavernaRun create(Principal creator, Workflow workflow) {
+		public TavernaRun create(UsernamePrincipal creator, Workflow workflow) {
 			Calendar c = GregorianCalendar.getInstance();
 			c.add(MINUTE, lifetime);
 			return new ExampleRun(creator, workflow, c.getTime());
@@ -403,7 +407,7 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	}
 
 	@Override
-	public String getID() {
+	public String getId() {
 		return id;
 	}
 

@@ -119,10 +119,7 @@ abstract class RunSecurityREST implements TavernaServerSecurityREST, WebappAware
 			throws BadStateChangeException {
 		if (run.getStatus() != Initialized)
 			throw new BadStateChangeException();
-		Credential toDelete = new Credential() {
-		};
-		toDelete.id = id;
-		context.deleteCredential(toDelete);
+		context.deleteCredential(new Credential.Dummy(id));
 		return noContent().build();
 	}
 

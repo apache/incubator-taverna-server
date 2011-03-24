@@ -16,6 +16,9 @@ import java.rmi.server.UnicastRemoteObject;
 import org.taverna.server.localworker.remote.RemoteDirectory;
 import org.taverna.server.localworker.remote.RemoteFile;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * This class acts as a remote-aware delegate for the files in a workflow run's
  * working directory and its subdirectories.
@@ -23,6 +26,7 @@ import org.taverna.server.localworker.remote.RemoteFile;
  * @author Donal Fellows
  * @see DirectoryDelegate
  */
+@SuppressWarnings("SE_NO_SERIALVERSIONID")
 public class FileDelegate extends UnicastRemoteObject implements RemoteFile {
 	private File file;
 	private DirectoryDelegate parent;
@@ -33,7 +37,7 @@ public class FileDelegate extends UnicastRemoteObject implements RemoteFile {
 	 * @throws RemoteException
 	 *             If registration of the file fails.
 	 */
-	public FileDelegate(File file, DirectoryDelegate parent)
+	public FileDelegate(@NonNull File file, @NonNull DirectoryDelegate parent)
 			throws RemoteException {
 		super();
 		this.file = file;
@@ -52,7 +56,8 @@ public class FileDelegate extends UnicastRemoteObject implements RemoteFile {
 		try {
 			fis = new FileInputStream(file);
 			if (offset > 0)
-				fis.skip(offset);
+				if (fis.skip(offset) != offset)
+					throw new IOException("did not move to correct offset in file");
 			read = fis.read(buffer);
 		} finally {
 			if (fis != null)

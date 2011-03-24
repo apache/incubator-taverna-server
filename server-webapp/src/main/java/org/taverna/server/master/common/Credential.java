@@ -25,7 +25,8 @@ import javax.xml.bind.annotation.XmlType;
  * @author Donal Fellows
  */
 @XmlType(name = "CredentialDescriptor")
-@XmlSeeAlso({ Credential.KeyPair.class, Credential.Password.class, Credential.CaGridProxy.class })
+@XmlSeeAlso({ Credential.KeyPair.class, Credential.Password.class,
+		Credential.CaGridProxy.class })
 public abstract class Credential {
 	/** The location of this descriptor in the REST world. */
 	@XmlAttribute(namespace = XLINK)
@@ -85,8 +86,8 @@ public abstract class Credential {
 		public String fileType;
 		/**
 		 * The password used to unlock the keystore file. It is assumed that the
-		 * same password is used for unlocking the credential within, or that the
-		 * inner password is empty.
+		 * same password is used for unlocking the credential within, or that
+		 * the inner password is empty.
 		 */
 		@XmlElement
 		public String unlockPassword;
@@ -108,5 +109,17 @@ public abstract class Credential {
 		public URI authenticationService;
 		@XmlElement(required = true)
 		public URI dorianService;
+	}
+
+	/**
+	 * A credential that is just used for deleting credentials by ID. Cannot be
+	 * marshalled as XML.
+	 * 
+	 * @author Donal Fellows
+	 */
+	public static class Dummy extends Credential {
+		public Dummy(String id) {
+			this.id = id;
+		}
 	}
 }

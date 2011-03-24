@@ -3,6 +3,8 @@ package org.taverna.server.localworker.remote;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 /**
  * Represents a file in the working directory of a workflow instance run, or in
  * some sub-directory of it.
@@ -22,6 +24,7 @@ public interface RemoteFile extends RemoteDirectoryEntry {
 	 * @throws IOException
 	 *             If things go wrong.
 	 */
+	@NonNull
 	byte[] getContents(int offset, int length) throws RemoteException,
 			IOException;
 
@@ -33,7 +36,7 @@ public interface RemoteFile extends RemoteDirectoryEntry {
 	 * @throws IOException
 	 *             If things go wrong.
 	 */
-	void setContents(byte[] data) throws RemoteException, IOException;
+	void setContents(@NonNull byte[] data) throws RemoteException, IOException;
 
 	/**
 	 * Append the data to the file.
@@ -43,7 +46,8 @@ public interface RemoteFile extends RemoteDirectoryEntry {
 	 * @throws IOException
 	 *             If things go wrong.
 	 */
-	void appendContents(byte[] data) throws RemoteException, IOException;
+	void appendContents(@NonNull byte[] data) throws RemoteException,
+			IOException;
 
 	/**
 	 * @return The length of the file, in bytes.
@@ -58,15 +62,18 @@ public interface RemoteFile extends RemoteDirectoryEntry {
 	 * @throws IOException
 	 *             If things go wrong.
 	 */
-	void copy(RemoteFile sourceFile) throws RemoteException, IOException;
+	void copy(@NonNull RemoteFile sourceFile) throws RemoteException,
+			IOException;
 
 	/**
 	 * @return The full native OS name for the file.
 	 */
+	@NonNull
 	String getNativeName() throws RemoteException;
 
 	/**
 	 * @return The host holding the file.
 	 */
+	@NonNull
 	String getNativeHost() throws RemoteException;
 }

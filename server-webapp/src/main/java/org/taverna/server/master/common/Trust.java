@@ -65,8 +65,8 @@ public final class Trust {
 
 	@Override
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof Credential))
+		if (o == null || !(o instanceof Trust))
 			return false;
-		return id.equals(((Credential) o).id);
+		return id.equals(((Trust) o).id);
 	}
 }

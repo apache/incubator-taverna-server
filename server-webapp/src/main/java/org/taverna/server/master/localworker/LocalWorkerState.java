@@ -199,7 +199,7 @@ public class LocalWorkerState {
 	 *            the extraArgs to set
 	 */
 	public void setExtraArgs(String[] extraArgs) {
-		this.extraArgs = extraArgs;
+		this.extraArgs = extraArgs.clone();
 		store();
 	}
 
@@ -208,7 +208,7 @@ public class LocalWorkerState {
 	 */
 	public String[] getExtraArgs() {
 		load();
-		return extraArgs == null ? DEFAULT_EXTRA_ARGS : extraArgs;
+		return extraArgs == null ? DEFAULT_EXTRA_ARGS : extraArgs.clone();
 	}
 
 	/**

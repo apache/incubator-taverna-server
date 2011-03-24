@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.rmi.ConnectException;
 import java.rmi.ConnectIOException;
 import java.rmi.NotBoundException;
@@ -35,13 +34,13 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
-import org.springframework.web.context.ServletConfigAware;
+import org.springframework.web.context.ServletContextAware;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.master.common.Workflow;
@@ -55,7 +54,7 @@ import org.taverna.server.master.interfaces.LocalIdentityMapper;
  */
 @ManagedResource(objectName = JMX_ROOT + "IdAwareForkRunFactory", description = "The factory for simple singleton forked run.")
 public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
-		ServletConfigAware {
+		ServletContextAware {
 	private int totalRuns;
 	private MetaFactory forker;
 	private Map<String, RemoteRunFactory> factory;
@@ -318,6 +317,8 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 			p.command().addAll(asList(getExtraArguments()));
 			p.command().add("-jar");
 			p.command().add(getServerWorkerJar());
+			if (getExecuteWorkflowScript() == null)
+				log.fatal("no execute workflow script");
 			p.command().add(getExecuteWorkflowScript());
 			p.redirectErrorStream(true);
 			p.directory(new File(getProperty("javax.servlet.context.tempdir",
@@ -325,6 +326,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 
 			// Spawn the subprocess
 			log.info("about to create subprocess: " + p.command());
+			log.info("subprocess directory: " + p.directory());
 			process = p.start();
 			channel = new PrintWriter(new BufferedWriter(
 					new OutputStreamWriter(process.getOutputStream())), true);
@@ -583,10 +585,11 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 			if (!factory.containsKey(username))
 				initFactory(username);
 			try {
-				if (creator != null && !(creator instanceof Serializable))
-					creator = null;
-				RemoteSingleRun rsr = factory.get(username).make(wf, creator,
-						makeURReciver());
+				String globaluser = "Unknown Person";
+				if (creator != null)
+					globaluser = creator.getName();
+				RemoteSingleRun rsr = factory.get(username).make(wf,
+						globaluser, makeURReciver());
 				totalRuns++;
 				return rsr;
 			} catch (ConnectException e) {
@@ -601,18 +604,18 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	}
 
 	@Override
-	public void setServletConfig(ServletConfig servletConfig) {
-		if (servletConfig == null)
+	public void setServletContext(ServletContext servletContext) {
+		if (servletContext == null)
 			return;
 		if (state.defaultExecuteWorkflowScript == null) {
-			state.defaultExecuteWorkflowScript = servletConfig
+			state.defaultExecuteWorkflowScript = servletContext
 					.getInitParameter("executeWorkflowScript");
 			if (state.getExecuteWorkflowScript() != null)
 				log.info("configured executeWorkflowScript from context as "
 						+ state.getExecuteWorkflowScript());
 		}
 		if (state.defaultPasswordFile == null) {
-			state.defaultPasswordFile = servletConfig
+			state.defaultPasswordFile = servletContext
 					.getInitParameter("secureForkPasswordFile");
 			if (state.getPasswordFile() != null)
 				log.info("configured secureForkPasswordFile from context as "

@@ -10,18 +10,20 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 /**
  * Outline of the security context for a workflow run.
  * 
  * @author Donal Fellows
  */
 public interface RemoteSecurityContext extends Remote {
-	void setKeystore(byte[] keystore) throws RemoteException;
+	void setKeystore(@NonNull byte[] keystore) throws RemoteException;
 
-	void setPassword(char[] password) throws RemoteException;
+	void setPassword(@NonNull char[] password) throws RemoteException;
 
-	void setTruststore(byte[] truststore) throws RemoteException;
+	void setTruststore(@NonNull byte[] truststore) throws RemoteException;
 
-	void setUriToAliasMap(HashMap<URI, String> uriToAliasMap)
+	void setUriToAliasMap(@NonNull HashMap<URI, String> uriToAliasMap)
 			throws RemoteException;
 }

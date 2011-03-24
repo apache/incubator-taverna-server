@@ -1,11 +1,11 @@
 package org.taverna.server.master.notification;
 
-import static org.taverna.server.master.notification.NotificationEngine.log;
-
 import java.util.Properties;
 
 import javax.servlet.ServletConfig;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.ServletConfigAware;
 import org.taverna.server.master.interfaces.MessageDispatcher;
 
@@ -22,6 +22,8 @@ public abstract class AbstractConfiguredDispatcher implements
 	private String prefix;
 	private Properties properties = new Properties();
 	private ServletConfig config;
+	/** Pre-configured logger. */
+	protected Log log = LogFactory.getLog("Taverna.Server.Notification");
 
 	@Override
 	public final void setServletConfig(ServletConfig servletConfig) {

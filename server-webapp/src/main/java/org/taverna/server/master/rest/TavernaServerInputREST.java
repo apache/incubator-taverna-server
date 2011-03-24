@@ -38,6 +38,8 @@ import org.taverna.server.master.interfaces.Input;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 /**
  * This represents how a Taverna Server workflow run's inputs looks to a RESTful
  * API.
@@ -56,6 +58,7 @@ public interface TavernaServerInputREST {
 	@Produces({ "application/xml", "application/json" })
 	@Description("Describe the sub-URIs of this resource.")
 	@CallCounted
+	@NonNull
 	InputsDescriptor get();
 
 	/**
@@ -67,6 +70,7 @@ public interface TavernaServerInputREST {
 	@Produces({ "application/xml", "application/json" })
 	@Description("Describe the expected inputs of this workflow run.")
 	@CallCounted
+	@NonNull
 	InputDescription getExpected();
 
 	/**
@@ -78,6 +82,7 @@ public interface TavernaServerInputREST {
 	@Produces("text/plain")
 	@Description("Gives the Baclava file describing the inputs, or empty if individual files are used.")
 	@CallCounted
+	@NonNull
 	String getBaclavaFile();
 
 	/**
@@ -100,7 +105,8 @@ public interface TavernaServerInputREST {
 	@Produces("text/plain")
 	@Description("Sets the Baclava file describing the inputs.")
 	@CallCounted
-	String setBaclavaFile(String filename) throws NoUpdateException,
+	@NonNull
+	String setBaclavaFile(@NonNull String filename) throws NoUpdateException,
 			BadStateChangeException, FilesystemAccessException;
 
 	/**
@@ -117,7 +123,8 @@ public interface TavernaServerInputREST {
 	@Produces({ "application/xml", "application/json" })
 	@Description("Gives a description of what is used to supply a particular input.")
 	@CallCounted
-	InDesc getInput(@PathParam("name") String name)
+	@NonNull
+	InDesc getInput(@NonNull @PathParam("name") String name)
 			throws BadInputPortNameException;
 
 	/**
@@ -145,10 +152,11 @@ public interface TavernaServerInputREST {
 	@Consumes({ "application/xml", "application/json" })
 	@Description("Sets the source for a particular input port.")
 	@CallCounted
-	InDesc setInput(@PathParam("name") String name, InDesc inputDescriptor)
-			throws NoUpdateException, BadStateChangeException,
-			FilesystemAccessException, BadPropertyValueException,
-			BadInputPortNameException;
+	@NonNull
+	InDesc setInput(@NonNull @PathParam("name") String name,
+			@NonNull InDesc inputDescriptor) throws NoUpdateException,
+			BadStateChangeException, FilesystemAccessException,
+			BadPropertyValueException, BadInputPortNameException;
 
 	/**
 	 * A description of the structure of inputs to a Taverna workflow run, done

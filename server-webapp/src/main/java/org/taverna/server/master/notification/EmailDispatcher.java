@@ -6,7 +6,6 @@
 package org.taverna.server.master.notification;
 
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
-import static org.taverna.server.master.notification.NotificationEngine.log;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -18,6 +17,8 @@ import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.interfaces.MessageDispatcher;
 
@@ -27,6 +28,8 @@ import org.taverna.server.master.interfaces.MessageDispatcher;
  * @author Donal Fellows
  */
 public class EmailDispatcher implements MessageDispatcher {
+	private Log log = LogFactory.getLog("Taverna.Server.Notification");
+
 	/**
 	 * @param from
 	 *            Email address that the notification is to come from.
@@ -153,6 +156,8 @@ public class EmailDispatcher implements MessageDispatcher {
 			return false;
 		try {
 			return from != null && null != mail();
+		} catch (RuntimeException e) {
+			return false;
 		} catch (Exception e) {
 			return false;
 		}

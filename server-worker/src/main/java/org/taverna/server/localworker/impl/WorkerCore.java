@@ -30,15 +30,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import javax.xml.datatype.DatatypeConfigurationException;
 
 import org.ogf.usage.JobUsageRecord;
 import org.taverna.server.localworker.remote.RemoteListener;
@@ -56,7 +53,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * 
  * @author Donal Fellows
  */
-@SuppressWarnings({"SE_BAD_FIELD", "SE_NO_SERIALVERSIONID"})
+@SuppressWarnings({ "SE_BAD_FIELD", "SE_NO_SERIALVERSIONID" })
 public class WorkerCore extends UnicastRemoteObject implements Worker,
 		RemoteListener {
 	/**
@@ -103,7 +100,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	Integer exitCode;
 	boolean readyToSendEmail;
 	String emailAddress;
-	
+
 	private Date start;
 	private JobUsageRecord ur;
 	private File wd;
@@ -204,7 +201,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			if (!inputBaclava.exists())
 				throw new IOException("input baclava file doesn't exist");
 		} else {
-			for (Entry<String,File> port : inputFiles.entrySet()) {
+			for (Entry<String, File> port : inputFiles.entrySet()) {
 				if (port.getValue() != null) {
 					pb.command().add("-inputfile");
 					pb.command().add(port.getKey());
@@ -214,7 +211,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 								+ "\" doesn't exist");
 				}
 			}
-			for (Entry<String,String> port : inputValues.entrySet()) {
+			for (Entry<String, String> port : inputValues.entrySet()) {
 				if (port.getValue() != null) {
 					pb.command().add("-inputvalue");
 					pb.command().add(port.getKey());
@@ -239,7 +236,8 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			}
 			if (!out.delete()) {
 				// Taverna needs the dir to *not* exist now
-				throw new IOException("failed to delete output directory \"out\"");
+				throw new IOException(
+						"failed to delete output directory \"out\"");
 			}
 			pb.command().add("-outputdir");
 			pb.command().add(out.getAbsolutePath());
@@ -248,8 +246,11 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		// Add an argument holding the workflow
 		File tmp = createTempFile("taverna", ".t2flow");
 		FileWriter w = new FileWriter(tmp);
-		w.write(workflow);
-		w.close();
+		try {
+			w.write(workflow);
+		} finally {
+			w.close();
+		}
 		tmp.deleteOnExit();
 		pb.command().add(tmp.getAbsolutePath());
 
@@ -310,15 +311,11 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			ur.addWallDuration(now.getTime() - start.getTime());
 			ur.setStatus(status.toString());
 			ur.addHost(InetAddress.getLocalHost().getHostName());
-			try {
-				if (urreceiver != null)
-					urreceiver.acceptUsageRecord(ur.marshal());
-			} catch (Exception e) {
-				// Ignore
-			}
-		} catch (DatatypeConfigurationException e) {
+			if (urreceiver != null)
+				urreceiver.acceptUsageRecord(ur.marshal());
+		} catch (RuntimeException e) {
 			e.printStackTrace();
-		} catch (UnknownHostException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -379,6 +376,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	}
 
 	@Override
+	@SuppressWarnings("REC_CATCH_EXCEPTION")
 	public String getProperty(String propName) throws RemoteException {
 		switch (Property.is(propName)) {
 		case STDOUT:

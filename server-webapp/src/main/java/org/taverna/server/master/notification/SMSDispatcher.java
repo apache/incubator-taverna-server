@@ -1,9 +1,6 @@
 package org.taverna.server.master.notification;
 
-import static org.taverna.server.master.notification.NotificationEngine.log;
-
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.ArrayList;
@@ -20,9 +17,8 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
-import org.springframework.web.context.ServletConfigAware;
 
-public class SMSDispatcher extends RateLimitedDispatcher implements ServletConfigAware {
+public class SMSDispatcher extends RateLimitedDispatcher {
 	public SMSDispatcher() {
 		super("sms");
 	}
@@ -70,7 +66,6 @@ public class SMSDispatcher extends RateLimitedDispatcher implements ServletConfi
 		client = null;
 	}
 
-	// username=MyUsername&password=MyPassword&to=44771012345&text=TheMessage
 	@Override
 	public void reconfigured() {
 		String s = getParam("service");
@@ -80,10 +75,10 @@ public class SMSDispatcher extends RateLimitedDispatcher implements ServletConfi
 						+ DEFAULT_SMS_GATEWAY + ")");
 				s = DEFAULT_SMS_GATEWAY;
 			}
-			service = new URI(s);
+			service = URI.create(s);
 			user = getParam("user");
 			pass = getParam("pass");
-		} catch (Exception e) {
+		} catch (RuntimeException e) {
 			service = null;
 			user = pass = "";
 		}
@@ -119,12 +114,12 @@ public class SMSDispatcher extends RateLimitedDispatcher implements ServletConfi
 		// Log the response
 		HttpEntity entity = response.getEntity();
 		if (entity != null) {
-			InputStream is = entity.getContent();
+			BufferedReader e = new BufferedReader(new InputStreamReader(
+					entity.getContent()));
 			try {
-				BufferedReader e = new BufferedReader(new InputStreamReader(is));
 				log.info(e.readLine());
 			} finally {
-				is.close();
+				e.close();
 			}
 		}
 	}

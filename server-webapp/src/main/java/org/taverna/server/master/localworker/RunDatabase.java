@@ -7,7 +7,6 @@ package org.taverna.server.master.localworker;
 
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
-import static org.taverna.server.master.localworker.AbstractRemoteRunFactory.log;
 import static org.taverna.server.master.localworker.RunConnections.KEY;
 import static org.taverna.server.master.localworker.RunConnections.makeInstance;
 
@@ -29,6 +28,8 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 import javax.jdo.annotations.Value;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.exceptions.UnknownRunException;
@@ -40,6 +41,8 @@ import org.taverna.server.master.localworker.PersistentContext.Action;
 import org.taverna.server.master.localworker.PersistentContext.Function;
 import org.taverna.server.master.notification.NotificationEngine;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * This handles storing runs, interfacing with the underlying state engine as
  * necessary.
@@ -47,7 +50,10 @@ import org.taverna.server.master.notification.NotificationEngine;
  * @author Donal Fellows
  */
 @PersistenceAware
+@SuppressWarnings("IS2_INCONSISTENT_SYNC")
 public class RunDatabase implements RunStore {
+	Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
+
 	/**
 	 * @param persistenceManagerFactory
 	 *            The JDO engine to use for managing persistence of the state.
@@ -56,11 +62,6 @@ public class RunDatabase implements RunStore {
 	public void setPersistenceManagerFactory(
 			PersistenceManagerFactory persistenceManagerFactory) {
 		ctx = new PersistentContext<RunConnections>(persistenceManagerFactory);
-	}
-
-	@Required
-	public void setState(LocalWorkerState state) {
-		this.state = state;
 	}
 
 	public void setNotifier(CompletionNotifier n) {
@@ -73,7 +74,6 @@ public class RunDatabase implements RunStore {
 	}
 
 	PersistentContext<RunConnections> ctx;
-	LocalWorkerState state;
 	List<CompletionNotifier> notifier = new ArrayList<CompletionNotifier>();
 	private NotificationEngine notificationEngine;
 
@@ -189,10 +189,10 @@ public class RunDatabase implements RunStore {
 		inTransaction(new Act<RuntimeException>() {
 			@Override
 			public void a(Map<String, RemoteRunDelegate> runs) {
-				runs.put(rrd.getID(), rrd);
+				runs.put(rrd.getId(), rrd);
 			}
 		});
-		return rrd.getID();
+		return rrd.getId();
 	}
 
 	@Override
@@ -206,11 +206,12 @@ public class RunDatabase implements RunStore {
 	}
 
 	void flushToDisk(final RemoteRunDelegate run) {
-		inTransaction(new Act<RuntimeException>(){
+		inTransaction(new Act<RuntimeException>() {
 			@Override
 			public void a(Map<String, RemoteRunDelegate> runs)
 					throws RuntimeException {
-				for (Map.Entry<String, RemoteRunDelegate> entry: runs.entrySet())
+				for (Map.Entry<String, RemoteRunDelegate> entry : runs
+						.entrySet())
 					if (entry.getValue().equals(run)) {
 						runs.put(entry.getKey(), run);
 						return;

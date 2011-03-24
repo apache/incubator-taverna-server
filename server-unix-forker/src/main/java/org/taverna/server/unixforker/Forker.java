@@ -16,6 +16,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 /**
  * A simple class that forks off processes when asked to over its standard
  * input. The one complication is that it forks them off as other users, through
@@ -36,7 +38,8 @@ public class Forker extends Thread {
 	 * @throws IOException
 	 *             If anything goes wrong.
 	 */
-	private static void loadPassword(File passwordFile) throws IOException {
+	private static void loadPassword(@NonNull File passwordFile)
+			throws IOException {
 		FileReader fr = null;
 		try {
 			err.println("attempting to load password from " + passwordFile);

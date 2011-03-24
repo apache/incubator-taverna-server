@@ -14,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.security.web.PortMapper;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * A class that makes it simpler to work with an element with a {@link URI} in
  * an <tt>href</tt> attribute. Done with JAXB.
@@ -40,7 +43,7 @@ public class Uri {
 	 * @param ref
 	 *            Where to point to.
 	 */
-	public Uri(URI ref) {
+	public Uri(@NonNull URI ref) {
 		this.ref = ref;
 	}
 
@@ -52,7 +55,7 @@ public class Uri {
 	 * @param strings
 	 *            The parameters to the factory.
 	 */
-	public Uri(UriBuilder ub, String... strings) {
+	public Uri(@NonNull UriBuilder ub, String... strings) {
 		ref = ub.build((Object[]) strings);
 	}
 
@@ -66,7 +69,7 @@ public class Uri {
 	 * @param strings
 	 *            The parameters to the factory.
 	 */
-	public Uri(UriInfo ui, String path, String... strings) {
+	public Uri(@NonNull UriInfo ui, @NonNull String path, String... strings) {
 		this(ui.getAbsolutePathBuilder().path(path), strings);
 	}
 
@@ -82,7 +85,8 @@ public class Uri {
 	 * @param strings
 	 *            The parameters to the factory.
 	 */
-	public Uri(UriInfo ui, boolean secure, String path, String... strings) {
+	public Uri(@NonNull UriInfo ui, boolean secure, @NonNull String path,
+			String... strings) {
 		UriBuilder ub = ui.getAbsolutePathBuilder();
 		if (secure) {
 			ub = Rewriter.getSecuredUriBuilder(ub);
@@ -100,16 +104,19 @@ public class Uri {
 			this.portMapper = portMapper;
 		}
 
+		@SuppressWarnings
 		public Rewriter() {
 			instance = this;
 		}
 
 		@PreDestroy
+		@SuppressWarnings
 		public void done() {
 			instance = null;
 		}
 
-		static UriBuilder getSecuredUriBuilder(UriBuilder ub) {
+		@NonNull
+		static UriBuilder getSecuredUriBuilder(@NonNull UriBuilder ub) {
 			Integer secPort = null;
 			if (instance != null && instance.portMapper != null)
 				secPort = instance.portMapper.lookupHttpsPort(ub.build()

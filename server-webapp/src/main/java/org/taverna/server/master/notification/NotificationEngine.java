@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PreDestroy;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -24,13 +22,7 @@ import org.taverna.server.master.interfaces.MessageDispatcher;
  * @author Donal Fellows
  */
 public class NotificationEngine {
-	static Log log = LogFactory.getLog("Taverna.Server.Notification");
-
-	@PreDestroy
-	void closeLog() {
-		log = null;
-	}
-
+	private Log log = LogFactory.getLog("Taverna.Server.Notification");
 	private Map<String, MessageDispatcher> dispatchers;
 
 	/**

@@ -48,6 +48,7 @@ import org.taverna.server.master.interfaces.SecurityContextFactory;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.localworker.RunDatabase.PerRunCallback;
 import org.taverna.server.master.usage.UsageRecordRecorder;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * Bridge to remote runs via RMI.
@@ -57,12 +58,13 @@ import org.taverna.server.master.usage.UsageRecordRecorder;
 @ManagedResource(objectName = JMX_ROOT + "Factory", description = "The factory for runs")
 public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		RunFactory {
-	static Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
+	Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
 	private JAXBContext context;
 	UsageRecordRecorder usageRecordSink;
 
 	@SuppressWarnings("unused")
 	@PreDestroy
+	@edu.umd.cs.findbugs.annotations.SuppressWarnings("UPM_UNCALLED_PRIVATE_METHOD")
 	private void closeLog() {
 		log = null;
 	}
@@ -230,17 +232,21 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	@Override
 	public List<String> getSupportedListenerTypes() {
 		final Holder<List<String>> types = new Holder<List<String>>();
+		final Holder<Object> marker = new Holder<Object>();
 		types.value = emptyList();
 		try {
 			runDB.iterateOverRuns(new PerRunCallback<RemoteException>() {
 				@Override
 				public void doit(String name, TavernaRun run)
 						throws RemoteException {
-					types.value = ((RemoteRunDelegate) run).run
-							.getListenerTypes();
+					if (types.value == null && run instanceof RemoteRunDelegate)
+						types.value = ((RemoteRunDelegate) run).run
+								.getListenerTypes();
+					marker.value = name;
 				}
 			});
-			log.warn("failed to get list of listener types; no runs");
+			if (marker.value == null)
+				log.warn("failed to get list of listener types; no runs");
 		} catch (RemoteException e) {
 			log.warn("failed to get list of listener types", e);
 		}
@@ -250,12 +256,14 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	@Override
 	public Listener makeListener(TavernaRun run, String listenerType,
 			String configuration) throws NoListenerException {
-		return ((RemoteRunDelegate) run).makeListener(listenerType,
-				configuration);
+		if (run instanceof RemoteRunDelegate)
+			return ((RemoteRunDelegate) run).makeListener(listenerType,
+					configuration);
+		throw new NoListenerException("unexpected run type: " + run.getClass());
 	}
 
 	@Override
-	public TavernaRun create(Principal creator, Workflow workflow)
+	public TavernaRun create(UsernamePrincipal creator, Workflow workflow)
 			throws NoCreateException {
 		try {
 			Date now = new Date();
@@ -297,7 +305,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 				names.add(name);
 			}
 		});
-		return names.toArray(new String[0]);
+		return names.toArray(new String[names.size()]);
 	}
 
 	@ManagedAttribute(description = "The maximum number of simultaneous runs supported by the server.", currencyTimeLimit = 300)
@@ -349,6 +357,8 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 */
 	protected UsageRecordReceiver makeURReciver() {
 		try {
+			@edu.umd.cs.findbugs.annotations.SuppressWarnings({
+					"SE_BAD_FIELD_INNER_CLASS", "SE_NO_SERIALVERSIONID" })
 			class URReceiver extends UnicastRemoteObject implements
 					UsageRecordReceiver {
 				public URReceiver(UsageRecordRecorder destination)

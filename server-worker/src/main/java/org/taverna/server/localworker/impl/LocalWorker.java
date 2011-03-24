@@ -230,6 +230,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	File contextDirectory;
 	char[] keystorePassword;
 
+	@SuppressWarnings("SE_INNER_CLASS")
 	class SecurityDelegate extends UnicastRemoteObject implements
 			RemoteSecurityContext {
 		protected SecurityDelegate(String token) throws IOException {
@@ -383,6 +384,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		}
 	}
 
+	@SuppressWarnings("SE_INNER_CLASS")
 	class InputDelegate extends UnicastRemoteObject implements RemoteInput {
 		private String name;
 
@@ -548,11 +550,11 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 
 	@Override
 	public Date getFinishTimestamp() {
-		return finish;
+		return new Date(finish.getTime());
 	}
 
 	@Override
-	public Date getStartTimestamp() throws RemoteException {
-		return start;
+	public Date getStartTimestamp() {
+		return new Date(start.getTime());
 	}
 }

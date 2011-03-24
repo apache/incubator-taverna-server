@@ -291,8 +291,10 @@ public class ContentsDescriptorBuilder {
 							"depth");
 					in.depth = Integer.valueOf(depths.item(0).getTextContent(),
 							10);
-				} catch (Exception ex) {
-					// Ignore all exceptions; just gives no depth
+				} catch (NumberFormatException ex) {
+					in.depth = null;
+				} catch (DOMException ex) {
+					in.depth = null;
 				}
 				desc.input.add(in);
 			}

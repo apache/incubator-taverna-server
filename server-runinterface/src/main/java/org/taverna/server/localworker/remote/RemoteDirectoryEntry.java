@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+
 /**
  * An entry in a {@link RemoteDirectory} representing a file or sub-directory.
  * 
@@ -16,6 +19,7 @@ public interface RemoteDirectoryEntry extends Remote {
 	 * @return The "local" name of the entry. This will never be "<tt>..</tt>"
 	 *         or contain the character "<tt>/</tt>".
 	 */
+	@NonNull
 	public String getName() throws RemoteException;
 
 	/**
@@ -24,6 +28,7 @@ public interface RemoteDirectoryEntry extends Remote {
 	 * @return A directory handle, or <tt>null</tt> if called on the workflow
 	 *         run's working directory.
 	 */
+	@Nullable
 	public RemoteDirectory getContainingDirectory() throws RemoteException;
 
 	/**

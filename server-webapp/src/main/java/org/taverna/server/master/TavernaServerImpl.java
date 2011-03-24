@@ -45,7 +45,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.ws.WebServiceContext;
 
 import org.apache.commons.logging.Log;
-import org.apache.cxf.common.security.SimplePrincipal;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -95,6 +94,7 @@ import org.taverna.server.master.soap.PermissionList;
 import org.taverna.server.master.soap.TavernaServerSOAP;
 import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.InvocationCounter;
+import org.taverna.server.master.utils.UsernamePrincipal;
 import org.taverna.server.output_description.RdfWrapper;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -116,7 +116,8 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	private static final String[] STRING_ARRAY_TYPE = new String[0];
 
 	/** The logger for the server framework. */
-	public static Log log = getLog("Taverna.Server.Webapp");
+	public static final Log log = getLog("Taverna.Server.Webapp");
+	private Log accessLog;
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	// CONNECTIONS TO JMX, SPRING AND CXF
@@ -135,6 +136,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	 * @throws JAXBException
 	 */
 	public TavernaServerImpl() throws JAXBException {
+		accessLog = getLog("Taverna.Server.Webapp.Access");
 		workflowSerializer = JAXBContext.newInstance(Workflow.class);
 	}
 
@@ -189,6 +191,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	@Resource
 	WebServiceContext jaxws;
 	@Context
+	@SuppressWarnings("UWF_UNWRITTEN_FIELD")
 	private HttpHeaders jaxrsHeaders;
 
 	private ServletContext context;
@@ -286,7 +289,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	public void setNotificationEngine(NotificationEngine notificationEngine) {
 		this.notificationEngine = notificationEngine;
 	}
-	
+
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	// REST INTERFACE
 
@@ -503,11 +506,8 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	public void deleteRunCredential(String runName, String credentialID)
 			throws UnknownRunException, NotOwnerException,
 			NoCredentialException, BadStateChangeException {
-		TavernaSecurityContext c = getRunSecurityContext(runName, true);
-		Credential toDelete = new Credential() {
-		};
-		toDelete.id = credentialID;
-		c.deleteCredential(toDelete);
+		getRunSecurityContext(runName, true).deleteCredential(
+				new Credential.Dummy(credentialID));
 	}
 
 	@Override
@@ -806,7 +806,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	// SUPPORT METHODS
 
-	private String buildWorkflow(Workflow workflow, Principal p)
+	private String buildWorkflow(Workflow workflow, UsernamePrincipal p)
 			throws NoCreateException {
 		if (!stateModel.getAllowNewWorkflowRuns())
 			throw new NoCreateException("run creation not currently enabled");
@@ -857,7 +857,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	@Override
 	public UriBuilder getRunUriBuilder(TavernaRun run) {
-		return fromUri(getRunUriBuilder().build(run.getID()));
+		return fromUri(getRunUriBuilder().build(run.getId()));
 	}
 
 	Map<String, TavernaRun> runs() {
@@ -866,8 +866,11 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	@Override
 	public TavernaRun getRun(String runName) throws UnknownRunException {
-		if (isSuperUser())
+		if (isSuperUser()) {
+			accessLog
+					.info("check for admin powers passed; elevated access rights granted for read");
 			return runStore.getRun(runName);
+		}
 		return runStore.getRun(getPrincipal(), policy, runName);
 	}
 
@@ -923,24 +926,24 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	 * @return The identity of the user accessing the webapp.
 	 */
 	@Override
-	public Principal getPrincipal() {
+	public UsernamePrincipal getPrincipal() {
 		try {
 			Authentication auth = SecurityContextHolder.getContext()
 					.getAuthentication();
 			if (auth == null || !auth.isAuthenticated()) {
 				if (logGetPrincipalFailures)
 					log.warn("failed to get auth; going with <NOBODY>");
-				return new SimplePrincipal("<NOBODY>");
+				return new UsernamePrincipal("<NOBODY>");
 			}
 			Object principal = auth.getPrincipal();
 			if (principal instanceof Principal)
-				return (Principal) principal;
+				return new UsernamePrincipal((Principal) principal);
 			String username;
 			if (principal instanceof UserDetails)
 				username = ((UserDetails) principal).getUsername();
 			else
 				username = principal.toString();
-			return new SimplePrincipal(username);
+			return new UsernamePrincipal(username);
 		} catch (RuntimeException e) {
 			if (logGetPrincipalFailures)
 				log.info("failed to map principal", e);
@@ -958,19 +961,25 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@RolesAllowed(ADMIN)
-	protected final void adminAuthorizedThunk() {
+	protected void adminAuthorizedThunk() {
 	}
 
 	@Override
 	public void permitUpdate(TavernaRun run) throws NoUpdateException {
-		if (isSuperUser())
+		if (isSuperUser()) {
+			accessLog
+					.warn("check for admin powers passed; elevated access rights granted for update");
 			return; // Superusers are fully authorized to access others things
+		}
 		policy.permitUpdate(getPrincipal(), run);
 	}
 
 	void permitDestroy(TavernaRun run) throws NoUpdateException {
-		if (isSuperUser())
+		if (isSuperUser()) {
+			accessLog
+					.warn("check for admin powers passed; elevated access rights granted for destroy");
 			return; // Superusers are fully authorized to access others things
+		}
 		policy.permitDestroy(getPrincipal(), run);
 	}
 

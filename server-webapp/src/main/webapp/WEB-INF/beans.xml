@@ -133,7 +133,6 @@
 				<prop key="datanucleus.autoCreateConstraints">true</prop>
 				<prop key="datanucleus.validateConstraints">true</prop>
 				<prop key="datanucleus.autoCreateSchema">true</prop>
-				<prop key="datanucleus.managedRuntime">true</prop>
 			</props>
 		</property>
 	</bean>
@@ -229,7 +228,6 @@
 			The implementation of the catalog of workflow runs
 			supported by the localworker run engine.
 		</description>
-		<property name="state" ref="localworker.state" />
 		<property name="persistenceManagerFactory" ref="pmf" />
 		<property name="notifier" ref="localworker.notifier" />
 		<property name="notificationEngine" ref="notificationFabric" />

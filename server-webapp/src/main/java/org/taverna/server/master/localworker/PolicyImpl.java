@@ -19,6 +19,8 @@ import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * Basic policy implementation that allows any workflow to be instantiated by
  * any user, but which does not permit users to access each others workflow
@@ -26,6 +28,7 @@ import org.taverna.server.master.interfaces.TavernaSecurityContext;
  * 
  * @author Donal Fellows
  */
+@SuppressWarnings("IS2_INCONSISTENT_SYNC")
 class PolicyImpl implements Policy {
 	private LocalWorkerState state;
 	private RunDatabase runDB;

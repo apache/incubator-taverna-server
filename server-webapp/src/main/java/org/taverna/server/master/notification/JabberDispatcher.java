@@ -6,10 +6,10 @@
 
 package org.taverna.server.master.notification;
 
-import static org.taverna.server.master.notification.NotificationEngine.log;
-
 import javax.annotation.PreDestroy;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.MessageListener;
@@ -86,6 +86,7 @@ public class JabberDispatcher extends AbstractConfiguredDispatcher {
 	}
 
 	static class DroppingListener implements MessageListener {
+		private Log log = LogFactory.getLog("Taverna.Server.Notification.Jabber");
 		@Override
 		public void processMessage(Chat chat, Message message) {
 			log.debug("unexpectedly received XMPP message from <"

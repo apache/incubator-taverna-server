@@ -71,6 +71,14 @@ public class UsageRecordRecorder implements ServletConfigAware {
 		this.config = servletConfig;
 	}
 
+	/**
+	 * Accept a usage record for recording.
+	 * 
+	 * @param usageRecord
+	 *            The serialized usage record to record.
+	 * @throws IOException
+	 *             If the recording goes wrong.
+	 */
 	public void storeUsageRecord(String usageRecord) throws IOException {
 		String logfile = state.getUsageRecordLogFile();
 		if (logfile == null && config != null) {
@@ -103,6 +111,12 @@ public class UsageRecordRecorder implements ServletConfigAware {
 			saveURtoDB(usageRecord);
 	}
 
+	/**
+	 * How to save a usage record to the database.
+	 * 
+	 * @param usageRecord
+	 *            The serialized usage record to save.
+	 */
 	protected void saveURtoDB(String usageRecord) {
 		try {
 			UsageRecord ur = new UsageRecord(usageRecord);
@@ -112,7 +126,7 @@ public class UsageRecordRecorder implements ServletConfigAware {
 			else
 				tx.begin();
 			try {
-				ur = persistenceManager.makePersistent(ur);
+				persistenceManager.makePersistent(ur);
 			} catch (RuntimeException e) {
 				if (tx != null)
 					tx.rollback();

@@ -24,7 +24,7 @@ public interface TavernaRun extends Serializable {
 	/**
 	 * @return The identifier of the run.
 	 */
-	String getID();
+	String getId();
 
 	/**
 	 * @return What was this run was create to execute.

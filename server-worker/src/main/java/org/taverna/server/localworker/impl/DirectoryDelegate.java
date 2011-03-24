@@ -18,6 +18,8 @@ import org.taverna.server.localworker.remote.RemoteDirectory;
 import org.taverna.server.localworker.remote.RemoteDirectoryEntry;
 import org.taverna.server.localworker.remote.RemoteFile;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 /**
  * This class acts as a remote-aware delegate for the workflow run's working
  * directory and its subdirectories.
@@ -25,6 +27,7 @@ import org.taverna.server.localworker.remote.RemoteFile;
  * @author Donal Fellows
  * @see FileDelegate
  */
+@edu.umd.cs.findbugs.annotations.SuppressWarnings("SE_NO_SERIALVERSIONID")
 public class DirectoryDelegate extends UnicastRemoteObject implements
 		RemoteDirectory {
 	private File dir;
@@ -37,8 +40,8 @@ public class DirectoryDelegate extends UnicastRemoteObject implements
 	 * @throws RemoteException
 	 *             If registration of the directory fails.
 	 */
-	public DirectoryDelegate(File dir, DirectoryDelegate parent)
-			throws RemoteException {
+	public DirectoryDelegate(@NonNull File dir,
+			@NonNull DirectoryDelegate parent) throws RemoteException {
 		super();
 		this.localCache = new ReferenceMap();
 		this.dir = dir;
@@ -124,7 +127,7 @@ public class DirectoryDelegate extends UnicastRemoteObject implements
 		return parent;
 	}
 
-	void forgetEntry(RemoteDirectoryEntry entry) {
+	void forgetEntry(@NonNull RemoteDirectoryEntry entry) {
 		synchronized (localCache) {
 			MapIterator i = localCache.mapIterator();
 			while (i.hasNext()) {

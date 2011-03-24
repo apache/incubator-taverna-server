@@ -8,7 +8,7 @@ package org.taverna.server.master.localworker;
 import static java.util.Calendar.MINUTE;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.UUID.randomUUID;
-import static org.taverna.server.master.localworker.AbstractRemoteRunFactory.log;
+import static org.apache.commons.logging.LogFactory.getLog;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.logging.Log;
 import org.taverna.server.localworker.remote.IllegalStateTransitionException;
 import org.taverna.server.localworker.remote.RemoteDirectory;
 import org.taverna.server.localworker.remote.RemoteDirectoryEntry;
@@ -51,13 +52,16 @@ import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.SecurityContextFactory;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * Bridging shim between the WebApp world and the RMI world.
  * 
  * @author Donal Fellows
  */
+@edu.umd.cs.findbugs.annotations.SuppressWarnings("SE_NO_SERIALVERSIONID")
 public class RemoteRunDelegate implements TavernaRun {
+	private Log log = getLog("Taverna.Server.LocalWorker");
 	String id;
 	private Date creationInstant;
 	private Workflow workflow;
@@ -96,7 +100,7 @@ public class RemoteRunDelegate implements TavernaRun {
 	}
 
 	@Override
-	public String getID() {
+	public String getId() {
 		if (id == null)
 			id = randomUUID().toString();
 		return id;
@@ -121,6 +125,7 @@ public class RemoteRunDelegate implements TavernaRun {
 	}
 
 	private static class ListenerDelegate implements Listener {
+		private Log log = getLog("Taverna.Server.LocalWorker");
 		private RemoteListener r;
 		String conf;
 
@@ -204,7 +209,7 @@ public class RemoteRunDelegate implements TavernaRun {
 
 	@Override
 	public Date getExpiry() {
-		return expiry;
+		return new Date(expiry.getTime());
 	}
 
 	@Override
@@ -262,6 +267,7 @@ public class RemoteRunDelegate implements TavernaRun {
 	}
 
 	private abstract static class DEDelegate implements DirectoryEntry {
+		private Log log = getLog("Taverna.Server.LocalWorker");
 		private RemoteDirectoryEntry entry;
 		private String name;
 
@@ -371,12 +377,12 @@ public class RemoteRunDelegate implements TavernaRun {
 				throw new FilesystemAccessException(
 						"failed to zip up directory", e);
 			} finally {
-				if (zos != null)
-					try {
+				try {
+					if (zos != null)
 						zos.close();
-					} catch (IOException e) {
-						// Ignore this; it should be impossible.
-					}
+				} catch (IOException e) {
+					// Ignore this; it should be impossible.
+				}
 			}
 		}
 
@@ -497,7 +503,7 @@ public class RemoteRunDelegate implements TavernaRun {
 	@Override
 	public void setExpiry(Date d) {
 		if (d.after(new Date()))
-			expiry = d;
+			expiry = new Date(d.getTime());
 	}
 
 	@Override
@@ -664,7 +670,8 @@ public class RemoteRunDelegate implements TavernaRun {
 
 	@Override
 	public Date getCreationTimestamp() {
-		return creationInstant;
+		return creationInstant == null ? null : new Date(
+				creationInstant.getTime());
 	}
 
 	@Override
@@ -759,26 +766,8 @@ public class RemoteRunDelegate implements TavernaRun {
 		SecurityContextFactory factory = (SecurityContextFactory) in
 				.readObject();
 		try {
-			secContext = factory.create(this, new Principal() {
-				@Override
-				public String getName() {
-					return creatorName;
-				}
-
-				@Override
-				public boolean equals(Object o) {
-					if (o instanceof Principal) {
-						Principal p = (Principal) o;
-						return creatorName.equals(p.getName());
-					}
-					return false;
-				}
-
-				@Override
-				public int hashCode() {
-					return creatorName.hashCode();
-				}
-			});
+			secContext = factory.create(this,
+					new UsernamePrincipal(creatorName));
 		} catch (RuntimeException e) {
 			throw e;
 		} catch (IOException e) {

@@ -5,11 +5,15 @@ import java.rmi.RemoteException;
 import java.util.Date;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+
 public interface RemoteSingleRun extends Remote {
 	/**
 	 * @return The name of the Baclava file to use for all inputs, or
 	 *         <tt>null</tt> if no Baclava file is set.
 	 */
+	@Nullable
 	public String getInputBaclavaFile() throws RemoteException;
 
 	/**
@@ -21,11 +25,13 @@ public interface RemoteSingleRun extends Remote {
 	 *            contain any <tt>..</tt> segments. Will be interpreted relative
 	 *            to the run's working directory.
 	 */
-	public void setInputBaclavaFile(String filename) throws RemoteException;
+	public void setInputBaclavaFile(@NonNull String filename)
+			throws RemoteException;
 
 	/**
 	 * @return The list of input assignments.
 	 */
+	@NonNull
 	public List<RemoteInput> getInputs() throws RemoteException;
 
 	/**
@@ -35,7 +41,8 @@ public interface RemoteSingleRun extends Remote {
 	 *            The name of the port that this will be an input for.
 	 * @return The assignment reference.
 	 */
-	public RemoteInput makeInput(String name) throws RemoteException;
+	@NonNull
+	public RemoteInput makeInput(@NonNull String name) throws RemoteException;
 
 	/**
 	 * @return The file (relative to the working directory) to write the outputs
@@ -43,6 +50,7 @@ public interface RemoteSingleRun extends Remote {
 	 *         to be written to non-Baclava files in a directory called
 	 *         <tt>out</tt>.
 	 */
+	@Nullable
 	public String getOutputBaclavaFile() throws RemoteException;
 
 	/**
@@ -56,11 +64,13 @@ public interface RemoteSingleRun extends Remote {
 	 *            output to be written to individual files); overwrites any
 	 *            previous setting of this value.
 	 */
-	public void setOutputBaclavaFile(String filename) throws RemoteException;
+	public void setOutputBaclavaFile(@Nullable String filename)
+			throws RemoteException;
 
 	/**
 	 * @return The current status of the run.
 	 */
+	@NonNull
 	public RemoteStatus getStatus() throws RemoteException;
 
 	/**
@@ -73,30 +83,34 @@ public interface RemoteSingleRun extends Remote {
 	 *             If the requested state change is impossible. (Note that it is
 	 *             always legal to set the status to the current status.)
 	 */
-	public void setStatus(RemoteStatus s) throws IllegalStateTransitionException,
-			RemoteException;
+	public void setStatus(@NonNull RemoteStatus s)
+			throws IllegalStateTransitionException, RemoteException;
 
 	/**
 	 * @return When this workflow run was found to have finished, or
 	 *         <tt>null</tt> if it has never finished (either still running or
 	 *         never started).
 	 */
+	@Nullable
 	public Date getFinishTimestamp() throws RemoteException;
 
 	/**
 	 * @return When this workflow run was started, or <tt>null</tt> if it has
 	 *         never been started.
 	 */
+	@Nullable
 	public Date getStartTimestamp() throws RemoteException;
 
 	/**
 	 * @return Handle to the main working directory of the run.
 	 */
+	@NonNull
 	public RemoteDirectory getWorkingDirectory() throws RemoteException;
 
 	/**
 	 * @return The list of listener instances attached to the run.
 	 */
+	@NonNull
 	public List<RemoteListener> getListeners() throws RemoteException;
 
 	/**
@@ -105,11 +119,13 @@ public interface RemoteSingleRun extends Remote {
 	 * @param listener
 	 *            The listener to add.
 	 */
-	public void addListener(RemoteListener listener) throws RemoteException;
+	public void addListener(@NonNull RemoteListener listener)
+			throws RemoteException;
 
 	/**
 	 * @return The security context structure for this run.
 	 */
+	@NonNull
 	public RemoteSecurityContext getSecurityContext() throws RemoteException;
 
 	/**
@@ -122,6 +138,7 @@ public interface RemoteSingleRun extends Remote {
 	 * 
 	 * @return A list of listener type names.
 	 */
+	@NonNull
 	public List<String> getListenerTypes() throws RemoteException;
 
 	/**
@@ -135,6 +152,7 @@ public interface RemoteSingleRun extends Remote {
 	 *            the contents of this are determined by the type.
 	 * @return A handle for the listener.
 	 */
-	public RemoteListener makeListener(String type, String configuration)
-			throws RemoteException;
+	@NonNull
+	public RemoteListener makeListener(@NonNull String type,
+			@NonNull String configuration) throws RemoteException;
 }

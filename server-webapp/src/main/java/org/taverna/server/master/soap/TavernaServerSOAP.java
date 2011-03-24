@@ -28,6 +28,7 @@ import org.taverna.server.master.exceptions.BadPropertyValueException;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.InvalidCredentialException;
+import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoCredentialException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoListenerException;
@@ -54,11 +55,12 @@ public interface TavernaServerSOAP {
 	 *            The workflow to instantiate.
 	 * @return Annotated handle for created run.
 	 * @throws NoUpdateException
+	 * @throws NoCreateException
 	 */
 	@WebResult(name = "Run")
 	@CallCounted
 	RunReference submitWorkflow(@WebParam(name = "workflow") Workflow workflow)
-			throws NoUpdateException;
+			throws NoUpdateException, NoCreateException;
 
 	/**
 	 * Get the list of existing runs owned by the user.

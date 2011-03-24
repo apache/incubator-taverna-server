@@ -16,7 +16,6 @@ import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.security.Principal;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.TransformerFactory;
@@ -108,6 +107,7 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	 * @throws RemoteException
 	 *             If anything goes wrong.
 	 */
+	@SuppressWarnings("REC_CATCH_EXCEPTION")
 	private String unwrapWorkflow(String workflow, Holder<String> wfid)
 			throws RemoteException {
 		StringReader sr = new StringReader(workflow);
@@ -131,16 +131,15 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	}
 
 	@Override
-	public RemoteSingleRun make(String workflow, Principal creator,
+	public RemoteSingleRun make(String workflow, String creator,
 			UsageRecordReceiver urReceiver) throws RemoteException {
 		if (creator == null)
-			throw new RemoteException("no creator principal");
+			throw new RemoteException("no creator");
 		try {
 			Holder<String> wfid = new Holder<String>("???");
 			workflow = unwrapWorkflow(workflow, wfid);
-			// TODO: Do something properly with creator
 			out.println("Creating run from workflow <" + wfid.value + "> for <"
-					+ creator.getName() + ">");
+					+ creator + ">");
 			return cons.newInstance(command, workflow, workerClass, urReceiver);
 		} catch (RemoteException e) {
 			throw e;
@@ -173,18 +172,20 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	@Override
 	public void shutdown() {
 		unregisterFactory();
-		new Thread() {
-			@Override
-			@SuppressWarnings("DM_EXIT")
-			public void run() {
-				try {
-					sleep(1000);
-				} catch (InterruptedException e) {
-				} finally {
-					exit(0);
-				}
+		new Thread(new DelayedDeath()).start();
+	}
+
+	static class DelayedDeath implements Runnable {
+		@Override
+		@SuppressWarnings("DM_EXIT")
+		public void run() {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+			} finally {
+				exit(0);
 			}
-		}.start();
+		}
 	}
 
 	/**
