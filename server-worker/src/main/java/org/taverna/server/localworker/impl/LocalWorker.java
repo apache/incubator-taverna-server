@@ -98,7 +98,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		masterToken = randomUUID().toString();
 		this.workflow = workflow;
 		this.executeWorkflowCommand = executeWorkflowCommand;
-		base = new File(masterToken);
+		base = new File(getProperty("java.io.tmpdir"), masterToken);
+		out.println("about to create " + base);
 		try {
 			forceMkdir(base);
 		} catch (IOException e) {
@@ -241,8 +242,9 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 				if (!contextDirectory.setReadable(true, true)
 						|| !contextDirectory.setExecutable(true, true)
 						|| !contextDirectory.setWritable(true, true)) {
-					System.err.println("warning: "
-							+ "failed to set permissions on security context directory");
+					System.err
+							.println("warning: "
+									+ "failed to set permissions on security context directory");
 				}
 				track(contextDirectory, LocalWorker.this);
 			}

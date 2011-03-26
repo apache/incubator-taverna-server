@@ -15,7 +15,6 @@ import static java.util.Collections.emptyList;
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -27,7 +26,6 @@ import java.util.Date;
 import java.util.List;
 
 import javax.annotation.PreDestroy;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.ws.Holder;
 
@@ -59,7 +57,6 @@ import org.taverna.server.master.utils.UsernamePrincipal;
 public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		RunFactory {
 	Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
-	private JAXBContext context;
 	UsageRecordRecorder usageRecordSink;
 
 	@SuppressWarnings("unused")
@@ -212,7 +209,6 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 * @throws JAXBException
 	 */
 	public AbstractRemoteRunFactory() throws JAXBException {
-		context = Workflow.getContext();
 		try {
 			registry = LocateRegistry.getRegistry();
 			registry.list();
@@ -345,9 +341,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 *             If serialization fails.
 	 */
 	protected String serializeWorkflow(Workflow workflow) throws JAXBException {
-		StringWriter sw = new StringWriter();
-		context.createMarshaller().marshal(workflow, sw);
-		return sw.toString();
+		return workflow.marshal();
 	}
 
 	/**

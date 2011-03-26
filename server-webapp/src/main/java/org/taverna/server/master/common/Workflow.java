@@ -5,8 +5,19 @@
  */
 package org.taverna.server.master.common;
 
+import static org.apache.commons.logging.LogFactory.getLog;
+
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.StringReader;
+import java.io.StringWriter;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -20,14 +31,59 @@ import org.w3c.dom.Element;
  */
 @XmlRootElement(name = "workflow")
 @XmlType(name = "Workflow")
-public class Workflow {
+public class Workflow implements Externalizable {
 	/**
 	 * Literal document.
 	 */
 	@XmlAnyElement(lax = true)
 	public Element[] content;
 
-	public static JAXBContext getContext() throws JAXBException {
-		return JAXBContext.newInstance(Workflow.class);
+	private static Marshaller marshaller;
+	private static Unmarshaller unmarshaller;
+	static {
+		try {
+			JAXBContext context = JAXBContext.newInstance(Workflow.class);
+			marshaller = context.createMarshaller();
+			unmarshaller = context.createUnmarshaller();
+		} catch (JAXBException e) {
+			getLog("Taverna.Server.Webapp").fatal(
+					"failed to build JAXB context for working with "
+							+ Workflow.class, e);
+		}
+	}
+
+	public static Workflow unmarshal(String representation)
+			throws JAXBException {
+		StringReader sr = new StringReader(representation);
+		return (Workflow) unmarshaller.unmarshal(sr);
+	}
+
+	public String marshal() throws JAXBException {
+		StringWriter sw = new StringWriter();
+		marshaller.marshal(this, sw);
+		return sw.toString();
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
+		try {
+			Workflow w = unmarshal(in.readUTF());
+			this.content = w.content;
+			return;
+		} catch (JAXBException e) {
+			throw new IOException("failed to unmarshal", e);
+		} catch (ClassCastException e) {
+			throw new IOException("bizarre result of unmarshalling", e);
+		}
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		try {
+			out.writeUTF(marshal());
+		} catch (JAXBException e) {
+			throw new IOException("failed to marshal", e);
+		}
 	}
 }

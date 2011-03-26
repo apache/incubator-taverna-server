@@ -89,19 +89,19 @@ public class LocalWorkerTest {
 			events.add("init[");
 			events.add(executeWorkflowCommand);
 			events.add(workflow);
-			int dirLen = workingDir.toString().length();
+			int dirLen = workingDir.getName().length();
 			events.add(Integer.toString(dirLen));
 			events.add(inputBaclava == null ? "<null>" : inputBaclava
 					.toString().substring(dirLen));
 			Map<String, String> in = new TreeMap<String, String>();
 			for (Entry<String, File> name : inputFiles.entrySet()) {
 				in.put(name.getKey(), name.getValue() == null ? "<null>" : name
-						.getValue().toString().substring(dirLen));
+						.getValue().getName());
 			}
 			events.add(in.toString());
 			events.add(new TreeMap<String, String>(inputValues).toString());
 			events.add(outputBaclava == null ? "<null>" : outputBaclava
-					.toString().substring(dirLen));
+					.getName());
 			// TODO: check cmdir and cmpass
 			events.add("]");
 		}
@@ -519,8 +519,8 @@ public class LocalWorkerTest {
 		// Assumes order of map, so fragile but works...
 		assertEquals(
 				l("init[", "XWC", "WF", "36", "<null>",
-						"{bar=<null>, foo=/foofile}",
-						"{bar=barvalue, foo=null}", "/boo", "]", "kill"),
+						"{bar=<null>, foo=foofile}",
+						"{bar=barvalue, foo=null}", "boo", "]", "kill"),
 				events);
 	}
 }
