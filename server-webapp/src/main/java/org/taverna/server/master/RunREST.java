@@ -18,7 +18,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.TavernaServerImpl.WebappAware;
+import org.taverna.server.master.TavernaServerImpl.SupportAware;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadStateChangeException;
@@ -40,15 +40,15 @@ import org.taverna.server.output_description.RdfWrapper;
  * 
  * @author Donal Fellows
  */
-abstract class RunREST implements TavernaServerRunREST, WebappAware {
+abstract class RunREST implements TavernaServerRunREST, SupportAware {
 	private String runName;
 	private TavernaRun run;
-	private TavernaServer webapp;
+	private TavernaServerSupport support;
 	private ContentsDescriptorBuilder cdBuilder;
 
 	@Override
-	public void setWebapp(TavernaServer webapp) {
-		this.webapp = webapp;
+	public void setSupport(TavernaServerSupport support) {
+		this.support = support;
 	}
 
 	@Required
@@ -72,7 +72,7 @@ abstract class RunREST implements TavernaServerRunREST, WebappAware {
 	@Override
 	public Response destroy() throws NoUpdateException {
 		try {
-			webapp.unregisterRun(runName, run);
+			support.unregisterRun(runName, run);
 		} catch (UnknownRunException e) {
 			log.fatal("can't happen", e);
 		}
@@ -89,7 +89,7 @@ abstract class RunREST implements TavernaServerRunREST, WebappAware {
 	@Override
 	public TavernaServerSecurityREST getSecurity() throws NotOwnerException {
 		TavernaSecurityContext secContext = run.getSecurityContext();
-		if (!webapp.getPrincipal().equals(secContext.getOwner()))
+		if (!support.getPrincipal().equals(secContext.getOwner()))
 			throw new NotOwnerException();
 
 		// context.getBean("run.security", run, secContext);
@@ -142,13 +142,13 @@ abstract class RunREST implements TavernaServerRunREST, WebappAware {
 	public String setExpiryTime(String expiry) throws NoUpdateException,
 			IllegalArgumentException {
 		DateTime wanted = dateTimeParser().parseDateTime(expiry.trim());
-		Date achieved = webapp.updateExpiry(run, wanted.toDate());
+		Date achieved = support.updateExpiry(run, wanted.toDate());
 		return dateTime().print(new DateTime(achieved));
 	}
 
 	@Override
 	public String setStatus(String status) throws NoUpdateException {
-		webapp.permitUpdate(run);
+		support.permitUpdate(run);
 		run.setStatus(Status.valueOf(status.trim()));
 		return run.getStatus().toString();
 	}
@@ -170,7 +170,7 @@ abstract class RunREST implements TavernaServerRunREST, WebappAware {
 	@Override
 	public String setOutputFile(String filename) throws NoUpdateException,
 			FilesystemAccessException, BadStateChangeException {
-		webapp.permitUpdate(run);
+		support.permitUpdate(run);
 		if (filename != null && filename.length() == 0)
 			filename = null;
 		run.setOutputBaclavaFile(filename);

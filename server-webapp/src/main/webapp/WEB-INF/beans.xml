@@ -9,21 +9,31 @@
 
 	<bean id="webapp" class="org.taverna.server.master.TavernaServerImpl">
 		<property name="policy" ref="localworker.policy" />
+		<property name="runStore" ref="localworker.runDB" />
+		<property name="fileUtils" ref="fileUtils" />
+		<property name="contentsDescriptorBuilder" ref="contentsDescriptorBuilder" />
+		<property name="notificationEngine" ref="notificationFabric" />
+		<property name="support" ref="webapp.support" />
+		<lookup-method name="makeRunInterface" bean="run.coreView.prototype" />
+		<lookup-method name="getPolicyDescription" bean="webapp.policyView" />
+	</bean>
+
+	<bean id="webapp.support" class="org.taverna.server.master.TavernaServerSupport">
+		<property name="policy" ref="localworker.policy" />
 		<property name="listenerFactory" ref="listenerFactory" />
 		<property name="runFactory" ref="localworker.factory" />
 		<property name="runStore" ref="localworker.runDB" />
 		<property name="stateModel" ref="webapp.state" />
 		<property name="idMapper" ref="IdentityMapper" />
-		<property name="fileUtils" ref="fileUtils" />
-		<property name="contentsDescriptorBuilder" ref="contentsDescriptorBuilder" />
 		<property name="invocationCounter" ref="webapp.invocationCounter" />
-		<property name="notificationEngine" ref="notificationFabric" />
-		<lookup-method name="makeRunInterface" bean="run.coreView.prototype" />
-		<lookup-method name="getPolicyDescription" bean="webapp.policyView" />
+		<property name="webapp" ref="webapp" />
+		<property name="authCheck">
+			<bean id="authThunk" class="org.taverna.server.master.TavernaServerSupport.AuthCheck" />
+		</property>
 	</bean>
 
 	<bean id="webapp.policyView" class="org.taverna.server.master.PolicyREST">
-		<property name="webapp" ref="webapp" />
+		<property name="support" ref="webapp.support" />
 		<property name="policy" ref="localworker.policy" />
 		<property name="listenerFactory" ref="listenerFactory" />
 		<property name="notificationEngine" ref="notificationFabric" />
@@ -46,7 +56,7 @@
 
 	<bean id="run.coreView.prototype" scope="prototype"
 		class="org.taverna.server.master.RunREST">
-		<property name="webapp" ref="webapp" />
+		<property name="support" ref="webapp.support" />
 		<property name="cdBuilder" ref="contentsDescriptorBuilder" />
 		<lookup-method name="makeSecurityInterface" bean="run.securityView.prototype" />
 		<lookup-method name="makeInputInterface" bean="run.inputView.prototype" />
@@ -56,13 +66,13 @@
 
 	<bean id="run.directoryView.prototype" scope="prototype"
 		class="org.taverna.server.master.DirectoryREST">
-		<property name="webapp" ref="webapp" />
+		<property name="support" ref="webapp.support" />
 		<property name="fileUtils" ref="fileUtils" />
 	</bean>
 
 	<bean id="run.listenersView.prototype" scope="prototype"
 		class="org.taverna.server.master.ListenersREST">
-		<property name="webapp" ref="webapp" />
+		<property name="support" ref="webapp.support" />
 		<lookup-method name="makeListenerInterface" bean="run.singleListenerView.prototype" />
 	</bean>
 
@@ -73,19 +83,19 @@
 
 	<bean id="run.propertyView.prototype" scope="prototype"
 		class="org.taverna.server.master.ListenerPropertyREST">
-		<property name="webapp" ref="webapp" />
+		<property name="support" ref="webapp.support" />
 	</bean>
 
 	<bean id="run.inputView.prototype" scope="prototype"
 		class="org.taverna.server.master.InputREST">
-		<property name="webapp" ref="webapp" />
+		<property name="support" ref="webapp.support" />
 		<property name="cdBuilder" ref="contentsDescriptorBuilder" />
 		<property name="fileUtils" ref="fileUtils" />
 	</bean>
 
 	<bean id="run.securityView.prototype" scope="prototype"
 		class="org.taverna.server.master.RunSecurityREST">
-		<property name="webapp" ref="webapp" />
+		<property name="support" ref="webapp.support" />
 	</bean>
 
 

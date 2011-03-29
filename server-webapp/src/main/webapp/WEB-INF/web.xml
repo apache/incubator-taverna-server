@@ -14,11 +14,13 @@
 		<description>Where Spring is to load its bean definitions from. DO NOT
 			CHANGE.</description>
 	</context-param>
+	<!-- SET THIS FROM EXTERNAL CONTEXT 
 	<context-param>
 		<param-name>executeWorkflowScript</param-name>
 		<param-value>/some/where/executeworkflow.sh</param-value>
 		<description>The location of the Taverna2 workflow execution script.</description>
 	</context-param>
+	 -->
 
 	<filter>
 		<filter-name>springSecurityFilterChain</filter-name>

@@ -16,7 +16,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
-import org.taverna.server.master.TavernaServerImpl.WebappAware;
+import org.taverna.server.master.TavernaServerImpl.SupportAware;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.Listener;
@@ -29,13 +29,13 @@ import org.taverna.server.master.rest.TavernaServerListenersREST;
  * 
  * @author Donal Fellows
  */
-abstract class ListenersREST implements TavernaServerListenersREST, WebappAware {
+abstract class ListenersREST implements TavernaServerListenersREST, SupportAware {
 	private TavernaRun run;
-	private TavernaServer webapp;
+	private TavernaServerSupport support;
 
 	@Override
-	public void setWebapp(TavernaServer webapp) {
-		this.webapp = webapp;
+	public void setSupport(TavernaServerSupport support) {
+		this.support = support;
 	}
 
 	void setRun(TavernaRun run) {
@@ -45,7 +45,7 @@ abstract class ListenersREST implements TavernaServerListenersREST, WebappAware 
 	@Override
 	public Response addListener(ListenerDefinition typeAndConfiguration,
 			UriInfo ui) throws NoUpdateException, NoListenerException {
-		String name = webapp.makeListener(run, typeAndConfiguration.type,
+		String name = support.makeListener(run, typeAndConfiguration.type,
 				typeAndConfiguration.configuration).getName();
 		return created(
 				ui.getAbsolutePathBuilder().path("{listenerName}").build(name))
@@ -55,7 +55,7 @@ abstract class ListenersREST implements TavernaServerListenersREST, WebappAware 
 	@Override
 	public TavernaServerListenerREST getListener(String name)
 			throws NoListenerException {
-		Listener l = TavernaServerImpl.getListener(run, name);
+		Listener l = support.getListener(run, name);
 		if (l == null)
 			throw new NoListenerException();
 		SingleListenerREST listener = makeListenerInterface();

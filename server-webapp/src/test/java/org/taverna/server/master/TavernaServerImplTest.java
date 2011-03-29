@@ -29,6 +29,7 @@ public class TavernaServerImplTest {
 	@java.lang.SuppressWarnings("unused")
 	private ExampleRun.Builder runFactory;
 	private SimpleListenerFactory lFactory;
+	private TavernaServerSupport support;
 
 	private String lrunname;
 	private String lrunconf;
@@ -120,8 +121,11 @@ public class TavernaServerImplTest {
 				return new PolicyREST();
 			}
 		};
-		server.setLogGetPrincipalFailures(false);
-		server.setStateModel(new ManagementModel() {
+		support = new TavernaServerSupport();
+		server.setSupport(support);
+		support.setWebapp(server);
+		support.setLogGetPrincipalFailures(false);
+		support.setStateModel(new ManagementModel() {
 			@Override
 			public boolean getAllowNewWorkflowRuns() {
 				return true;
@@ -159,10 +163,12 @@ public class TavernaServerImplTest {
 			}
 		});
 		server.setPolicy(policy = new MockPolicy());
+		support.setPolicy(policy);
 		server.setRunStore(store = new SimpleNonpersistentRunStore());
+		support.setRunStore(store);
 		store.setPolicy(policy);
-		server.setRunFactory(runFactory = new ExampleRun.Builder(1));
-		server.setListenerFactory(lFactory = new SimpleListenerFactory());
+		support.setRunFactory(runFactory = new ExampleRun.Builder(1));
+		support.setListenerFactory(lFactory = new SimpleListenerFactory());
 		lFactory.setBuilders(singletonMap(
 				"foo",
 				(SimpleListenerFactory.Builder) new SimpleListenerFactory.Builder() {
@@ -191,7 +197,7 @@ public class TavernaServerImplTest {
 
 	@Test
 	public void defaults4() {
-		assertNotNull(server.getPrincipal());
+		assertNotNull(support.getPrincipal());
 	}
 
 	@Test
@@ -222,7 +228,7 @@ public class TavernaServerImplTest {
 			String l = server.addRunListener(run.name, "foo", "foobar");
 			assertEquals("bar", l);
 			assertEquals("foobar", lrunconf);
-			assertEquals(lrunname, server.getRun(run.name).toString());
+			assertEquals(lrunname, support.getRun(run.name).toString());
 			assertEquals(asList("default", "bar"),
 					asList(server.getRunListeners(run.name)));
 			assertEquals(0,

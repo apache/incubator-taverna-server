@@ -17,7 +17,7 @@ import java.util.Map;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.taverna.server.master.TavernaServerImpl.WebappAware;
+import org.taverna.server.master.TavernaServerImpl.SupportAware;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.Permission;
 import org.taverna.server.master.common.Trust;
@@ -33,14 +33,14 @@ import org.taverna.server.master.rest.TavernaServerSecurityREST;
  * 
  * @author Donal Fellows
  */
-abstract class RunSecurityREST implements TavernaServerSecurityREST, WebappAware {
-	private TavernaServer webapp;
+abstract class RunSecurityREST implements TavernaServerSecurityREST, SupportAware {
+	private TavernaServerSupport support;
 	private TavernaSecurityContext context;
 	private TavernaRun run;
 
 	@Override
-	public void setWebapp(TavernaServer webapp) {
-		this.webapp = webapp;
+	public void setSupport(TavernaServerSupport support) {
+		this.support = support;
 	}
 
 	void setSecurityContext(TavernaSecurityContext context) {
@@ -197,24 +197,24 @@ abstract class RunSecurityREST implements TavernaServerSecurityREST, WebappAware
 
 	@Override
 	public Permission describePermission(String id) {
-		return webapp.getPermission(context, id);
+		return support.getPermission(context, id);
 	}
 
 	@Override
 	public Permission setPermission(String id, Permission perm) {
-		webapp.setPermission(context, id, perm);
-		return webapp.getPermission(context, id);
+		support.setPermission(context, id, perm);
+		return support.getPermission(context, id);
 	}
 
 	@Override
 	public Response deletePermission(String id, UriInfo ui) {
-		webapp.setPermission(context, id, Permission.None);
+		support.setPermission(context, id, Permission.None);
 		return noContent().build();
 	}
 
 	@Override
 	public Response makePermission(PermissionDescription desc, UriInfo ui) {
-		webapp.setPermission(context, desc.userName, desc.permission);
+		support.setPermission(context, desc.userName, desc.permission);
 		return created(
 				ui.getAbsolutePathBuilder().path("{user}").build(desc.userName))
 				.build();

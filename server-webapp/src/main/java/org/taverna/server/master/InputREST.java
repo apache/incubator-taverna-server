@@ -14,7 +14,7 @@ import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.apache.cxf.jaxrs.model.URITemplate;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.input_description.InputDescription;
-import org.taverna.server.master.TavernaServerImpl.WebappAware;
+import org.taverna.server.master.TavernaServerImpl.SupportAware;
 import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.exceptions.BadInputPortNameException;
 import org.taverna.server.master.exceptions.BadPropertyValueException;
@@ -37,16 +37,16 @@ import org.taverna.server.master.utils.FilenameUtils;
  * 
  * @author Donal Fellows
  */
-abstract class InputREST implements TavernaServerInputREST, WebappAware {
+abstract class InputREST implements TavernaServerInputREST, SupportAware {
 	private UriInfo ui;
-	private TavernaServer webapp;
+	private TavernaServerSupport support;
 	private TavernaRun run;
 	private ContentsDescriptorBuilder cdBuilder;
 	private FilenameUtils fileUtils;
 
 	@Override
-	public void setWebapp(TavernaServer webapp) {
-		this.webapp = webapp;
+	public void setSupport(TavernaServerSupport support) {
+		this.support = support;
 	}
 
 	@Required
@@ -85,7 +85,7 @@ abstract class InputREST implements TavernaServerInputREST, WebappAware {
 
 	@Override
 	public InDesc getInput(String name) throws BadInputPortNameException {
-		Input i = TavernaServerImpl.getInput(run, name);
+		Input i = support.getInput(run, name);
 		if (i == null)
 			throw new BadInputPortNameException("unknown input port name");
 		return new InDesc(i);
@@ -94,7 +94,7 @@ abstract class InputREST implements TavernaServerInputREST, WebappAware {
 	@Override
 	public String setBaclavaFile(String filename) throws NoUpdateException,
 			BadStateChangeException, FilesystemAccessException {
-		webapp.permitUpdate(run);
+		support.permitUpdate(run);
 		run.setInputBaclavaFile(filename);
 		String i = run.getInputBaclavaFile();
 		return i == null ? "" : i;
@@ -114,8 +114,8 @@ abstract class InputREST implements TavernaServerInputREST, WebappAware {
 			return setRemoteInput(name, (InDesc.Reference) ac);
 		if (!(ac instanceof InDesc.File || ac instanceof InDesc.Value))
 			throw new BadPropertyValueException("unknown content type");
-		webapp.permitUpdate(run);
-		Input i = TavernaServerImpl.getInput(run, name);
+		support.permitUpdate(run);
+		Input i = support.getInput(run, name);
 		if (i == null)
 			i = run.makeInput(name);
 		if (ac instanceof InDesc.File)
@@ -137,12 +137,12 @@ abstract class InputREST implements TavernaServerInputREST, WebappAware {
 		}
 		try {
 			File from = fileUtils.getFile(
-					webapp.getRun(mvm.get("runName").get(0)),
+					support.getRun(mvm.get("runName").get(0)),
 					FalseDE.make(mvm.get("path").get(0)));
 			File to = run.getWorkingDirectory().makeEmptyFile(
-					webapp.getPrincipal(), randomUUID().toString());
+					support.getPrincipal(), randomUUID().toString());
 			to.copy(from);
-			Input i = TavernaServerImpl.getInput(run, name);
+			Input i = support.getInput(run, name);
 			if (i == null)
 				i = run.makeInput(name);
 			i.setFile(to.getFullName());

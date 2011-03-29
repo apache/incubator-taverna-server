@@ -87,7 +87,7 @@ public class EmailDispatcher implements MessageDispatcher {
 	}
 
 	private Object mail() throws NamingException, NoSuchFieldException,
-			ClassNotFoundException, NoSuchMethodException {
+			NoSuchMethodException {
 		Context env = (Context) new InitialContext().lookup("java:comp/env");
 		try {
 			Object o = env.lookup("mail/Session");
@@ -96,7 +96,13 @@ public class EmailDispatcher implements MessageDispatcher {
 				return null;
 			}
 			if (recipientTo == null) {
-				initAPI(o.getClass().getClassLoader());
+				try {
+					initAPI(o.getClass().getClassLoader());
+				} catch (ClassNotFoundException e) {
+					log.info("failed to look up all required API classes: "
+							+ e.getMessage());
+					return null;
+				}
 				assert recipientTo != null;
 			}
 			if (session.isInstance(o))

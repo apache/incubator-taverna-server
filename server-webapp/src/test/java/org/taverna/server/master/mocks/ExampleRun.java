@@ -21,10 +21,10 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.ServletContext;
 import javax.ws.rs.core.HttpHeaders;
 import javax.xml.ws.handler.MessageContext;
 
+import org.springframework.security.core.context.SecurityContext;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Trust;
@@ -412,7 +412,7 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	}
 
 	@Override
-	public void initializeSecurityFromContext(ServletContext servletContext)
+	public void initializeSecurityFromContext(SecurityContext securityContext)
 			throws Exception {
 		// TODO Auto-generated method stub
 		

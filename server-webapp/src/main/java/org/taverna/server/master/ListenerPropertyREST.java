@@ -7,7 +7,7 @@ package org.taverna.server.master;
 
 import static org.taverna.server.master.TavernaServerImpl.log;
 
-import org.taverna.server.master.TavernaServerImpl.WebappAware;
+import org.taverna.server.master.TavernaServerImpl.SupportAware;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.Listener;
@@ -20,15 +20,15 @@ import org.taverna.server.master.rest.TavernaServerListenersREST;
  * @author Donal Fellows
  */
 abstract class ListenerPropertyREST implements TavernaServerListenersREST.Property,
-		WebappAware {
-	private TavernaServer webapp;
+		SupportAware {
+	private TavernaServerSupport support;
 	private Listener listen;
 	private String propertyName;
 	private TavernaRun run;
 
 	@Override
-	public void setWebapp(TavernaServer webapp) {
-		this.webapp = webapp;
+	public void setSupport(TavernaServerSupport support) {
+		this.support = support;
 	}
 
 	void setListen(Listener listen) {
@@ -57,7 +57,7 @@ abstract class ListenerPropertyREST implements TavernaServerListenersREST.Proper
 	@Override
 	public String setValue(String value) throws NoUpdateException,
 			NoListenerException {
-		webapp.permitUpdate(run);
+		support.permitUpdate(run);
 		listen.setProperty(propertyName, value);
 		return listen.getProperty(propertyName);
 	}

@@ -30,14 +30,13 @@ import java.util.Set;
 
 import javax.crypto.spec.SecretKeySpec;
 import javax.security.auth.x500.X500Principal;
-import javax.servlet.ServletContext;
 import javax.ws.rs.core.HttpHeaders;
 import javax.xml.ws.handler.MessageContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.taverna.server.localworker.remote.RemoteSecurityContext;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.Trust;
@@ -237,11 +236,12 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 	}
 
 	@Override
-	public void initializeSecurityFromContext(ServletContext servletContext)
+	public void initializeSecurityFromContext(SecurityContext securityContext)
 			throws Exception {
 		// This is how to get the info from Spring Security
-		Authentication auth = SecurityContextHolder.getContext()
-				.getAuthentication();
+		Authentication auth = securityContext.getAuthentication();
+		if (auth == null)
+			return;
 		auth.getPrincipal();
 		// do nothing else in this implementation
 	}

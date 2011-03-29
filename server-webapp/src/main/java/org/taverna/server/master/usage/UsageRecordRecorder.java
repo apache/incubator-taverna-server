@@ -15,11 +15,11 @@ import javax.annotation.PreDestroy;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Transaction;
-import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.xml.bind.JAXBException;
 
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.web.context.ServletConfigAware;
+import org.springframework.web.context.ServletContextAware;
 import org.taverna.server.master.ManagementModel;
 import org.taverna.server.master.utils.Contextualizer;
 
@@ -29,10 +29,10 @@ import org.taverna.server.master.utils.Contextualizer;
  * 
  * @author Donal Fellows
  */
-public class UsageRecordRecorder implements ServletConfigAware {
+public class UsageRecordRecorder implements ServletContextAware {
 	private ManagementModel state;
 	private Contextualizer contextualizer;
-	private ServletConfig config;
+	private ServletContext config;
 	private PersistenceManager persistenceManager;
 	private String logDestination;
 	private PrintWriter writer;
@@ -67,7 +67,7 @@ public class UsageRecordRecorder implements ServletConfigAware {
 	}
 
 	@Override
-	public void setServletConfig(ServletConfig servletConfig) {
+	public void setServletContext(ServletContext servletConfig) {
 		this.config = servletConfig;
 	}
 

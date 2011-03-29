@@ -37,7 +37,7 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
 
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.TavernaServerImpl.WebappAware;
+import org.taverna.server.master.TavernaServerImpl.SupportAware;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoUpdateException;
@@ -56,14 +56,14 @@ import org.taverna.server.master.utils.FilenameUtils;
  * 
  * @author Donal Fellows
  */
-abstract class DirectoryREST implements TavernaServerDirectoryREST, WebappAware {
-	private TavernaServer webapp;
+abstract class DirectoryREST implements TavernaServerDirectoryREST, SupportAware {
+	private TavernaServerSupport support;
 	private TavernaRun run;
 	private FilenameUtils fileUtils;
 
 	@Override
-	public void setWebapp(TavernaServer webapp) {
-		this.webapp = webapp;
+	public void setSupport(TavernaServerSupport support) {
+		this.support = support;
 	}
 
 	@Required
@@ -79,7 +79,7 @@ abstract class DirectoryREST implements TavernaServerDirectoryREST, WebappAware 
 	public Response destroyDirectoryEntry(List<PathSegment> path)
 			throws NoUpdateException, FilesystemAccessException,
 			NoDirectoryEntryException {
-		webapp.permitUpdate(run);
+		support.permitUpdate(run);
 		fileUtils.getDirEntry(run, path).destroy();
 		return noContent().build();
 	}
@@ -219,7 +219,7 @@ abstract class DirectoryREST implements TavernaServerDirectoryREST, WebappAware 
 	public Response makeDirectoryOrUpdateFile(List<PathSegment> parent,
 			MakeOrUpdateDirEntry op, UriInfo ui) throws NoUpdateException,
 			FilesystemAccessException, NoDirectoryEntryException {
-		webapp.permitUpdate(run);
+		support.permitUpdate(run);
 		DirectoryEntry container = fileUtils.getDirEntry(run, parent);
 		if (!(container instanceof Directory))
 			throw new FilesystemAccessException("You may not "
@@ -233,7 +233,7 @@ abstract class DirectoryREST implements TavernaServerDirectoryREST, WebappAware 
 		// Make a directory in the context directory
 
 		if (op instanceof MakeDirectory) {
-			Directory target = d.makeSubdirectory(webapp.getPrincipal(),
+			Directory target = d.makeSubdirectory(support.getPrincipal(),
 					op.name);
 			return created(ub.build(target.getName())).build();
 		}
@@ -251,7 +251,7 @@ abstract class DirectoryREST implements TavernaServerDirectoryREST, WebappAware 
 			}
 		}
 		if (f == null) {
-			f = d.makeEmptyFile(webapp.getPrincipal(), op.name);
+			f = d.makeEmptyFile(support.getPrincipal(), op.name);
 			f.setContents(op.contents);
 			return created(ub.build(f.getName())).build();
 		}
@@ -263,7 +263,7 @@ abstract class DirectoryREST implements TavernaServerDirectoryREST, WebappAware 
 	public Response setFileContents(List<PathSegment> filePath, String name,
 			InputStream contents, UriInfo ui) throws NoDirectoryEntryException,
 			NoUpdateException, FilesystemAccessException {
-		webapp.permitUpdate(run);
+		support.permitUpdate(run);
 		Directory d;
 		if (filePath != null && filePath.size() > 0) {
 			DirectoryEntry e = fileUtils.getDirEntry(run, filePath);
@@ -288,7 +288,7 @@ abstract class DirectoryREST implements TavernaServerDirectoryREST, WebappAware 
 			}
 		}
 		if (f == null)
-			f = d.makeEmptyFile(webapp.getPrincipal(), name);
+			f = d.makeEmptyFile(support.getPrincipal(), name);
 
 		try {
 			byte[] buffer = new byte[65536];

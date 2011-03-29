@@ -10,10 +10,10 @@ import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.util.Set;
 
-import javax.servlet.ServletContext;
 import javax.ws.rs.core.HttpHeaders;
 import javax.xml.ws.handler.MessageContext;
 
+import org.springframework.security.core.context.SecurityContext;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.exceptions.InvalidCredentialException;
@@ -144,13 +144,13 @@ public interface TavernaSecurityContext {
 	 * created. In particular, this gives an opportunity for boot-strapping
 	 * things with any delegateable credentials.
 	 * 
-	 * @param servletContext
-	 *            The servlet context associated with the request that caused
+	 * @param securityContext
+	 *            The security context associated with the request that caused
 	 *            the workflow to be created.
 	 * @throws Exception
 	 *             If anything goes wrong.
 	 */
-	void initializeSecurityFromContext(ServletContext servletContext)
+	void initializeSecurityFromContext(SecurityContext securityContext)
 			throws Exception;
 
 	/**

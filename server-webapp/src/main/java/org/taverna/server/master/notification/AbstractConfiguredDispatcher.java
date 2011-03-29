@@ -2,15 +2,15 @@ package org.taverna.server.master.notification;
 
 import java.util.Properties;
 
-import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.context.ServletConfigAware;
+import org.springframework.web.context.ServletContextAware;
 import org.taverna.server.master.interfaces.MessageDispatcher;
 
 public abstract class AbstractConfiguredDispatcher implements
-		MessageDispatcher, ServletConfigAware {
+		MessageDispatcher, ServletContextAware {
 	/**
 	 * @param prefix
 	 *            The prefix to use when looking up bean parameters.
@@ -21,13 +21,13 @@ public abstract class AbstractConfiguredDispatcher implements
 
 	private String prefix;
 	private Properties properties = new Properties();
-	private ServletConfig config;
+	private ServletContext config;
 	/** Pre-configured logger. */
 	protected Log log = LogFactory.getLog("Taverna.Server.Notification");
 
 	@Override
-	public final void setServletConfig(ServletConfig servletConfig) {
-		this.config = servletConfig;
+	public final void setServletContext(ServletContext servletContext) {
+		this.config = servletContext;
 		reconfigured();
 		if (!isAvailable())
 			log.warn("incomplete configuration; disabling " + prefix

@@ -28,11 +28,12 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.servlet.ServletContext;
 import javax.xml.bind.JAXBException;
@@ -454,14 +455,12 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	}
 
 	/**
-	 * Makes the connection to the meta-factory that makes factories. Public so
-	 * that Spring can invoke it during start-up.
+	 * Makes the connection to the meta-factory that makes factories.
 	 * 
 	 * @throws IOException
 	 *             If the connection fails.
 	 */
-	@PostConstruct
-	public void initMetaFactory() throws IOException {
+	private void initMetaFactory() throws IOException {
 		forker = new MetaFactoryImpl();
 	}
 
@@ -604,22 +603,47 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public void setServletContext(ServletContext servletContext) {
+		log.info("installing defaults from ServletContext into core state model");
 		if (servletContext == null)
 			return;
+
+		List<String> l = new ArrayList<String>();
+		Enumeration<String> e = servletContext.getInitParameterNames();
+		while(e.hasMoreElements())
+			l.add(e.nextElement());
+		log.info("have init-params: " + l);
+
 		if (state.defaultExecuteWorkflowScript == null) {
 			state.defaultExecuteWorkflowScript = servletContext
 					.getInitParameter("executeWorkflowScript");
-			if (state.getExecuteWorkflowScript() != null)
+			if (state.getExecuteWorkflowScript() != null) {
 				log.info("configured executeWorkflowScript from context as "
 						+ state.getExecuteWorkflowScript());
+				if (state.defaultExecuteWorkflowScript
+						.startsWith("/some/where/executeWorkflow."))
+					log.warn("unexpected default value!");
+			}
 		}
+
 		if (state.defaultPasswordFile == null) {
 			state.defaultPasswordFile = servletContext
 					.getInitParameter("secureForkPasswordFile");
 			if (state.getPasswordFile() != null)
 				log.info("configured secureForkPasswordFile from context as "
 						+ state.getPasswordFile());
+		}
+
+		if (forker != null) {
+			log.warn("updated the servlet config after a metafactory existed");
+			reinitFactory();
+		} else {
+			try {
+				initMetaFactory();
+			} catch (IOException e1) {
+				log.fatal("failed to build metafactory", e1);
+			}
 		}
 	}
 }
