@@ -37,7 +37,7 @@ import org.taverna.server.master.utils.FilenameUtils;
  * 
  * @author Donal Fellows
  */
-abstract class InputREST implements TavernaServerInputREST, SupportAware {
+class InputREST implements TavernaServerInputREST, InputBean {
 	private UriInfo ui;
 	private TavernaServerSupport support;
 	private TavernaRun run;
@@ -49,22 +49,23 @@ abstract class InputREST implements TavernaServerInputREST, SupportAware {
 		this.support = support;
 	}
 
+	@Override
 	@Required
 	public void setCdBuilder(ContentsDescriptorBuilder cdBuilder) {
 		this.cdBuilder = cdBuilder;
 	}
 
+	@Override
 	@Required
 	public void setFileUtils(FilenameUtils fileUtils) {
 		this.fileUtils = fileUtils;
 	}
 
-	void setUriInfo(UriInfo ui) {
-		this.ui = ui;
-	}
-
-	void setRun(TavernaRun run) {
+	@Override
+	public InputREST connect(TavernaRun run, UriInfo ui) {
 		this.run = run;
+		this.ui = ui;
+		return this;
 	}
 
 	@Override
@@ -128,10 +129,10 @@ abstract class InputREST implements TavernaServerInputREST, SupportAware {
 	private InDesc setRemoteInput(String name, Reference ref)
 			throws BadStateChangeException, BadPropertyValueException,
 			FilesystemAccessException {
-		URITemplate t = new URITemplate(ui.getBaseUri()
+		URITemplate tmpl = new URITemplate(ui.getBaseUri()
 				+ "/runs/{runName}/wd/{path:.+}");
 		MultivaluedMap<String, String> mvm = new MetadataMap<String, String>();
-		if (!t.match(ref.contents, mvm)) {
+		if (!tmpl.match(ref.contents, mvm)) {
 			throw new BadPropertyValueException(
 					"URI in reference does not refer to local disk resource");
 		}
@@ -141,7 +142,9 @@ abstract class InputREST implements TavernaServerInputREST, SupportAware {
 					FalseDE.make(mvm.get("path").get(0)));
 			File to = run.getWorkingDirectory().makeEmptyFile(
 					support.getPrincipal(), randomUUID().toString());
+
 			to.copy(from);
+
 			Input i = support.getInput(run, name);
 			if (i == null)
 				i = run.makeInput(name);
@@ -179,4 +182,14 @@ abstract class InputREST implements TavernaServerInputREST, SupportAware {
 		public void destroy() throws FilesystemAccessException {
 		}
 	}
+}
+
+/**
+ * Description of properties supported by {@link InputREST}.
+ * @author Donal Fellows
+ */
+interface InputBean extends SupportAware {
+	InputREST connect(TavernaRun run, UriInfo ui);
+	void setCdBuilder(ContentsDescriptorBuilder cd);
+	void setFileUtils(FilenameUtils fn);
 }

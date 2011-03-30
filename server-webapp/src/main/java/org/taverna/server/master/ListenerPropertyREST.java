@@ -19,8 +19,8 @@ import org.taverna.server.master.rest.TavernaServerListenersREST;
  * 
  * @author Donal Fellows
  */
-abstract class ListenerPropertyREST implements TavernaServerListenersREST.Property,
-		SupportAware {
+class ListenerPropertyREST implements TavernaServerListenersREST.Property,
+		ListenerPropertyBean {
 	private TavernaServerSupport support;
 	private Listener listen;
 	private String propertyName;
@@ -31,16 +31,13 @@ abstract class ListenerPropertyREST implements TavernaServerListenersREST.Proper
 		this.support = support;
 	}
 
-	void setListen(Listener listen) {
+	@Override
+	public ListenerPropertyREST connect(Listener listen, TavernaRun run,
+			String propertyName) {
 		this.listen = listen;
-	}
-
-	void setPropertyName(String propertyName) {
 		this.propertyName = propertyName;
-	}
-
-	void setRun(TavernaRun run) {
 		this.run = run;
+		return this;
 	}
 
 	@Override
@@ -61,4 +58,14 @@ abstract class ListenerPropertyREST implements TavernaServerListenersREST.Proper
 		listen.setProperty(propertyName, value);
 		return listen.getProperty(propertyName);
 	}
+}
+
+/**
+ * Description of properties supported by {@link ListenerPropertyREST}.
+ * 
+ * @author Donal Fellows
+ */
+interface ListenerPropertyBean extends SupportAware {
+	ListenerPropertyREST connect(Listener listen, TavernaRun run,
+			String propertyName);
 }

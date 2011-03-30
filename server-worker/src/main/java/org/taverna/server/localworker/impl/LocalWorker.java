@@ -225,11 +225,11 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 
 	/** Handle to the directory containing the security info. */
 	static final File SECURITY_DIR = new File(
-			new File(getProperty("java.home")), SECURITY_DIR_NAME);
+			new File(getProperty("user.home")), SECURITY_DIR_NAME);
 	static boolean DO_MKDIR = true;
 
 	File contextDirectory;
-	char[] keystorePassword;
+	char[] keystorePassword = new char[0];
 
 	@SuppressWarnings("SE_INNER_CLASS")
 	class SecurityDelegate extends UnicastRemoteObject implements
@@ -237,6 +237,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		protected SecurityDelegate(String token) throws IOException {
 			super();
 			contextDirectory = new File(SECURITY_DIR, token);
+			System.out.println("security directory is " + contextDirectory);
 			if (DO_MKDIR) {
 				forceMkdir(contextDirectory);
 				if (!contextDirectory.setReadable(true, true)
@@ -322,7 +323,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		public void setPassword(char[] password) throws RemoteException {
 			if (status != Initialized)
 				throw new RemoteException("not initializing");
-			keystorePassword = password;
+			keystorePassword = password.clone();
 			// write(PASSWORD_FILE, password); // Written later
 		}
 

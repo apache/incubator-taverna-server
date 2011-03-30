@@ -40,7 +40,7 @@ import org.taverna.server.output_description.RdfWrapper;
  * 
  * @author Donal Fellows
  */
-abstract class RunREST implements TavernaServerRunREST, SupportAware {
+abstract class RunREST implements TavernaServerRunREST, RunBean {
 	private String runName;
 	private TavernaRun run;
 	private TavernaServerSupport support;
@@ -51,16 +51,19 @@ abstract class RunREST implements TavernaServerRunREST, SupportAware {
 		this.support = support;
 	}
 
+	@Override
 	@Required
 	public void setCdBuilder(ContentsDescriptorBuilder cdBuilder) {
 		this.cdBuilder = cdBuilder;
 	}
 
-	void setRunName(String runName) {
+	@Override
+	public void setRunName(String runName) {
 		this.runName = runName;
 	}
 
-	void setRun(TavernaRun run) {
+	@Override
+	public void setRun(TavernaRun run) {
 		this.run = run;
 	}
 
@@ -81,9 +84,7 @@ abstract class RunREST implements TavernaServerRunREST, SupportAware {
 
 	@Override
 	public TavernaServerListenersREST getListeners() {
-		ListenersREST listeners = makeListenersInterface();
-		listeners.setRun(run);
-		return listeners;
+		return makeListenersInterface().connect(run);
 	}
 
 	@Override
@@ -93,10 +94,7 @@ abstract class RunREST implements TavernaServerRunREST, SupportAware {
 			throw new NotOwnerException();
 
 		// context.getBean("run.security", run, secContext);
-		RunSecurityREST sec = makeSecurityInterface();
-		sec.setRun(run);
-		sec.setSecurityContext(secContext);
-		return sec;
+		return makeSecurityInterface().connect(secContext, run);
 	}
 
 	@Override
@@ -133,9 +131,7 @@ abstract class RunREST implements TavernaServerRunREST, SupportAware {
 
 	@Override
 	public DirectoryREST getWorkingDirectory() {
-		DirectoryREST d = makeDirectoryInterface();
-		d.setRun(run);
-		return d;
+		return makeDirectoryInterface().connect(run);
 	}
 
 	@Override
@@ -154,11 +150,8 @@ abstract class RunREST implements TavernaServerRunREST, SupportAware {
 	}
 
 	@Override
-	public TavernaServerInputREST getInputs(final UriInfo ui) {
-		InputREST input = makeInputInterface();
-		input.setRun(run);
-		input.setUriInfo(ui);
-		return input;
+	public TavernaServerInputREST getInputs(UriInfo ui) {
+		return makeInputInterface().connect(run, ui);
 	}
 
 	@Override
@@ -199,4 +192,14 @@ abstract class RunREST implements TavernaServerRunREST, SupportAware {
 
 	/** Construct a RESTful interface to a run's security. */
 	protected abstract RunSecurityREST makeSecurityInterface();
+}
+
+/**
+ * Description of properties supported by {@link RunREST}.
+ * @author Donal Fellows
+ */
+interface RunBean extends SupportAware {
+	void setCdBuilder(ContentsDescriptorBuilder cdBuilder);
+	void setRun(TavernaRun run);
+	void setRunName(String runName);
 }

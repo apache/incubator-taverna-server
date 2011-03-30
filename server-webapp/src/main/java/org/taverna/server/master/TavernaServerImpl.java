@@ -213,6 +213,12 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	 * @author Donal Fellows
 	 */
 	interface SupportAware {
+		/**
+		 * How to tell the bean about the support bean.
+		 * 
+		 * @param support
+		 *            Reference to the support bean.
+		 */
 		@Required
 		void setSupport(TavernaServerSupport support);
 	}

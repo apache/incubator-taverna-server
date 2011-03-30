@@ -33,7 +33,7 @@ import org.taverna.server.master.rest.TavernaServerSecurityREST;
  * 
  * @author Donal Fellows
  */
-abstract class RunSecurityREST implements TavernaServerSecurityREST, SupportAware {
+class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 	private TavernaServerSupport support;
 	private TavernaSecurityContext context;
 	private TavernaRun run;
@@ -43,12 +43,12 @@ abstract class RunSecurityREST implements TavernaServerSecurityREST, SupportAwar
 		this.support = support;
 	}
 
-	void setSecurityContext(TavernaSecurityContext context) {
+	@Override
+	public RunSecurityREST connect(TavernaSecurityContext context,
+			TavernaRun run) {
 		this.context = context;
-	}
-
-	void setRun(TavernaRun run) {
 		this.run = run;
+		return this;
 	}
 
 	@Override
@@ -219,4 +219,13 @@ abstract class RunSecurityREST implements TavernaServerSecurityREST, SupportAwar
 				ui.getAbsolutePathBuilder().path("{user}").build(desc.userName))
 				.build();
 	}
+}
+
+/**
+ * Description of properties supported by {@link RunSecurityREST}.
+ * 
+ * @author Donal Fellows
+ */
+interface SecurityBean extends SupportAware {
+	RunSecurityREST connect(TavernaSecurityContext context, TavernaRun run);
 }

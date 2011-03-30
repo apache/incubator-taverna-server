@@ -23,16 +23,16 @@ import org.taverna.server.master.rest.TavernaServerListenersREST.TavernaServerLi
  * 
  * @author Donal Fellows
  */
-abstract class SingleListenerREST implements TavernaServerListenerREST {
+abstract class SingleListenerREST implements TavernaServerListenerREST,
+		OneListenerBean {
 	private Listener listen;
 	private TavernaRun run;
 
-	void setListen(Listener listen) {
+	@Override
+	public SingleListenerREST connect(Listener listen, TavernaRun run) {
 		this.listen = listen;
-	}
-
-	void setRun(TavernaRun run) {
 		this.run = run;
+		return this;
 	}
 
 	@Override
@@ -57,14 +57,19 @@ abstract class SingleListenerREST implements TavernaServerListenerREST {
 			final String propertyName) throws NoListenerException {
 		List<String> p = asList(listen.listProperties());
 		if (p.contains(propertyName)) {
-			ListenerPropertyREST prop = makePropertyInterface();
-			prop.setRun(run);
-			prop.setListen(listen);
-			prop.setPropertyName(propertyName);
-			return prop;
+			return makePropertyInterface().connect(listen, run, propertyName);
 		}
 		throw new NoListenerException("no such property");
 	}
 
 	protected abstract ListenerPropertyREST makePropertyInterface();
+}
+
+/**
+ * Description of properties supported by {@link InputREST}.
+ * 
+ * @author Donal Fellows
+ */
+interface OneListenerBean {
+	SingleListenerREST connect(Listener listen, TavernaRun run);
 }

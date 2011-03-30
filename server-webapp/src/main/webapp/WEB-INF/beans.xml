@@ -27,9 +27,6 @@
 		<property name="idMapper" ref="IdentityMapper" />
 		<property name="invocationCounter" ref="webapp.invocationCounter" />
 		<property name="webapp" ref="webapp" />
-		<property name="authCheck">
-			<bean id="authThunk" class="org.taverna.server.master.TavernaServerSupport.AuthCheck" />
-		</property>
 	</bean>
 
 	<bean id="webapp.policyView" class="org.taverna.server.master.PolicyREST">

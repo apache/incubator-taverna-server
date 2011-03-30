@@ -15,7 +15,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.security.RolesAllowed;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
@@ -518,8 +517,17 @@ public class TavernaServerSupport {
 
 	private boolean isSuperUser() {
 		try {
-			return authCheck.adminAuthorizedThunk();
-		} catch (Exception e) {
+			Authentication auth = SecurityContextHolder.getContext()
+					.getAuthentication();
+			if (auth == null || !auth.isAuthenticated())
+				return false;
+			UserDetails details = (UserDetails) auth.getPrincipal();
+			if (log.isDebugEnabled())
+				log.debug("checking for admin role for user <"
+						+ auth.getName() + "> in collection "
+						+ details.getAuthorities());
+			return details.getAuthorities().contains(ADMIN);
+		} catch (ClassCastException e) {
 			return false;
 		}
 	}
@@ -534,24 +542,5 @@ public class TavernaServerSupport {
 	public Listener getListener(String runName, String listenerName)
 			throws NoListenerException, UnknownRunException {
 		return getListener(getRun(runName), listenerName);
-	}
-
-	private AuthThunk authCheck;
-
-	@Required
-	public void setAuthCheck(AuthThunk authCheck) {
-		this.authCheck = authCheck;
-	}
-
-	public interface AuthThunk {
-		@RolesAllowed(ADMIN)
-		boolean adminAuthorizedThunk();
-	}
-
-	public static class AuthCheck implements AuthThunk {
-		@Override
-		public boolean adminAuthorizedThunk() {
-			return true;
-		}
 	}
 }

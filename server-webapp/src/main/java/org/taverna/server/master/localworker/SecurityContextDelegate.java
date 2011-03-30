@@ -278,6 +278,8 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 	 */
 	@Override
 	public void conveySecurity() throws GeneralSecurityException, IOException {
+		RemoteSecurityContext rc = run.run.getSecurityContext();
+
 		if (credentials.isEmpty() && trusted.isEmpty())
 			return;
 		char[] password = null;
@@ -323,8 +325,6 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 				keybytes = serialize(keystore, password);
 
 				// Now we've built the security information, ship it off...
-
-				RemoteSecurityContext rc = run.run.getSecurityContext();
 
 				log.info("transfering merged truststore with " + trustedCount
 						+ " entries");

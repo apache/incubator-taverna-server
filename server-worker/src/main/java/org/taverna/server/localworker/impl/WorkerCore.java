@@ -180,17 +180,17 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		if (securityDir != null) {
 			pb.command().add("-cmdir");
 			pb.command().add(securityDir.getAbsolutePath());
-		}
-		if (password != null) {
-			PrintWriter pw = null;
-			try {
-				pw = new PrintWriter(new OutputStreamWriter(
-						new FileOutputStream(new File(securityDir,
-								PASSWORD_FILE)), SYSTEM_ENCODING));
-				pw.println(password);
-			} finally {
-				if (pw != null)
-					pw.close();
+			if (password != null) {
+				PrintWriter pw = null;
+				try {
+					pw = new PrintWriter(new OutputStreamWriter(
+							new FileOutputStream(new File(securityDir,
+									PASSWORD_FILE)), SYSTEM_ENCODING));
+					pw.println(password);
+				} finally {
+					if (pw != null)
+						pw.close();
+				}
 			}
 		}
 

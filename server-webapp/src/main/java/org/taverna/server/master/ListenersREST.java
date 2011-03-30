@@ -24,12 +24,14 @@ import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.rest.ListenerDefinition;
 import org.taverna.server.master.rest.TavernaServerListenersREST;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 /**
  * RESTful interface to a single workflow run's event listeners.
  * 
  * @author Donal Fellows
  */
-abstract class ListenersREST implements TavernaServerListenersREST, SupportAware {
+abstract class ListenersREST implements TavernaServerListenersREST, ListenersBean {
 	private TavernaRun run;
 	private TavernaServerSupport support;
 
@@ -38,8 +40,10 @@ abstract class ListenersREST implements TavernaServerListenersREST, SupportAware
 		this.support = support;
 	}
 
-	void setRun(TavernaRun run) {
+	@Override
+	public ListenersREST connect(TavernaRun run) {
 		this.run = run;
+		return this;
 	}
 
 	@Override
@@ -58,12 +62,10 @@ abstract class ListenersREST implements TavernaServerListenersREST, SupportAware
 		Listener l = support.getListener(run, name);
 		if (l == null)
 			throw new NoListenerException();
-		SingleListenerREST listener = makeListenerInterface();
-		listener.setRun(run);
-		listener.setListen(l);
-		return listener;
+		return makeListenerInterface().connect(l, run);
 	}
 
+	@NonNull
 	protected abstract SingleListenerREST makeListenerInterface();
 
 	@Override
@@ -76,4 +78,12 @@ abstract class ListenersREST implements TavernaServerListenersREST, SupportAware
 		}
 		return new Listeners(result, ub);
 	}
+}
+
+/**
+ * Description of properties supported by {@link ListenersREST}.
+ * @author Donal Fellows
+ */
+interface ListenersBean extends SupportAware {
+	ListenersREST connect(TavernaRun run);
 }

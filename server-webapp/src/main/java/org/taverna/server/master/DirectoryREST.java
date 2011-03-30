@@ -56,7 +56,7 @@ import org.taverna.server.master.utils.FilenameUtils;
  * 
  * @author Donal Fellows
  */
-abstract class DirectoryREST implements TavernaServerDirectoryREST, SupportAware {
+class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 	private TavernaServerSupport support;
 	private TavernaRun run;
 	private FilenameUtils fileUtils;
@@ -66,13 +66,16 @@ abstract class DirectoryREST implements TavernaServerDirectoryREST, SupportAware
 		this.support = support;
 	}
 
+	@Override
 	@Required
 	public void setFileUtils(FilenameUtils fileUtils) {
 		this.fileUtils = fileUtils;
 	}
 
-	void setRun(TavernaRun run) {
+	@Override
+	public DirectoryREST connect(TavernaRun run) {
 		this.run = run;
+		return this;
 	}
 
 	@Override
@@ -317,4 +320,13 @@ abstract class DirectoryREST implements TavernaServerDirectoryREST, SupportAware
 		}
 		return seeOther(ui.getAbsolutePath()).build();
 	}
+}
+
+/**
+ * Description of properties supported by {@link DirectoryREST}.
+ * @author Donal Fellows
+ */
+interface DirectoryBean extends SupportAware {
+	void setFileUtils(FilenameUtils fileUtils);
+	DirectoryREST connect(TavernaRun run);
 }
