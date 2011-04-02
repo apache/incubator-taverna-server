@@ -11,7 +11,6 @@ import static java.lang.System.setSecurityManager;
 import static java.rmi.registry.LocateRegistry.createRegistry;
 import static java.rmi.registry.LocateRegistry.getRegistry;
 import static java.rmi.registry.Registry.REGISTRY_PORT;
-import static java.util.Collections.emptyList;
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 
 import java.io.IOException;
@@ -27,7 +26,6 @@ import java.util.List;
 
 import javax.annotation.PreDestroy;
 import javax.xml.bind.JAXBException;
-import javax.xml.ws.Holder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,7 +42,6 @@ import org.taverna.server.master.factories.RunFactory;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.SecurityContextFactory;
 import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.localworker.RunDatabase.PerRunCallback;
 import org.taverna.server.master.usage.UsageRecordRecorder;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
@@ -227,26 +224,12 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 
 	@Override
 	public List<String> getSupportedListenerTypes() {
-		final Holder<List<String>> types = new Holder<List<String>>();
-		final Holder<Object> marker = new Holder<Object>();
-		types.value = emptyList();
 		try {
-			runDB.iterateOverRuns(new PerRunCallback<RemoteException>() {
-				@Override
-				public void doit(String name, TavernaRun run)
-						throws RemoteException {
-					if (types.value == null && run instanceof RemoteRunDelegate)
-						types.value = ((RemoteRunDelegate) run).run
-								.getListenerTypes();
-					marker.value = name;
-				}
-			});
-			if (marker.value == null)
-				log.warn("failed to get list of listener types; no runs");
-		} catch (RemoteException e) {
+			return runDB.listListenerTypes();
+		} catch (Exception e) {
 			log.warn("failed to get list of listener types", e);
+			return new ArrayList<String>();
 		}
-		return types.value;
 	}
 
 	@Override
@@ -294,13 +277,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	/** @return The names of the current runs. */
 	@ManagedAttribute(description = "The names of the current runs.", currencyTimeLimit = 5)
 	public String[] getCurrentRunNames() {
-		final List<String> names = new ArrayList<String>();
-		runDB.iterateOverRuns(new PerRunCallback<RuntimeException>() {
-			@Override
-			public void doit(String name, TavernaRun run) {
-				names.add(name);
-			}
-		});
+		List<String> names = runDB.listRunNames();
 		return names.toArray(new String[names.size()]);
 	}
 

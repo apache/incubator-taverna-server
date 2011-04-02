@@ -10,6 +10,8 @@ import static java.util.Collections.emptyList;
 import java.security.Principal;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
@@ -30,6 +32,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  */
 @SuppressWarnings("IS2_INCONSISTENT_SYNC")
 class PolicyImpl implements Policy {
+	Log log = LogFactory.getLog("Taverna.Server.LocalWorker.Policy");
 	private LocalWorkerState state;
 	private RunDatabase runDB;
 
@@ -60,14 +63,22 @@ class PolicyImpl implements Policy {
 
 	@Override
 	public boolean permitAccess(Principal user, TavernaRun run) {
+		String username = user.getName();
 		TavernaSecurityContext context = run.getSecurityContext();
-		if (context.getOwner().equals(user))
+		if (context.getOwner().getName().equals(username)) {
+			if (log.isDebugEnabled())
+				log.debug("granted access by " + user.getName() + " to "
+						+ run.getId());
 			return true;
-		return context.getPermittedReaders().contains(user.getName());
+		}
+		if (log.isDebugEnabled())
+			log.debug("considering access by " + user.getName() + " to "
+					+ run.getId());
+		return context.getPermittedReaders().contains(username);
 	}
 
 	@Override
-	public synchronized void permitCreate(Principal user, Workflow workflow)
+	public void permitCreate(Principal user, Workflow workflow)
 			throws NoCreateException {
 		if (user == null)
 			throw new NoCreateException(
@@ -79,22 +90,27 @@ class PolicyImpl implements Policy {
 	@Override
 	public synchronized void permitDestroy(Principal user, TavernaRun run)
 			throws NoDestroyException {
+		if (user == null)
+			throw new NoDestroyException();
+		String username = user.getName();
 		TavernaSecurityContext context = run.getSecurityContext();
-		if (context.getOwner() == null || context.getOwner().equals(user))
+		if (context.getOwner() == null
+				|| context.getOwner().getName().equals(username))
 			return;
-		if (user == null
-				|| !context.getPermittedDestroyers().contains(user.getName()))
+		if (!context.getPermittedDestroyers().contains(username))
 			throw new NoDestroyException();
 	}
 
 	@Override
 	public void permitUpdate(Principal user, TavernaRun run)
 			throws NoUpdateException {
+		if (user == null)
+			throw new NoUpdateException(
+					"workflow run not owned by you and you're not granted access");
 		TavernaSecurityContext context = run.getSecurityContext();
-		if (context.getOwner().equals(user))
+		if (context.getOwner().getName().equals(user.getName()))
 			return;
-		if (user == null
-				|| !context.getPermittedUpdaters().contains(user.getName()))
+		if (!context.getPermittedUpdaters().contains(user.getName()))
 			throw new NoUpdateException(
 					"workflow run not owned by you and you're not granted access");
 	}

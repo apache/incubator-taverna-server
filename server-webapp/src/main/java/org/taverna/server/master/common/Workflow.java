@@ -5,14 +5,22 @@
  */
 package org.taverna.server.master.common;
 
+import static javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT;
 import static org.apache.commons.logging.LogFactory.getLog;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Externalizable;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -45,6 +53,7 @@ public class Workflow implements Externalizable {
 			JAXBContext context = JAXBContext.newInstance(Workflow.class);
 			marshaller = context.createMarshaller();
 			unmarshaller = context.createUnmarshaller();
+			marshaller.setProperty(JAXB_FORMATTED_OUTPUT, false);
 		} catch (JAXBException e) {
 			getLog("Taverna.Server.Webapp").fatal(
 					"failed to build JAXB context for working with "
@@ -68,7 +77,13 @@ public class Workflow implements Externalizable {
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
 		try {
-			Workflow w = unmarshal(in.readUTF());
+			int len = in.readInt();
+			byte[] bytes = new byte[len];
+			in.readFully(bytes);
+			Reader r = new InputStreamReader(new InflaterInputStream(
+					new ByteArrayInputStream(bytes)), "UTF-8");
+			Workflow w = (Workflow) unmarshaller.unmarshal(r);
+			r.close();
 			this.content = w.content;
 			return;
 		} catch (JAXBException e) {
@@ -81,7 +96,14 @@ public class Workflow implements Externalizable {
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		try {
-			out.writeUTF(marshal());
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			OutputStreamWriter w = new OutputStreamWriter(
+					new DeflaterOutputStream(baos), "UTF-8");
+			marshaller.marshal(this, w);
+			w.close();
+			byte[] bytes = baos.toByteArray();
+			out.writeInt(bytes.length);
+			out.write(bytes);
 		} catch (JAXBException e) {
 			throw new IOException("failed to marshal", e);
 		}
