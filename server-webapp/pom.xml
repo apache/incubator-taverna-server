@@ -58,6 +58,7 @@
 		<version.spring-security>3.0.2.RELEASE</version.spring-security>
 		<version.datanucleus>2.2.2</version.datanucleus>
 		<version.asm>3.3</version.asm>
+		<version.smack>3.1.0</version.smack>
 		<forker.module>server-unix-forker</forker.module>
 	</properties>
 
@@ -229,9 +230,13 @@
 		<dependency>
 			<groupId>org.igniterealtime.smack</groupId>
 			<artifactId>smack</artifactId>
-			<version>3.1.0</version>
-			<type>jar</type>
-			<scope>compile</scope>
+			<version>${version.smack}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.igniterealtime.smack</groupId>
+			<artifactId>smackx</artifactId>
+			<version>${version.smack}</version>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
