@@ -7,18 +7,17 @@ package org.taverna.server.master.localworker;
 
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
+import static java.util.UUID.randomUUID;
+import static org.taverna.server.master.localworker.RunConnection.toDBform;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.rmi.RemoteException;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
@@ -35,6 +34,10 @@ import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.notification.NotificationEngine;
+import org.taverna.server.master.utils.UsernamePrincipal;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
  * This handles storing runs, interfacing with the underlying state engine as
@@ -43,35 +46,37 @@ import org.taverna.server.master.notification.NotificationEngine;
  * @author Donal Fellows
  */
 @PersistenceAware
-public class RunDatabase implements RunStore {
-	Log log = LogFactory.getLog("Taverna.Server.LocalWorker.RunDB");
+public class RunDatabaseDAO implements RunStore, RunDBSupport {
+	private Log log = LogFactory.getLog("Taverna.Server.LocalWorker.RunDB");
+	private List<CompletionNotifier> notifier = new ArrayList<CompletionNotifier>();
+	private NotificationEngine notificationEngine;
+	private PersistenceManager pm;
 
 	/**
 	 * @param persistenceManagerFactory
 	 *            The JDO engine to use for managing persistence of the state.
 	 */
 	@Required
+	@Override
 	public void setPersistenceManagerFactory(
 			PersistenceManagerFactory persistenceManagerFactory) {
 		pm = persistenceManagerFactory.getPersistenceManagerProxy();
 	}
 
+	@Override
 	public void setNotifier(CompletionNotifier n) {
 		notifier = asList(n);
 	}
 
 	@Required
+	@Override
 	public void setNotificationEngine(NotificationEngine notificationEngine) {
 		this.notificationEngine = notificationEngine;
 	}
 
-	private PersistenceManager pm;
-	List<CompletionNotifier> notifier = new ArrayList<CompletionNotifier>();
-	private NotificationEngine notificationEngine;
-
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-	private Transaction initTx(PersistenceManager pm) {
+	private Transaction init() {
 		Transaction tx = pm.currentTransaction();
 		if (tx.isActive())
 			return null;
@@ -79,50 +84,40 @@ public class RunDatabase implements RunStore {
 		return tx;
 	}
 
-	private static Transaction commitTx(Transaction tx) {
+	private void done(Transaction tx) {
 		if (tx != null)
 			tx.commit();
-		return null;
+		pm.close();
 	}
 
-	private static Transaction rollbackTx(Transaction tx) {
+	private void rollback(Transaction tx) {
 		if (tx != null)
 			tx.rollback();
-		return null;
+		pm.close();
+	}
+
+	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+	@SuppressWarnings("unchecked")
+	private List<String> nameRuns() {
+		log.debug("fetching all run names");
+		return (List<String>) pm.newNamedQuery(RunConnection.class, "names")
+				.execute();
+	}
+
+	private Integer count() {
+		log.debug("counting the number of runs");
+		return (Integer) pm.newNamedQuery(RunConnection.class, "count")
+				.execute();
 	}
 
 	@SuppressWarnings("unchecked")
-	private List<RunConnection> allRuns(PersistenceManager pm) {
-		log.debug("fetching all runs");
-		try {
-			List<RunConnection> rcs = new ArrayList<RunConnection>();
-			List<String> names = (List<String>) pm.newNamedQuery(
-					RunConnection.class, "names").execute();
-			for (String id : names) {
-				if (id == null)
-					continue;
-				RunConnection rc = pm.getObjectById(RunConnection.class, id);
-				if (rc == null) {
-					log.warn("problem in fetch of " + id);
-					continue;
-				}
-				rcs.add(rc);
-			}
-			return rcs;
-		} catch (RuntimeException e) {
-			log.warn("problem in fetch", e);
-			throw e;
-		}
+	private List<String> expiredRuns() {
+		return (List<String>) pm.newNamedQuery(RunConnection.class, "timedout")
+				.execute();
 	}
 
-	@SuppressWarnings("unchecked")
-	private List<RunConnection> timedoutRuns(PersistenceManager pm, Date now) {
-		log.debug("fetching runs that timed out before " + now);
-		return (List<RunConnection>) pm.newNamedQuery(RunConnection.class,
-				"timedout").execute(now);
-	}
-
-	private RunConnection pickRun(PersistenceManager pm, String name) {
+	private RunConnection pickRun(String name) {
 		log.debug("fetching the run called " + name);
 		try {
 			RunConnection rc = pm.getObjectById(RunConnection.class, name);
@@ -135,39 +130,55 @@ public class RunDatabase implements RunStore {
 		}
 	}
 
-	private Integer count(PersistenceManager pm) {
-		log.debug("counting the number of runs");
-		return (Integer) pm.newNamedQuery(RunConnection.class, "count")
-				.execute();
+	private void persist(RemoteRunDelegate rrd) throws IOException {
+		pm.makePersistent(toDBform(rrd));
+	}
+
+	private List<RunConnection> allRuns() {
+		try {
+			List<RunConnection> rcs = new ArrayList<RunConnection>();
+			List<String> names = nameRuns();
+			for (String id : names) {
+				try {
+					if (id != null)
+						rcs.add(pickRun(id));
+				} catch (RuntimeException e) {
+					continue;
+				}
+			}
+			return rcs;
+		} catch (RuntimeException e) {
+			log.warn("problem in fetch", e);
+			throw e;
+		}
 	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+	@Override
 	public int countRuns() {
-		Transaction tx = initTx(pm);
+		Transaction tx = init();
 		try {
-			return count(pm);
+			return count();
 		} finally {
-			commitTx(tx);
-			pm.close();
+			done(tx);
 		}
 	}
 
 	private TavernaRun get(String name) {
-		Transaction tx = initTx(pm);
+		Transaction tx = init();
 		try {
-			RunConnection rc = pickRun(pm, name);
-			return (rc == null) ? null : rc.fromDBform();
+			RunConnection rc = pickRun(name);
+			return (rc == null) ? null : rc.fromDBform(this);
 		} catch (Exception e) {
 			return null;
 		} finally {
-			commitTx(tx);
-			pm.close();
+			done(tx);
 		}
 	}
 
 	@Override
-	public TavernaRun getRun(Principal user, Policy p, String uuid)
+	public TavernaRun getRun(UsernamePrincipal user, Policy p, String uuid)
 			throws UnknownRunException {
 		TavernaRun run = get(uuid);
 		if (run != null && (user == null || p.permitAccess(user, run)))
@@ -184,60 +195,52 @@ public class RunDatabase implements RunStore {
 	}
 
 	@Override
-	public Map<String, TavernaRun> listRuns(Principal user, Policy p) {
-		Transaction tx = initTx(pm);
+	public Map<String, TavernaRun> listRuns(UsernamePrincipal user, Policy p) {
+		Transaction tx = init();
 		try {
 			Map<String, TavernaRun> result = new HashMap<String, TavernaRun>();
-			for (RunConnection rc : allRuns(pm)) {
+			for (String id : nameRuns()) {
 				try {
-					if (rc.getId() != null) {
-						RemoteRunDelegate rrd = rc.fromDBform();
-						if (p.permitAccess(user, rrd))
-							result.put(rc.getId(), rrd);
-					}
+					RemoteRunDelegate rrd = pickRun(id).fromDBform(this);
+					if (p.permitAccess(user, rrd))
+						result.put(id, rrd);
 				} catch (Exception e) {
 					continue;
 				}
 			}
-			tx = commitTx(tx);
 			return result;
 		} finally {
-			rollbackTx(tx);
-			pm.close();
+			done(tx);
 		}
 	}
 
-	List<String> listRunNames() {
-		Transaction tx = initTx(pm);
+	@Override
+	public List<String> listRunNames() {
+		Transaction tx = init();
 		try {
 			ArrayList<String> runNames = new ArrayList<String>();
-			// @SuppressWarnings("unchecked")
-			// Set<RunConnection> s = (Set<RunConnection>) pm
-			// .getManagedObjects(RunConnection.class);
-			for (RunConnection rc : allRuns(pm)) {
+			for (RunConnection rc : allRuns()) {
 				if (rc.getId() != null)
 					runNames.add(rc.getId());
 			}
 			return runNames;
 		} finally {
-			commitTx(tx);
+			done(tx);
 		}
 	}
 
-	List<String> listListenerTypes() throws RemoteException, Exception {
-		Transaction tx = initTx(pm);
+	@Override
+	public RemoteRunDelegate pickArbitraryRun() throws Exception {
+		Transaction tx = init();
 		try {
-			// @SuppressWarnings("unchecked")
-			// Set<RunConnection> s = (Set<RunConnection>) pm
-			// .getManagedObjects(RunConnection.class);
-			for (RunConnection rc : allRuns(pm)) {
+			for (RunConnection rc : allRuns()) {
 				if (rc.getId() == null)
 					continue;
-				return rc.fromDBform().run.getListenerTypes();
+				return rc.fromDBform(this);
 			}
-			return new ArrayList<String>();
+			return null;
 		} finally {
-			commitTx(tx);
+			done(tx);
 		}
 	}
 
@@ -262,104 +265,92 @@ public class RunDatabase implements RunStore {
 					"run must be created by localworker package");
 		RemoteRunDelegate rrd = (RemoteRunDelegate) run;
 		if (rrd.id == null)
-			rrd.id = UUID.randomUUID().toString();
+			rrd.id = randomUUID().toString();
 		logLength("RemoteRunDelegate serialized length", rrd);
-		Transaction tx = initTx(pm);
+		Transaction tx = init();
 		try {
-			pm.makePersistent(RunConnection.toDBform(rrd));
-		} catch (Exception e) {
-			tx = rollbackTx(tx);
+			persist(rrd);
+			done(tx);
+		} catch (IOException e) {
+			rollback(tx);
 			throw new RuntimeException(
-					"unexpected problem storing run record in database", e);
-		} finally {
-			commitTx(tx);
-			pm.close();
+					"unexpected problem when persisting run record in database",
+					e);
 		}
 		return rrd.getId();
 	}
 
 	@Override
 	public void unregisterRun(String name) {
-		Transaction tx = initTx(pm);
+		Transaction tx = init();
 		try {
-			RunConnection rc = pickRun(pm, name);
+			RunConnection rc = pickRun(name);
 			if (rc != null)
 				pm.deletePersistent(rc);
-		} finally {
-			commitTx(tx);
-			pm.close();
+			done(tx);
+		} catch (RuntimeException e) {
+			log.debug("problem persisting the deletion of the run " + name, e);
+			rollback(tx);
 		}
 	}
 
-	void flushToDisk(RemoteRunDelegate run) {
-		Transaction tx = initTx(pm);
+	@Override
+	public void flushToDisk(RemoteRunDelegate run) {
+		Transaction tx = init();
 		try {
-			pm.makePersistent(RunConnection.toDBform(run));
+			RunConnection rc = pm.getObjectById(RunConnection.class, run.id);
+			rc.makeChanges(run);
+			done(tx);
 		} catch (IOException e) {
-			tx = rollbackTx(tx);
+			rollback(tx);
 			throw new RuntimeException(
-					"unexpected problem when persisting updated run record", e);
-		} finally {
-			commitTx(tx);
-			pm.close();
+					"unexpected problem when persisting run record in database",
+					e);
 		}
 	}
 
-	/**
-	 * Remove currently-expired runs from this database.
-	 */
+	@Override
 	public void cleanNow() {
-		final Date now = new Date();
-		Transaction tx = initTx(pm);
+		Transaction tx = init();
 		try {
-			for (RunConnection rc : timedoutRuns(pm, now))
-				pm.deletePersistent(rc);
+			log.debug("deleting runs that timed out before " + new Date());
+			List<String> toDelete = expiredRuns();
+			log.debug("found " + toDelete.size() + " runs to delete");
+			for (String id : toDelete)
+				pm.deletePersistent(pm.getObjectById(RunConnection.class, id));
+			done(tx);
 		} catch (Exception e) {
-			tx = rollbackTx(tx);
-		} finally {
-			commitTx(tx);
-			pm.close();
+			log.warn("failure during deletion of expired runs", e);
+			rollback(tx);
 		}
 	}
 
-	/**
-	 * Scan each run to see if it has finished yet and issue registered
-	 * notifications if it has.
-	 */
+	@Override
 	public void checkForFinishNow() {
-		Transaction tx = initTx(pm);
+		Transaction tx = init();
 		try {
-			if (count(pm) == 0)
+			if (count() == 0)
 				return;
-			for (RunConnection rc : allRuns(pm)) {
+			for (RunConnection rc : allRuns()) {
 				try {
-					checkOneForFinish(rc, rc.fromDBform());
+					RemoteRunDelegate rrd = rc.fromDBform(this);
+					if (rrd.doneTransitionToFinished
+							|| rrd.getStatus() != Status.Finished)
+						continue;
+					rrd.doneTransitionToFinished = true;
+					rc.setFinished(true);
+					for (Listener l : rrd.getListeners())
+						if (l.getName().equals("io")) {
+							notifyFinished(rrd.id, l, rrd);
+							break;
+						}
 				} catch (Exception e) {
+					log.warn("failed to do notification of completion", e);
 					continue;
 				}
 			}
-			tx = commitTx(tx);
 		} finally {
-			rollbackTx(tx);
-			pm.close();
-		}
-	}
-
-	void checkOneForFinish(RunConnection rc, RemoteRunDelegate run) {
-		if (run == null)
-			return;
-		if (run.doneTransitionToFinished || run.getStatus() != Status.Finished)
-			return;
-		run.doneTransitionToFinished = true;
-		rc.setFinished(true);
-		try {
-			for (Listener l : run.getListeners())
-				if (l.getName().equals("io")) {
-					notifyFinished(run.id, l, run);
-					return;
-				}
-		} catch (Exception e) {
-			log.warn("failed to do notification of completion", e);
+			done(tx);
 		}
 	}
 
@@ -396,4 +387,44 @@ public class RunDatabase implements RunStore {
 					n.makeMessageSubject(name, run, code),
 					n.makeCompletionMessage(name, run, code));
 	}
+}
+
+interface RunDBSupport {
+	/**
+	 * Scan each run to see if it has finished yet and issue registered
+	 * notifications if it has.
+	 */
+	void checkForFinishNow();
+
+	/**
+	 * Remove currently-expired runs from this database.
+	 */
+	void cleanNow();
+
+	/** How many runs are stored in the database. */
+	int countRuns();
+
+	/**
+	 * Ensure that a run gets persisted in the database. It is assumed that the
+	 * value is already in there.
+	 * 
+	 * @param run
+	 *            The run to persist.
+	 */
+	void flushToDisk(@NonNull RemoteRunDelegate run);
+
+	/** Select an arbitrary representative run. */
+	@Nullable
+	RemoteRunDelegate pickArbitraryRun() throws Exception;
+
+	/** Get a list of all the run names. */
+	@NonNull
+	List<String> listRunNames();
+
+	void setNotificationEngine(NotificationEngine notificationEngine);
+
+	void setNotifier(CompletionNotifier notifier);
+
+	void setPersistenceManagerFactory(
+			PersistenceManagerFactory persistenceManagerFactory);
 }

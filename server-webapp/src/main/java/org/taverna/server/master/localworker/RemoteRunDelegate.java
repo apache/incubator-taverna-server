@@ -72,10 +72,11 @@ public class RemoteRunDelegate implements TavernaRun {
 	HashSet<String> destroyers;
 	transient String id;
 	transient RemoteSingleRun run;
+	transient RunDBSupport db;
 	boolean doneTransitionToFinished;
 
 	RemoteRunDelegate(Date creationInstant, Workflow workflow,
-			RemoteSingleRun rsr, int defaultLifetime) {
+			RemoteSingleRun rsr, int defaultLifetime, RunDBSupport db) {
 		if (rsr == null) {
 			throw new IllegalArgumentException("remote run must not be null");
 		}
@@ -85,6 +86,7 @@ public class RemoteRunDelegate implements TavernaRun {
 		c.add(MINUTE, defaultLifetime);
 		this.expiry = c.getTime();
 		this.run = rsr;
+		this.db = db;
 	}
 
 	RemoteRunDelegate(){}
@@ -190,6 +192,7 @@ public class RemoteRunDelegate implements TavernaRun {
 	public void setExpiry(Date d) {
 		if (d.after(new Date()))
 			expiry = new Date(d.getTime());
+		db.flushToDisk(this);
 	}
 
 	@Override
@@ -327,10 +330,8 @@ public class RemoteRunDelegate implements TavernaRun {
 	/**
 	 * @param readers
 	 *            the readers to set
-	 * @param db
-	 *            the database of runs
 	 */
-	public void setReaders(Set<String> readers, RunDatabase db) {
+	public void setReaders(Set<String> readers) {
 		this.readers = new HashSet<String>(readers);
 		db.flushToDisk(this);
 	}
@@ -346,10 +347,8 @@ public class RemoteRunDelegate implements TavernaRun {
 	/**
 	 * @param writers
 	 *            the writers to set
-	 * @param db
-	 *            the database of runs
 	 */
-	public void setWriters(Set<String> writers, RunDatabase db) {
+	public void setWriters(Set<String> writers) {
 		this.writers = new HashSet<String>(writers);
 		db.flushToDisk(this);
 	}
@@ -365,10 +364,8 @@ public class RemoteRunDelegate implements TavernaRun {
 	/**
 	 * @param destroyers
 	 *            the destroyers to set
-	 * @param db
-	 *            the database of runs
 	 */
-	public void setDestroyers(Set<String> destroyers, RunDatabase db) {
+	public void setDestroyers(Set<String> destroyers) {
 		this.destroyers = new HashSet<String>(destroyers);
 		db.flushToDisk(this);
 	}

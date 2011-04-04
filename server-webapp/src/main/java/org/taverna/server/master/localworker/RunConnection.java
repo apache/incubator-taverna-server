@@ -6,10 +6,8 @@
 package org.taverna.server.master.localworker;
 
 import static java.util.Arrays.asList;
-import static org.taverna.server.master.localworker.RunConnection.ALL_QUERY;
 import static org.taverna.server.master.localworker.RunConnection.COUNT_QUERY;
 import static org.taverna.server.master.localworker.RunConnection.NAMES_QUERY;
-import static org.taverna.server.master.localworker.RunConnection.PICK_QUERY;
 import static org.taverna.server.master.localworker.RunConnection.SCHEMA;
 import static org.taverna.server.master.localworker.RunConnection.TABLE;
 import static org.taverna.server.master.localworker.RunConnection.TIMEOUT_QUERY;
@@ -28,10 +26,10 @@ import javax.jdo.annotations.Queries;
 import javax.jdo.annotations.Query;
 import javax.jdo.annotations.Serialized;
 
-import org.apache.cxf.common.security.SimplePrincipal;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.interfaces.SecurityContextFactory;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -44,24 +42,18 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  */
 @PersistenceCapable(table = TABLE, schema = SCHEMA)
 @Queries({
-		@Query(name = "all", value = ALL_QUERY),
 		@Query(name = "count", language = "SQL", value = COUNT_QUERY, unique = "true", resultClass = Integer.class),
 		@Query(name = "names", language = "SQL", value = NAMES_QUERY, unique = "false", resultClass = String.class),
-		@Query(name = "pick", value = PICK_QUERY, unique = "true"),
-		@Query(name = "timedout", value = TIMEOUT_QUERY) })
+		@Query(name = "timedout", language = "SQL", value = TIMEOUT_QUERY, unique = "false", resultClass = String.class) })
 @SuppressWarnings("IS2_INCONSISTENT_SYNC")
 public class RunConnection {
 	static final String SCHEMA = "TAVERNA";
 	static final String TABLE = "RUN_CONNECTION";
-	static final String ALL_QUERY = "SELECT FROM org.taverna.server.master.localworker.RunConnection";
-	static final String COUNT_QUERY = "SELECT count(*) FROM " + SCHEMA + "."
-			+ TABLE;
-	static final String NAMES_QUERY = "SELECT ID FROM " + SCHEMA + "." + TABLE;
-	static final String PICK_QUERY = ALL_QUERY + " WHERE this.ID = name"
-			+ " PARAMETERS String name import java.lang.String";
-	static final String TIMEOUT_QUERY = ALL_QUERY
-			+ " WHERE this.EXPIRY < currentTime"
-			+ " PARAMETERS Date currentTime import java.util.Date";
+	private static final String FULL_NAME = SCHEMA + "." + TABLE;
+	static final String COUNT_QUERY = "SELECT count(*) FROM " + FULL_NAME;
+	static final String NAMES_QUERY = "SELECT ID FROM " + FULL_NAME;
+	static final String TIMEOUT_QUERY = "SELECT ID FROM " + FULL_NAME
+			+ "   WHERE expiry < CURRENT_TIMESTAMP";
 
 	@PrimaryKey
 	@Column(length = 40)
@@ -124,21 +116,13 @@ public class RunConnection {
 			throws IOException {
 		RunConnection rc = new RunConnection();
 		rc.id = rrd.id;
-		rc.creationInstant = rrd.getCreationTimestamp();
-		rc.workflow = rrd.getWorkflow();
-		rc.expiry = rrd.getExpiry();
-		rc.readers = rrd.getReaders().toArray(STRING_ARY);
-		rc.writers = rrd.getWriters().toArray(STRING_ARY);
-		rc.destroyers = rrd.getDestroyers().toArray(STRING_ARY);
-		rc.run = new MarshalledObject<RemoteSingleRun>(rrd.run);
-		rc.setFinished(rrd.doneTransitionToFinished);
-		rc.owner = rrd.getSecurityContext().getOwner().getName();
-		rc.securityContextFactory = rrd.getSecurityContext().getFactory();
+		rc.makeChanges(rrd);
 		return rc;
 	}
 
 	@NonNull
-	public RemoteRunDelegate fromDBform() throws Exception {
+	public RemoteRunDelegate fromDBform(@NonNull RunDBSupport db)
+			throws Exception {
 		RemoteRunDelegate rrd = new RemoteRunDelegate();
 		rrd.id = getId();
 		rrd.creationInstant = creationInstant;
@@ -150,7 +134,25 @@ public class RunConnection {
 		rrd.run = run.get();
 		rrd.doneTransitionToFinished = isFinished();
 		rrd.secContext = securityContextFactory.create(rrd,
-				new SimplePrincipal(owner));
+				new UsernamePrincipal(owner));
+		rrd.db = db;
 		return rrd;
+	}
+
+	public void makeChanges(@NonNull RemoteRunDelegate rrd) throws IOException {
+		// Properties that are set exactly once
+		if (creationInstant == null) {
+			creationInstant = rrd.getCreationTimestamp();
+			workflow = rrd.getWorkflow();
+			run = new MarshalledObject<RemoteSingleRun>(rrd.run);
+			securityContextFactory = rrd.getSecurityContext().getFactory();
+			owner = rrd.getSecurityContext().getOwner().getName();
+		}
+		// Properties that are set multiple times
+		expiry = rrd.getExpiry();
+		readers = rrd.getReaders().toArray(STRING_ARY);
+		writers = rrd.getWriters().toArray(STRING_ARY);
+		destroyers = rrd.getDestroyers().toArray(STRING_ARY);
+		setFinished(rrd.doneTransitionToFinished);
 	}
 }

@@ -1,6 +1,5 @@
 package org.taverna.server.master.mocks;
 
-import java.security.Principal;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -11,6 +10,7 @@ import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoDestroyException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -20,6 +20,7 @@ public class MockPolicy extends SimpleServerPolicy {
 		super();
 		super.setCleanerInterval(30);
 	}
+
 	public int maxruns = 10;
 	Integer usermaxruns;
 	Set<TavernaRun> denyaccess = new HashSet<TavernaRun>();
@@ -31,36 +32,36 @@ public class MockPolicy extends SimpleServerPolicy {
 	}
 
 	@Override
-	public Integer getMaxRuns(Principal user) {
+	public Integer getMaxRuns(UsernamePrincipal user) {
 		return usermaxruns;
 	}
 
 	@Override
-	public List<Workflow> listPermittedWorkflows(Principal user) {
+	public List<Workflow> listPermittedWorkflows(UsernamePrincipal user) {
 		return Arrays.asList();
 	}
 
 	@Override
-	public boolean permitAccess(Principal user, TavernaRun run) {
+	public boolean permitAccess(UsernamePrincipal user, TavernaRun run) {
 		return !denyaccess.contains(run);
 	}
 
 	@Override
-	public void permitCreate(Principal user, Workflow workflow)
+	public void permitCreate(UsernamePrincipal user, Workflow workflow)
 			throws NoCreateException {
 		if (this.exnOnCreate)
 			throw new NoCreateException();
 	}
 
 	@Override
-	public void permitDestroy(Principal user, TavernaRun run)
+	public void permitDestroy(UsernamePrincipal user, TavernaRun run)
 			throws NoDestroyException {
 		if (this.exnOnDelete)
 			throw new NoDestroyException();
 	}
 
 	@Override
-	public void permitUpdate(Principal user, TavernaRun run)
+	public void permitUpdate(UsernamePrincipal user, TavernaRun run)
 			throws NoUpdateException {
 		if (this.exnOnUpdate)
 			throw new NoUpdateException();

@@ -1,9 +1,9 @@
 package org.taverna.server.master;
 
-import java.security.Principal;
 import java.util.List;
 
 import org.taverna.server.master.interfaces.LocalIdentityMapper;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * An identity mapper that composes the results from other mappers, using the
@@ -23,7 +23,7 @@ public class CompositeIDMapper implements LocalIdentityMapper {
 	}
 
 	@Override
-	public String getUsernameForPrincipal(Principal user) {
+	public String getUsernameForPrincipal(UsernamePrincipal user) {
 		if (mappers == null)
 			return null;
 		for (LocalIdentityMapper m : mappers) {

@@ -1,8 +1,7 @@
 package org.taverna.server.master;
 
-import java.security.Principal;
-
 import org.taverna.server.master.interfaces.LocalIdentityMapper;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * A trivial principal to user mapper that always uses the same ID.
@@ -31,7 +30,7 @@ public class ConstantIDMapper implements LocalIdentityMapper {
 	}
 
 	@Override
-	public String getUsernameForPrincipal(Principal user) {
+	public String getUsernameForPrincipal(UsernamePrincipal user) {
 		return id;
 	}
 }

@@ -1,12 +1,12 @@
 package org.taverna.server.master.interfaces;
 
-import java.security.Principal;
 import java.util.List;
 
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoDestroyException;
 import org.taverna.server.master.exceptions.NoUpdateException;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * Simple policy interface.
@@ -28,7 +28,7 @@ public interface Policy {
 	 *         per-user limit is imposed and only system-wide limits are to be
 	 *         enforced.
 	 */
-	public Integer getMaxRuns(Principal user);
+	public Integer getMaxRuns(UsernamePrincipal user);
 
 	/**
 	 * Test whether the user can create an instance of the given workflow.
@@ -40,7 +40,7 @@ public interface Policy {
 	 * @throws NoCreateException
 	 *             If they may not instantiate it.
 	 */
-	public void permitCreate(Principal user, Workflow workflow)
+	public void permitCreate(UsernamePrincipal user, Workflow workflow)
 			throws NoCreateException;
 
 	/**
@@ -54,7 +54,7 @@ public interface Policy {
 	 * @throws NoDestroyException
 	 *             If they may not destroy it.
 	 */
-	public void permitDestroy(Principal user, TavernaRun run)
+	public void permitDestroy(UsernamePrincipal user, TavernaRun run)
 			throws NoDestroyException;
 
 	/**
@@ -69,7 +69,7 @@ public interface Policy {
 	 *         before testing whether the workflow can be updated or deleted by
 	 *         the user.
 	 */
-	public boolean permitAccess(Principal user, TavernaRun run);
+	public boolean permitAccess(UsernamePrincipal user, TavernaRun run);
 
 	/**
 	 * Test whether the user can modify a workflow run (other than for its
@@ -82,7 +82,7 @@ public interface Policy {
 	 * @throws NoUpdateException
 	 *             If they may not modify it.
 	 */
-	public void permitUpdate(Principal user, TavernaRun run)
+	public void permitUpdate(UsernamePrincipal user, TavernaRun run)
 			throws NoUpdateException;
 
 	/**
@@ -93,5 +93,5 @@ public interface Policy {
 	 * @return A list of workflows that they may instantiate, or <tt>null</tt>
 	 *         if any workflow may be submitted.
 	 */
-	public List<Workflow> listPermittedWorkflows(Principal user);
+	public List<Workflow> listPermittedWorkflows(UsernamePrincipal user);
 }

@@ -19,7 +19,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -126,7 +125,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 */
 	public static final String SECURITY_POLICY_FILE = "security.policy";
 	LocalWorkerState state;
-	private RunDatabase runDB;
+	private RunDBSupport runDB;
 	private SecurityContextFactory securityFactory;
 
 	@Required
@@ -135,7 +134,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	}
 
 	@Required
-	public void setRunDB(RunDatabase runDB) {
+	public void setRunDB(RunDBSupport runDB) {
 		this.runDB = runDB;
 	}
 
@@ -225,11 +224,14 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	@Override
 	public List<String> getSupportedListenerTypes() {
 		try {
-			return runDB.listListenerTypes();
+			RemoteRunDelegate rrd = runDB.pickArbitraryRun();
+			if (rrd != null)
+				return rrd.run.getListenerTypes();
+			log.warn("no remote runs; no listener types");
 		} catch (Exception e) {
 			log.warn("failed to get list of listener types", e);
-			return new ArrayList<String>();
 		}
+		return new ArrayList<String>();
 	}
 
 	@Override
@@ -248,7 +250,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 			Date now = new Date();
 			RemoteSingleRun rsr = getRealRun(creator, workflow);
 			RemoteRunDelegate run = new RemoteRunDelegate(now, workflow, rsr,
-					state.getDefaultLifetime());
+					state.getDefaultLifetime(), runDB);
 			run.setSecurityContext(securityFactory.create(run, creator));
 			return run;
 		} catch (NoCreateException e) {
@@ -271,7 +273,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 * @throws Exception
 	 *             Just about anything can go wrong...
 	 */
-	protected abstract RemoteSingleRun getRealRun(Principal creator,
+	protected abstract RemoteSingleRun getRealRun(UsernamePrincipal creator,
 			Workflow workflow) throws Exception;
 
 	/** @return The names of the current runs. */

@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.taverna.server.master.interfaces.LocalIdentityMapper;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * A trivial identity mapper that just uses the name out of the
@@ -31,7 +32,7 @@ public class NameIDMapper implements LocalIdentityMapper {
 	}
 
 	@Override
-	public String getUsernameForPrincipal(Principal user) {
+	public String getUsernameForPrincipal(UsernamePrincipal user) {
 		if (pat != null) {
 			Matcher m = pat.matcher(user.toString());
 			if (m.find() && m.groupCount() > 0) {

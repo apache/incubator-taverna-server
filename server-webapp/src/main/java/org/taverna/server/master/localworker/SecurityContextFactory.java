@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.X500Utils;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * Singleton factory. Really is a singleton (and is also very trivial); the
  * singleton-ness is just about limiting the number of instances of this around
@@ -22,19 +24,18 @@ import org.taverna.server.master.utils.X500Utils;
  * @see Serializable
  * @author Donal Fellows
  */
-@edu.umd.cs.findbugs.annotations.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE")
+@SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE")
 public class SecurityContextFactory implements
 		org.taverna.server.master.interfaces.SecurityContextFactory {
 	private static final long serialVersionUID = 12345678987654321L;
 	private static SecurityContextFactory instance;
-	transient RunDatabase db;
+	transient RunDBSupport db;
 	transient FilenameUtils fileUtils;
 	transient X500Utils x500Utils;
 
-	@edu.umd.cs.findbugs.annotations.SuppressWarnings({
-			"ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
+	@SuppressWarnings({ "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
 			"UPM_UNCALLED_PRIVATE_METHOD" })
-	@SuppressWarnings("unused")
+	@java.lang.SuppressWarnings("unused")
 	@PreDestroy
 	private void closeLog() {
 		instance = null;
@@ -46,7 +47,7 @@ public class SecurityContextFactory implements
 	}
 
 	@Required
-	public void setRunDatabase(RunDatabase db) {
+	public void setRunDatabase(RunDBSupport db) {
 		this.db = db;
 	}
 

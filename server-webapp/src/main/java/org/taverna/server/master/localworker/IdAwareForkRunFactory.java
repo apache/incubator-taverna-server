@@ -24,7 +24,6 @@ import java.rmi.ConnectException;
 import java.rmi.ConnectIOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -47,6 +46,7 @@ import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.interfaces.LocalIdentityMapper;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * A simple factory for workflow runs that forks runs from a subprocess.
@@ -573,8 +573,8 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	private LocalIdentityMapper mapper;
 
 	@Override
-	protected RemoteSingleRun getRealRun(Principal creator, Workflow workflow)
-			throws Exception {
+	protected RemoteSingleRun getRealRun(UsernamePrincipal creator,
+			Workflow workflow) throws Exception {
 		String wf = serializeWorkflow(workflow);
 		String username = mapper.getUsernameForPrincipal(creator);
 		if (username == null)
@@ -611,7 +611,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 
 		List<String> l = new ArrayList<String>();
 		Enumeration<String> e = servletContext.getInitParameterNames();
-		while(e.hasMoreElements())
+		while (e.hasMoreElements())
 			l.add(e.nextElement());
 		log.info("have init-params: " + l);
 

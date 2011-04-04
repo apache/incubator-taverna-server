@@ -1,7 +1,6 @@
 package org.taverna.server.master.mocks;
 
 import java.lang.ref.WeakReference;
-import java.security.Principal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -12,8 +11,9 @@ import java.util.TimerTask;
 import org.taverna.server.master.exceptions.NoDestroyException;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.interfaces.Policy;
-import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.RunStore;
+import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * Example of a store for Taverna Workflow Runs.
@@ -85,7 +85,7 @@ public class SimpleNonpersistentRunStore implements RunStore {
 	}
 
 	@Override
-	public TavernaRun getRun(Principal user, Policy p, String uuid)
+	public TavernaRun getRun(UsernamePrincipal user, Policy p, String uuid)
 			throws UnknownRunException {
 		synchronized (lock) {
 			TavernaRun w = store.get(uuid);
@@ -96,8 +96,7 @@ public class SimpleNonpersistentRunStore implements RunStore {
 	}
 
 	@Override
-	public TavernaRun getRun(String uuid)
-			throws UnknownRunException {
+	public TavernaRun getRun(String uuid) throws UnknownRunException {
 		synchronized (lock) {
 			TavernaRun w = store.get(uuid);
 			if (w == null)
@@ -107,7 +106,7 @@ public class SimpleNonpersistentRunStore implements RunStore {
 	}
 
 	@Override
-	public Map<String, TavernaRun> listRuns(Principal user, Policy p) {
+	public Map<String, TavernaRun> listRuns(UsernamePrincipal user, Policy p) {
 		HashMap<String, TavernaRun> filtered = new HashMap<String, TavernaRun>();
 		synchronized (lock) {
 			for (Map.Entry<String, TavernaRun> entry : store.entrySet()) {

@@ -7,7 +7,6 @@ package org.taverna.server.master.localworker;
 
 import static java.util.Collections.emptyList;
 
-import java.security.Principal;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -20,6 +19,7 @@ import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -34,7 +34,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 class PolicyImpl implements Policy {
 	Log log = LogFactory.getLog("Taverna.Server.LocalWorker.Policy");
 	private LocalWorkerState state;
-	private RunDatabase runDB;
+	private RunDBSupport runDB;
 
 	@Required
 	public void setState(LocalWorkerState state) {
@@ -42,7 +42,7 @@ class PolicyImpl implements Policy {
 	}
 
 	@Required
-	public void setRunDB(RunDatabase runDB) {
+	public void setRunDB(RunDBSupport runDB) {
 		this.runDB = runDB;
 	}
 
@@ -52,17 +52,17 @@ class PolicyImpl implements Policy {
 	}
 
 	@Override
-	public Integer getMaxRuns(Principal user) {
+	public Integer getMaxRuns(UsernamePrincipal user) {
 		return null;
 	}
 
 	@Override
-	public List<Workflow> listPermittedWorkflows(Principal user) {
+	public List<Workflow> listPermittedWorkflows(UsernamePrincipal user) {
 		return emptyList();
 	}
 
 	@Override
-	public boolean permitAccess(Principal user, TavernaRun run) {
+	public boolean permitAccess(UsernamePrincipal user, TavernaRun run) {
 		String username = user.getName();
 		TavernaSecurityContext context = run.getSecurityContext();
 		if (context.getOwner().getName().equals(username)) {
@@ -78,7 +78,7 @@ class PolicyImpl implements Policy {
 	}
 
 	@Override
-	public void permitCreate(Principal user, Workflow workflow)
+	public void permitCreate(UsernamePrincipal user, Workflow workflow)
 			throws NoCreateException {
 		if (user == null)
 			throw new NoCreateException(
@@ -88,7 +88,7 @@ class PolicyImpl implements Policy {
 	}
 
 	@Override
-	public synchronized void permitDestroy(Principal user, TavernaRun run)
+	public synchronized void permitDestroy(UsernamePrincipal user, TavernaRun run)
 			throws NoDestroyException {
 		if (user == null)
 			throw new NoDestroyException();
@@ -102,7 +102,7 @@ class PolicyImpl implements Policy {
 	}
 
 	@Override
-	public void permitUpdate(Principal user, TavernaRun run)
+	public void permitUpdate(UsernamePrincipal user, TavernaRun run)
 			throws NoUpdateException {
 		if (user == null)
 			throw new NoUpdateException(

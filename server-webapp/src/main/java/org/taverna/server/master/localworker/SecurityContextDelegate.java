@@ -444,7 +444,7 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 
 	@Override
 	public void setPermittedDestroyers(Set<String> destroyers) {
-		run.setDestroyers(destroyers, factory.db);
+		run.setDestroyers(destroyers);
 	}
 
 	@Override
@@ -454,7 +454,7 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 
 	@Override
 	public void setPermittedUpdaters(Set<String> updaters) {
-		run.setWriters(updaters, factory.db);
+		run.setWriters(updaters);
 	}
 
 	@Override
@@ -464,6 +464,6 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 
 	@Override
 	public void setPermittedReaders(Set<String> readers) {
-		run.setReaders(readers, factory.db);
+		run.setReaders(readers);
 	}
 }

@@ -5,11 +5,12 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:task="http://www.springframework.org/schema/task"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd">
+	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd"
+	default-lazy-init="false">
 
 	<bean id="webapp" class="org.taverna.server.master.TavernaServerImpl">
 		<property name="policy" ref="localworker.policy" />
-		<property name="runStore" ref="localworker.runDB" />
+		<property name="runStore" ref="localworker.runDAO" />
 		<property name="fileUtils" ref="fileUtils" />
 		<property name="contentsDescriptorBuilder" ref="contentsDescriptorBuilder" />
 		<property name="notificationEngine" ref="notificationFabric" />
@@ -22,7 +23,7 @@
 		<property name="policy" ref="localworker.policy" />
 		<property name="listenerFactory" ref="listenerFactory" />
 		<property name="runFactory" ref="localworker.factory" />
-		<property name="runStore" ref="localworker.runDB" />
+		<property name="runStore" ref="localworker.runDAO" />
 		<property name="stateModel" ref="webapp.state" />
 		<property name="idMapper" ref="IdentityMapper" />
 		<property name="invocationCounter" ref="webapp.invocationCounter" />
@@ -140,6 +141,7 @@
 				<prop key="datanucleus.autoCreateConstraints">true</prop>
 				<prop key="datanucleus.validateConstraints">true</prop>
 				<prop key="datanucleus.autoCreateSchema">true</prop>
+				<prop key="datanucleus.PersistenceUnitName">TavernaServer</prop>
 			</props>
 		</property>
 	</bean>
@@ -170,7 +172,7 @@
 			localworker case.
 		</description>
 		<property name="state" ref="localworker.state" />
-		<property name="runDB" ref="localworker.runDB" />
+		<property name="runDB" ref="localworker.runDAO" />
 		<property name="idMapper" ref="IdentityMapper" />
 		<property name="securityContextFactory" ref="localworker.securityContext" />
 		<property name="usageRecordSink" ref="usageRecordSink" />
@@ -178,7 +180,7 @@
 
 	<bean id="localworker.securityContext"
 		class="org.taverna.server.master.localworker.SecurityContextFactory">
-		<property name="runDatabase" ref="localworker.runDB" />
+		<property name="runDatabase" ref="localworker.runDAO" />
 		<property name="filenameConverter" ref="fileUtils" />
 		<property name="x500Utils" ref="x500Utils" />
 	</bean>
@@ -228,9 +230,9 @@
 			supported by the localworker run engine.
 		</description>
 		<property name="state" ref="localworker.state" />
-		<property name="runDB" ref="localworker.runDB" />
+		<property name="runDB" ref="localworker.runDAO" />
 	</bean>
-	<bean id="localworker.runDB" class="org.taverna.server.master.localworker.RunDatabase">
+	<bean id="localworker.runDAO" class="org.taverna.server.master.localworker.RunDatabaseDAO">
 		<description>
 			The implementation of the catalog of workflow runs
 			supported by the localworker run engine.
@@ -240,9 +242,9 @@
 		<property name="notificationEngine" ref="notificationFabric" />
 	</bean>
 	<task:scheduled-tasks scheduler="taskScheduler">
-		<task:scheduled ref="localworker.runDB" method="cleanNow"
+		<task:scheduled ref="localworker.runDAO" method="cleanNow"
 			fixed-delay="30000" />
-		<task:scheduled ref="localworker.runDB" method="checkForFinishNow"
+		<task:scheduled ref="localworker.runDAO" method="checkForFinishNow"
 			fixed-delay="10000" />
 	</task:scheduled-tasks>
 

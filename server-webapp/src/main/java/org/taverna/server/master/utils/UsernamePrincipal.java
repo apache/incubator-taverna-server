@@ -3,6 +3,9 @@ package org.taverna.server.master.utils;
 import java.io.Serializable;
 import java.security.Principal;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+
 /**
  * A simple serializable principal that just records the name.
  * 
@@ -18,7 +21,22 @@ public class UsernamePrincipal implements Principal, Serializable {
 		this.name = other.getName();
 	}
 
-	String name;
+	public UsernamePrincipal(Authentication auth) {
+		this(auth.getPrincipal());
+	}
+
+	public UsernamePrincipal(Object principal) {
+		if (principal instanceof Principal)
+			this.name = ((Principal) principal).getName();
+		else if (principal instanceof String)
+			this.name = (String) principal;
+		else if (principal instanceof UserDetails)
+			this.name = ((UserDetails) principal).getUsername();
+		else
+			this.name = principal.toString();
+	}
+
+	private String name;
 
 	@Override
 	public String getName() {

@@ -10,7 +10,6 @@ import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 import static org.taverna.server.master.common.Roles.ADMIN;
 
-import java.security.Principal;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -289,15 +288,7 @@ public class TavernaServerSupport {
 					log.warn("failed to get auth; going with <NOBODY>");
 				return new UsernamePrincipal("<NOBODY>");
 			}
-			Object principal = auth.getPrincipal();
-			if (principal instanceof Principal)
-				return new UsernamePrincipal((Principal) principal);
-			String username;
-			if (principal instanceof UserDetails)
-				username = ((UserDetails) principal).getUsername();
-			else
-				username = principal.toString();
-			return new UsernamePrincipal(username);
+			return new UsernamePrincipal(auth);
 		} catch (RuntimeException e) {
 			if (logGetPrincipalFailures)
 				log.info("failed to map principal", e);

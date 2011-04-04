@@ -1,9 +1,9 @@
 package org.taverna.server.master.interfaces;
 
-import java.security.Principal;
 import java.util.Map;
 
 import org.taverna.server.master.exceptions.UnknownRunException;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * Interface to the mechanism that looks after the mapping of names to runs.
@@ -27,7 +27,7 @@ public interface RunStore {
 	 *             If the lookup fails (either because it does not exist or
 	 *             because it is not permitted for the user by the policy).
 	 */
-	TavernaRun getRun(Principal user, Policy p, String uuid)
+	TavernaRun getRun(UsernamePrincipal user, Policy p, String uuid)
 			throws UnknownRunException;
 
 	/**
@@ -53,7 +53,7 @@ public interface RunStore {
 	 *            The general policy system context.
 	 * @return A mapping from run names to run instances.
 	 */
-	Map<String, TavernaRun> listRuns(Principal user, Policy p);
+	Map<String, TavernaRun> listRuns(UsernamePrincipal user, Policy p);
 
 	/**
 	 * Adds a workflow instance run to the store. Note that this operation is

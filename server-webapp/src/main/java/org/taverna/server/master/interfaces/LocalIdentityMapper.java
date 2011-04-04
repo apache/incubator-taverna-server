@@ -1,6 +1,6 @@
 package org.taverna.server.master.interfaces;
 
-import java.security.Principal;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * This interface describes how to map from the identity understood by the
@@ -20,5 +20,5 @@ public interface LocalIdentityMapper {
 	 * @return A user name, which must be defined in the context that workflows
 	 *         will be running in.
 	 */
-	public String getUsernameForPrincipal(Principal user);
+	public String getUsernameForPrincipal(UsernamePrincipal user);
 }

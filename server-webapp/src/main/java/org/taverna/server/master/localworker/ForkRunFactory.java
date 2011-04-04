@@ -21,7 +21,6 @@ import java.rmi.ConnectException;
 import java.rmi.ConnectIOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.security.Principal;
 import java.util.Calendar;
 
 import javax.servlet.ServletContext;
@@ -35,6 +34,7 @@ import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * A simple factory for workflow runs that forks runs from a subprocess.
@@ -371,8 +371,8 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	}
 
 	@Override
-	protected RemoteSingleRun getRealRun(Principal creator, Workflow workflow)
-			throws Exception {
+	protected RemoteSingleRun getRealRun(UsernamePrincipal creator,
+			Workflow workflow) throws Exception {
 		String wf = serializeWorkflow(workflow);
 		for (int i = 0; i < 3; i++) {
 			if (factory == null)
