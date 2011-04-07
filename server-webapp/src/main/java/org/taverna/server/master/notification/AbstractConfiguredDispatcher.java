@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.ServletContextAware;
 import org.taverna.server.master.interfaces.MessageDispatcher;
+import org.taverna.server.master.interfaces.TavernaRun;
 
 public abstract class AbstractConfiguredDispatcher implements
 		MessageDispatcher, ServletContextAware {
@@ -71,4 +72,25 @@ public abstract class AbstractConfiguredDispatcher implements
 	 */
 	public void reconfigured() {
 	}
+
+	@Override
+	public void dispatch(TavernaRun ignored, String messageSubject,
+			String messageContent, String target) throws Exception {
+		dispatch(messageSubject, messageContent, target);
+	}
+
+	/**
+	 * Dispatch a message to a recipient that doesn't care what produced it.
+	 * 
+	 * @param messageSubject
+	 *            The subject of the message to send.
+	 * @param messageContent
+	 *            The plain-text content of the message to send.
+	 * @param target
+	 *            A description of where it is to go.
+	 * @throws Exception
+	 *             If anything goes wrong.
+	 */
+	public abstract void dispatch(String messageSubject, String messageContent,
+			String target) throws Exception;
 }

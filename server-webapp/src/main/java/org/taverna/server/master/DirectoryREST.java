@@ -7,18 +7,18 @@ package org.taverna.server.master;
 
 import static eu.medsea.util.MimeUtil.getMimeType;
 import static java.nio.charset.Charset.defaultCharset;
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
-import static javax.ws.rs.core.MediaType.APPLICATION_XML_TYPE;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.created;
 import static javax.ws.rs.core.Response.noContent;
 import static javax.ws.rs.core.Response.notAcceptable;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.seeOther;
+import static org.taverna.server.master.ContentTypes.APPLICATION_ZIP_TYPE;
+import static org.taverna.server.master.ContentTypes.BACLAVA_MEDIA_TYPE;
+import static org.taverna.server.master.ContentTypes.DIRECTORY_VARIANTS;
+import static org.taverna.server.master.ContentTypes.INITIAL_FILE_VARIANTS;
 import static org.taverna.server.master.TavernaServerImpl.log;
 
 import java.io.ByteArrayInputStream;
@@ -102,13 +102,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 		DirectoryEntry de = fileUtils.getDirEntry(run, path);
 
 		// How did the user want the result?
-		List<Variant> variants;
-		if (de instanceof File)
-			variants = fileVariants;
-		else if (de instanceof Directory)
-			variants = directoryVariants;
-		else
-			throw new FilesystemAccessException("not a directory or file!");
+		List<Variant> variants = getVariants(de);
 		Variant v = req.selectVariant(variants);
 		if (v == null)
 			return notAcceptable(variants).type(TEXT_PLAIN)
@@ -139,18 +133,40 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 						.getSubtype().equals(b.getSubtype()));
 	}
 
-	/** "application/zip" */
-	static final MediaType APPLICATION_ZIP_TYPE = new MediaType("application",
-			"zip");
-	static final List<Variant> directoryVariants = asList(new Variant(
-			APPLICATION_XML_TYPE, null, null), new Variant(
-			APPLICATION_JSON_TYPE, null, null), new Variant(
-			APPLICATION_ZIP_TYPE, null, null));
-	static final List<Variant> fileVariants = singletonList(new Variant(
-			APPLICATION_OCTET_STREAM_TYPE, null, null));
-	/** "application/vnd.taverna.baclava+xml" */
-	private static final MediaType BACLAVA_MEDIA_TYPE = new MediaType(
-			"application", "vnd.taverna.baclava+xml");
+	/**
+	 * What are we willing to serve up a directory or file as?
+	 * 
+	 * @param de
+	 *            The reference to the object to serve.
+	 * @return The variants we can serve it as.
+	 * @throws FilesystemAccessException
+	 *             If we fail to read data necessary to detection of its media
+	 *             type.
+	 */
+	private List<Variant> getVariants(DirectoryEntry de)
+			throws FilesystemAccessException {
+		if (de instanceof Directory)
+			return DIRECTORY_VARIANTS;
+		else if (!(de instanceof File))
+			throw new FilesystemAccessException("not a directory or file!");
+		File f = (File) de;
+		List<Variant> variants = new ArrayList<Variant>(INITIAL_FILE_VARIANTS);
+		if (de.getName().endsWith(".baclava")) {
+			variants.add(0, new Variant(BACLAVA_MEDIA_TYPE, null, null));
+			return variants;
+		}
+		try {
+			byte[] head = f.getContents(0, 1024);
+			String contentType = getMimeType(new ByteArrayInputStream(head));
+			String[] ct = contentType.split("/");
+			if (!contentType.equals(APPLICATION_OCTET_STREAM))
+				variants.add(0, new Variant(new MediaType(ct[0], ct[1]), null,
+						null));
+		} catch (FilesystemAccessException e) {
+			// Ignore; fall back to just serving as bytes
+		}
+		return variants;
+	}
 
 	@Override
 	public Response getDirectoryOrFileContents(List<PathSegment> path,
@@ -159,30 +175,8 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 		DirectoryEntry de = fileUtils.getDirEntry(run, path);
 
 		// How did the user want the result?
-		List<Variant> variants;
-		if (de instanceof File) {
-			variants = new ArrayList<Variant>(fileVariants);
-			if (de.getName().endsWith(".baclava"))
-				variants.add(0, new Variant(BACLAVA_MEDIA_TYPE, null, null));
-			else
-				try {
-					File f = (File) de;
-					byte[] head = f.getContents(0, 1024);
-					String contentType = getMimeType(new ByteArrayInputStream(
-							head));
-					String[] ct = contentType.split("/");
-					if (!contentType.equals(APPLICATION_OCTET_STREAM))
-						variants.add(0, new Variant(
-								new MediaType(ct[0], ct[1]), null, null));
-				} catch (FilesystemAccessException e) {
-					// Ignore; fall back to just serving as bytes
-				}
-		} else if (de instanceof Directory)
-			variants = directoryVariants;
-		else
-			throw new FilesystemAccessException("not a directory or file!");
+		List<Variant> variants = getVariants(de);
 		MediaType wanted = null;
-		log.info("wanted this " + headers.getAcceptableMediaTypes());
 		// Manual content negotiation!!! Ugh!
 		outer: for (MediaType mt : headers.getAcceptableMediaTypes()) {
 			for (Variant v : variants) {
@@ -197,6 +191,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 					.entity("Do not know what type of response to produce.")
 					.build();
 
+		log.info("producing content of type " + wanted);
 		// Produce the content to deliver up
 		Object result;
 		if (de instanceof File) {
@@ -208,13 +203,17 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 						defaultCharset());
 				// Explicitly assumed that the system's charset is correct
 			}
-		} else if (wanted.equals(APPLICATION_ZIP_TYPE))
+		} else {
 			// Only for directories...
-			result = ((Directory) de).getContentsAsZip();
-		else
-			// Only for directories...
-			// XML or JSON; let CXF pick what to do
-			result = new DirectoryContents(ui, ((Directory) de).getContents());
+			Directory d = (Directory) de;
+			if (wanted.getType().equals(APPLICATION_ZIP_TYPE.getType())
+					&& wanted.getSubtype().equals(
+							APPLICATION_ZIP_TYPE.getSubtype()))
+				result = d.getContentsAsZip();
+			else
+				// XML or JSON; let CXF pick what to do
+				result = new DirectoryContents(ui, d.getContents());
+		}
 		return ok(result).type(wanted).build();
 	}
 
@@ -324,9 +323,11 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 
 /**
  * Description of properties supported by {@link DirectoryREST}.
+ * 
  * @author Donal Fellows
  */
 interface DirectoryBean extends SupportAware {
 	void setFileUtils(FilenameUtils fileUtils);
+
 	DirectoryREST connect(TavernaRun run);
 }

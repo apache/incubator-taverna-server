@@ -77,6 +77,18 @@
 		</jaxrs:providers>
 	</jaxrs:server>
 
+	<jaxrs:server id="AtomFeed" address="/feed">
+		<jaxrs:serviceBeans>
+			<ref bean="feed" />
+		</jaxrs:serviceBeans>
+		<jaxrs:properties>
+			<entry key="org.apache.cxf.endpoint.private" value="true" />
+		</jaxrs:properties>
+		<jaxrs:providers>
+			<ref bean="MessagingProvider.Atom" />
+		</jaxrs:providers>
+	</jaxrs:server>
+
 	<bean id="root_facade" class="org.taverna.server.master.facade.Facade">
 		<property name="file" value="welcome.html" />
 		<property name="pattern" value="SERVICE_URI/" />
@@ -98,7 +110,7 @@
 			:-( -->
 		<!-- <security:intercept-url pattern="/soap?wsdl**" filters="none" /> -->
 		<security:intercept-url pattern="/soap/**"
-			access="ROLE_tavernauser" requires-channel="https" />
+			access="ROLE_tavernauser" requires-channel="https" method="POST" />
 		<security:intercept-url pattern="/rest"
 			filters="none" />
 		<security:intercept-url pattern="/rest/runs"
@@ -108,6 +120,8 @@
 		<security:intercept-url pattern="/rest/policy"
 			filters="none" />
 		<security:intercept-url pattern="/rest/policy/**"
+			access="ROLE_tavernauser" requires-channel="https" />
+		<security:intercept-url pattern="/feed"
 			access="ROLE_tavernauser" requires-channel="https" />
 	</security:http>
 	<bean class="org.taverna.server.master.common.Uri.Rewriter"

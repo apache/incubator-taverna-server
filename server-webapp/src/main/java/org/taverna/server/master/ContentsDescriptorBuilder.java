@@ -314,5 +314,7 @@ public class ContentsDescriptorBuilder {
 		 * @return The {@link URI} factory.
 		 */
 		UriBuilder getRunUriBuilder(TavernaRun run);
+
+		UriBuilder getBaseUriBuilder();
 	}
 }

@@ -6,12 +6,12 @@
 package org.taverna.server.master.localworker;
 
 import java.io.Serializable;
-import java.security.Principal;
 
 import javax.annotation.PreDestroy;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.utils.FilenameUtils;
+import org.taverna.server.master.utils.UsernamePrincipal;
 import org.taverna.server.master.utils.X500Utils;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -62,8 +62,8 @@ public class SecurityContextFactory implements
 	}
 
 	@Override
-	public SecurityContextDelegate create(RemoteRunDelegate run, Principal owner)
-			throws Exception {
+	public SecurityContextDelegate create(RemoteRunDelegate run,
+			UsernamePrincipal owner) throws Exception {
 		return new SecurityContextDelegate(run, owner, this);
 	}
 

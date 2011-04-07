@@ -258,6 +258,12 @@
 			<groupId>org.apache.abdera</groupId>
 			<artifactId>abdera-core</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.abdera</groupId>
+			<artifactId>abdera-parser</artifactId>
+			<version>1.1.1</version>
+			<scope>runtime</scope>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
@@ -350,11 +356,16 @@
 				<version>1.6</version>
 				<scope>provided</scope>
 			</dependency>
-<dependency>
-    <groupId>org.apache.abdera</groupId>
-    <artifactId>abdera-core</artifactId>
-    <version>1.1.1</version>
-</dependency>
+			<dependency>
+				<groupId>org.apache.abdera</groupId>
+				<artifactId>abdera-core</artifactId>
+				<version>1.1.1</version>
+			</dependency>
+			<dependency>
+				<groupId>org.codehaus.woodstox</groupId>
+				<artifactId>wstx-asl</artifactId>
+				<version>3.2.9</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -448,7 +459,12 @@
 				<groupId>org.datanucleus</groupId>
 				<artifactId>maven-datanucleus-plugin</artifactId>
 				<configuration>
-					<metadataIncludes>org/taverna/server/master/*.class,org/taverna/server/master/localworker/*.class,org/taverna/server/master/usage/*.class</metadataIncludes>
+					<metadataIncludes>
+						org/taverna/server/master/*.class,
+						org/taverna/server/master/localworker/*.class,
+						org/taverna/server/master/notification/atom/*.class,
+						org/taverna/server/master/usage/*.class
+					</metadataIncludes>
 				</configuration>
 				<version>2.1.1</version>
 				<executions>

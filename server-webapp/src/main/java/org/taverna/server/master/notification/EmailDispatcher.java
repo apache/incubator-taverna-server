@@ -21,6 +21,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.interfaces.MessageDispatcher;
+import org.taverna.server.master.interfaces.TavernaRun;
 
 /**
  * How to send a plain text message by email to someone.
@@ -127,8 +128,8 @@ public class EmailDispatcher implements MessageDispatcher {
 	}
 
 	@Override
-	public void dispatch(String messageSubject, String messageContent, String to)
-			throws Exception {
+	public void dispatch(TavernaRun ignored, String messageSubject,
+			String messageContent, String to) throws Exception {
 		// Simple checks for acceptability
 		if (!to.matches(".+@.+")) {
 			log.info("did not send email notification: improper email address \""

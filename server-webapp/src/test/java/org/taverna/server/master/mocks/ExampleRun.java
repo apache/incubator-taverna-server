@@ -12,7 +12,6 @@ import static org.taverna.server.master.common.Status.Initialized;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -51,13 +50,13 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	Workflow workflow;
 	Status status;
 	Date expiry;
-	Principal owner;
+	UsernamePrincipal owner;
 	String inputBaclava;
 	String outputBaclava;
 	java.io.File realRoot;
 	List<Input> inputs;
 
-	public ExampleRun(Principal creator, Workflow workflow, Date expiry) {
+	public ExampleRun(UsernamePrincipal creator, Workflow workflow, Date expiry) {
 		this.id = randomUUID().toString();
 		this.listeners = new ArrayList<Listener>();
 		this.status = Initialized;
@@ -121,7 +120,7 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	}
 
 	@Override
-	public Principal getOwner() {
+	public UsernamePrincipal getOwner() {
 		return owner;
 	}
 

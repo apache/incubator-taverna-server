@@ -5,6 +5,8 @@
  */
 package org.taverna.server.master.interfaces;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 public interface MessageDispatcher {
 	/**
 	 * @return Whether this message dispatcher is actually available (fully
@@ -15,6 +17,8 @@ public interface MessageDispatcher {
 	/**
 	 * Dispatch a message to a recipient.
 	 * 
+	 * @param originator
+	 *            The workflow run that produced the message.
 	 * @param messageSubject
 	 *            The subject of the message to send.
 	 * @param messageContent
@@ -24,6 +28,7 @@ public interface MessageDispatcher {
 	 * @throws Exception
 	 *             If anything goes wrong.
 	 */
-	void dispatch(String messageSubject, String messageContent,
-			String targetParameter) throws Exception;
+	void dispatch(@NonNull TavernaRun originator,
+			@NonNull String messageSubject, @NonNull String messageContent,
+			@NonNull String targetParameter) throws Exception;
 }

@@ -67,6 +67,7 @@ import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
 import org.taverna.server.master.notification.NotificationEngine;
+import org.taverna.server.master.notification.atom.EventDAO;
 import org.taverna.server.master.rest.TavernaServerREST;
 import org.taverna.server.master.rest.TavernaServerREST.EnabledNotificationFabrics;
 import org.taverna.server.master.rest.TavernaServerREST.PermittedListeners;
@@ -124,6 +125,8 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	private RunStore runStore;
 	/** Encapsulates the policies applied by this server. */
 	private Policy policy;
+	/** Where Atom events come from. */
+	EventDAO eventSource;
 
 	@Override
 	@Required
@@ -163,6 +166,12 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	@Required
 	public void setPolicy(Policy policy) {
 		this.policy = policy;
+	}
+
+	@Override
+	@Required
+	public void setEventSource(EventDAO eventSource) {
+		this.eventSource = eventSource;
 	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -718,12 +727,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	 *         corresponds to the run ID (but with no such ID applied).
 	 */
 	UriBuilder getRunUriBuilder() {
-		if (jaxws == null || jaxws.getMessageContext() == null)
-			// Hack to make the test suite work
-			return fromUri("/taverna-server/rest/runs").path("{uuid}");
-		String pathInfo = (String) jaxws.getMessageContext().get(PATH_INFO);
-		return fromUri(pathInfo.replaceFirst("/soap$", "/rest/runs")).path(
-				"{uuid}");
+		return getBaseUriBuilder().path("runs/{uuid}");
 	}
 
 	@Override
@@ -731,6 +735,17 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		return fromUri(getRunUriBuilder().build(run.getId()));
 	}
 
+	@Override
+	public UriBuilder getBaseUriBuilder() {
+		if (jaxws == null || jaxws.getMessageContext() == null)
+			// Hack to make the test suite work
+			return fromUri("/taverna-server/rest/");
+		String pathInfo = (String) jaxws.getMessageContext().get(PATH_INFO);
+		pathInfo = pathInfo.replaceFirst("/soap$", "/rest/");
+		pathInfo = pathInfo.replaceFirst("/rest/.+$", "/rest/");
+		return fromUri(pathInfo);
+	}
+	
 	private Map<String, TavernaRun> runs() {
 		return runStore.listRuns(support.getPrincipal(), policy);
 	}

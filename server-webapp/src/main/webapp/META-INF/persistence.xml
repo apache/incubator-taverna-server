@@ -6,6 +6,8 @@
 		<class>org.taverna.server.master.WebappState</class>
 		<class>org.taverna.server.master.localworker.LocalWorkerManagementState</class>
 		<class>org.taverna.server.master.localworker.RunConnection</class>
+		<class>org.taverna.server.master.notification.atom.AbstractEvent</class>
+		<class>org.taverna.server.master.notification.atom.TerminationEvent</class>
 		<class>org.taverna.server.master.usage.UsageRecord</class>
 		<exclude-unlisted-classes>true</exclude-unlisted-classes>
 	</persistence-unit>

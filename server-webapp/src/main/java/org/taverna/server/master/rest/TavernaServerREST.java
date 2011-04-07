@@ -22,6 +22,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -35,6 +36,7 @@ import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.notification.atom.AbstractEvent;
 import org.taverna.server.master.soap.TavernaServerSOAP;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
@@ -149,6 +151,10 @@ public interface TavernaServerREST {
 		 */
 		public Uri policy;
 		/**
+		 * Reference to the Atom event feed produced by this server.
+		 */
+		public Uri feed;
+		/**
 		 * Where to go to make queries on the provenance database. Not yet
 		 * supported, so not handled by JAXB.
 		 */
@@ -169,6 +175,7 @@ public interface TavernaServerREST {
 			super(true);
 			runs = new Uri(ui, true, "runs");
 			policy = new Uri(ui, "policy");
+			feed = new Uri(ui, true, "feed");
 			// database = new Uri(ui, true, "database");
 			// TODO make the database point to something real
 		}
@@ -411,5 +418,38 @@ public interface TavernaServerREST {
 		public EnabledNotificationFabrics(List<String> enabledNodifiers) {
 			notifier = enabledNodifiers;
 		}
+	}
+
+	public interface EventFeed {
+		@GET
+		@Path("/")
+		@Produces({ "application/xml", "application/json",
+				"application/atom+xml;type=feed" })
+		@Description("Get an Atom feed for the user's events.")
+		@RolesAllowed(USER)
+		@CallCounted
+		@NonNull
+		Events getFeed();
+
+		@GET
+		@Path("{id}")
+		@Produces({ "application/xml", "application/json",
+				"application/atom+xml;type=entry" })
+		@Description("Get a particular Atom event.")
+		@RolesAllowed(USER)
+		@CallCounted
+		@NonNull
+		AbstractEvent getEvent(@NonNull @PathParam("id") String id);
+	}
+
+	@XmlType
+	public static abstract class Events extends VersionedElement {
+		@XmlAttribute
+		public abstract String getOwner();
+
+		@XmlElement
+		public abstract List<AbstractEvent> getEvents();
+
+		public abstract AbstractEvent getEvent(String id);
 	}
 }

@@ -11,6 +11,7 @@ import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
 import org.taverna.server.master.notification.NotificationEngine;
+import org.taverna.server.master.notification.atom.EventDAO;
 import org.taverna.server.master.rest.TavernaServerREST;
 import org.taverna.server.master.soap.TavernaServerSOAP;
 import org.taverna.server.master.utils.FilenameUtils;
@@ -67,6 +68,9 @@ public interface TavernaServer extends TavernaServerSOAP, TavernaServerREST,
 	 */
 	@Required
 	void setSupport(@NonNull TavernaServerSupport support);
+	
+	@Required
+	void setEventSource(@NonNull EventDAO eventSource);
 
 	/**
 	 * The nastier parts of security initialisation, which we want to go away.

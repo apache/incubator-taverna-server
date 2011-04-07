@@ -6,9 +6,9 @@
 package org.taverna.server.master.interfaces;
 
 import java.io.Serializable;
-import java.security.Principal;
 
 import org.taverna.server.master.localworker.RemoteRunDelegate;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
 public interface SecurityContextFactory extends Serializable {
 	/**
@@ -23,6 +23,6 @@ public interface SecurityContextFactory extends Serializable {
 	 * @throws Exception
 	 *             If anything goes wrong.
 	 */
-	TavernaSecurityContext create(RemoteRunDelegate run, Principal owner)
+	TavernaSecurityContext create(RemoteRunDelegate run, UsernamePrincipal owner)
 			throws Exception;
 }

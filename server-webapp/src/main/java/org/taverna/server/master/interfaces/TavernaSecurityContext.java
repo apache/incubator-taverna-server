@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.exceptions.InvalidCredentialException;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * Security context for a workflow run.
@@ -27,7 +28,7 @@ public interface TavernaSecurityContext {
 	/**
 	 * @return Who owns the security context.
 	 */
-	Principal getOwner();
+	UsernamePrincipal getOwner();
 
 	/**
 	 * Describe the names of the users (as extracted from their

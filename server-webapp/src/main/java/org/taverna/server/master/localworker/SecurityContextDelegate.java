@@ -17,7 +17,6 @@ import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.Principal;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -45,6 +44,7 @@ import org.taverna.server.master.exceptions.InvalidCredentialException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.interfaces.File;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * Implementation of a security context.
@@ -53,14 +53,14 @@ import org.taverna.server.master.interfaces.TavernaSecurityContext;
  */
 public class SecurityContextDelegate implements TavernaSecurityContext {
 	private Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
-	private final Principal owner;
+	private final UsernamePrincipal owner;
 	private final List<Credential> credentials = new ArrayList<Credential>();
 	private final List<Trust> trusted = new ArrayList<Trust>();
 	private final RemoteRunDelegate run;
 	private final Object lock = new Object();
 	private final SecurityContextFactory factory;
 
-	protected SecurityContextDelegate(RemoteRunDelegate run, Principal owner,
+	protected SecurityContextDelegate(RemoteRunDelegate run, UsernamePrincipal owner,
 			SecurityContextFactory factory) {
 		this.run = run;
 		this.owner = owner;
@@ -73,7 +73,7 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 	}
 
 	@Override
-	public Principal getOwner() {
+	public UsernamePrincipal getOwner() {
 		return owner;
 	}
 

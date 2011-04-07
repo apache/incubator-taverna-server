@@ -327,6 +327,7 @@ public class RunDatabaseDAO implements RunStore, RunDBSupport {
 
 	@Override
 	public void checkForFinishNow() {
+		List<RemoteRunDelegate> toNotify = new ArrayList<RemoteRunDelegate>();
 		Transaction tx = init();
 		try {
 			if (count() == 0)
@@ -339,11 +340,7 @@ public class RunDatabaseDAO implements RunStore, RunDBSupport {
 						continue;
 					rrd.doneTransitionToFinished = true;
 					rc.setFinished(true);
-					for (Listener l : rrd.getListeners())
-						if (l.getName().equals("io")) {
-							notifyFinished(rrd.id, l, rrd);
-							break;
-						}
+					toNotify.add(rrd);
 				} catch (Exception e) {
 					log.warn("failed to do notification of completion", e);
 					continue;
@@ -352,6 +349,17 @@ public class RunDatabaseDAO implements RunStore, RunDBSupport {
 		} finally {
 			done(tx);
 		}
+		// Do this _outside_ the context of the transaction!
+		for (RemoteRunDelegate rrd : toNotify)
+			for (Listener l : rrd.getListeners())
+				if (l.getName().equals("io")) {
+					try {
+						notifyFinished(rrd.id, l, rrd);
+					} catch (Exception e) {
+						log.warn("failed to do notification of completion", e);
+					}
+					break;
+				}
 	}
 
 	/**
@@ -372,8 +380,6 @@ public class RunDatabaseDAO implements RunStore, RunDBSupport {
 		if (notifier == null)
 			return;
 		String to = io.getProperty("notificationAddress");
-		if (to == null || to.trim().isEmpty())
-			return;
 		int code;
 		try {
 			code = parseInt(io.getProperty("exitcode"));
@@ -383,7 +389,7 @@ public class RunDatabaseDAO implements RunStore, RunDBSupport {
 		}
 
 		for (CompletionNotifier n : notifier)
-			notificationEngine.dispatchMessage(to,
+			notificationEngine.dispatchMessage(run, to,
 					n.makeMessageSubject(name, run, code),
 					n.makeCompletionMessage(name, run, code));
 	}
