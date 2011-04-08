@@ -27,6 +27,7 @@ import org.taverna.server.master.exceptions.NoCredentialException;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
 import org.taverna.server.master.rest.TavernaServerSecurityREST;
+import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 /**
  * RESTful interface to a single workflow run's security settings.
@@ -52,6 +53,7 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 	}
 
 	@Override
+	@CallCounted
 	public Descriptor describe(UriInfo ui) {
 		return new Descriptor(ui.getAbsolutePathBuilder().path("{element}"),
 				context.getOwner().getName(), context.getCredentials(),
@@ -59,16 +61,19 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 	}
 
 	@Override
+	@CallCounted
 	public String getOwner() {
 		return context.getOwner().getName();
 	}
 
 	@Override
+	@CallCounted
 	public CredentialList listCredentials() {
 		return new CredentialList(context.getCredentials());
 	}
 
 	@Override
+	@CallCounted
 	public Credential getParticularCredential(String id)
 			throws NoCredentialException {
 		for (Credential c : context.getCredentials())
@@ -78,6 +83,7 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 	}
 
 	@Override
+	@CallCounted
 	public Credential setParticularCredential(String id, Credential c,
 			UriInfo ui) throws InvalidCredentialException,
 			BadStateChangeException {
@@ -92,6 +98,7 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 	}
 
 	@Override
+	@CallCounted
 	public Response addCredential(Credential c, UriInfo ui)
 			throws InvalidCredentialException, BadStateChangeException {
 		if (run.getStatus() != Initialized)
@@ -105,6 +112,7 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 	}
 
 	@Override
+	@CallCounted
 	public Response deleteAllCredentials(UriInfo ui)
 			throws BadStateChangeException {
 		if (run.getStatus() != Initialized)
@@ -115,6 +123,7 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 	}
 
 	@Override
+	@CallCounted
 	public Response deleteCredential(String id, UriInfo ui)
 			throws BadStateChangeException {
 		if (run.getStatus() != Initialized)
@@ -124,11 +133,13 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 	}
 
 	@Override
+	@CallCounted
 	public TrustList listTrusted() {
 		return new TrustList(context.getTrusted());
 	}
 
 	@Override
+	@CallCounted
 	public Trust getParticularTrust(String id) throws NoCredentialException {
 		for (Trust t : context.getTrusted())
 			if (t.id.equals(id))
@@ -137,6 +148,7 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 	}
 
 	@Override
+	@CallCounted
 	public Trust setParticularTrust(String id, Trust t, UriInfo ui)
 			throws InvalidCredentialException, BadStateChangeException {
 		if (run.getStatus() != Initialized)
@@ -150,6 +162,7 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 	}
 
 	@Override
+	@CallCounted
 	public Response addTrust(Trust t, UriInfo ui)
 			throws InvalidCredentialException, BadStateChangeException {
 		if (run.getStatus() != Initialized)
@@ -163,6 +176,7 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 	}
 
 	@Override
+	@CallCounted
 	public Response deleteAllTrusts(UriInfo ui) throws BadStateChangeException {
 		if (run.getStatus() != Initialized)
 			throw new BadStateChangeException();
@@ -172,6 +186,7 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 	}
 
 	@Override
+	@CallCounted
 	public Response deleteTrust(String id, UriInfo ui)
 			throws BadStateChangeException {
 		if (run.getStatus() != Initialized)
@@ -183,6 +198,7 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 	}
 
 	@Override
+	@CallCounted
 	public PermissionsDescription describePermissions(UriInfo ui) {
 		Map<String, Permission> perm = new HashMap<String, Permission>();
 		for (String u : context.getPermittedReaders())
@@ -196,23 +212,27 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 	}
 
 	@Override
+	@CallCounted
 	public Permission describePermission(String id) {
 		return support.getPermission(context, id);
 	}
 
 	@Override
+	@CallCounted
 	public Permission setPermission(String id, Permission perm) {
 		support.setPermission(context, id, perm);
 		return support.getPermission(context, id);
 	}
 
 	@Override
+	@CallCounted
 	public Response deletePermission(String id, UriInfo ui) {
 		support.setPermission(context, id, Permission.None);
 		return noContent().build();
 	}
 
 	@Override
+	@CallCounted
 	public Response makePermission(PermissionDescription desc, UriInfo ui) {
 		support.setPermission(context, desc.userName, desc.permission);
 		return created(

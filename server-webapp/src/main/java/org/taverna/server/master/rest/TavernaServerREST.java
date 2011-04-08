@@ -38,7 +38,6 @@ import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.notification.atom.AbstractEvent;
 import org.taverna.server.master.soap.TavernaServerSOAP;
-import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 
@@ -63,7 +62,6 @@ public interface TavernaServerREST {
 	@GET
 	@Produces({ "application/xml", "application/json" })
 	@Description("Produces the description of the service.")
-	@CallCounted
 	@NonNull
 	ServerDescription describeService(@NonNull @Context UriInfo ui);
 
@@ -79,7 +77,6 @@ public interface TavernaServerREST {
 	@Produces({ "application/xml", "application/json" })
 	@RolesAllowed(USER)
 	@Description("Produces a list of all runs visible to the user.")
-	@CallCounted
 	@NonNull
 	RunList listUsersRuns(@NonNull @Context UriInfo ui);
 
@@ -100,7 +97,6 @@ public interface TavernaServerREST {
 	@Consumes("application/xml")
 	@RolesAllowed(USER)
 	@Description("Accepts (or not) a request to create a new run executing the given workflow.")
-	@CallCounted
 	@NonNull
 	Response submitWorkflow(@NonNull Workflow workflow,
 			@NonNull @Context UriInfo ui) throws NoUpdateException;
@@ -110,7 +106,6 @@ public interface TavernaServerREST {
 	 */
 	@Path("policy")
 	@Description("The policies supported by this server.")
-	@CallCounted
 	@NonNull
 	PolicyView getPolicyDescription();
 
@@ -126,7 +121,6 @@ public interface TavernaServerREST {
 	@Path("runs/{runName}")
 	@RolesAllowed(USER)
 	@Description("Get a particular named run resource to dispatch to.")
-	@CallCounted
 	@NonNull
 	TavernaServerRunREST getRunResource(
 			@NonNull @PathParam("runName") String runName)
@@ -175,7 +169,7 @@ public interface TavernaServerREST {
 			super(true);
 			runs = new Uri(ui, true, "runs");
 			policy = new Uri(ui, "policy");
-			feed = new Uri(ui, true, "feed");
+			feed = new Uri(ui, true, "../feed");
 			// database = new Uri(ui, true, "database");
 			// TODO make the database point to something real
 		}
@@ -191,7 +185,6 @@ public interface TavernaServerREST {
 		@Path("/")
 		@Produces({ "application/xml", "application/json" })
 		@Description("Describe the parts of this policy.")
-		@CallCounted
 		@NonNull
 		public PolicyDescription getDescription(@NonNull @Context UriInfo ui);
 
@@ -208,7 +201,6 @@ public interface TavernaServerREST {
 		@Produces("text/plain")
 		@RolesAllowed(USER)
 		@Description("Gets the maximum number of simultaneous runs that the user may create.")
-		@CallCounted
 		@NonNull
 		public int getMaxSimultaneousRuns();
 
@@ -224,7 +216,6 @@ public interface TavernaServerREST {
 		@Produces({ "application/xml", "application/json" })
 		@RolesAllowed(USER)
 		@Description("Gets the list of permitted workflows.")
-		@CallCounted
 		@NonNull
 		public PermittedWorkflows getPermittedWorkflows();
 
@@ -239,7 +230,6 @@ public interface TavernaServerREST {
 		@Produces({ "application/xml", "application/json" })
 		@RolesAllowed(USER)
 		@Description("Gets the list of permitted event listener types.")
-		@CallCounted
 		@NonNull
 		public PermittedListeners getPermittedListeners();
 
@@ -255,7 +245,6 @@ public interface TavernaServerREST {
 		@Produces({ "application/xml", "application/json" })
 		@RolesAllowed(USER)
 		@Description("Gets the list of supported, enabled notification fabrics. Each corresponds (approximately) to a protocol, e.g., email.")
-		@CallCounted
 		@NonNull
 		public EnabledNotificationFabrics getEnabledNotifiers();
 
@@ -420,14 +409,13 @@ public interface TavernaServerREST {
 		}
 	}
 
+	@RolesAllowed(USER)
 	public interface EventFeed {
 		@GET
 		@Path("/")
 		@Produces({ "application/xml", "application/json",
 				"application/atom+xml;type=feed" })
 		@Description("Get an Atom feed for the user's events.")
-		@RolesAllowed(USER)
-		@CallCounted
 		@NonNull
 		Events getFeed();
 
@@ -436,8 +424,6 @@ public interface TavernaServerREST {
 		@Produces({ "application/xml", "application/json",
 				"application/atom+xml;type=entry" })
 		@Description("Get a particular Atom event.")
-		@RolesAllowed(USER)
-		@CallCounted
 		@NonNull
 		AbstractEvent getEvent(@NonNull @PathParam("id") String id);
 	}

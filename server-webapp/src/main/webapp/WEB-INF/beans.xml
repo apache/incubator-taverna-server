@@ -104,20 +104,24 @@
 	<bean id="IdentityMapper" class="org.taverna.server.master.CompositeIDMapper">
 		<property name="identityMappers">
 			<list>
-				<bean id="ExtractingIDMapper" class="org.taverna.server.master.NameIDMapper">
+				<bean id="AuthorityBased" class="org.taverna.server.master.AuthorityDerivedIDMapper">
+					<description>Derives the local user identity to use for execution
+						from the LOCALUSER_* Spring Security authority. Thus, if the user
+						has &quot;LOCALUSER_foo&quot;, they will be executing as the local
+						user id &quot;foo&quot;.</description>
+				</bean>
+				<bean id="Extracting" class="org.taverna.server.master.NameIDMapper">
 					<description>An alternate mechanism for mapping users. This tries
 						to use an RE to extract the user name from the principal name.
 					</description>
 					<property name="regexp">
 						<description>An optional regexp to extract the local user name
-							from
-							the principal's string description. The first capturing group
-							will
-							be the result of the mapping operation.</description>
+							from the principal's string description. The first capturing
+							group will be the result of the mapping operation.</description>
 						<value>^TAVERNAUSER=(.*)$</value>
 					</property>
 				</bean>
-				<bean id="ConstantIDMapper" class="org.taverna.server.master.ConstantIDMapper">
+				<bean id="Constant" class="org.taverna.server.master.ConstantIDMapper">
 					<description>How to map web principals to local users. This one
 						maps everyone to the same user, "taverna".</description>
 					<property name="constantId" value="taverna" />

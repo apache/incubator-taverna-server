@@ -101,7 +101,7 @@
 		default-domain="${my.domain}" registration="ignoreExisting" />
 
 	<aop:aspectj-autoproxy proxy-target-class="true" />
-	<security:http realm="tavernaserver">
+	<security:http realm="tavernaserver" create-session="never">
 		<security:http-basic />
 		<security:intercept-url pattern="/" filters="none" />
 		<security:intercept-url pattern="/services"
@@ -130,10 +130,9 @@
 		jsr250-annotations="enabled" />
 	<security:authentication-manager>
 		<security:authentication-provider>
-			<security:user-service>
+			<security:user-service id="users"
+				properties="/WEB-INF/security/users.properties">
 				<!-- FIXME -->
-				<security:user name="taverna" password="taverna"
-					authorities="ROLE_tavernauser" />
 			</security:user-service>
 		</security:authentication-provider>
 	</security:authentication-manager>

@@ -17,6 +17,7 @@ import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.rest.TavernaServerListenersREST;
 import org.taverna.server.master.rest.TavernaServerListenersREST.ListenerDescription;
 import org.taverna.server.master.rest.TavernaServerListenersREST.TavernaServerListenerREST;
+import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 /**
  * RESTful interface to a single listener attached to a workflow run.
@@ -36,16 +37,19 @@ abstract class SingleListenerREST implements TavernaServerListenerREST,
 	}
 
 	@Override
+	@CallCounted
 	public String getConfiguration() {
 		return listen.getConfiguration();
 	}
 
 	@Override
+	@CallCounted
 	public ListenerDescription getDescription(UriInfo ui) {
 		return new ListenerDescription(listen, ui.getAbsolutePathBuilder());
 	}
 
 	@Override
+	@CallCounted
 	public TavernaServerListenersREST.Properties getProperties(UriInfo ui) {
 		return new TavernaServerListenersREST.Properties(ui
 				.getAbsolutePathBuilder().path("{prop}"),
@@ -53,6 +57,7 @@ abstract class SingleListenerREST implements TavernaServerListenerREST,
 	}
 
 	@Override
+	@CallCounted
 	public TavernaServerListenersREST.Property getProperty(
 			final String propertyName) throws NoListenerException {
 		List<String> p = asList(listen.listProperties());

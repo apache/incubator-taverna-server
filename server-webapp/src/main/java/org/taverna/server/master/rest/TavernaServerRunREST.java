@@ -42,7 +42,6 @@ import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.NotOwnerException;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 import org.taverna.server.output_description.RdfWrapper;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -66,7 +65,6 @@ public interface TavernaServerRunREST {
 	@Path("/")
 	@Description("Describes a workflow run.")
 	@Produces({ "application/xml", "application/json" })
-	@CallCounted
 	@NonNull
 	public RunDescription getDescription(@NonNull @Context UriInfo ui);
 
@@ -80,7 +78,6 @@ public interface TavernaServerRunREST {
 	@DELETE
 	@Path("/")
 	@Description("Deletes a workflow run.")
-	@CallCounted
 	@NonNull
 	public Response destroy() throws NoUpdateException;
 
@@ -93,7 +90,6 @@ public interface TavernaServerRunREST {
 	@Path("workflow")
 	@Produces({ "application/xml", "application/json" })
 	@Description("Gives the workflow document used to create the workflow run.")
-	@CallCounted
 	@NonNull
 	public Workflow getWorkflow();
 
@@ -107,7 +103,6 @@ public interface TavernaServerRunREST {
 	 */
 	@Path("security")
 	@Description("Access the workflow run's security.")
-	@CallCounted
 	@NonNull
 	public TavernaServerSecurityREST getSecurity() throws NotOwnerException;
 
@@ -121,7 +116,6 @@ public interface TavernaServerRunREST {
 	@Path("expiry")
 	@Produces("text/plain")
 	@Description("Gives the time when the workflow run becomes eligible for automatic deletion.")
-	@CallCounted
 	@NonNull
 	public String getExpiryTime();
 
@@ -141,7 +135,6 @@ public interface TavernaServerRunREST {
 	@Consumes("text/plain")
 	@Produces("text/plain")
 	@Description("Sets the time when the workflow run becomes eligible for automatic deletion.")
-	@CallCounted
 	@NonNull
 	public String setExpiryTime(@NonNull String expiry)
 			throws NoUpdateException;
@@ -155,7 +148,6 @@ public interface TavernaServerRunREST {
 	@Path("createTime")
 	@Produces("text/plain")
 	@Description("Gives the time when the workflow run was first submitted to the server.")
-	@CallCounted
 	@NonNull
 	public String getCreateTime();
 
@@ -169,7 +161,6 @@ public interface TavernaServerRunREST {
 	@Path("startTime")
 	@Produces("text/plain")
 	@Description("Gives the time when the workflow run was started, or an empty string if the run has not yet started.")
-	@CallCounted
 	@NonNull
 	public String getStartTime();
 
@@ -182,7 +173,6 @@ public interface TavernaServerRunREST {
 	@Path("finishTime")
 	@Produces("text/plain")
 	@Description("Gives the time when the workflow run was first detected as finished, or an empty string if it has not yet finished (including if it has never started).")
-	@CallCounted
 	@NonNull
 	public String getFinishTime();
 
@@ -195,7 +185,6 @@ public interface TavernaServerRunREST {
 	@Path("status")
 	@Produces("text/plain")
 	@Description("Gives the current status of the workflow run.")
-	@CallCounted
 	@NonNull
 	public String getStatus();
 
@@ -216,7 +205,6 @@ public interface TavernaServerRunREST {
 	@Consumes("text/plain")
 	@Produces("text/plain")
 	@Description("Attempts to update the status of the workflow run.")
-	@CallCounted
 	@NonNull
 	public String setStatus(@NonNull String status) throws NoUpdateException,
 			BadStateChangeException;
@@ -228,7 +216,6 @@ public interface TavernaServerRunREST {
 	 */
 	@Path("wd")
 	@Description("Get the working directory of this workflow run.")
-	@CallCounted
 	@NonNull
 	public TavernaServerDirectoryREST getWorkingDirectory();
 
@@ -239,7 +226,6 @@ public interface TavernaServerRunREST {
 	 */
 	@Path("listeners")
 	@Description("Get the event listeners attached to this workflow run.")
-	@CallCounted
 	@NonNull
 	public TavernaServerListenersREST getListeners();
 
@@ -252,7 +238,6 @@ public interface TavernaServerRunREST {
 	 */
 	@Path("input")
 	@Description("Get the inputs to this workflow run.")
-	@CallCounted
 	@NonNull
 	public TavernaServerInputREST getInputs(@NonNull @Context UriInfo ui);
 
@@ -266,7 +251,6 @@ public interface TavernaServerRunREST {
 	@Path("output")
 	@Produces("text/plain")
 	@Description("Gives the Baclava file where output will be written; empty means use multiple simple files in the out directory.")
-	@CallCounted
 	@NonNull
 	public String getOutputFile();
 
@@ -288,7 +272,6 @@ public interface TavernaServerRunREST {
 	@Path("output")
 	@Produces("application/xml")
 	@Description("Gives an RDF description of the outputs, as currently understood")
-	@CallCounted
 	@NonNull
 	public RdfWrapper getOutputDescription(@NonNull @Context UriInfo ui)
 			throws BadStateChangeException, FilesystemAccessException,
@@ -315,7 +298,6 @@ public interface TavernaServerRunREST {
 	@Consumes("text/plain")
 	@Produces("text/plain")
 	@Description("Sets the Baclava file where output will be written; empty means use multiple simple files in the out directory.")
-	@CallCounted
 	@NonNull
 	public String setOutputFile(@NonNull String filename)
 			throws NoUpdateException, FilesystemAccessException,

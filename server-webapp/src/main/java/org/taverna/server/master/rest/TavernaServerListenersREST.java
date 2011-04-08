@@ -36,7 +36,6 @@ import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.Listener;
-import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 
@@ -60,7 +59,6 @@ public interface TavernaServerListenersREST {
 	@Path("/")
 	@Produces({ "application/xml", "application/json" })
 	@Description("Get the listeners installed in the workflow run.")
-	@CallCounted
 	@NonNull
 	Listeners getDescription(@NonNull @Context UriInfo ui);
 
@@ -83,7 +81,6 @@ public interface TavernaServerListenersREST {
 	@Path("/")
 	@Consumes({ "application/xml", "application/json" })
 	@Description("Add a new event listener to the named workflow run.")
-	@CallCounted
 	@NonNull
 	Response addListener(@NonNull ListenerDefinition typeAndConfiguration,
 			@NonNull @Context UriInfo ui) throws NoUpdateException,
@@ -100,7 +97,6 @@ public interface TavernaServerListenersREST {
 	 */
 	@Path("{name}")
 	@Description("Resolve a particular listener from its name.")
-	@CallCounted
 	@NonNull
 	TavernaServerListenerREST getListener(
 			@NonNull @PathParam("name") String name) throws NoListenerException;
@@ -126,7 +122,6 @@ public interface TavernaServerListenersREST {
 		@Path("/")
 		@Produces({ "application/xml", "application/json" })
 		@Description("Get the description of this listener.")
-		@CallCounted
 		@NonNull
 		ListenerDescription getDescription(@NonNull @Context UriInfo ui);
 
@@ -140,7 +135,6 @@ public interface TavernaServerListenersREST {
 		@Path("configuration")
 		@Produces("text/plain")
 		@Description("Get the configuration for the given event listener that is attached to a workflow run.")
-		@CallCounted
 		@NonNull
 		String getConfiguration();
 
@@ -156,7 +150,6 @@ public interface TavernaServerListenersREST {
 		@Path("properties")
 		@Produces({ "application/xml", "application/json" })
 		@Description("Get the list of properties supported by a given event listener attached to a workflow run.")
-		@CallCounted
 		@NonNull
 		Properties getProperties(@NonNull @Context UriInfo ui);
 
@@ -170,7 +163,6 @@ public interface TavernaServerListenersREST {
 		 */
 		@Path("properties/{propertyName}")
 		@Description("Get an object representing a particular property.")
-		@CallCounted
 		@NonNull
 		Property getProperty(
 				@NonNull @PathParam("propertyName") String propertyName)
@@ -195,7 +187,6 @@ public interface TavernaServerListenersREST {
 		@Path("/")
 		@Produces("text/plain")
 		@Description("Get the value of the particular property of an event listener attached to a workflow run.")
-		@CallCounted
 		@NonNull
 		String getValue();
 
@@ -217,7 +208,6 @@ public interface TavernaServerListenersREST {
 		@Consumes("text/plain")
 		@Produces("text/plain")
 		@Description("Set the value of the particular property of an event listener attached to a workflow run.")
-		@CallCounted
 		@NonNull
 		String setValue(@NonNull String value) throws NoUpdateException,
 				NoListenerException;

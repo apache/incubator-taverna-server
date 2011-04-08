@@ -50,6 +50,7 @@ import org.taverna.server.master.rest.MakeOrUpdateDirEntry;
 import org.taverna.server.master.rest.MakeOrUpdateDirEntry.MakeDirectory;
 import org.taverna.server.master.rest.TavernaServerDirectoryREST;
 import org.taverna.server.master.utils.FilenameUtils;
+import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 /**
  * RESTful access to the filesystem.
@@ -79,6 +80,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 	}
 
 	@Override
+	@CallCounted
 	public Response destroyDirectoryEntry(List<PathSegment> path)
 			throws NoUpdateException, FilesystemAccessException,
 			NoDirectoryEntryException {
@@ -88,6 +90,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 	}
 
 	@Override
+	@CallCounted
 	public DirectoryContents getDescription(UriInfo ui)
 			throws FilesystemAccessException {
 		return new DirectoryContents(ui, run.getWorkingDirectory()
@@ -96,6 +99,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 
 	// Nasty! This can have several different responses...
 	// @Override
+	@CallCounted
 	public Response getDirectoryOrFileContents(List<PathSegment> path,
 			UriInfo ui, Request req) throws FilesystemAccessException,
 			NoDirectoryEntryException {
@@ -169,6 +173,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 	}
 
 	@Override
+	@CallCounted
 	public Response getDirectoryOrFileContents(List<PathSegment> path,
 			UriInfo ui, HttpHeaders headers) throws FilesystemAccessException,
 			NoDirectoryEntryException {
@@ -218,6 +223,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 	}
 
 	@Override
+	@CallCounted
 	public Response makeDirectoryOrUpdateFile(List<PathSegment> parent,
 			MakeOrUpdateDirEntry op, UriInfo ui) throws NoUpdateException,
 			FilesystemAccessException, NoDirectoryEntryException {
@@ -262,6 +268,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 	}
 
 	@Override
+	@CallCounted
 	public Response setFileContents(List<PathSegment> filePath, String name,
 			InputStream contents, UriInfo ui) throws NoDirectoryEntryException,
 			NoUpdateException, FilesystemAccessException {

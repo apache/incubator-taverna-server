@@ -32,7 +32,6 @@ import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.Directory;
 import org.taverna.server.master.interfaces.File;
-import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 
@@ -57,7 +56,6 @@ public interface TavernaServerDirectoryREST {
 	@GET
 	@Path("/")
 	@Description("Describes the working directory of the workflow run.")
-	@CallCounted
 	@NonNull
 	DirectoryContents getDescription(@NonNull @Context UriInfo ui)
 			throws FilesystemAccessException;
@@ -84,7 +82,6 @@ public interface TavernaServerDirectoryREST {
 	@Produces({ "application/xml", "application/json",
 			"application/octet-stream", "application/zip", "*/*" })
 	@Description("Gives a description of the named entity in or beneath the working directory of the workflow run (either a Directory or File).")
-	@CallCounted
 	@NonNull
 	Response getDirectoryOrFileContents(
 			@NonNull @PathParam("path") List<PathSegment> path,
@@ -114,7 +111,6 @@ public interface TavernaServerDirectoryREST {
 	@POST
 	@Path("{path:.*}")
 	@Description("Creates a directory in the filesystem beneath the working directory of the workflow run, or creates or updates a file's contents, where that file is in or below the working directory of a workflow run.")
-	@CallCounted
 	@NonNull
 	Response makeDirectoryOrUpdateFile(
 			@NonNull @PathParam("path") List<PathSegment> parent,
@@ -146,7 +142,6 @@ public interface TavernaServerDirectoryREST {
 	@Path("{path:(.+/)?}{name}")
 	@Consumes(APPLICATION_OCTET_STREAM)
 	@Description("Creates or updates a file in a particular location beneath the working directory of the workflow run.")
-	@CallCounted
 	@NonNull
 	Response setFileContents(@PathParam("path") List<PathSegment> file,
 			@PathParam("name") String name, InputStream contents,
@@ -170,7 +165,6 @@ public interface TavernaServerDirectoryREST {
 	@DELETE
 	@Path("{path:.*}")
 	@Description("Deletes a file or directory that is in or below the working directory of a workflow run.")
-	@CallCounted
 	@NonNull
 	Response destroyDirectoryEntry(@PathParam("path") List<PathSegment> path)
 			throws NoUpdateException, FilesystemAccessException,

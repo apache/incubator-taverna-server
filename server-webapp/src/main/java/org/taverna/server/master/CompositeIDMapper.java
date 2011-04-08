@@ -1,7 +1,19 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master;
 
-import java.util.List;
+import static org.apache.commons.logging.LogFactory.getLog;
 
+import java.util.List;
+import java.util.Map.Entry;
+
+import org.apache.commons.logging.Log;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.taverna.server.master.interfaces.LocalIdentityMapper;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
@@ -11,8 +23,11 @@ import org.taverna.server.master.utils.UsernamePrincipal;
  * 
  * @author Donal Fellows.
  */
-public class CompositeIDMapper implements LocalIdentityMapper {
+public class CompositeIDMapper implements LocalIdentityMapper,
+		ApplicationContextAware {
+	private Log log = getLog("Taverna.Server.IdentityMapper");
 	private List<LocalIdentityMapper> mappers;
+	private ApplicationContext context;
 
 	/**
 	 * @param mappers
@@ -23,13 +38,27 @@ public class CompositeIDMapper implements LocalIdentityMapper {
 	}
 
 	@Override
+	public void setApplicationContext(ApplicationContext applicationContext)
+			throws BeansException {
+		context = applicationContext;
+	}
+
+	@Override
 	public String getUsernameForPrincipal(UsernamePrincipal user) {
 		if (mappers == null)
 			return null;
 		for (LocalIdentityMapper m : mappers) {
 			String u = m.getUsernameForPrincipal(user);
-			if (u != null)
-				return u;
+			if (u == null)
+				continue;
+			for (Entry<String, ? extends LocalIdentityMapper> entry : context
+					.getBeansOfType(m.getClass()).entrySet())
+				if (m == entry.getValue()) {
+					log.info("used " + entry.getKey() + " LIM to map " + user
+							+ " to " + u);
+					break;
+				}
+			return u;
 		}
 		return null;
 	}

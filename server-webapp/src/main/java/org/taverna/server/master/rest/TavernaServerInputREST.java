@@ -36,7 +36,6 @@ import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.Input;
 import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 
@@ -57,7 +56,6 @@ public interface TavernaServerInputREST {
 	@Path("/")
 	@Produces({ "application/xml", "application/json" })
 	@Description("Describe the sub-URIs of this resource.")
-	@CallCounted
 	@NonNull
 	InputsDescriptor get();
 
@@ -69,7 +67,6 @@ public interface TavernaServerInputREST {
 	@Path("expected")
 	@Produces({ "application/xml", "application/json" })
 	@Description("Describe the expected inputs of this workflow run.")
-	@CallCounted
 	@NonNull
 	InputDescription getExpected();
 
@@ -81,7 +78,6 @@ public interface TavernaServerInputREST {
 	@Path("baclava")
 	@Produces("text/plain")
 	@Description("Gives the Baclava file describing the inputs, or empty if individual files are used.")
-	@CallCounted
 	@NonNull
 	String getBaclavaFile();
 
@@ -104,7 +100,6 @@ public interface TavernaServerInputREST {
 	@Consumes("text/plain")
 	@Produces("text/plain")
 	@Description("Sets the Baclava file describing the inputs.")
-	@CallCounted
 	@NonNull
 	String setBaclavaFile(@NonNull String filename) throws NoUpdateException,
 			BadStateChangeException, FilesystemAccessException;
@@ -122,7 +117,6 @@ public interface TavernaServerInputREST {
 	@Path("input/{name}")
 	@Produces({ "application/xml", "application/json" })
 	@Description("Gives a description of what is used to supply a particular input.")
-	@CallCounted
 	@NonNull
 	InDesc getInput(@NonNull @PathParam("name") String name)
 			throws BadInputPortNameException;
@@ -151,7 +145,6 @@ public interface TavernaServerInputREST {
 	@Path("input/{name}")
 	@Consumes({ "application/xml", "application/json" })
 	@Description("Sets the source for a particular input port.")
-	@CallCounted
 	@NonNull
 	InDesc setInput(@NonNull @PathParam("name") String name,
 			@NonNull InDesc inputDescriptor) throws NoUpdateException,

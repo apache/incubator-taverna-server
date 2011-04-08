@@ -23,6 +23,7 @@ import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.rest.ListenerDefinition;
 import org.taverna.server.master.rest.TavernaServerListenersREST;
+import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 
@@ -47,6 +48,7 @@ abstract class ListenersREST implements TavernaServerListenersREST, ListenersBea
 	}
 
 	@Override
+	@CallCounted
 	public Response addListener(ListenerDefinition typeAndConfiguration,
 			UriInfo ui) throws NoUpdateException, NoListenerException {
 		String name = support.makeListener(run, typeAndConfiguration.type,
@@ -57,6 +59,7 @@ abstract class ListenersREST implements TavernaServerListenersREST, ListenersBea
 	}
 
 	@Override
+	@CallCounted
 	public TavernaServerListenerREST getListener(String name)
 			throws NoListenerException {
 		Listener l = support.getListener(run, name);
@@ -69,6 +72,7 @@ abstract class ListenersREST implements TavernaServerListenersREST, ListenersBea
 	protected abstract SingleListenerREST makeListenerInterface();
 
 	@Override
+	@CallCounted
 	public Listeners getDescription(UriInfo ui) {
 		List<ListenerDescription> result = new ArrayList<ListenerDescription>();
 		UriBuilder ub = ui.getAbsolutePathBuilder().path("{name}");

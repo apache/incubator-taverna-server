@@ -33,6 +33,7 @@ import org.taverna.server.master.rest.TavernaServerInputREST;
 import org.taverna.server.master.rest.TavernaServerListenersREST;
 import org.taverna.server.master.rest.TavernaServerRunREST;
 import org.taverna.server.master.rest.TavernaServerSecurityREST;
+import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 import org.taverna.server.output_description.RdfWrapper;
 
 /**
@@ -68,11 +69,13 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	}
 
 	@Override
+	@CallCounted
 	public RunDescription getDescription(UriInfo ui) {
 		return new RunDescription(run, ui);
 	}
 
 	@Override
+	@CallCounted
 	public Response destroy() throws NoUpdateException {
 		try {
 			support.unregisterRun(runName, run);
@@ -83,11 +86,13 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	}
 
 	@Override
+	@CallCounted
 	public TavernaServerListenersREST getListeners() {
 		return makeListenersInterface().connect(run);
 	}
 
 	@Override
+	@CallCounted
 	public TavernaServerSecurityREST getSecurity() throws NotOwnerException {
 		TavernaSecurityContext secContext = run.getSecurityContext();
 		if (!support.getPrincipal().equals(secContext.getOwner()))
@@ -98,43 +103,51 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	}
 
 	@Override
+	@CallCounted
 	public String getExpiryTime() {
 		return dateTime().print(new DateTime(run.getExpiry()));
 	}
 
 	@Override
+	@CallCounted
 	public String getCreateTime() {
 		return dateTime().print(new DateTime(run.getCreationTimestamp()));
 	}
 
 	@Override
+	@CallCounted
 	public String getFinishTime() {
 		Date f = run.getFinishTimestamp();
 		return f == null ? "" : dateTime().print(new DateTime(f));
 	}
 
 	@Override
+	@CallCounted
 	public String getStartTime() {
 		Date f = run.getStartTimestamp();
 		return f == null ? "" : dateTime().print(new DateTime(f));
 	}
 
 	@Override
+	@CallCounted
 	public String getStatus() {
 		return run.getStatus().toString();
 	}
 
 	@Override
+	@CallCounted
 	public Workflow getWorkflow() {
 		return run.getWorkflow();
 	}
 
 	@Override
+	@CallCounted
 	public DirectoryREST getWorkingDirectory() {
 		return makeDirectoryInterface().connect(run);
 	}
 
 	@Override
+	@CallCounted
 	public String setExpiryTime(String expiry) throws NoUpdateException,
 			IllegalArgumentException {
 		DateTime wanted = dateTimeParser().parseDateTime(expiry.trim());
@@ -143,6 +156,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	}
 
 	@Override
+	@CallCounted
 	public String setStatus(String status) throws NoUpdateException {
 		support.permitUpdate(run);
 		run.setStatus(Status.valueOf(status.trim()));
@@ -150,17 +164,20 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	}
 
 	@Override
+	@CallCounted
 	public TavernaServerInputREST getInputs(UriInfo ui) {
 		return makeInputInterface().connect(run, ui);
 	}
 
 	@Override
+	@CallCounted
 	public String getOutputFile() {
 		String o = run.getOutputBaclavaFile();
 		return o == null ? "" : o;
 	}
 
 	@Override
+	@CallCounted
 	public String setOutputFile(String filename) throws NoUpdateException,
 			FilesystemAccessException, BadStateChangeException {
 		support.permitUpdate(run);
@@ -172,6 +189,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	}
 
 	@Override
+	@CallCounted
 	public RdfWrapper getOutputDescription(UriInfo ui)
 			throws BadStateChangeException, FilesystemAccessException,
 			NoDirectoryEntryException {

@@ -13,6 +13,7 @@ import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.rest.TavernaServerListenersREST;
+import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 /**
  * RESTful interface to a single property of a workflow run.
@@ -41,6 +42,7 @@ class ListenerPropertyREST implements TavernaServerListenersREST.Property,
 	}
 
 	@Override
+	@CallCounted
 	public String getValue() {
 		try {
 			return listen.getProperty(propertyName);
@@ -52,6 +54,7 @@ class ListenerPropertyREST implements TavernaServerListenersREST.Property,
 	}
 
 	@Override
+	@CallCounted
 	public String setValue(String value) throws NoUpdateException,
 			NoListenerException {
 		support.permitUpdate(run);

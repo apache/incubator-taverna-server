@@ -77,6 +77,7 @@ import org.taverna.server.master.rest.TavernaServerRunREST;
 import org.taverna.server.master.soap.PermissionList;
 import org.taverna.server.master.soap.TavernaServerSOAP;
 import org.taverna.server.master.utils.FilenameUtils;
+import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 import org.taverna.server.output_description.RdfWrapper;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -178,16 +179,19 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	// REST INTERFACE
 
 	@Override
+	@CallCounted
 	public ServerDescription describeService(UriInfo ui) {
 		return new ServerDescription(ui);
 	}
 
 	@Override
+	@CallCounted
 	public RunList listUsersRuns(UriInfo ui) {
 		return new RunList(runs(), ui.getAbsolutePathBuilder().path("{name}"));
 	}
 
 	@Override
+	@CallCounted
 	public Response submitWorkflow(Workflow workflow, UriInfo ui)
 			throws NoUpdateException {
 		String name = support.buildWorkflow(workflow);
@@ -196,11 +200,13 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public int getMaxSimultaneousRuns() {
 		return support.getMaxSimultaneousRuns();
 	}
 
 	@Override
+	@CallCounted
 	public TavernaServerRunREST getRunResource(final String runName)
 			throws UnknownRunException {
 		RunREST rr = makeRunInterface();
@@ -210,6 +216,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public abstract PolicyView getPolicyDescription();
 
 	/** Construct a RESTful interface to a run. */
@@ -236,6 +243,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	// SOAP INTERFACE
 
 	@Override
+	@CallCounted
 	public RunReference[] listRuns() {
 		ArrayList<RunReference> ws = new ArrayList<RunReference>();
 		UriBuilder ub = getRunUriBuilder();
@@ -245,6 +253,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public RunReference submitWorkflow(Workflow workflow)
 			throws NoUpdateException {
 		String name = support.buildWorkflow(workflow);
@@ -252,18 +261,21 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public Workflow[] getAllowedWorkflows() {
 		List<Workflow> workflows = support.getPermittedWorkflows();
 		return workflows.toArray(new Workflow[workflows.size()]);
 	}
 
 	@Override
+	@CallCounted
 	public String[] getAllowedListeners() {
 		List<String> types = support.getListenerTypes();
 		return types.toArray(new String[types.size()]);
 	}
 
 	@Override
+	@CallCounted
 	public String[] getEnabledNotifiers() {
 		List<String> dispatchers = notificationEngine
 				.listAvailableDispatchers();
@@ -271,48 +283,57 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public void destroyRun(String runName) throws UnknownRunException,
 			NoUpdateException {
 		support.unregisterRun(runName, null);
 	}
 
 	@Override
+	@CallCounted
 	public Workflow getRunWorkflow(String runName) throws UnknownRunException {
 		return support.getRun(runName).getWorkflow();
 	}
 
 	@Override
+	@CallCounted
 	public Date getRunExpiry(String runName) throws UnknownRunException {
 		return support.getRun(runName).getExpiry();
 	}
 
 	@Override
+	@CallCounted
 	public void setRunExpiry(String runName, Date d)
 			throws UnknownRunException, NoUpdateException {
 		support.updateExpiry(support.getRun(runName), d);
 	}
 
 	@Override
+	@CallCounted
 	public Date getRunCreationTime(String runName) throws UnknownRunException {
 		return support.getRun(runName).getCreationTimestamp();
 	}
 
 	@Override
+	@CallCounted
 	public Date getRunFinishTime(String runName) throws UnknownRunException {
 		return support.getRun(runName).getFinishTimestamp();
 	}
 
 	@Override
+	@CallCounted
 	public Date getRunStartTime(String runName) throws UnknownRunException {
 		return support.getRun(runName).getStartTimestamp();
 	}
 
 	@Override
+	@CallCounted
 	public Status getRunStatus(String runName) throws UnknownRunException {
 		return support.getRun(runName).getStatus();
 	}
 
 	@Override
+	@CallCounted
 	public void setRunStatus(String runName, Status s)
 			throws UnknownRunException, NoUpdateException {
 		TavernaRun w = support.getRun(runName);
@@ -324,6 +345,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	// SOAP INTERFACE - Security
 
 	@Override
+	@CallCounted
 	public String getRunOwner(String runName) throws UnknownRunException {
 		return support.getRun(runName).getSecurityContext().getOwner()
 				.getName();
@@ -355,6 +377,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public Credential[] getRunCredentials(String runName)
 			throws UnknownRunException, NotOwnerException {
 		try {
@@ -367,6 +390,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public String setRunCredential(String runName, String credentialID,
 			Credential credential) throws UnknownRunException,
 			NotOwnerException, InvalidCredentialException,
@@ -392,6 +416,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public void deleteRunCredential(String runName, String credentialID)
 			throws UnknownRunException, NotOwnerException,
 			NoCredentialException, BadStateChangeException {
@@ -400,6 +425,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public Trust[] getRunCertificates(String runName)
 			throws UnknownRunException, NotOwnerException {
 		try {
@@ -412,6 +438,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public String setRunCertificates(String runName, String certificateID,
 			Trust certificate) throws UnknownRunException, NotOwnerException,
 			InvalidCredentialException, NoCredentialException,
@@ -437,6 +464,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public void deleteRunCertificates(String runName, String certificateID)
 			throws UnknownRunException, NotOwnerException,
 			NoCredentialException, BadStateChangeException {
@@ -447,6 +475,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public PermissionList listRunPermissions(String runName)
 			throws UnknownRunException, NotOwnerException {
 		PermissionList pl = new PermissionList();
@@ -474,6 +503,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public void setRunPermission(String runName, String userName,
 			Permission permission) throws UnknownRunException,
 			NotOwnerException {
@@ -489,6 +519,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	// SOAP INTERFACE - Filesystem connection
 
 	@Override
+	@CallCounted
 	public RdfWrapper getRunOutputDescription(String runName)
 			throws UnknownRunException, BadStateChangeException,
 			FilesystemAccessException, NoDirectoryEntryException {
@@ -501,6 +532,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public DirEntryReference[] getRunDirectoryContents(String runName,
 			DirEntryReference d) throws UnknownRunException,
 			FilesystemAccessException, NoDirectoryEntryException {
@@ -512,6 +544,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public byte[] getRunDirectoryAsZip(String runName, DirEntryReference d)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException {
@@ -520,6 +553,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public DirEntryReference makeRunDirectory(String runName,
 			DirEntryReference parent, String name) throws UnknownRunException,
 			NoUpdateException, FilesystemAccessException,
@@ -532,6 +566,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public DirEntryReference makeRunFile(String runName,
 			DirEntryReference parent, String name) throws UnknownRunException,
 			NoUpdateException, FilesystemAccessException,
@@ -544,6 +579,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public void destroyRunDirectoryEntry(String runName, DirEntryReference d)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, NoDirectoryEntryException {
@@ -553,6 +589,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public byte[] getRunFileContents(String runName, DirEntryReference d)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException {
@@ -561,6 +598,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public void setRunFileContents(String runName, DirEntryReference d,
 			byte[] newContents) throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, NoDirectoryEntryException {
@@ -570,6 +608,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public long getRunFileLength(String runName, DirEntryReference d)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException {
@@ -580,6 +619,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	// SOAP INTERFACE - Run listeners
 
 	@Override
+	@CallCounted
 	public String[] getRunListeners(String runName) throws UnknownRunException {
 		TavernaRun w = support.getRun(runName);
 		List<String> result = new ArrayList<String>();
@@ -589,6 +629,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public String addRunListener(String runName, String listenerType,
 			String configuration) throws UnknownRunException,
 			NoUpdateException, NoListenerException {
@@ -597,6 +638,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public String getRunListenerConfiguration(String runName,
 			String listenerName) throws UnknownRunException,
 			NoListenerException {
@@ -604,6 +646,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public String[] getRunListenerProperties(String runName, String listenerName)
 			throws UnknownRunException, NoListenerException {
 		return support.getListener(runName, listenerName).listProperties()
@@ -611,12 +654,14 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public String getRunListenerProperty(String runName, String listenerName,
 			String propName) throws UnknownRunException, NoListenerException {
 		return support.getListener(runName, listenerName).getProperty(propName);
 	}
 
 	@Override
+	@CallCounted
 	public void setRunListenerProperty(String runName, String listenerName,
 			String propName, String value) throws UnknownRunException,
 			NoUpdateException, NoListenerException {
@@ -633,18 +678,21 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public InputDescription getRunInputs(String runName)
 			throws UnknownRunException {
 		return new InputDescription(support.getRun(runName));
 	}
 
 	@Override
+	@CallCounted
 	public String getRunOutputBaclavaFile(String runName)
 			throws UnknownRunException {
 		return support.getRun(runName).getOutputBaclavaFile();
 	}
 
 	@Override
+	@CallCounted
 	public void setRunInputBaclavaFile(String runName, String fileName)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, BadStateChangeException {
@@ -654,6 +702,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public void setRunInputPortFile(String runName, String portName,
 			String portFilename) throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, BadStateChangeException {
@@ -666,6 +715,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public void setRunInputPortValue(String runName, String portName,
 			String portValue) throws UnknownRunException, NoUpdateException,
 			BadStateChangeException {
@@ -678,6 +728,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public void setRunOutputBaclavaFile(String runName, String outputFile)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, BadStateChangeException {
@@ -687,6 +738,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
+	@CallCounted
 	public org.taverna.server.input_description.InputDescription getRunInputDescriptor(
 			String runName) throws UnknownRunException {
 		TavernaRun run = support.getRun(runName);
@@ -788,6 +840,7 @@ class PolicyREST implements PolicyView, SupportAware {
 	}
 
 	@Override
+	@CallCounted
 	public int getMaxSimultaneousRuns() {
 		Integer limit = policy.getMaxRuns(support.getPrincipal());
 		if (limit == null)
@@ -796,18 +849,21 @@ class PolicyREST implements PolicyView, SupportAware {
 	}
 
 	@Override
+	@CallCounted
 	public PermittedListeners getPermittedListeners() {
 		return new PermittedListeners(
 				listenerFactory.getSupportedListenerTypes());
 	}
 
 	@Override
+	@CallCounted
 	public PermittedWorkflows getPermittedWorkflows() {
 		return new PermittedWorkflows(policy.listPermittedWorkflows(support
 				.getPrincipal()));
 	}
 
 	@Override
+	@CallCounted
 	public EnabledNotificationFabrics getEnabledNotifiers() {
 		return new EnabledNotificationFabrics(
 				notificationEngine.listAvailableDispatchers());

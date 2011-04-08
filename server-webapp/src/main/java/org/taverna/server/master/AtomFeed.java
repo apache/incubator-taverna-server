@@ -21,6 +21,7 @@ import org.taverna.server.master.notification.atom.EventDAO;
 import org.taverna.server.master.rest.TavernaServerREST.EventFeed;
 import org.taverna.server.master.rest.TavernaServerREST.Events;
 import org.taverna.server.master.utils.UsernamePrincipal;
+import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 
@@ -70,11 +71,13 @@ public class AtomFeed implements EventFeed, UriBuilderFactory,
 	}
 
 	@Override
+	@CallCounted
 	public Events getFeed() {
 		return new Feed(eventSource, support.getPrincipal());
 	}
 
 	@Override
+	@CallCounted
 	public AbstractEvent getEvent(String id) {
 		return eventSource.getEvent(support.getPrincipal(), id);
 	}

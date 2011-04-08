@@ -42,7 +42,6 @@ import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.InvalidCredentialException;
 import org.taverna.server.master.exceptions.NoCredentialException;
-import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 
@@ -68,7 +67,6 @@ public interface TavernaServerSecurityREST {
 	@Path("/")
 	@Produces({ "application/xml", "application/json" })
 	@Description("Gives a description of the security information supported by the workflow run.")
-	@CallCounted
 	@NonNull
 	Descriptor describe(@NonNull @Context UriInfo ui);
 
@@ -81,7 +79,6 @@ public interface TavernaServerSecurityREST {
 	@Path("owner")
 	@Produces("text/plain")
 	@Description("Gives the identity of who owns the workflow run.")
-	@CallCounted
 	@NonNull
 	String getOwner();
 
@@ -98,7 +95,6 @@ public interface TavernaServerSecurityREST {
 	@Path("credentials")
 	@Produces({ "application/xml", "application/json" })
 	@Description("Gives a list of credentials supplied to this workflow run.")
-	@CallCounted
 	@NonNull
 	CredentialList listCredentials();
 
@@ -115,7 +111,6 @@ public interface TavernaServerSecurityREST {
 	@Path("credentials/{id}")
 	@Produces({ "application/xml", "application/json" })
 	@Description("Describes a particular credential.")
-	@CallCounted
 	@NonNull
 	Credential getParticularCredential(@NonNull @PathParam("id") String id)
 			throws NoCredentialException;
@@ -140,7 +135,6 @@ public interface TavernaServerSecurityREST {
 	@Consumes({ "application/xml", "application/json" })
 	@Produces({ "application/xml", "application/json" })
 	@Description("Updates a particular credential.")
-	@CallCounted
 	@NonNull
 	Credential setParticularCredential(@NonNull @PathParam("id") String id,
 			@NonNull Credential c, @NonNull @Context UriInfo ui)
@@ -163,7 +157,6 @@ public interface TavernaServerSecurityREST {
 	@Path("credentials")
 	@Consumes({ "application/xml", "application/json" })
 	@Description("Creates a new credential.")
-	@CallCounted
 	@NonNull
 	Response addCredential(@NonNull Credential c, @NonNull @Context UriInfo ui)
 			throws InvalidCredentialException, BadStateChangeException;
@@ -180,7 +173,6 @@ public interface TavernaServerSecurityREST {
 	@DELETE
 	@Path("credentials")
 	@Description("Deletes all credentials.")
-	@CallCounted
 	@NonNull
 	Response deleteAllCredentials(@NonNull @Context UriInfo ui)
 			throws BadStateChangeException;
@@ -199,7 +191,6 @@ public interface TavernaServerSecurityREST {
 	@DELETE
 	@Path("credentials/{id}")
 	@Description("Deletes a particular credential.")
-	@CallCounted
 	@NonNull
 	Response deleteCredential(@NonNull @PathParam("id") String id,
 			@NonNull @Context UriInfo ui) throws BadStateChangeException;
@@ -211,7 +202,6 @@ public interface TavernaServerSecurityREST {
 	@Path("trusts")
 	@Produces({ "application/xml", "application/json" })
 	@Description("Gives a list of trusted identities supplied to this workflow run.")
-	@CallCounted
 	@NonNull
 	TrustList listTrusted();
 
@@ -228,7 +218,6 @@ public interface TavernaServerSecurityREST {
 	@Path("trusts/{id}")
 	@Produces({ "application/xml", "application/json" })
 	@Description("Describes a particular trusted identity.")
-	@CallCounted
 	@NonNull
 	Trust getParticularTrust(@NonNull @PathParam("id") String id)
 			throws NoCredentialException;
@@ -253,7 +242,6 @@ public interface TavernaServerSecurityREST {
 	@Consumes({ "application/xml", "application/json" })
 	@Produces({ "application/xml", "application/json" })
 	@Description("Updates a particular trusted identity.")
-	@CallCounted
 	@NonNull
 	Trust setParticularTrust(@NonNull @PathParam("id") String id,
 			@NonNull Trust t, @NonNull @Context UriInfo ui)
@@ -276,7 +264,6 @@ public interface TavernaServerSecurityREST {
 	@Path("trusts")
 	@Consumes({ "application/xml", "application/json" })
 	@Description("Adds a new trusted identity.")
-	@CallCounted
 	@NonNull
 	Response addTrust(@NonNull Trust t, @NonNull @Context UriInfo ui)
 			throws InvalidCredentialException, BadStateChangeException;
@@ -293,7 +280,6 @@ public interface TavernaServerSecurityREST {
 	@DELETE
 	@Path("trusts")
 	@Description("Deletes all trusted identities.")
-	@CallCounted
 	@NonNull
 	Response deleteAllTrusts(@NonNull @Context UriInfo ui)
 			throws BadStateChangeException;
@@ -312,7 +298,6 @@ public interface TavernaServerSecurityREST {
 	@DELETE
 	@Path("trusts/{id}")
 	@Description("Deletes a particular trusted identity.")
-	@CallCounted
 	@NonNull
 	Response deleteTrust(@NonNull @PathParam("id") String id,
 			@NonNull @Context UriInfo ui) throws BadStateChangeException;
@@ -327,7 +312,6 @@ public interface TavernaServerSecurityREST {
 	@Path("permissions")
 	@Produces({ "application/xml", "application/json" })
 	@Description("Gives a list of all non-default permissions associated with the enclosing workflow run. By default, nobody has any access at all except for the owner of the run.")
-	@CallCounted
 	@NonNull
 	PermissionsDescription describePermissions(@NonNull @Context UriInfo ui);
 
@@ -342,7 +326,6 @@ public interface TavernaServerSecurityREST {
 	@Path("permissions/{id}")
 	@Produces("text/plain")
 	@Description("Describes the permission granted to a particular user.")
-	@CallCounted
 	@NonNull
 	Permission describePermission(@NonNull @PathParam("id") String id);
 
@@ -361,7 +344,6 @@ public interface TavernaServerSecurityREST {
 	@Produces("text/plain")
 	@Path("permissions/{id}")
 	@Description("Updates the permissions granted to a particular user.")
-	@CallCounted
 	@NonNull
 	Permission setPermission(@NonNull @PathParam("id") String id,
 			@NonNull Permission perm);
@@ -379,7 +361,6 @@ public interface TavernaServerSecurityREST {
 	@DELETE
 	@Path("permissions/{id}")
 	@Description("Deletes (by resetting to default) the permissions associated with a particular user.")
-	@CallCounted
 	@NonNull
 	Response deletePermission(@NonNull @PathParam("id") String id,
 			@NonNull @Context UriInfo ui);
@@ -398,12 +379,15 @@ public interface TavernaServerSecurityREST {
 	@Path("permissions")
 	@Consumes({ "application/xml", "application/json" })
 	@Description("Creates a new assignment of permissions to a particular user.")
-	@CallCounted
 	@NonNull
 	Response makePermission(@NonNull PermissionDescription desc,
 			@NonNull @Context UriInfo ui);
 
 	// TODO document this helper class
+	/**
+	 * A description of the security resources associated with a workflow run.
+	 * @author Donal Fellows
+	 */
 	@XmlRootElement(name = "securityDescriptor")
 	@XmlType(name = "SecurityDescriptor")
 	public static final class Descriptor extends VersionedElement {
