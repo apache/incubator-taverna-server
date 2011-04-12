@@ -5,13 +5,17 @@
  */
 package org.taverna.server.master;
 
+import static eu.medsea.util.MimeUtil.getMimeType;
 import static java.lang.Math.min;
+import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 import static org.taverna.server.master.common.Roles.ADMIN;
 
+import java.io.ByteArrayInputStream;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.bind.JAXBException;
@@ -25,6 +29,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.taverna.server.master.common.Permission;
 import org.taverna.server.master.common.Workflow;
+import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoDestroyException;
 import org.taverna.server.master.exceptions.NoListenerException;
@@ -32,6 +37,7 @@ import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.factories.ListenerFactory;
 import org.taverna.server.master.factories.RunFactory;
+import org.taverna.server.master.interfaces.File;
 import org.taverna.server.master.interfaces.Input;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.LocalIdentityMapper;
@@ -514,9 +520,8 @@ public class TavernaServerSupport {
 				return false;
 			UserDetails details = (UserDetails) auth.getPrincipal();
 			if (log.isDebugEnabled())
-				log.debug("checking for admin role for user <"
-						+ auth.getName() + "> in collection "
-						+ details.getAuthorities());
+				log.debug("checking for admin role for user <" + auth.getName()
+						+ "> in collection " + details.getAuthorities());
 			return details.getAuthorities().contains(ADMIN);
 		} catch (ClassCastException e) {
 			return false;
@@ -533,5 +538,46 @@ public class TavernaServerSupport {
 	public Listener getListener(String runName, String listenerName)
 			throws NoListenerException, UnknownRunException {
 		return getListener(getRun(runName), listenerName);
+	}
+
+	private Map<String, String> contentTypeMap;
+
+	public Map<String, String> getContentTypeMap() {
+		return contentTypeMap;
+	}
+
+	/**
+	 * Mapping from filename suffixes (e.g., "baclava") to content types.
+	 */
+	@Required
+	public void setContentTypeMap(Map<String, String> contentTypeMap) {
+		this.contentTypeMap = contentTypeMap;
+	}
+
+	/**
+	 * Given a file, produce a guess at its content type. This uses the content
+	 * type map property, and if that search fails it falls back on the Medsea
+	 * mime type library.
+	 * 
+	 * @param f
+	 *            The file handle.
+	 * @return The content type. If all else fails, produces good old
+	 *         "application/octet-stream".
+	 */
+	@NonNull
+	public String getEstimatedContentType(@NonNull File f) {
+		String name = f.getName();
+		for (int idx = name.indexOf('.'); idx != -1; idx = name.indexOf('.',
+				idx + 1)) {
+			String mt = contentTypeMap.get(name.substring(idx + 1));
+			if (mt != null)
+				return mt;
+		}
+		try {
+			return getMimeType(new ByteArrayInputStream(f.getContents(0, 1024)));
+		} catch (FilesystemAccessException e) {
+			// Ignore; fall back to just serving as bytes
+			return APPLICATION_OCTET_STREAM;
+		}
 	}
 }

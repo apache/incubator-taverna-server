@@ -28,6 +28,12 @@
 		<property name="idMapper" ref="IdentityMapper" />
 		<property name="invocationCounter" ref="webapp.invocationCounter" />
 		<property name="webapp" ref="webapp" />
+		<property name="contentTypeMap">
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<description>Maps suffixes (post '.') to content types.</description>
+				<entry key="baclava" value="application/vnd.taverna.baclava+xml"/>
+			</map>
+		</property>
 	</bean>
 
 	<bean id="webapp.policyView" class="org.taverna.server.master.PolicyREST">

@@ -908,6 +908,31 @@ public interface TavernaServerSOAP {
 			NoDirectoryEntryException;
 
 	/**
+	 * Get the content type of any file (in bytes) at/under the run's working
+	 * directory. Runs do not share working directories.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @param file
+	 *            The name of the file to get the length of; the main working
+	 *            directory is <tt>/</tt> and <tt>..</tt> is always disallowed.
+	 * @return The content type of the file.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 * @throws FilesystemAccessException
+	 *             If some assumption is violated (e.g., reading the length of a
+	 *             directory).
+	 * @throws NoDirectoryEntryException
+	 *             If the file doesn't exist.
+	 */
+	@WebResult(name = "FileContentType")
+	String getRunFileType(@WebParam(name = "runName") String runName,
+			@WebParam(name = "fileName") DirEntryReference file)
+			throws UnknownRunException, FilesystemAccessException,
+			NoDirectoryEntryException;
+
+	/**
 	 * Get the configuration document for an event listener attached to a run.
 	 * 
 	 * @param runName

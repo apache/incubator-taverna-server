@@ -609,6 +609,15 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	@Override
 	@CallCounted
+	public String getRunFileType(String runName, DirEntryReference d)
+			throws UnknownRunException, FilesystemAccessException,
+			NoDirectoryEntryException {
+		return support.getEstimatedContentType(fileUtils.getFile(
+				support.getRun(runName), d));
+	}
+
+	@Override
+	@CallCounted
 	public long getRunFileLength(String runName, DirEntryReference d)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException {

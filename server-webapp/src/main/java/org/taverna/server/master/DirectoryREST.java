@@ -5,7 +5,6 @@
  */
 package org.taverna.server.master;
 
-import static eu.medsea.util.MimeUtil.getMimeType;
 import static java.nio.charset.Charset.defaultCharset;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
@@ -16,12 +15,10 @@ import static javax.ws.rs.core.Response.notAcceptable;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.seeOther;
 import static org.taverna.server.master.ContentTypes.APPLICATION_ZIP_TYPE;
-import static org.taverna.server.master.ContentTypes.BACLAVA_MEDIA_TYPE;
 import static org.taverna.server.master.ContentTypes.DIRECTORY_VARIANTS;
 import static org.taverna.server.master.ContentTypes.INITIAL_FILE_VARIANTS;
 import static org.taverna.server.master.TavernaServerImpl.log;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -155,19 +152,11 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 			throw new FilesystemAccessException("not a directory or file!");
 		File f = (File) de;
 		List<Variant> variants = new ArrayList<Variant>(INITIAL_FILE_VARIANTS);
-		if (de.getName().endsWith(".baclava")) {
-			variants.add(0, new Variant(BACLAVA_MEDIA_TYPE, null, null));
-			return variants;
-		}
-		try {
-			byte[] head = f.getContents(0, 1024);
-			String contentType = getMimeType(new ByteArrayInputStream(head));
+		String contentType = support.getEstimatedContentType(f);
+		if (!contentType.equals(APPLICATION_OCTET_STREAM)) {
 			String[] ct = contentType.split("/");
-			if (!contentType.equals(APPLICATION_OCTET_STREAM))
-				variants.add(0, new Variant(new MediaType(ct[0], ct[1]), null,
-						null));
-		} catch (FilesystemAccessException e) {
-			// Ignore; fall back to just serving as bytes
+			variants.add(0,
+					new Variant(new MediaType(ct[0], ct[1]), null, null));
 		}
 		return variants;
 	}
