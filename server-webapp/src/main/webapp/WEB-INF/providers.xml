@@ -19,7 +19,14 @@
 	<bean id="ExceptionProvider.FilesystemAccess" class="org.taverna.server.master.rest.FilesystemAccessHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
+	<bean id="ExceptionProvider.GeneralFailure" class="org.taverna.server.master.rest.GeneralFailureHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
 	<bean id="ExceptionProvider.IllegalArgument" class="org.taverna.server.master.rest.IllegalArgumentHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
+	<bean id="ExceptionProvider.ImplementationProblem"
+		class="org.taverna.server.master.rest.ImplementationProblemHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
 	<bean id="ExceptionProvider.InvalidCredential" class="org.taverna.server.master.rest.InvalidCredentialHandler">
@@ -63,11 +70,7 @@
 	</bean>
 	<bean id="MessagingProvider.Atom" class="org.apache.cxf.jaxrs.provider.AtomPojoProvider">
 		<property name="atomWriters">
-			<map><!-- 
-				<entry key="java.util.ArrayList">
-					<bean id="Atom.FeedWriter"
-						class="org.taverna.server.master.notification.atom.FeedWriter" />
-				</entry> -->
+			<map>
 				<entry
 					key="org.taverna.server.master.notification.atom.TerminationEvent">
 					<bean id="Atom.EntryWriter"
@@ -81,4 +84,6 @@
 			</map>
 		</property>
 	</bean>
+
+	<bean id="Provider.RuntimeExceptionRemapping" class="org.taverna.server.master.utils.RuntimeExceptionWrapper" />
 </beans>

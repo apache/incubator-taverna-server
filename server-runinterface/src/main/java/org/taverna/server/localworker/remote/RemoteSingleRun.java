@@ -82,9 +82,10 @@ public interface RemoteSingleRun extends Remote {
 	 * @throws IllegalStateTransitionException
 	 *             If the requested state change is impossible. (Note that it is
 	 *             always legal to set the status to the current status.)
+	 * @throws ImplementationException 
 	 */
 	public void setStatus(@NonNull RemoteStatus s)
-			throws IllegalStateTransitionException, RemoteException;
+			throws IllegalStateTransitionException, RemoteException, ImplementationException;
 
 	/**
 	 * @return When this workflow run was found to have finished, or
@@ -118,20 +119,23 @@ public interface RemoteSingleRun extends Remote {
 	 * 
 	 * @param listener
 	 *            The listener to add.
+	 * @throws ImplementationException 
 	 */
 	public void addListener(@NonNull RemoteListener listener)
-			throws RemoteException;
+			throws RemoteException, ImplementationException;
 
 	/**
 	 * @return The security context structure for this run.
+	 * @throws ImplementationException 
 	 */
 	@NonNull
-	public RemoteSecurityContext getSecurityContext() throws RemoteException;
+	public RemoteSecurityContext getSecurityContext() throws RemoteException, ImplementationException;
 
 	/**
 	 * Kill off this run, removing all resources which it consumes.
+	 * @throws ImplementationException 
 	 */
-	public void destroy() throws RemoteException;
+	public void destroy() throws RemoteException, ImplementationException;
 
 	/**
 	 * Get the types of listener supported by this run.

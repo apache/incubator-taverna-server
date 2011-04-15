@@ -14,6 +14,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.xml.ws.handler.MessageContext;
 
 import org.springframework.security.core.context.SecurityContext;
+import org.taverna.server.localworker.remote.ImplementationException;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.exceptions.InvalidCredentialException;
@@ -183,8 +184,12 @@ public interface TavernaSecurityContext {
 	 *             If the communication fails.
 	 * @throws GeneralSecurityException
 	 *             If the assembly of the context fails.
+	 * @throws ImplementationException
+	 *             If the local worker has problems with creating the realized
+	 *             security context.
 	 */
-	void conveySecurity() throws GeneralSecurityException, IOException;
+	void conveySecurity() throws GeneralSecurityException, IOException,
+			ImplementationException;
 
 	/**
 	 * @return The factory that created this security context.

@@ -18,11 +18,11 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * @author Donal Fellows
  */
 public interface RemoteSecurityContext extends Remote {
-	void setKeystore(@NonNull byte[] keystore) throws RemoteException;
+	void setKeystore(@NonNull byte[] keystore) throws RemoteException, ImplementationException;
 
-	void setPassword(@NonNull char[] password) throws RemoteException;
+	void setPassword(@NonNull char[] password) throws RemoteException, ImplementationException;
 
-	void setTruststore(@NonNull byte[] truststore) throws RemoteException;
+	void setTruststore(@NonNull byte[] truststore) throws RemoteException, ImplementationException;
 
 	void setUriToAliasMap(@NonNull HashMap<URI, String> uriToAliasMap)
 			throws RemoteException;

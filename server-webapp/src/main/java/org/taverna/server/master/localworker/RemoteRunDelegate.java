@@ -32,6 +32,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.taverna.server.localworker.remote.IllegalStateTransitionException;
+import org.taverna.server.localworker.remote.ImplementationException;
 import org.taverna.server.localworker.remote.RemoteDirectory;
 import org.taverna.server.localworker.remote.RemoteDirectoryEntry;
 import org.taverna.server.localworker.remote.RemoteFile;
@@ -89,7 +90,8 @@ public class RemoteRunDelegate implements TavernaRun {
 		this.db = db;
 	}
 
-	RemoteRunDelegate(){}
+	RemoteRunDelegate() {
+	}
 
 	@Override
 	public void addListener(Listener listener) {
@@ -97,7 +99,9 @@ public class RemoteRunDelegate implements TavernaRun {
 			try {
 				run.addListener(((ListenerDelegate) listener).getRemote());
 			} catch (RemoteException e) {
-				log.warn("problem adding listener", e);
+				log.warn("communication problem adding listener", e);
+			} catch (ImplementationException e) {
+				log.warn("implementation problem adding listener", e);
 			}
 		else
 			log.fatal("bad listener " + listener.getClass()
@@ -125,6 +129,8 @@ public class RemoteRunDelegate implements TavernaRun {
 		try {
 			run.destroy();
 		} catch (RemoteException e) {
+			log.warn("failed to destroy run", e);
+		} catch (ImplementationException e) {
 			log.warn("failed to destroy run", e);
 		}
 	}
@@ -222,6 +228,10 @@ public class RemoteRunDelegate implements TavernaRun {
 		} catch (GeneralSecurityException e) {
 			throw new BadStateChangeException(e.getMessage(), e);
 		} catch (IOException e) {
+			throw new BadStateChangeException(e.getMessage(), e);
+		} catch (ImplementationException e) {
+			if (e.getCause() != null)
+				throw new BadStateChangeException(e.getMessage(), e.getCause());
 			throw new BadStateChangeException(e.getMessage(), e);
 		}
 	}

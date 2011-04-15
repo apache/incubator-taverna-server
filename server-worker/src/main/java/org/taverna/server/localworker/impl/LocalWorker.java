@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.taverna.server.localworker.remote.IllegalStateTransitionException;
+import org.taverna.server.localworker.remote.ImplementationException;
 import org.taverna.server.localworker.remote.RemoteDirectory;
 import org.taverna.server.localworker.remote.RemoteInput;
 import org.taverna.server.localworker.remote.RemoteListener;
@@ -60,28 +61,30 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  */
 @SuppressWarnings({ "SE_BAD_FIELD", "SE_NO_SERIALVERSIONID" })
 public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun {
-	private String executeWorkflowCommand;
-	private String workflow;
+	private final String executeWorkflowCommand;
+	private final String workflow;
 	private File base;
-	private DirectoryDelegate baseDir;
+	private final DirectoryDelegate baseDir;
 	/**
 	 * When did this workflow start running, or <tt>null</tt> for
 	 * "never/not yet".
 	 */
-	public Date start;
+	private Date start;
 	/**
 	 * When did this workflow finish running, or <tt>null</tt> for
 	 * "never/not yet".
 	 */
-	public Date finish;
+	private Date finish;
 	RemoteStatus status;
-	String inputBaclava, outputBaclava;
-	File inputBaclavaFile, outputBaclavaFile;
+	String inputBaclava;
+	String outputBaclava;
+	private File inputBaclavaFile;
+	private File outputBaclavaFile;
 	Map<String, String> inputFiles;
 	Map<String, File> inputRealFiles;
 	Map<String, String> inputValues;
-	Worker core;
-	final String masterToken;
+	private final Worker core;
+	private final String masterToken;
 	private Thread shutdownHook;
 
 	/**
@@ -93,7 +96,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	 */
 	protected LocalWorker(String executeWorkflowCommand, String workflow,
 			Class<? extends Worker> workerClass, UsageRecordReceiver urReceiver)
-			throws RemoteException {
+			throws RemoteException, ImplementationException {
 		super();
 		masterToken = randomUUID().toString();
 		this.workflow = workflow;
@@ -103,8 +106,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		try {
 			forceMkdir(base);
 		} catch (IOException e) {
-			throw new RemoteException("problem creating run working directory",
-					e);
+			throw new ImplementationException(
+					"problem creating run working directory", e);
 		}
 		baseDir = new DirectoryDelegate(base, null);
 		inputFiles = new HashMap<String, String>();
@@ -115,7 +118,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		} catch (Exception e) {
 			out.println("problem when creating core worker implementation");
 			e.printStackTrace(out);
-			throw new RuntimeException(
+			throw new ImplementationException(
 					"problem when creating core worker implementation", e);
 		}
 		core.setURReceiver(urReceiver);
@@ -127,6 +130,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			public void run() {
 				try {
 					destroy();
+				} catch (ImplementationException e) {
 				} catch (RemoteException e) {
 				}
 			}
@@ -137,7 +141,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	}
 
 	@Override
-	public void destroy() throws RemoteException {
+	public void destroy() throws RemoteException, ImplementationException {
 		if (status != Finished && status != Initialized)
 			try {
 				core.killWorker();
@@ -151,7 +155,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			if (shutdownHook != null)
 				getRuntime().removeShutdownHook(shutdownHook);
 		} catch (RuntimeException e) {
-			throw new RemoteException("problem removing shutdownHook", e);
+			throw new ImplementationException("problem removing shutdownHook",
+					e);
 		} finally {
 			shutdownHook = null;
 		}
@@ -162,15 +167,17 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		} catch (IOException e) {
 			out.println("problem deleting working directory");
 			e.printStackTrace(out);
-			throw new RemoteException("problem deleting working directory", e);
+			throw new ImplementationException(
+					"problem deleting working directory", e);
 		} finally {
 			base = null;
 		}
 	}
 
 	@Override
-	public void addListener(RemoteListener listener) throws RemoteException {
-		throw new RemoteException("not implemented");
+	public void addListener(RemoteListener listener) throws RemoteException,
+			ImplementationException {
+		throw new ImplementationException("not implemented");
 	}
 
 	@Override
@@ -260,12 +267,14 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		 *            The bytes to put in the file.
 		 * @throws RemoteException
 		 *             If anything goes wrong.
+		 * @throws ImplementationException
 		 */
-		protected void write(String name, byte[] data) throws RemoteException {
+		protected void write(String name, byte[] data) throws RemoteException,
+				ImplementationException {
 			try {
 				writeByteArrayToFile(new File(contextDirectory, name), data);
 			} catch (IOException e) {
-				throw new RemoteException("problem writing " + name, e);
+				throw new ImplementationException("problem writing " + name, e);
 			}
 		}
 
@@ -280,14 +289,15 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		 *            will be used to do the writing.
 		 * @throws RemoteException
 		 *             If anything goes wrong.
+		 * @throws ImplementationException
 		 */
 		protected void write(String name, Collection<String> data)
-				throws RemoteException {
+				throws RemoteException, ImplementationException {
 			try {
 				writeLines(new File(contextDirectory, name), SYSTEM_ENCODING,
 						data);
 			} catch (IOException e) {
-				throw new RemoteException("problem writing " + name, e);
+				throw new ImplementationException("problem writing " + name, e);
 			}
 		}
 
@@ -302,18 +312,20 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		 *            will be used to do the writing.
 		 * @throws RemoteException
 		 *             If anything goes wrong.
+		 * @throws ImplementationException
 		 */
-		protected void write(String name, char[] data) throws RemoteException {
+		protected void write(String name, char[] data) throws RemoteException,
+				ImplementationException {
 			try {
 				writeLines(new File(contextDirectory, name), SYSTEM_ENCODING,
 						asList(new String(data)));
 			} catch (IOException e) {
-				throw new RemoteException("problem writing " + name, e);
+				throw new ImplementationException("problem writing " + name, e);
 			}
 		}
 
 		@Override
-		public void setKeystore(byte[] keystore) throws RemoteException {
+		public void setKeystore(byte[] keystore) throws RemoteException, ImplementationException {
 			if (status != Initialized)
 				throw new RemoteException("not initializing");
 			write(KEYSTORE_FILE, keystore);
@@ -328,7 +340,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		}
 
 		@Override
-		public void setTruststore(byte[] truststore) throws RemoteException {
+		public void setTruststore(byte[] truststore) throws RemoteException, ImplementationException {
 			if (status != Initialized)
 				throw new RemoteException("not initializing");
 			write(TRUSTSTORE_FILE, truststore);
@@ -347,17 +359,18 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	}
 
 	@Override
-	public RemoteSecurityContext getSecurityContext() throws RemoteException {
+	public RemoteSecurityContext getSecurityContext() throws RemoteException,
+			ImplementationException {
 		try {
 			return new SecurityDelegate(masterToken);
 		} catch (RemoteException e) {
 			if (e.getCause() != null)
-				throw new RemoteException(
+				throw new ImplementationException(
 						"problem initializing security context", e.getCause());
 			throw e;
 		} catch (IOException e) {
-			throw new RemoteException("problem initializing security context",
-					e);
+			throw new ImplementationException(
+					"problem initializing security context", e);
 		}
 	}
 
@@ -383,7 +396,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		try {
 			return getValidatedFile(base, filename.split("/"));
 		} catch (IOException e) {
-			throw new RemoteException("failed to validate filename", e);
+			throw new IllegalArgumentException("failed to validate filename", e);
 		}
 	}
 
@@ -396,7 +409,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			this.name = name;
 			if (!inputFiles.containsKey(name)) {
 				if (status != Initialized)
-					throw new RemoteException("not initializing");
+					throw new IllegalStateException("not initializing");
 				inputFiles.put(name, null);
 				inputRealFiles.put(name, null);
 				inputValues.put(name, null);
@@ -421,7 +434,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		@Override
 		public void setFile(String file) throws RemoteException {
 			if (status != Initialized)
-				throw new RemoteException("not initializing");
+				throw new IllegalStateException("not initializing");
 			inputRealFiles.put(name, validateFilename(file));
 			inputValues.put(name, null);
 			inputFiles.put(name, file);
@@ -431,11 +444,11 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		@Override
 		public void setValue(String value) throws RemoteException {
 			if (status != Initialized)
-				throw new RemoteException("not initializing");
+				throw new IllegalStateException("not initializing");
 			inputValues.put(name, value);
 			inputFiles.put(name, null);
 			inputRealFiles.put(name, null);
-			LocalWorker.this.inputBaclava = null;
+			inputBaclava = null;
 		}
 	}
 
@@ -453,7 +466,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	@Override
 	public void setInputBaclavaFile(String filename) throws RemoteException {
 		if (status != Initialized)
-			throw new RemoteException("not initializing");
+			throw new IllegalStateException("not initializing");
 		inputBaclavaFile = validateFilename(filename);
 		for (String input : inputFiles.keySet()) {
 			inputFiles.put(input, null);
@@ -466,7 +479,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	@Override
 	public void setOutputBaclavaFile(String filename) throws RemoteException {
 		if (status != Initialized)
-			throw new RemoteException("not initializing");
+			throw new IllegalStateException("not initializing");
 		if (filename != null)
 			outputBaclavaFile = validateFilename(filename);
 		else
@@ -476,7 +489,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 
 	@Override
 	public void setStatus(RemoteStatus newStatus)
-			throws IllegalStateTransitionException, RemoteException {
+			throws IllegalStateTransitionException, RemoteException,
+			ImplementationException {
 		if (status == newStatus)
 			return;
 
@@ -498,7 +512,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 						keystorePassword[i] = ' ';
 					keystorePassword = null;
 				} catch (Exception e) {
-					throw new RemoteException(
+					throw new ImplementationException(
 							"problem creating executing workflow", e);
 				}
 				break;
@@ -506,8 +520,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 				try {
 					core.startWorker();
 				} catch (Exception e) {
-					throw new RemoteException("problem starting workflow run",
-							e);
+					throw new ImplementationException(
+							"problem starting workflow run", e);
 				}
 				break;
 			case Finished:
@@ -524,8 +538,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 				try {
 					core.stopWorker();
 				} catch (Exception e) {
-					throw new RemoteException("problem stopping workflow run",
-							e);
+					throw new ImplementationException(
+							"problem stopping workflow run", e);
 				}
 				break;
 			case Finished:
@@ -542,7 +556,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 					if (finish == null)
 						finish = new Date();
 				} catch (Exception e) {
-					throw new RemoteException("problem killing workflow run", e);
+					throw new ImplementationException(
+							"problem killing workflow run", e);
 				}
 				break;
 			}
@@ -553,11 +568,11 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 
 	@Override
 	public Date getFinishTimestamp() {
-		return new Date(finish.getTime());
+		return finish == null ? null : new Date(finish.getTime());
 	}
 
 	@Override
 	public Date getStartTimestamp() {
-		return new Date(start.getTime());
+		return start == null ? null : new Date(start.getTime());
 	}
 }

@@ -326,8 +326,7 @@
 		class="org.taverna.server.master.localworker.SimpleFormattedCompletionNotifier">
 		<property name="subject" value="Taverna workflow run finished" />
 		<property name="messageFormat">
-			<value>Your job with ID={0} has finished with exit code
-				{1,number,integer}.</value>
+			<value>Your job with ID={0} has finished with exit code {1,number,integer}.</value>
 		</property>
 	</bean>
 

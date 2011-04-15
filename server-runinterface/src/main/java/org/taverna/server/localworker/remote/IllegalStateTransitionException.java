@@ -1,5 +1,7 @@
 package org.taverna.server.localworker.remote;
 
+import javax.xml.ws.WebFault;
+
 /**
  * Exception that indicates where a change of a workflow run's status is
  * illegal.
@@ -7,6 +9,7 @@ package org.taverna.server.localworker.remote;
  * @author Donal Fellows
  * @see RemoteSingleRun#setStatus(RemoteStatus)
  */
+@WebFault(name = "IllegalStateTransitionFault", targetNamespace = "http://ns.taverna.org.uk/2010/xml/server/worker/")
 public class IllegalStateTransitionException extends Exception {
 	private static final long serialVersionUID = 159673249162345L;
 

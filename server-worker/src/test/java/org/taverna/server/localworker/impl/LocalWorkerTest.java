@@ -21,6 +21,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.taverna.server.localworker.remote.IllegalStateTransitionException;
+import org.taverna.server.localworker.remote.ImplementationException;
 import org.taverna.server.localworker.remote.RemoteDirectory;
 import org.taverna.server.localworker.remote.RemoteInput;
 import org.taverna.server.localworker.remote.RemoteListener;
@@ -192,7 +193,7 @@ public class LocalWorkerTest {
 			t = caught;
 		}
 		assertNotNull(t);
-		assertSame(RemoteException.class, t.getClass());
+		assertSame(ImplementationException.class, t.getClass());
 		assertNotNull(t.getMessage());
 		assertEquals("not implemented", t.getMessage());
 	}
@@ -326,17 +327,17 @@ public class LocalWorkerTest {
 		lw.validateFilename("foo..bar");
 	}
 
-	@Test(expected = RemoteException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testValidateFilenameBad0() throws Exception {
 		lw.validateFilename("./.");
 	}
 
-	@Test(expected = RemoteException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testValidateFilenameBad1() throws Exception {
 		lw.validateFilename("/");
 	}
 
-	@Test(expected = RemoteException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testValidateFilenameBad2() throws Exception {
 		lw.validateFilename("");
 	}
@@ -346,12 +347,12 @@ public class LocalWorkerTest {
 		lw.validateFilename(null);
 	}
 
-	@Test(expected = RemoteException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testValidateFilenameBad4() throws Exception {
 		lw.validateFilename("..");
 	}
 
-	@Test(expected = RemoteException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testValidateFilenameBad5() throws Exception {
 		lw.validateFilename("foo/../bar");
 	}
@@ -382,7 +383,7 @@ public class LocalWorkerTest {
 		assertEquals(2, lw.getInputs().size());
 	}
 
-	@Test(expected = RemoteException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testMakeInputFileSanity() throws Exception {
 		lw.makeInput("foo").setFile("/../bar");
 	}
@@ -431,12 +432,12 @@ public class LocalWorkerTest {
 		assertNull(lw.getOutputBaclavaFile());
 	}
 
-	@Test(expected = RemoteException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testSetOutputBaclavaFile2() throws Exception {
 		lw.setOutputBaclavaFile("/foobar");
 	}
 
-	@Test(expected = RemoteException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testSetOutputBaclavaFile3() throws Exception {
 		lw.setOutputBaclavaFile("foo/../bar");
 	}

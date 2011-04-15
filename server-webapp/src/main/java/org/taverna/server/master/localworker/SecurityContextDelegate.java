@@ -36,6 +36,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
+import org.taverna.server.localworker.remote.ImplementationException;
 import org.taverna.server.localworker.remote.RemoteSecurityContext;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.Trust;
@@ -60,8 +61,8 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 	private final Object lock = new Object();
 	private final SecurityContextFactory factory;
 
-	protected SecurityContextDelegate(RemoteRunDelegate run, UsernamePrincipal owner,
-			SecurityContextFactory factory) {
+	protected SecurityContextDelegate(RemoteRunDelegate run,
+			UsernamePrincipal owner, SecurityContextFactory factory) {
 		this.run = run;
 		this.owner = owner;
 		this.factory = factory;
@@ -277,7 +278,8 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 	 *             If the conveyancing fails.
 	 */
 	@Override
-	public void conveySecurity() throws GeneralSecurityException, IOException {
+	public void conveySecurity() throws GeneralSecurityException, IOException,
+			ImplementationException {
 		RemoteSecurityContext rc = run.run.getSecurityContext();
 
 		if (credentials.isEmpty() && trusted.isEmpty())
