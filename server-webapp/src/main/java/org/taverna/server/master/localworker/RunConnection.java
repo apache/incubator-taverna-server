@@ -6,6 +6,7 @@
 package org.taverna.server.master.localworker;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static org.taverna.server.master.localworker.RunConnection.COUNT_QUERY;
 import static org.taverna.server.master.localworker.RunConnection.NAMES_QUERY;
 import static org.taverna.server.master.localworker.RunConnection.SCHEMA;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.rmi.MarshalledObject;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 
 import javax.jdo.annotations.Column;
 import javax.jdo.annotations.Join;
@@ -120,6 +122,12 @@ public class RunConnection {
 		return rc;
 	}
 
+	private static List<String> list(String[]ary) {
+		if (ary == null)
+			return emptyList();
+		return asList(ary);
+	}
+
 	@NonNull
 	public RemoteRunDelegate fromDBform(@NonNull RunDBSupport db)
 			throws Exception {
@@ -128,9 +136,9 @@ public class RunConnection {
 		rrd.creationInstant = creationInstant;
 		rrd.workflow = workflow;
 		rrd.expiry = expiry;
-		rrd.readers = new HashSet<String>(asList(readers));
-		rrd.writers = new HashSet<String>(asList(writers));
-		rrd.destroyers = new HashSet<String>(asList(destroyers));
+		rrd.readers = new HashSet<String>(list(readers));
+		rrd.writers = new HashSet<String>(list(writers));
+		rrd.destroyers = new HashSet<String>(list(destroyers));
 		rrd.run = run.get();
 		rrd.doneTransitionToFinished = isFinished();
 		rrd.secContext = securityContextFactory.create(rrd,

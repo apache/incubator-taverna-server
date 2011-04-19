@@ -6,28 +6,20 @@
 package org.taverna.server.master;
 
 import javax.annotation.PostConstruct;
-import javax.jdo.PersistenceManager;
-import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
 import javax.jdo.annotations.PersistenceAware;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.taverna.server.master.utils.JDOSupport;
+
 /** The persistent, manageable state of the Taverna Server web application. */
 @PersistenceAware
-class ManagementState implements ManagementModel {
-	/**
-	 * @param persistenceManagerFactory
-	 *            The JDO engine to use for managing persistence of the state.
-	 */
-	public void setPersistenceManagerFactory(
-			PersistenceManagerFactory persistenceManagerFactory) {
-		this.persistenceManager = persistenceManagerFactory
-				.getPersistenceManager();
+class ManagementState extends JDOSupport<WebappState>implements ManagementModel {
+	public ManagementState() {
+		super(WebappState.class);
 	}
-
-	private PersistenceManager persistenceManager;
 
 	/** Whether we should log all workflows sent to us. */
 	private boolean logIncomingWorkflows = false;
@@ -80,7 +72,7 @@ class ManagementState implements ManagementModel {
 	@Override
 	public boolean getLogOutgoingExceptions() {
 		load();
-		return logOutgoingExceptions;
+		return logOutgoingExceptions || true;
 	}
 
 	@Override
@@ -98,8 +90,7 @@ class ManagementState implements ManagementModel {
 	private static final int KEY = 42; // whatever
 
 	private WebappState get() {
-		Query q = persistenceManager
-				.newQuery(WebappState.class, "id == " + KEY);
+		Query q = query("id == " + KEY);
 		q.setUnique(true);
 		return (WebappState) q.execute();
 	}
@@ -108,11 +99,11 @@ class ManagementState implements ManagementModel {
 
 	@PostConstruct
 	public void load() {
-		if (loadedState || persistenceManager == null)
+		if (loadedState || !isPersistent())
 			return;
 		boolean ok = false;
+		Xact tx = beginTx();
 		try {
-			persistenceManager.currentTransaction().begin();
 			WebappState state = get();
 			if (state == null)
 				return;
@@ -120,38 +111,38 @@ class ManagementState implements ManagementModel {
 			logIncomingWorkflows = state.getLogIncomingWorkflows();
 			logOutgoingExceptions = state.getLogOutgoingExceptions();
 			usageRecordLogFile = state.getUsageRecordLogFile();
-			persistenceManager.currentTransaction().commit();
+			tx.commit();
 			ok = true;
 			loadedState = true;
 		} finally {
 			if (!ok)
-				persistenceManager.currentTransaction().rollback();
+				tx.rollback();
 		}
 	}
 
 	private void store() {
-		if (persistenceManager == null)
+		if (!isPersistent())
 			return;
 		boolean ok = false;
+		Xact tx = beginTx();
 		try {
-			persistenceManager.currentTransaction().begin();
 			WebappState state = get();
 			if (state == null) {
 				state = new WebappState();
 				// save state
 				state.id = KEY; // whatever...
-				state = persistenceManager.makePersistent(state);
+				state = persist(state);
 			}
 			state.setAllowNewWorkflowRuns(allowNewWorkflowRuns);
 			state.setLogIncomingWorkflows(logIncomingWorkflows);
 			state.setLogOutgoingExceptions(logOutgoingExceptions);
 			state.setUsageRecordLogFile(usageRecordLogFile);
-			persistenceManager.currentTransaction().commit();
+			tx.commit();
 			ok = true;
 			loadedState = true;
 		} finally {
 			if (!ok)
-				persistenceManager.currentTransaction().rollback();
+				tx.rollback();
 		}
 	}
 }

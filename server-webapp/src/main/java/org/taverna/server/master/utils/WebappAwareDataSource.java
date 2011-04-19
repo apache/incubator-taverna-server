@@ -9,6 +9,7 @@ import static org.taverna.server.master.utils.Contextualizer.SUBSTITUAND;
 
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import javax.annotation.PreDestroy;
@@ -31,10 +32,19 @@ public class WebappAwareDataSource extends BasicDataSource {
 	Log log = LogFactory.getLog("Taverna.Server.Utils");
 	private transient boolean init;
 	private Contextualizer ctxt;
+	private String shutdownUrl;
 
 	@Required
 	public void setContextualizer(Contextualizer ctxt) {
 		this.ctxt = ctxt;
+	}
+
+	/**
+	 * A JDBC connection URL to use on shutting down the database. If not set, do nothing special.
+	 * @param url
+	 */
+	public void setShutdownUrl(String url) {
+		shutdownUrl = url;
 	}
 
 	private void doInit() {
@@ -92,11 +102,12 @@ public class WebappAwareDataSource extends BasicDataSource {
 		} catch (SQLException e) {
 			log.warn("problem shutting down DB connection", e);
 		}
+		try {
+			if (shutdownUrl != null)
+				DriverManager.getConnection(ctxt.contextualize(shutdownUrl));
+		} catch (SQLException e) {
+			// Expected; ignore it
+		}
 		log = null;
-	}
-
-	@Override
-	public void close() throws SQLException {
-		super.close();
 	}
 }

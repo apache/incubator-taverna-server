@@ -10,18 +10,20 @@ import static org.taverna.server.master.TavernaServerImpl.log;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import javax.annotation.PreDestroy;
-import javax.jdo.PersistenceManager;
-import javax.jdo.PersistenceManagerFactory;
-import javax.jdo.Transaction;
 import javax.servlet.ServletContext;
 import javax.xml.bind.JAXBException;
 
+import org.ogf.usage.JobUsageRecord;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.context.ServletContextAware;
 import org.taverna.server.master.ManagementModel;
 import org.taverna.server.master.utils.Contextualizer;
+import org.taverna.server.master.utils.JDOSupport;
 
 /**
  * A simple state-aware writer of usage records. It just appends them, one by
@@ -29,23 +31,18 @@ import org.taverna.server.master.utils.Contextualizer;
  * 
  * @author Donal Fellows
  */
-public class UsageRecordRecorder implements ServletContextAware {
+public class UsageRecordRecorder extends JDOSupport<UsageRecord> implements
+		ServletContextAware {
+	public UsageRecordRecorder() {
+		super(UsageRecord.class);
+	}
+
 	private ManagementModel state;
 	private Contextualizer contextualizer;
 	private ServletContext config;
-	private PersistenceManager persistenceManager;
 	private String logDestination;
 	private PrintWriter writer;
 	private Object lock = new Object();
-
-	/**
-	 * @param persistenceManagerFactory
-	 *            The JDO engine to use for managing persistence of the state.
-	 */
-	public void setPersistenceManagerFactory(
-			PersistenceManagerFactory persistenceManagerFactory) {
-		persistenceManager = persistenceManagerFactory.getPersistenceManager();
-	}
 
 	/**
 	 * @param state
@@ -76,10 +73,8 @@ public class UsageRecordRecorder implements ServletContextAware {
 	 * 
 	 * @param usageRecord
 	 *            The serialized usage record to record.
-	 * @throws IOException
-	 *             If the recording goes wrong.
 	 */
-	public void storeUsageRecord(String usageRecord) throws IOException {
+	public void storeUsageRecord(String usageRecord) {
 		String logfile = state.getUsageRecordLogFile();
 		if (logfile == null && config != null) {
 			logfile = config.getInitParameter("usage.logFile");
@@ -106,8 +101,8 @@ public class UsageRecordRecorder implements ServletContextAware {
 			}
 		}
 
-		if ("yes".equals(config.getInitParameter("usage.disableDB"))
-				&& persistenceManager != null)
+		String disable = config.getInitParameter("usage.disableDB");
+		if ((disable == null || !"yes".equals(disable)))
 			saveURtoDB(usageRecord);
 	}
 
@@ -118,33 +113,48 @@ public class UsageRecordRecorder implements ServletContextAware {
 	 *            The serialized usage record to save.
 	 */
 	protected void saveURtoDB(String usageRecord) {
+		UsageRecord ur;
 		try {
-			UsageRecord ur = new UsageRecord(usageRecord);
-			Transaction tx = persistenceManager.currentTransaction();
-			if (tx.isActive())
-				tx = null;
-			else
-				tx.begin();
-			try {
-				persistenceManager.makePersistent(ur);
-			} catch (RuntimeException e) {
-				if (tx != null)
-					tx.rollback();
-				throw e;
-			} finally {
-				if (tx != null)
-					tx.commit();
-			}
+			ur = new UsageRecord(usageRecord);
 		} catch (JAXBException e) {
 			log.warn("failed to deserialize usage record", e);
+			return;
+		}
+
+		Xact tx = beginTx();
+		try {
+			persist(ur);
+			tx.commit();
+		} catch (RuntimeException e) {
+			tx.rollback();
+			log.warn("failed to save UR to database", e);
 		}
 	}
 
+	public List<JobUsageRecord> getUsageRecords() {
+		Xact tx = beginTx();
+		try {
+			@SuppressWarnings("unchecked")
+			Collection<String> urs = (Collection<String>) namedQuery(
+					"allByDate").execute();
+			List<JobUsageRecord> result = new ArrayList<JobUsageRecord>();
+			for (String ur : urs)
+				try {
+					result.add(JobUsageRecord.unmarshal(ur));
+				} catch (JAXBException e) {
+					log.warn("failed to unmarshal UR", e);
+				}
+			return result;
+		} finally {
+			tx.commit();
+		}
+	}
+
+	@Override
 	@PreDestroy
 	public void close() {
+		super.close();
 		if (writer != null)
 			writer.close();
-		if (persistenceManager != null)
-			persistenceManager.close();
 	}
 }

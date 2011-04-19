@@ -107,6 +107,14 @@
 		<property name="support" ref="webapp.support" />
 	</bean>
 
+	<bean id="admin" class="org.taverna.server.master.admin.AdminBean">
+		<property name="state" ref="webapp.state" />
+		<property name="counter" ref="webapp.invocationCounter" />
+		<property name="runDB" ref="localworker.runDAO" />
+		<property name="factory" ref="localworker.factory" />
+		<property name="usageRecords" ref="usageRecordSink" />
+	</bean>
+
 	<bean id="IdentityMapper" class="org.taverna.server.master.CompositeIDMapper">
 		<property name="identityMappers">
 			<list>
@@ -166,6 +174,9 @@
 		<property name="driverClassName" value="org.apache.derby.jdbc.EmbeddedDriver" />
 		<property name="url"
 			value="jdbc:derby:directory:%{WEBAPPROOT}tavernaserver;create=true" />
+		<!-- Needed for Derby... -->
+		<property name="shutdownUrl"
+			value="jdbc:derby:directory:%{WEBAPPROOT}tavernaserver;shutdown=true" />
 		<property name="username" value="taverna" />
 		<property name="password" value="" />
 		<property name="contextualizer" ref="contextualizer" />
@@ -190,7 +201,10 @@
 		<property name="idMapper" ref="IdentityMapper" />
 		<property name="securityContextFactory" ref="localworker.securityContext" />
 		<property name="usageRecordSink" ref="usageRecordSink" />
+		<property name="URProcessorPool" ref="URThreads" />
 	</bean>
+
+	<task:executor id="URThreads" pool-size="2" />
 
 	<bean id="localworker.securityContext"
 		class="org.taverna.server.master.localworker.SecurityContextFactory">

@@ -11,14 +11,13 @@ import static java.rmi.registry.Registry.REGISTRY_PORT;
 import static org.taverna.server.master.localworker.LocalWorkerManagementState.KEY;
 import static org.taverna.server.master.localworker.LocalWorkerManagementState.makeInstance;
 
-import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.annotations.PersistenceAware;
+import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
-import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.common.Status;
-import org.taverna.server.master.localworker.PersistentContext.Action;
+import org.taverna.server.master.utils.JDOSupport;
 
 /**
  * The persistent state of a local worker factory.
@@ -26,7 +25,11 @@ import org.taverna.server.master.localworker.PersistentContext.Action;
  * @author Donal Fellows
  */
 @PersistenceAware
-public class LocalWorkerState {
+public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
+	public LocalWorkerState() {
+		super(LocalWorkerManagementState.class);
+	}
+
 	/**
 	 * The name of the resource that is the implementation of the subprocess
 	 * that this class will fork off.
@@ -38,19 +41,6 @@ public class LocalWorkerState {
 	 * that manages secure forking.
 	 */
 	public static final String SECURE_FORK_IMPLEMENTATION_JAR = "util/secure.fork.jar";
-
-	/**
-	 * @param persistenceManagerFactory
-	 *            The JDO engine to use for managing persistence of the state.
-	 */
-	@Required
-	public void setPersistenceManagerFactory(
-			PersistenceManagerFactory persistenceManagerFactory) {
-		ctx = new PersistentContext<LocalWorkerManagementState>(
-				persistenceManagerFactory);
-	}
-
-	PersistentContext<LocalWorkerManagementState> ctx;
 
 	/** Initial lifetime of runs, in minutes. */
 	int defaultLifetime;
@@ -353,67 +343,72 @@ public class LocalWorkerState {
 	private boolean loadedState;
 
 	public void load() {
-		if (loadedState || ctx == null)
+		if (loadedState || !isPersistent())
 			return;
-		ctx.inTransaction(new Action<RuntimeException>() {
-			@Override
-			public void act() {
-				LocalWorkerManagementState state = ctx.getByID(
-						LocalWorkerManagementState.class, KEY);
-				if (state == null) {
-					return;
-				}
-
-				defaultLifetime = state.getDefaultLifetime();
-				executeWorkflowScript = state.getExecuteWorkflowScript();
-				extraArgs = state.getExtraArgs();
-				factoryProcessNamePrefix = state.getFactoryProcessNamePrefix();
-				javaBinary = state.getJavaBinary();
-				maxRuns = state.getMaxRuns();
-				serverWorkerJar = state.getServerWorkerJar();
-				serverForkerJar = state.getServerForkerJar();
-				passwordFile = state.getPasswordFile();
-				sleepMS = state.getSleepMS();
-				waitSeconds = state.getWaitSeconds();
-				registryHost = state.getRegistryHost();
-				registryPort = state.getRegistryPort();
+		Xact tx = beginTx();
+		boolean doRollback = true;
+		try {
+			LocalWorkerManagementState state = getById(KEY);
+			if (state == null) {
+				return;
 			}
-		});
+
+			defaultLifetime = state.getDefaultLifetime();
+			executeWorkflowScript = state.getExecuteWorkflowScript();
+			extraArgs = state.getExtraArgs();
+			factoryProcessNamePrefix = state.getFactoryProcessNamePrefix();
+			javaBinary = state.getJavaBinary();
+			maxRuns = state.getMaxRuns();
+			serverWorkerJar = state.getServerWorkerJar();
+			serverForkerJar = state.getServerForkerJar();
+			passwordFile = state.getPasswordFile();
+			sleepMS = state.getSleepMS();
+			waitSeconds = state.getWaitSeconds();
+			registryHost = state.getRegistryHost();
+			registryPort = state.getRegistryPort();
+			tx.commit();
+			doRollback = false;
+		} finally {
+			if (doRollback)
+				tx.rollback();
+		}
 		loadedState = true;
 	}
 
 	private void store() {
-		if (ctx == null)
+		if (!isPersistent())
 			return;
-		ctx.inTransaction(new Action<RuntimeException>() {
-			@Override
-			public void act() {
-				LocalWorkerManagementState state = ctx.getByID(
-						LocalWorkerManagementState.class, KEY);
-				if (state == null) {
-					state = ctx.persist(makeInstance());
-				}
-
-				state.setDefaultLifetime(defaultLifetime);
-				state.setExecuteWorkflowScript(executeWorkflowScript);
-				state.setExtraArgs(extraArgs);
-				state.setFactoryProcessNamePrefix(factoryProcessNamePrefix);
-				state.setJavaBinary(javaBinary);
-				state.setMaxRuns(maxRuns);
-				state.setServerWorkerJar(serverWorkerJar);
-				state.setServerForkerJar(serverForkerJar);
-				state.setPasswordFile(passwordFile);
-				state.setSleepMS(sleepMS);
-				state.setWaitSeconds(waitSeconds);
-				state.setRegistryHost(registryHost);
-				state.setRegistryPort(registryPort);
+		Xact tx = beginTx();
+		try {
+			LocalWorkerManagementState state = getById(KEY);
+			if (state == null) {
+				state = persist(makeInstance());
 			}
-		});
+
+			state.setDefaultLifetime(defaultLifetime);
+			state.setExecuteWorkflowScript(executeWorkflowScript);
+			state.setExtraArgs(extraArgs);
+			state.setFactoryProcessNamePrefix(factoryProcessNamePrefix);
+			state.setJavaBinary(javaBinary);
+			state.setMaxRuns(maxRuns);
+			state.setServerWorkerJar(serverWorkerJar);
+			state.setServerForkerJar(serverForkerJar);
+			state.setPasswordFile(passwordFile);
+			state.setSleepMS(sleepMS);
+			state.setWaitSeconds(waitSeconds);
+			state.setRegistryHost(registryHost);
+			state.setRegistryPort(registryPort);
+			tx.commit();
+			tx = null;
+		} finally {
+			if (tx != null)
+				tx.rollback();
+		}
 		loadedState = true;
 	}
 }
 
-@javax.jdo.annotations.PersistenceCapable
+@PersistenceCapable
 class LocalWorkerManagementState {
 	static LocalWorkerManagementState makeInstance() {
 		LocalWorkerManagementState o = new LocalWorkerManagementState();

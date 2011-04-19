@@ -12,6 +12,8 @@ import javax.jdo.annotations.Index;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
+import javax.jdo.annotations.Queries;
+import javax.jdo.annotations.Query;
 import javax.xml.bind.JAXBException;
 
 import org.ogf.usage.JobUsageRecord;
@@ -21,7 +23,8 @@ import org.ogf.usage.JobUsageRecord;
  * 
  * @author Donal Fellows
  */
-@PersistenceCapable(table = "USAGE_RECORD_LOG", cacheable = "true")
+@PersistenceCapable(table = "USAGE_RECORD_LOG", schema = "UR", cacheable = "true")
+@Queries({ @Query(name = "allByDate", value = "SELECT USAGE_RECORD FROM UR.USAGE_RECORD_LOG ORDER BY CREATE_DATE", resultClass = String.class, unmodifiable = "true", unique = "false", language = "SQL") })
 public class UsageRecord {
 	/**
 	 * Create an empty usage record database entry.
@@ -63,21 +66,21 @@ public class UsageRecord {
 	}
 
 	@PrimaryKey
-	@Column(name = "ID", jdbcType = "VARCHAR", length = 48)
+	@Column(name = "ID", length = 40)
 	private String id;
 
 	@Persistent
 	@Index(name = "USERID_IDX")
-	@Column(name = "USERID", jdbcType = "VARCHAR", length = 16)
+	@Column(name = "USERID", length = 24)
 	private String userid;
 
 	@Persistent
 	@Index(name = "CREATE_IDX")
-	@Column(name = "CREATE")
+	@Column(name = "CREATE_DATE")
 	private Date createDate;
 
 	@Persistent
-	@Column(name = "USAGE_RECORD", jdbcType="VARCHAR", length = 32768)
+	@Column(name = "USAGE_RECORD", length = 32000)
 	private String usageRecord;
 
 	public String getId() {

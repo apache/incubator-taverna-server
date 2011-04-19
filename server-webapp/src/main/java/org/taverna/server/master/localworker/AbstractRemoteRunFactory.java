@@ -13,7 +13,6 @@ import static java.rmi.registry.LocateRegistry.getRegistry;
 import static java.rmi.registry.Registry.REGISTRY_PORT;
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 
-import java.io.IOException;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -29,6 +28,7 @@ import javax.xml.bind.JAXBException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
@@ -53,7 +53,6 @@ import org.taverna.server.master.utils.UsernamePrincipal;
 public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		RunFactory {
 	Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
-	UsageRecordRecorder usageRecordSink;
 
 	@SuppressWarnings("unused")
 	@PreDestroy
@@ -127,6 +126,8 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	LocalWorkerState state;
 	private RunDBSupport runDB;
 	private SecurityContextFactory securityFactory;
+	UsageRecordRecorder usageRecordSink;
+	TaskExecutor urProcessorPool;
 
 	@Required
 	public void setState(LocalWorkerState state) {
@@ -188,6 +189,10 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 */
 	public UsageRecordRecorder getUsageRecordSink() {
 		return usageRecordSink;
+	}
+
+	public void setURProcessorPool(TaskExecutor urProcessorPool) {
+		this.urProcessorPool = urProcessorPool;
 	}
 
 	static {
@@ -334,22 +339,22 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 					"SE_BAD_FIELD_INNER_CLASS", "SE_NO_SERIALVERSIONID" })
 			class URReceiver extends UnicastRemoteObject implements
 					UsageRecordReceiver {
-				public URReceiver(UsageRecordRecorder destination)
-						throws RemoteException {
+				public URReceiver() throws RemoteException {
 					super();
 				}
 
 				@Override
-				public void acceptUsageRecord(String usageRecord) {
-					try {
-						if (usageRecordSink != null)
-							usageRecordSink.storeUsageRecord(usageRecord);
-					} catch (IOException e) {
-						log.warn("failed to store usage record", e);
-					}
+				public void acceptUsageRecord(final String usageRecord) {
+					if (usageRecordSink != null && urProcessorPool != null)
+						urProcessorPool.execute(new Runnable() {
+							@Override
+							public void run() {
+								usageRecordSink.storeUsageRecord(usageRecord);
+							}
+						});
 				}
 			}
-			return new URReceiver(usageRecordSink);
+			return new URReceiver();
 		} catch (RemoteException e) {
 			log.warn("failed to build usage record receiver", e);
 			return null;

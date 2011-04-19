@@ -10,9 +10,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.jdo.PersistenceManager;
-import javax.jdo.PersistenceManagerFactory;
-import javax.jdo.Transaction;
 import javax.jdo.annotations.PersistenceAware;
 import javax.ws.rs.core.UriBuilder;
 
@@ -23,21 +20,21 @@ import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.ContentsDescriptorBuilder.UriBuilderFactory;
 import org.taverna.server.master.interfaces.MessageDispatcher;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.utils.JDOSupport;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 @PersistenceAware
-public class EventDAO implements MessageDispatcher {
+public class EventDAO extends JDOSupport<AbstractEvent> implements
+		MessageDispatcher {
+	public EventDAO() {
+		super(AbstractEvent.class);
+	}
+
 	private Log log = LogFactory.getLog("Taverna.Server.Atom");
-	private PersistenceManager pm;
 	private UriBuilderFactory ubf;
 	private int expiryAgeDays;
-
-	@Required
-	public void setPersistenceManagerFactory(PersistenceManagerFactory pmf) {
-		pm = pmf.getPersistenceManagerProxy();
-	}
 
 	@Required
 	public void setExpiryAgeDays(int expiryAgeDays) {
@@ -51,92 +48,84 @@ public class EventDAO implements MessageDispatcher {
 
 	@NonNull
 	public List<AbstractEvent> getEvents(@NonNull UsernamePrincipal user) {
-		Transaction tx = pm.currentTransaction();
-		tx.begin();
+		Xact tx = beginTx();
 		try {
 			@SuppressWarnings("unchecked")
-			List<String> ids = (List<String>) pm.newNamedQuery(
-					AbstractEvent.class, "eventsForUser").execute(
-					user.getName());
+			List<String> ids = (List<String>) namedQuery("eventsForUser")
+					.execute(user.getName());
 			log.debug("found " + ids.size() + " events for user " + user);
 			List<AbstractEvent> result = new ArrayList<AbstractEvent>();
 			for (String id : ids) {
-				AbstractEvent event = pm.getObjectById(AbstractEvent.class, id);
-				result.add(pm.detachCopy(event));
+				AbstractEvent event = getById(id);
+				result.add(detach(event));
 			}
 			tx.commit();
 			return result;
-		} finally {
-			if (tx.isActive())
-				tx.rollback();
+		} catch (RuntimeException e) {
+			tx.rollback();
+			throw e;
 		}
 	}
 
 	@NonNull
 	public AbstractEvent getEvent(@NonNull UsernamePrincipal user,
 			@NonNull String id) {
-		Transaction tx = pm.currentTransaction();
-		tx.begin();
+		Xact tx = beginTx();
 		try {
 			@SuppressWarnings("unchecked")
-			List<String> ids = (List<String>) pm.newNamedQuery(
-					AbstractEvent.class, "eventForUserAndId").execute(
-					user.getName(), id);
+			List<String> ids = (List<String>) namedQuery("eventForUserAndId")
+					.execute(user.getName(), id);
 			log.debug("found " + ids.size() + " events for user " + user
 					+ " with id = " + id);
 			if (ids.size() != 1)
 				throw new IllegalArgumentException("no such id");
-			AbstractEvent event = pm.detachCopy(pm.getObjectById(
-					AbstractEvent.class, ids.get(0)));
+			AbstractEvent event = detach(getById(ids.get(0)));
 			tx.commit();
 			return event;
-		} finally {
-			if (tx.isActive())
-				tx.rollback();
+		} catch (RuntimeException e) {
+			tx.rollback();
+			throw e;
 		}
 	}
 
 	public void registerEvent(@NonNull AbstractEvent event) {
-		Transaction tx = pm.currentTransaction();
-		tx.begin();
+		Xact tx = beginTx();
 		try {
-			pm.makePersistent(event);
+			persist(event);
 			tx.commit();
-		} finally {
-			if (tx.isActive())
-				tx.rollback();
+		} catch (RuntimeException e) {
+			tx.rollback();
+			throw e;
 		}
 	}
 
 	public void deleteEventById(@NonNull String id) {
-		Transaction tx = pm.currentTransaction();
-		tx.begin();
+		Xact tx = beginTx();
 		try {
-			pm.deletePersistent(pm.getObjectById(AbstractEvent.class, id));
+			delete(getById(id));
 			tx.commit();
-		} finally {
-			if (tx.isActive())
-				tx.rollback();
+		} catch (RuntimeException e) {
+			tx.rollback();
+			throw e;
 		}
 	}
 
 	public void deleteExpiredEvents() {
 		Date death = new DateTime().plusDays(-expiryAgeDays).toDate();
 		death = new Timestamp(death.getTime()); // UGLY SQL HACK
-		Transaction tx = pm.currentTransaction();
-		tx.begin();
+		Xact tx = beginTx();
 		try {
 			@SuppressWarnings("unchecked")
-			List<String> ids = (List<String>) pm.newNamedQuery(
-					AbstractEvent.class, "eventsFromBefore").execute(death);
+			List<String> ids = (List<String>) namedQuery("eventsFromBefore")
+					.execute(death);
 			log.debug("found " + ids.size()
 					+ " events to be squelched (older than " + death + ")");
 			for (String id : ids)
-				pm.deletePersistent(pm.getObjectById(AbstractEvent.class, id));
+				delete(getById(id));
 			tx.commit();
-		} finally {
-			if (tx.isActive())
-				tx.rollback();
+		} catch (RuntimeException e) {
+			tx.rollback();
+			throw e;
 		}
 	}
 
