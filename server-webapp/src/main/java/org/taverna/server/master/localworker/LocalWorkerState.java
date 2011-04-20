@@ -11,11 +11,13 @@ import static java.rmi.registry.Registry.REGISTRY_PORT;
 import static org.taverna.server.master.localworker.LocalWorkerManagementState.KEY;
 import static org.taverna.server.master.localworker.LocalWorkerManagementState.makeInstance;
 
+import javax.annotation.PostConstruct;
 import javax.jdo.annotations.PersistenceAware;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.utils.JDOSupport;
 
@@ -28,6 +30,13 @@ import org.taverna.server.master.utils.JDOSupport;
 public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	public LocalWorkerState() {
 		super(LocalWorkerManagementState.class);
+	}
+
+	private LocalWorkerState self;
+
+	@Required
+	public void setSelf(LocalWorkerState self) {
+		this.self = self;
 	}
 
 	/**
@@ -63,7 +72,7 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 */
 	String executeWorkflowScript;
 	/** Default value for {@link #executeWorkflowScript}. */
-	transient String defaultExecuteWorkflowScript;
+	private transient String defaultExecuteWorkflowScript;
 	/**
 	 * Full path name of the file containing the password used to launch workers
 	 * as other users. The file is normally expected to contain a single line,
@@ -74,7 +83,7 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 */
 	String passwordFile;
 	/** Default value for {@link #passwordFile}. */
-	transient String defaultPasswordFile;
+	private transient String defaultPasswordFile;
 	/**
 	 * The extra arguments to pass to the subprocess.
 	 */
@@ -120,14 +129,14 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 */
 	public void setDefaultLifetime(int defaultLifetime) {
 		this.defaultLifetime = defaultLifetime;
-		store();
+		if (loadedState)
+			self.store();
 	}
 
 	/**
 	 * @return how long a workflow run should live by default, in minutes.
 	 */
 	public int getDefaultLifetime() {
-		load();
 		return defaultLifetime < 1 ? DEFAULT_DEFAULT_LIFE : defaultLifetime;
 	}
 
@@ -137,14 +146,14 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 */
 	public void setMaxRuns(int maxRuns) {
 		this.maxRuns = maxRuns;
-		store();
+		if (loadedState)
+			self.store();
 	}
 
 	/**
 	 * @return the maxRuns
 	 */
 	public int getMaxRuns() {
-		load();
 		return maxRuns < 1 ? DEFAULT_MAX : maxRuns;
 	}
 
@@ -154,14 +163,14 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 */
 	public void setFactoryProcessNamePrefix(String factoryProcessNamePrefix) {
 		this.factoryProcessNamePrefix = factoryProcessNamePrefix;
-		store();
+		if (loadedState)
+			self.store();
 	}
 
 	/**
 	 * @return the factoryProcessNamePrefix
 	 */
 	public String getFactoryProcessNamePrefix() {
-		load();
 		return factoryProcessNamePrefix == null ? DEFAULT_PREFIX
 				: factoryProcessNamePrefix;
 	}
@@ -172,16 +181,24 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 */
 	public void setExecuteWorkflowScript(String executeWorkflowScript) {
 		this.executeWorkflowScript = executeWorkflowScript;
-		store();
+		if (loadedState)
+			self.store();
 	}
 
 	/**
 	 * @return the executeWorkflowScript
 	 */
 	public String getExecuteWorkflowScript() {
-		load();
 		return executeWorkflowScript == null ? defaultExecuteWorkflowScript
 				: executeWorkflowScript;
+	}
+
+	void setDefaultExecuteWorkflowScript(String defaultExecuteWorkflowScript) {
+		this.defaultExecuteWorkflowScript = defaultExecuteWorkflowScript;
+	}
+
+	String getDefaultExecuteWorkflowScript() {
+		return defaultExecuteWorkflowScript;
 	}
 
 	/**
@@ -190,14 +207,14 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 */
 	public void setExtraArgs(String[] extraArgs) {
 		this.extraArgs = extraArgs.clone();
-		store();
+		if (loadedState)
+			self.store();
 	}
 
 	/**
 	 * @return the extraArgs
 	 */
 	public String[] getExtraArgs() {
-		load();
 		return extraArgs == null ? DEFAULT_EXTRA_ARGS : extraArgs.clone();
 	}
 
@@ -207,14 +224,14 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 */
 	public void setWaitSeconds(int waitSeconds) {
 		this.waitSeconds = waitSeconds;
-		store();
+		if (loadedState)
+			self.store();
 	}
 
 	/**
 	 * @return the waitSeconds
 	 */
 	public int getWaitSeconds() {
-		load();
 		return waitSeconds < 1 ? DEFAULT_WAIT : waitSeconds;
 	}
 
@@ -224,14 +241,14 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 */
 	public void setSleepMS(int sleepMS) {
 		this.sleepMS = sleepMS;
-		store();
+		if (loadedState)
+			self.store();
 	}
 
 	/**
 	 * @return the sleepMS
 	 */
 	public int getSleepMS() {
-		load();
 		return sleepMS < 1 ? DEFAULT_SLEEP : sleepMS;
 	}
 
@@ -241,14 +258,14 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 */
 	public void setServerWorkerJar(String serverWorkerJar) {
 		this.serverWorkerJar = serverWorkerJar;
-		store();
+		if (loadedState)
+			self.store();
 	}
 
 	/**
 	 * @return the serverWorkerJar
 	 */
 	public String getServerWorkerJar() {
-		load();
 		return serverWorkerJar == null ? DEFAULT_WORKER_JAR : serverWorkerJar;
 	}
 
@@ -258,14 +275,14 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 */
 	public void setServerForkerJar(String serverForkerJar) {
 		this.serverForkerJar = serverForkerJar;
-		store();
+		if (loadedState)
+			self.store();
 	}
 
 	/**
 	 * @return the serverForkerJar
 	 */
 	public String getServerForkerJar() {
-		load();
 		return serverForkerJar == null ? DEFAULT_FORKER_JAR : serverForkerJar;
 	}
 
@@ -275,14 +292,14 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 */
 	public void setJavaBinary(String javaBinary) {
 		this.javaBinary = javaBinary;
-		store();
+		if (loadedState)
+			self.store();
 	}
 
 	/**
 	 * @return the javaBinary
 	 */
 	public String getJavaBinary() {
-		load();
 		return javaBinary == null ? DEFAULT_JAVA_BINARY : javaBinary;
 	}
 
@@ -292,15 +309,19 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 */
 	public void setPasswordFile(String passwordFile) {
 		this.passwordFile = passwordFile;
-		store();
+		if (loadedState)
+			self.store();
 	}
 
 	/**
 	 * @return the passwordFile
 	 */
 	public String getPasswordFile() {
-		load();
 		return passwordFile == null ? defaultPasswordFile : passwordFile;
+	}
+
+	void setDefaultPasswordFile(String defaultPasswordFile) {
+		this.defaultPasswordFile = defaultPasswordFile;
 	}
 
 	/**
@@ -309,14 +330,14 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 */
 	public void setRegistryHost(String registryHost) {
 		this.registryHost = (registryHost == null ? "" : registryHost);
-		store();
+		if (loadedState)
+			self.store();
 	}
 
 	/**
 	 * @return the registryHost
 	 */
 	public String getRegistryHost() {
-		load();
 		return registryHost.isEmpty() ? null : registryHost;
 	}
 
@@ -327,14 +348,14 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	public void setRegistryPort(int registryPort) {
 		this.registryPort = ((registryPort < 1 || registryPort > 65534) ? REGISTRY_PORT
 				: registryPort);
-		store();
+		if (loadedState)
+			self.store();
 	}
 
 	/**
 	 * @return the registryPort
 	 */
 	public int getRegistryPort() {
-		load();
 		return registryPort == 0 ? REGISTRY_PORT : registryPort;
 	}
 
@@ -342,68 +363,57 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 
 	private boolean loadedState;
 
+	@PostConstruct
+	@WithinSingleTransaction
 	public void load() {
 		if (loadedState || !isPersistent())
 			return;
-		Xact tx = beginTx();
-		boolean doRollback = true;
-		try {
-			LocalWorkerManagementState state = getById(KEY);
-			if (state == null) {
-				return;
-			}
-
-			defaultLifetime = state.getDefaultLifetime();
-			executeWorkflowScript = state.getExecuteWorkflowScript();
-			extraArgs = state.getExtraArgs();
-			factoryProcessNamePrefix = state.getFactoryProcessNamePrefix();
-			javaBinary = state.getJavaBinary();
-			maxRuns = state.getMaxRuns();
-			serverWorkerJar = state.getServerWorkerJar();
-			serverForkerJar = state.getServerForkerJar();
-			passwordFile = state.getPasswordFile();
-			sleepMS = state.getSleepMS();
-			waitSeconds = state.getWaitSeconds();
-			registryHost = state.getRegistryHost();
-			registryPort = state.getRegistryPort();
-			tx.commit();
-			doRollback = false;
-		} finally {
-			if (doRollback)
-				tx.rollback();
+		LocalWorkerManagementState state = getById(KEY);
+		if (state == null) {
+			store();
+			return;
 		}
+
+		defaultLifetime = state.getDefaultLifetime();
+		executeWorkflowScript = state.getExecuteWorkflowScript();
+		extraArgs = state.getExtraArgs();
+		factoryProcessNamePrefix = state.getFactoryProcessNamePrefix();
+		javaBinary = state.getJavaBinary();
+		maxRuns = state.getMaxRuns();
+		serverWorkerJar = state.getServerWorkerJar();
+		serverForkerJar = state.getServerForkerJar();
+		passwordFile = state.getPasswordFile();
+		sleepMS = state.getSleepMS();
+		waitSeconds = state.getWaitSeconds();
+		registryHost = state.getRegistryHost();
+		registryPort = state.getRegistryPort();
+
 		loadedState = true;
 	}
 
-	private void store() {
+	@WithinSingleTransaction
+	public void store() {
 		if (!isPersistent())
 			return;
-		Xact tx = beginTx();
-		try {
-			LocalWorkerManagementState state = getById(KEY);
-			if (state == null) {
-				state = persist(makeInstance());
-			}
-
-			state.setDefaultLifetime(defaultLifetime);
-			state.setExecuteWorkflowScript(executeWorkflowScript);
-			state.setExtraArgs(extraArgs);
-			state.setFactoryProcessNamePrefix(factoryProcessNamePrefix);
-			state.setJavaBinary(javaBinary);
-			state.setMaxRuns(maxRuns);
-			state.setServerWorkerJar(serverWorkerJar);
-			state.setServerForkerJar(serverForkerJar);
-			state.setPasswordFile(passwordFile);
-			state.setSleepMS(sleepMS);
-			state.setWaitSeconds(waitSeconds);
-			state.setRegistryHost(registryHost);
-			state.setRegistryPort(registryPort);
-			tx.commit();
-			tx = null;
-		} finally {
-			if (tx != null)
-				tx.rollback();
+		LocalWorkerManagementState state = getById(KEY);
+		if (state == null) {
+			state = persist(makeInstance());
 		}
+
+		state.setDefaultLifetime(defaultLifetime);
+		state.setExecuteWorkflowScript(executeWorkflowScript);
+		state.setExtraArgs(extraArgs);
+		state.setFactoryProcessNamePrefix(factoryProcessNamePrefix);
+		state.setJavaBinary(javaBinary);
+		state.setMaxRuns(maxRuns);
+		state.setServerWorkerJar(serverWorkerJar);
+		state.setServerForkerJar(serverForkerJar);
+		state.setPasswordFile(passwordFile);
+		state.setSleepMS(sleepMS);
+		state.setWaitSeconds(waitSeconds);
+		state.setRegistryHost(registryHost);
+		state.setRegistryPort(registryPort);
+
 		loadedState = true;
 	}
 }

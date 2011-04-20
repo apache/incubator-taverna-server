@@ -1,13 +1,21 @@
 package org.taverna.server.master.utils;
 
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
 import javax.annotation.PreDestroy;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
 
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.TavernaServerImpl;
 
 /**
  * Simple support class that wraps up and provides access to the correct parts
@@ -20,7 +28,7 @@ import org.taverna.server.master.TavernaServerImpl;
  */
 public abstract class JDOSupport<T> {
 	private Class<T> contextClass;
-	private PersistenceManager pm;
+	PersistenceManager pm;
 
 	/**
 	 * Instantiate this class, supplying it a handle to the class that will be
@@ -38,7 +46,7 @@ public abstract class JDOSupport<T> {
 	 *            The JDO engine to use for managing persistence.
 	 */
 	@Required
-	public final void setPersistenceManagerFactory(
+	public void setPersistenceManagerFactory(
 			PersistenceManagerFactory persistenceManagerFactory) {
 		pm = persistenceManagerFactory.getPersistenceManagerProxy();
 	}
@@ -54,43 +62,6 @@ public abstract class JDOSupport<T> {
 	 */
 	protected boolean isPersistent() {
 		return pm != null;
-	}
-
-	/**
-	 * Start executing a transaction.
-	 * 
-	 * @return The transaction, which must be manually committed or rolled back.
-	 */
-	protected Xact beginTx() {
-		final Transaction tx = pm.currentTransaction();
-		if (tx.isActive()) {
-			TavernaServerImpl.log
-					.warn("starting transaction when transaction is already started?!");
-			// Return a dummy that does nothing...
-			return new Xact() {
-				@Override
-				public void commit() {
-				}
-
-				@Override
-				public void rollback() {
-				}
-			};
-		}
-		tx.begin();
-		// TavernaServerImpl.log.info("started transaction " + tx +
-		// " for class " + getClass());
-		return new Xact() {
-			@Override
-			public void commit() {
-				tx.commit();
-			}
-
-			@Override
-			public void rollback() {
-				tx.rollback();
-			}
-		};
 	}
 
 	/**
@@ -166,9 +137,47 @@ public abstract class JDOSupport<T> {
 		pm.deletePersistent(value);
 	}
 
-	protected interface Xact {
-		void commit();
+	/**
+	 * Manages integration of JDO transactions with Spring.
+	 * @author Donal Fellows
+	 */
+	@Aspect
+	public static class TransactionAspect {
+		private Object lock = new Object();
 
-		void rollback();
+		@Around(value = "@annotation(org.taverna.server.master.utils.JDOSupport.WithinSingleTransaction) && target(support)", argNames = "support")
+		Object applyTransaction(ProceedingJoinPoint pjp, JDOSupport<?> support)
+				throws Throwable {
+			synchronized (lock) {
+				Transaction tx = support.pm == null ? null : support.pm
+						.currentTransaction();
+				if (tx != null && tx.isActive())
+					tx = null;
+				if (tx != null)
+					tx.begin();
+				try {
+					Object result = pjp.proceed();
+					if (tx != null)
+						tx.commit();
+					tx = null;
+					return result;
+				} finally {
+					if (tx != null)
+						tx.rollback();
+				}
+			}
+		}
+	}
+
+	/**
+	 * Mark a method (of a subclass of {@link JDOSupport}) as having a
+	 * transaction wrapped around it. The transactions are managed correctly in
+	 * the multi-threaded case.
+	 * 
+	 * @author Donal Fellows
+	 */
+	@Target(METHOD)
+	@Retention(RUNTIME)
+	public @interface WithinSingleTransaction {
 	}
 }

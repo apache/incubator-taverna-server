@@ -399,8 +399,8 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	@Override
 	public void setServletContext(ServletContext servletContext) {
 		if (state.getExecuteWorkflowScript() == null && servletContext != null) {
-			state.defaultExecuteWorkflowScript = servletContext
-					.getInitParameter("executeWorkflowScript");
+			state.setDefaultExecuteWorkflowScript(servletContext
+					.getInitParameter("executeWorkflowScript"));
 			if (state.getExecuteWorkflowScript() != null)
 				log.info("configured executeWorkflowScript from context as "
 						+ state.getExecuteWorkflowScript());

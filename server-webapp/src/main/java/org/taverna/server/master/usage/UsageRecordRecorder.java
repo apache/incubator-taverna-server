@@ -43,6 +43,7 @@ public class UsageRecordRecorder extends JDOSupport<UsageRecord> implements
 	private String logDestination;
 	private PrintWriter writer;
 	private Object lock = new Object();
+	private UsageRecordRecorder self;
 
 	/**
 	 * @param state
@@ -51,6 +52,11 @@ public class UsageRecordRecorder extends JDOSupport<UsageRecord> implements
 	@Required
 	public void setState(ManagementModel state) {
 		this.state = state;
+	}
+
+	@Required
+	public void setSelf(UsageRecordRecorder self) {
+		this.self = self;
 	}
 
 	/**
@@ -121,33 +127,31 @@ public class UsageRecordRecorder extends JDOSupport<UsageRecord> implements
 			return;
 		}
 
-		Xact tx = beginTx();
 		try {
-			persist(ur);
-			tx.commit();
+			self.saveURtoDB(ur);
 		} catch (RuntimeException e) {
-			tx.rollback();
 			log.warn("failed to save UR to database", e);
 		}
 	}
 
+	@WithinSingleTransaction
+	public void saveURtoDB(UsageRecord ur) {
+		persist(ur);
+	}
+
+	@WithinSingleTransaction
 	public List<JobUsageRecord> getUsageRecords() {
-		Xact tx = beginTx();
-		try {
-			@SuppressWarnings("unchecked")
-			Collection<String> urs = (Collection<String>) namedQuery(
-					"allByDate").execute();
-			List<JobUsageRecord> result = new ArrayList<JobUsageRecord>();
-			for (String ur : urs)
-				try {
-					result.add(JobUsageRecord.unmarshal(ur));
-				} catch (JAXBException e) {
-					log.warn("failed to unmarshal UR", e);
-				}
-			return result;
-		} finally {
-			tx.commit();
-		}
+		@SuppressWarnings("unchecked")
+		Collection<String> urs = (Collection<String>) namedQuery("allByDate")
+				.execute();
+		List<JobUsageRecord> result = new ArrayList<JobUsageRecord>();
+		for (String ur : urs)
+			try {
+				result.add(JobUsageRecord.unmarshal(ur));
+			} catch (JAXBException e) {
+				log.warn("failed to unmarshal UR", e);
+			}
+		return result;
 	}
 
 	@Override

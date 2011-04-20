@@ -2,10 +2,11 @@
 <!-- Copyright (C) 2010-2011 The University of Manchester See the file "LICENSE.txt" 
 	for license terms. -->
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:task="http://www.springframework.org/schema/task"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd"
-	default-lazy-init="false">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:task="http://www.springframework.org/schema/task"
+	default-lazy-init="false"
+	xsi:schemaLocation="http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
 	<bean id="webapp" class="org.taverna.server.master.TavernaServerImpl">
 		<property name="policy" ref="localworker.policy" />
@@ -54,6 +55,7 @@
 		<property name="allowNewWorkflowRuns" value="true" />
 		<property name="logOutgoingExceptions" value="false" />
 		<property name="persistenceManagerFactory" ref="pmf" />
+		<property name="self" ref="webapp.state" />
 	</bean>
 
 	<bean id="webapp.invocationCounter" class="org.taverna.server.master.utils.InvocationCounter" />
@@ -167,6 +169,8 @@
 			</props>
 		</property>
 	</bean>
+	<bean id="transactionAspect"
+		class="org.taverna.server.master.utils.JDOSupport.TransactionAspect" />
 
 	<!-- TODO: control the location of the database properly, or move to JNDI 
 		TODO: review whether what we are doing now is correct! -->
@@ -188,6 +192,7 @@
 		<property name="state" ref="webapp.state" />
 		<property name="contextualizer" ref="contextualizer" />
 		<property name="persistenceManagerFactory" ref="pmf" />
+		<property name="self" ref="usageRecordSink" />
 	</bean>
 
 	<bean id="localworker.factory" scope="singleton" lazy-init="false"
@@ -216,8 +221,8 @@
 	<bean id="localworker.state" class="org.taverna.server.master.localworker.LocalWorkerState"
 		scope="singleton" lazy-init="false">
 		<description>
-			The state of the simple factory for the baseline
-			localworker.
+			The state of the simple factory for the identity-aware
+			local worker.
 		</description>
 		<property name="defaultLifetime" value="1440">
 			<description>How long the run lasts for by default, in seconds.
@@ -250,6 +255,7 @@
 		<!-- <property name="executeWorkflowScript"> <description>The full path 
 			to the executeworkflow.sh in either the Taverna 2 Workbench distribution 
 			or the Taverna 2 Command Line distribution.</description> </property> -->
+		<property name="self" ref="localworker.state" />
 	</bean>
 
 	<bean id="localworker.policy" class="org.taverna.server.master.localworker.PolicyImpl">
@@ -269,6 +275,7 @@
 		<property name="persistenceManagerFactory" ref="pmf" />
 		<property name="notifier" ref="localworker.notifier" />
 		<property name="notificationEngine" ref="notificationFabric" />
+		<property name="self" ref="localworker.runDAO" />
 	</bean>
 	<task:scheduled-tasks scheduler="taskScheduler">
 		<task:scheduled ref="localworker.runDAO" method="cleanNow"

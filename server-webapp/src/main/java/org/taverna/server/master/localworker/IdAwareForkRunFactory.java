@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.servlet.ServletContext;
 import javax.xml.bind.JAXBException;
@@ -460,7 +461,8 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	 * @throws IOException
 	 *             If the connection fails.
 	 */
-	private void initMetaFactory() throws IOException {
+	@PostConstruct
+	void initMetaFactory() throws IOException {
 		forker = new MetaFactoryImpl();
 	}
 
@@ -615,35 +617,25 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 			l.add(e.nextElement());
 		log.info("have init-params: " + l);
 
-		if (state.defaultExecuteWorkflowScript == null) {
-			state.defaultExecuteWorkflowScript = servletContext
-					.getInitParameter("executeWorkflowScript");
-			if (state.getExecuteWorkflowScript() != null) {
-				log.info("configured executeWorkflowScript from context as "
-						+ state.getExecuteWorkflowScript());
-				if (state.defaultExecuteWorkflowScript
-						.startsWith("/some/where/executeWorkflow."))
-					log.warn("unexpected default value!");
-			}
+		state.setDefaultExecuteWorkflowScript(servletContext
+				.getInitParameter("executeWorkflowScript"));
+		if (state.getExecuteWorkflowScript() != null) {
+			log.info("configured executeWorkflowScript from context as "
+					+ state.getExecuteWorkflowScript());
+			if (state.getDefaultExecuteWorkflowScript()
+					.startsWith("/some/where/executeWorkflow."))
+				log.warn("unexpected default value!");
 		}
 
-		if (state.defaultPasswordFile == null) {
-			state.defaultPasswordFile = servletContext
-					.getInitParameter("secureForkPasswordFile");
-			if (state.getPasswordFile() != null)
-				log.info("configured secureForkPasswordFile from context as "
-						+ state.getPasswordFile());
-		}
+		state.setDefaultPasswordFile(servletContext
+				.getInitParameter("secureForkPasswordFile"));
+		if (state.getPasswordFile() != null)
+			log.info("configured secureForkPasswordFile from context as "
+					+ state.getPasswordFile());
 
 		if (forker != null) {
 			log.warn("updated the servlet config after a metafactory existed");
 			reinitFactory();
-		} else {
-			try {
-				initMetaFactory();
-			} catch (IOException e1) {
-				log.fatal("failed to build metafactory", e1);
-			}
 		}
 	}
 }

@@ -41,8 +41,8 @@ import org.taverna.server.master.utils.UsernamePrincipal;
  * @author Donal Fellows
  */
 @PersistenceAware
-public class RunDatabaseDAO extends JDOSupport<RunConnection> implements RunStore,
-		RunDBSupport {
+public class RunDatabaseDAO extends JDOSupport<RunConnection> implements
+		RunStore, RunDBSupport {
 	public RunDatabaseDAO() {
 		super(RunConnection.class);
 	}
@@ -50,6 +50,7 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> implements RunStor
 	private Log log = LogFactory.getLog("Taverna.Server.LocalWorker.RunDB");
 	private List<CompletionNotifier> notifier = new ArrayList<CompletionNotifier>();
 	private NotificationEngine notificationEngine;
+	private RunDatabaseDAO self;
 
 	@Override
 	public void setNotifier(CompletionNotifier n) {
@@ -62,6 +63,11 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> implements RunStor
 		this.notificationEngine = notificationEngine;
 	}
 
+	@Required
+	public void setSelf(RunDatabaseDAO self) {
+		this.self = self;
+	}
+
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 	@SuppressWarnings("unchecked")
@@ -70,7 +76,9 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> implements RunStor
 		return (List<String>) namedQuery("names").execute();
 	}
 
-	private Integer count() {
+	@Override
+	@WithinSingleTransaction
+	public int countRuns() {
 		log.debug("counting the number of runs");
 		return (Integer) namedQuery("count").execute();
 	}
@@ -118,32 +126,20 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> implements RunStor
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-	@Override
-	public int countRuns() {
-		Xact tx = beginTx();
-		try {
-			return count();
-		} finally {
-			tx.commit();
-		}
-	}
-
-	private TavernaRun get(String name) {
-		Xact tx = beginTx();
+	@WithinSingleTransaction
+	public TavernaRun get(String name) {
 		try {
 			RunConnection rc = pickRun(name);
 			return (rc == null) ? null : rc.fromDBform(this);
 		} catch (Exception e) {
 			return null;
-		} finally {
-			tx.commit();
 		}
 	}
 
 	@Override
 	public TavernaRun getRun(UsernamePrincipal user, Policy p, String uuid)
 			throws UnknownRunException {
-		TavernaRun run = get(uuid);
+		TavernaRun run = self.get(uuid);
 		if (run != null && (user == null || p.permitAccess(user, run)))
 			return run;
 		throw new UnknownRunException();
@@ -151,60 +147,48 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> implements RunStor
 
 	@Override
 	public TavernaRun getRun(String uuid) throws UnknownRunException {
-		TavernaRun run = get(uuid);
+		TavernaRun run = self.get(uuid);
 		if (run != null)
 			return run;
 		throw new UnknownRunException();
 	}
 
 	@Override
+	@WithinSingleTransaction
 	public Map<String, TavernaRun> listRuns(UsernamePrincipal user, Policy p) {
-		Xact tx = beginTx();
-		try {
-			Map<String, TavernaRun> result = new HashMap<String, TavernaRun>();
-			for (String id : nameRuns()) {
-				try {
-					RemoteRunDelegate rrd = pickRun(id).fromDBform(this);
-					if (p.permitAccess(user, rrd))
-						result.put(id, rrd);
-				} catch (Exception e) {
-					continue;
-				}
+		Map<String, TavernaRun> result = new HashMap<String, TavernaRun>();
+		for (String id : nameRuns()) {
+			try {
+				RemoteRunDelegate rrd = pickRun(id).fromDBform(this);
+				if (p.permitAccess(user, rrd))
+					result.put(id, rrd);
+			} catch (Exception e) {
+				continue;
 			}
-			return result;
-		} finally {
-			tx.commit();
 		}
+		return result;
 	}
 
 	@Override
+	@WithinSingleTransaction
 	public List<String> listRunNames() {
-		Xact tx = beginTx();
-		try {
-			ArrayList<String> runNames = new ArrayList<String>();
-			for (RunConnection rc : allRuns()) {
-				if (rc.getId() != null)
-					runNames.add(rc.getId());
-			}
-			return runNames;
-		} finally {
-			tx.commit();
+		ArrayList<String> runNames = new ArrayList<String>();
+		for (RunConnection rc : allRuns()) {
+			if (rc.getId() != null)
+				runNames.add(rc.getId());
 		}
+		return runNames;
 	}
 
 	@Override
+	@WithinSingleTransaction
 	public RemoteRunDelegate pickArbitraryRun() throws Exception {
-		Xact tx = beginTx();
-		try {
-			for (RunConnection rc : allRuns()) {
-				if (rc.getId() == null)
-					continue;
-				return rc.fromDBform(this);
-			}
-			return null;
-		} finally {
-			tx.commit();
+		for (RunConnection rc : allRuns()) {
+			if (rc.getId() == null)
+				continue;
+			return rc.fromDBform(this);
 		}
+		return null;
 	}
 
 	private void logLength(String message, Object obj) {
@@ -230,12 +214,9 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> implements RunStor
 		if (rrd.id == null)
 			rrd.id = randomUUID().toString();
 		logLength("RemoteRunDelegate serialized length", rrd);
-		Xact tx = beginTx();
 		try {
-			persist(rrd);
-			tx.commit();
+			self.persistRun(rrd);
 		} catch (IOException e) {
-			tx.rollback();
 			throw new RuntimeException(
 					"unexpected problem when persisting run record in database",
 					e);
@@ -243,29 +224,33 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> implements RunStor
 		return rrd.getId();
 	}
 
-	@Override
-	public void unregisterRun(String name) {
-		Xact tx = beginTx();
-		try {
-			RunConnection rc = pickRun(name);
-			if (rc != null)
-				delete(rc);
-			tx.commit();
-		} catch (RuntimeException e) {
-			log.debug("problem persisting the deletion of the run " + name, e);
-			tx.rollback();
-		}
+	@WithinSingleTransaction
+	public void persistRun(RemoteRunDelegate rrd) throws IOException {
+		persist(rrd);
 	}
 
 	@Override
-	public void flushToDisk(RemoteRunDelegate run) {
-		Xact tx = beginTx();
+	public void unregisterRun(String name) {
 		try {
-			RunConnection rc = getById(run.id);
-			rc.makeChanges(run);
-			tx.commit();
+			self.unpersistRun(name);
+		} catch (RuntimeException e) {
+			log.debug("problem persisting the deletion of the run " + name, e);
+		}
+	}
+
+	@WithinSingleTransaction
+	public void unpersistRun(String name) {
+		RunConnection rc = pickRun(name);
+		if (rc != null)
+			delete(rc);
+	}
+
+	@Override
+	@WithinSingleTransaction
+	public void flushToDisk(RemoteRunDelegate run) {
+		try {
+			getById(run.id).makeChanges(run);
 		} catch (IOException e) {
-			tx.rollback();
 			throw new RuntimeException(
 					"unexpected problem when persisting run record in database",
 					e);
@@ -274,46 +259,25 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> implements RunStor
 
 	@Override
 	public void cleanNow() {
-		Xact tx = beginTx();
 		try {
-			log.debug("deleting runs that timed out before " + new Date());
-			List<String> toDelete = expiredRuns();
-			log.debug("found " + toDelete.size() + " runs to delete");
-			for (String id : toDelete)
-				delete(getById(id));
-			tx.commit();
+			self.doClean();
 		} catch (Exception e) {
 			log.warn("failure during deletion of expired runs", e);
-			tx.rollback();
 		}
+	}
+
+	@WithinSingleTransaction
+	public void doClean() {
+		log.debug("deleting runs that timed out before " + new Date());
+		List<String> toDelete = expiredRuns();
+		log.debug("found " + toDelete.size() + " runs to delete");
+		for (String id : toDelete)
+			delete(getById(id));
 	}
 
 	@Override
 	public void checkForFinishNow() {
-		List<RemoteRunDelegate> toNotify = new ArrayList<RemoteRunDelegate>();
-		Xact tx = beginTx();
-		try {
-			if (count() == 0)
-				return;
-			for (RunConnection rc : allRuns()) {
-				try {
-					RemoteRunDelegate rrd = rc.fromDBform(this);
-					if (rrd.doneTransitionToFinished
-							|| rrd.getStatus() != Status.Finished)
-						continue;
-					rrd.doneTransitionToFinished = true;
-					rc.setFinished(true);
-					toNotify.add(rrd);
-				} catch (Exception e) {
-					log.warn("failed to do notification of completion", e);
-					continue;
-				}
-			}
-		} finally {
-			tx.commit();
-		}
-		// Do this _outside_ the context of the transaction!
-		for (RemoteRunDelegate rrd : toNotify)
+		for (RemoteRunDelegate rrd : self.getNotifiable())
 			for (Listener l : rrd.getListeners())
 				if (l.getName().equals("io")) {
 					try {
@@ -323,6 +287,26 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> implements RunStor
 					}
 					break;
 				}
+	}
+
+	@WithinSingleTransaction
+	public List<RemoteRunDelegate> getNotifiable() {
+		List<RemoteRunDelegate> toNotify = new ArrayList<RemoteRunDelegate>();
+		for (RunConnection rc : allRuns()) {
+			try {
+				RemoteRunDelegate rrd = rc.fromDBform(this);
+				if (rrd.doneTransitionToFinished
+						|| rrd.getStatus() != Status.Finished)
+					continue;
+				rrd.doneTransitionToFinished = true;
+				rc.setFinished(true);
+				toNotify.add(rrd);
+			} catch (Exception e) {
+				log.warn("failed to do notification of completion", e);
+				continue;
+			}
+		}
+		return toNotify;
 	}
 
 	/**
