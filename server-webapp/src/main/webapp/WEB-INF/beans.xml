@@ -10,7 +10,7 @@
 
 	<bean id="webapp" class="org.taverna.server.master.TavernaServerImpl">
 		<property name="policy" ref="localworker.policy" />
-		<property name="runStore" ref="localworker.runDAO" />
+		<property name="runStore" ref="localworker.rundb" />
 		<property name="fileUtils" ref="fileUtils" />
 		<property name="contentsDescriptorBuilder" ref="contentsDescriptorBuilder" />
 		<property name="notificationEngine" ref="notificationFabric" />
@@ -24,7 +24,7 @@
 		<property name="policy" ref="localworker.policy" />
 		<property name="listenerFactory" ref="listenerFactory" />
 		<property name="runFactory" ref="localworker.factory" />
-		<property name="runStore" ref="localworker.runDAO" />
+		<property name="runStore" ref="localworker.rundb" />
 		<property name="stateModel" ref="webapp.state" />
 		<property name="idMapper" ref="IdentityMapper" />
 		<property name="invocationCounter" ref="webapp.invocationCounter" />
@@ -112,7 +112,7 @@
 	<bean id="admin" class="org.taverna.server.master.admin.AdminBean">
 		<property name="state" ref="webapp.state" />
 		<property name="counter" ref="webapp.invocationCounter" />
-		<property name="runDB" ref="localworker.runDAO" />
+		<property name="runDB" ref="localworker.rundb" />
 		<property name="factory" ref="localworker.factory" />
 		<property name="usageRecords" ref="usageRecordSink" />
 	</bean>
@@ -202,7 +202,7 @@
 			localworker case.
 		</description>
 		<property name="state" ref="localworker.state" />
-		<property name="runDB" ref="localworker.runDAO" />
+		<property name="runDB" ref="localworker.rundb" />
 		<property name="idMapper" ref="IdentityMapper" />
 		<property name="securityContextFactory" ref="localworker.securityContext" />
 		<property name="usageRecordSink" ref="usageRecordSink" />
@@ -213,7 +213,7 @@
 
 	<bean id="localworker.securityContext"
 		class="org.taverna.server.master.localworker.SecurityContextFactory">
-		<property name="runDatabase" ref="localworker.runDAO" />
+		<property name="runDatabase" ref="localworker.rundb" />
 		<property name="filenameConverter" ref="fileUtils" />
 		<property name="x500Utils" ref="x500Utils" />
 	</bean>
@@ -265,7 +265,12 @@
 			by the localworker run engine.
 		</description>
 		<property name="state" ref="localworker.state" />
-		<property name="runDB" ref="localworker.runDAO" />
+		<property name="runDB" ref="localworker.rundb" />
+	</bean>
+	<bean id="localworker.rundb" class="org.taverna.server.master.localworker.RunDatabase">
+		<property name="notifier" ref="localworker.notifier" />
+		<property name="notificationEngine" ref="notificationFabric" />
+		<property name="dao" ref="localworker.runDAO" />
 	</bean>
 	<bean id="localworker.runDAO" class="org.taverna.server.master.localworker.RunDatabaseDAO">
 		<description>
@@ -273,14 +278,12 @@
 			supported by the localworker run engine.
 		</description>
 		<property name="persistenceManagerFactory" ref="pmf" />
-		<property name="notifier" ref="localworker.notifier" />
-		<property name="notificationEngine" ref="notificationFabric" />
-		<property name="self" ref="localworker.runDAO" />
+		<property name="facade" ref="localworker.rundb" />
 	</bean>
 	<task:scheduled-tasks scheduler="taskScheduler">
-		<task:scheduled ref="localworker.runDAO" method="cleanNow"
+		<task:scheduled ref="localworker.rundb" method="cleanNow"
 			fixed-delay="30000" />
-		<task:scheduled ref="localworker.runDAO" method="checkForFinishNow"
+		<task:scheduled ref="localworker.rundb" method="checkForFinishNow"
 			fixed-delay="10000" />
 		<task:scheduled ref="dispatch.atom" method="deleteExpiredEvents"
 			fixed-delay="3600000" />

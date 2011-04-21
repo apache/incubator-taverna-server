@@ -2,8 +2,6 @@ package org.taverna.server.master.localworker;
 
 import java.util.List;
 
-import javax.jdo.PersistenceManagerFactory;
-
 import org.taverna.server.master.notification.NotificationEngine;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -44,7 +42,4 @@ public interface RunDBSupport {
 	void setNotificationEngine(NotificationEngine notificationEngine);
 
 	void setNotifier(CompletionNotifier notifier);
-
-	void setPersistenceManagerFactory(
-			PersistenceManagerFactory persistenceManagerFactory);
 }
