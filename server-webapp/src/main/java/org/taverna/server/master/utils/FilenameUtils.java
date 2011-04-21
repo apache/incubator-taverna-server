@@ -47,6 +47,8 @@ public class FilenameUtils {
 	public DirectoryEntry getDirEntry(TavernaRun run, String name)
 			throws FilesystemAccessException, NoDirectoryEntryException {
 		Directory dir = run.getWorkingDirectory();
+		if (name == null || name.isEmpty())
+			return dir;
 		DirectoryEntry found = dir;
 		boolean mustBeLast = false;
 
@@ -84,6 +86,8 @@ public class FilenameUtils {
 	public DirectoryEntry getDirEntry(TavernaRun run, List<PathSegment> d)
 			throws FilesystemAccessException, NoDirectoryEntryException {
 		Directory dir = run.getWorkingDirectory();
+		if (d == null || d.isEmpty())
+			return dir;
 		DirectoryEntry found = dir;
 		boolean mustBeLast = false;
 
@@ -122,6 +126,8 @@ public class FilenameUtils {
 	public DirectoryEntry getDirEntry(TavernaRun run, DirEntryReference d)
 			throws FilesystemAccessException, NoDirectoryEntryException {
 		Directory dir = run.getWorkingDirectory();
+		if (d == null || d.path == null || d.path.isEmpty())
+			return dir;
 		DirectoryEntry found = dir;
 		boolean mustBeLast = false;
 
