@@ -35,6 +35,7 @@
 		<jaxws:serviceBean>
 			<ref bean="webapp" />
 		</jaxws:serviceBean>
+		<!-- <jaxws:dataBinding><ref bean="addStylesheet"/></jaxws:dataBinding> -->
 	</jaxws:server>
 
 	<jaxrs:server id="root_REST" address="/">
@@ -77,6 +78,7 @@
 			<ref bean="MessagingProvider.File" />
 			<ref bean="MessagingProvider.InputStream" />
 		</jaxrs:providers>
+		<!-- <jaxrs:dataBinding><ref bean="addStylesheet"/></jaxrs:dataBinding> -->
 	</jaxrs:server>
 
 	<jaxrs:server id="AtomFeed" address="/feed">
@@ -96,7 +98,24 @@
 		<jaxrs:serviceBeans>
 			<ref bean="admin" />
 		</jaxrs:serviceBeans>
+		<!-- <jaxrs:dataBinding><ref bean="addStylesheet"/></jaxrs:dataBinding> -->
 	</jaxrs:server>
+
+	<!-- How to supply a stylesheet with the results so that browsers can
+	     show things properly; requires selecting a stylesheet to use. -->
+<!--
+	<bean id="addStylesheet" class="org.apache.cxf.jaxb.JAXBDataBinding">
+		<property name="marshallerProperties">
+			<map>
+				<entry key="com.sun.xml.bind.xmlHeaders">
+					<value><![CDATA[
+						<?xml-stylesheet type='text/xsl' href='xml2html.xsl'?>
+					]]></value>
+				</entry>
+			</map>
+		</property>
+	</bean>
+-->
 
 	<bean id="root_facade" class="org.taverna.server.master.facade.Facade">
 		<property name="file" value="welcome.html" />
