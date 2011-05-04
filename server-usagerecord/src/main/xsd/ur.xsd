@@ -14,7 +14,7 @@
 		</xsd:appinfo>
 	</xsd:annotation>
 	<xsd:import namespace="http://www.w3.org/2000/09/xmldsig#"
-		schemaLocation="http://www.w3.org/TR/xmldsig-core/xmldsig-core-schema.xsd" />
+		schemaLocation="xmlds.xsd" /> <!-- http://www.w3.org/TR/xmldsig-core/xmldsig-core-schema.xsd -->
 	<xsd:complexType name="UsageRecordType">
 		<xsd:sequence>
 			<xsd:element ref="urf:RecordIdentity" />
