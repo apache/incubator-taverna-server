@@ -10,6 +10,11 @@ import org.springframework.web.context.ServletContextAware;
 import org.taverna.server.master.interfaces.MessageDispatcher;
 import org.taverna.server.master.interfaces.TavernaRun;
 
+/**
+ * Configuration support for notification dispatchers.
+ * 
+ * @author Donal Fellows.
+ */
 public abstract class AbstractConfiguredDispatcher implements
 		MessageDispatcher, ServletContextAware {
 	/**

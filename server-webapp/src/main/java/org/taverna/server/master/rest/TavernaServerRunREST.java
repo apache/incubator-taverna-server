@@ -312,6 +312,7 @@ public interface TavernaServerRunREST {
 	@XmlRootElement
 	@XmlType(name = "")
 	public static class RunDescription extends VersionedElement {
+		/** The identity of the owner of the workflow run. */
 		@XmlAttribute(namespace = Namespaces.SERVER_REST)
 		public String owner;
 		/** The description of the expiry. */

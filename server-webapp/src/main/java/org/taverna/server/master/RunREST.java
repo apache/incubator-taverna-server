@@ -199,25 +199,44 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 		return cdBuilder.makeOutputDescriptor(run, ui);
 	}
 
-	/** Construct a RESTful interface to a run's filestore. */
+	/**
+	 * Construct a RESTful interface to a run's filestore.
+	 * 
+	 * @return The handle to the interface, as decorated by Spring.
+	 */
 	protected abstract DirectoryREST makeDirectoryInterface();
 
-	/** Construct a RESTful interface to a run's input descriptors. */
+	/**
+	 * Construct a RESTful interface to a run's input descriptors.
+	 * 
+	 * @return The handle to the interface, as decorated by Spring.
+	 */
 	protected abstract InputREST makeInputInterface();
 
-	/** Construct a RESTful interface to a run's listeners. */
+	/**
+	 * Construct a RESTful interface to a run's listeners.
+	 * 
+	 * @return The handle to the interface, as decorated by Spring.
+	 */
 	protected abstract ListenersREST makeListenersInterface();
 
-	/** Construct a RESTful interface to a run's security. */
+	/**
+	 * Construct a RESTful interface to a run's security.
+	 * 
+	 * @return The handle to the interface, as decorated by Spring.
+	 */
 	protected abstract RunSecurityREST makeSecurityInterface();
 }
 
 /**
  * Description of properties supported by {@link RunREST}.
+ * 
  * @author Donal Fellows
  */
 interface RunBean extends SupportAware {
 	void setCdBuilder(ContentsDescriptorBuilder cdBuilder);
+
 	void setRun(TavernaRun run);
+
 	void setRunName(String runName);
 }

@@ -25,46 +25,66 @@ import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.joda.time.DateTime;
 
+/**
+ * Parent class of all events that may appear on the feed for a workflow run.
+ * 
+ * @author Donal Fellows
+ */
 @PersistenceCapable(schema = "ATOM", table = "EVENTS")
 @Queries({
 		@Query(name = "eventsForUser", language = "SQL", value = "SELECT id FROM ATOM.EVENTS WHERE owner = ? ORDER BY published DESC", resultClass = String.class),
 		@Query(name = "eventForUserAndId", language = "SQL", value = "SELECT id FROM ATOM.EVENTS WHERE owner = ? AND id = ?", resultClass = String.class),
 		@Query(name = "eventsFromBefore", language = "SQL", value = "SELECT id FROM ATOM.EVENTS where published < ?", resultClass = String.class) })
-@XmlType
+@XmlType(propOrder = {})
 @XmlSeeAlso(TerminationEvent.class)
 public abstract class AbstractEvent implements Serializable {
 	@Persistent(primaryKey = "true")
 	@Column(length = 48)
-	@XmlAttribute
 	private String id;
 	@Persistent
-	@XmlTransient
 	protected String owner;
 	@Persistent
 	@Index
 	@XmlAttribute
 	protected Date published;
 
+	/**
+	 * Initialise the identity of this event and the point at which it was
+	 * published.
+	 * 
+	 * @param idPrefix
+	 *            A prefix for the identity of this event.
+	 */
 	protected AbstractEvent(String idPrefix) {
 		id = idPrefix + "." + randomUUID().toString();
 		published = new Date();
 	}
 
 	public void write(Feed feed) {
-		write(feed.addEntry());
+		write(feed.addEntry(), null);
 	}
 
-	public void write(Entry entry) {
+	/**
+	 * Write this event to the given feed in the given language.
+	 * 
+	 * @param entry
+	 *            The Atom event to populate.
+	 * @param language
+	 *            The language to (ostensibly) use.
+	 */
+	public void write(Entry entry, String language) {
 		entry.setId(id);
 		entry.setPublished(published);
-		entry.addAuthor(owner);
-		entry.setUpdated(new Date());
+		entry.addAuthor(owner).setLanguage(language);
+		entry.setUpdated(published);
 	}
 
+	@XmlAttribute
 	public final String getId() {
 		return id;
 	}
 
+	@XmlTransient
 	public final String getOwner() {
 		return owner;
 	}

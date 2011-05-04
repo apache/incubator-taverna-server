@@ -49,6 +49,7 @@ import org.taverna.server.master.utils.InvocationCounter;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
@@ -58,6 +59,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  */
 @ManagedResource(objectName = JMX_ROOT + "Webapp", description = "The main web-application interface to Taverna Server.")
 public class TavernaServerSupport {
+	/** The main webapp log. */
 	public static final Log log = getLog("Taverna.Server.Webapp");
 	private Log accessLog = getLog("Taverna.Server.Webapp.Access");;
 	/** Bean used to log counts of external calls. */
@@ -81,6 +83,7 @@ public class TavernaServerSupport {
 	 * as it indicates a serious problem, but can be switched off for testing.
 	 */
 	private boolean logGetPrincipalFailures = true;
+	private Map<String, String> contentTypeMap;
 
 	/**
 	 * @return Count of the number of external calls into this webapp.
@@ -247,11 +250,28 @@ public class TavernaServerSupport {
 		logGetPrincipalFailures = logthem;
 	}
 
+	public Map<String, String> getContentTypeMap() {
+		return contentTypeMap;
+	}
+
+	/**
+	 * Mapping from filename suffixes (e.g., "baclava") to content types.
+	 * 
+	 * @param contentTypeMap
+	 *            The mapping to install.
+	 */
+	@Required
+	public void setContentTypeMap(Map<String, String> contentTypeMap) {
+		this.contentTypeMap = contentTypeMap;
+	}
+
 	/**
 	 * Test whether the current user can do updates to the given run.
 	 * 
 	 * @param run
 	 *            The workflow run to do the test on.
+	 * @throws NoUpdateException
+	 *             If the current user is not permitted to update the run.
 	 */
 	public void permitUpdate(@NonNull TavernaRun run) throws NoUpdateException {
 		if (isSuperUser()) {
@@ -268,6 +288,8 @@ public class TavernaServerSupport {
 	 * 
 	 * @param run
 	 *            The workflow run to do the test on.
+	 * @throws NoDestroyException
+	 *             If the current user is not permitted to destroy the run.
 	 */
 	public void permitDestroy(TavernaRun run) throws NoDestroyException {
 		if (isSuperUser()) {
@@ -350,6 +372,17 @@ public class TavernaServerSupport {
 		return listenerFactory.makeListener(run, type, configuration);
 	}
 
+	/**
+	 * Obtain a listener that is already attached to a workflow run.
+	 * 
+	 * @param run
+	 *            The workflow run to search.
+	 * @param listenerName
+	 *            The name of the listener to look up.
+	 * @return The listener instance interface.
+	 * @throws NoListenerException
+	 *             If no listener with that name exists.
+	 */
 	@NonNull
 	public Listener getListener(TavernaRun run, String listenerName)
 			throws NoListenerException {
@@ -478,6 +511,15 @@ public class TavernaServerSupport {
 		return run.getExpiry();
 	}
 
+	/**
+	 * Manufacture a workflow run instance.
+	 * 
+	 * @param workflow
+	 *            The workflow document (t2flow, scufl2?) to instantiate.
+	 * @return The ID of the created workflow run.
+	 * @throws NoCreateException
+	 *             If the user is not permitted to create workflows.
+	 */
 	public String buildWorkflow(Workflow workflow) throws NoCreateException {
 		UsernamePrincipal p = getPrincipal();
 		if (!stateModel.getAllowNewWorkflowRuns())
@@ -528,6 +570,17 @@ public class TavernaServerSupport {
 		}
 	}
 
+	/**
+	 * Get a particular input to a workflow run.
+	 * 
+	 * @param run
+	 *            The workflow run to search.
+	 * @param portName
+	 *            The name of the input.
+	 * @return The handle of the input, or <tt>null</tt> if no such handle
+	 *         exists.
+	 */
+	@Nullable
 	public Input getInput(TavernaRun run, String portName) {
 		for (Input i : run.getInputs())
 			if (i.getName().equals(portName))
@@ -535,23 +588,23 @@ public class TavernaServerSupport {
 		return null;
 	}
 
+	/**
+	 * Get a listener attached to a run.
+	 * 
+	 * @param runName
+	 *            The name of the run to look up
+	 * @param listenerName
+	 *            The name of the listener.
+	 * @return The handle of the listener.
+	 * @throws NoListenerException
+	 *             If no such listener exists.
+	 * @throws UnknownRunException
+	 *             If no such workflow run exists, or if the user does not have
+	 *             permission to access it.
+	 */
 	public Listener getListener(String runName, String listenerName)
 			throws NoListenerException, UnknownRunException {
 		return getListener(getRun(runName), listenerName);
-	}
-
-	private Map<String, String> contentTypeMap;
-
-	public Map<String, String> getContentTypeMap() {
-		return contentTypeMap;
-	}
-
-	/**
-	 * Mapping from filename suffixes (e.g., "baclava") to content types.
-	 */
-	@Required
-	public void setContentTypeMap(Map<String, String> contentTypeMap) {
-		this.contentTypeMap = contentTypeMap;
 	}
 
 	/**

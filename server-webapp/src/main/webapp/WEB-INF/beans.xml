@@ -104,9 +104,11 @@
 		<property name="support" ref="webapp.support" />
 	</bean>
 
-	<bean id="feed" class="org.taverna.server.master.AtomFeed">
+	<bean id="feed"
+		class="org.taverna.server.master.notification.atom.AtomFeed">
 		<property name="eventSource" ref="dispatch.atom" />
 		<property name="support" ref="webapp.support" />
+		<property name="feedLanguage" value="en" />
 	</bean>
 
 	<bean id="admin" class="org.taverna.server.master.admin.AdminBean">

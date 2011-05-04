@@ -115,6 +115,10 @@ public class EmailDispatcher implements MessageDispatcher {
 		}
 	}
 
+	/**
+	 * Try to perform the lookup of the email service. This is called during
+	 * configuration so that any failure happens at a useful, predictable time.
+	 */
 	@PostConstruct
 	public void tryLookup() {
 		try {

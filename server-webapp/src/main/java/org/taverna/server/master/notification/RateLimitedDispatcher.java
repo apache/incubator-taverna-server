@@ -16,7 +16,8 @@ import org.joda.time.DateTime;
  * 
  * @author Donal Fellows
  */
-public abstract class RateLimitedDispatcher extends AbstractConfiguredDispatcher {
+public abstract class RateLimitedDispatcher extends
+		AbstractConfiguredDispatcher {
 	public RateLimitedDispatcher(String prefix) {
 		super(prefix);
 	}
@@ -35,6 +36,13 @@ public abstract class RateLimitedDispatcher extends AbstractConfiguredDispatcher
 		this.cooldownSeconds = cooldownSeconds;
 	}
 
+	/**
+	 * Test whether the rate limiter allows the given user to send a message.
+	 * 
+	 * @param who
+	 *            Who wants to send the message?
+	 * @return <tt>true</tt> iff they are permitted.
+	 */
 	protected boolean isSendAllowed(String who) {
 		DateTime now = new DateTime();
 		synchronized (lastSend) {

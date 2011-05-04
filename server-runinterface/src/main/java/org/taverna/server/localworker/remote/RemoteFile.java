@@ -21,8 +21,10 @@ public interface RemoteFile extends RemoteDirectoryEntry {
 	 * @param length
 	 *            How much of the file to read; -1 for "to the end".
 	 * @return The literal byte contents of the given section of the file.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 * @throws IOException
-	 *             If things go wrong.
+	 *             If things go wrong reading the file.
 	 */
 	@NonNull
 	byte[] getContents(int offset, int length) throws RemoteException,
@@ -33,8 +35,10 @@ public interface RemoteFile extends RemoteDirectoryEntry {
 	 * 
 	 * @param data
 	 *            The literal bytes that will form the new contents of the file.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 * @throws IOException
-	 *             If things go wrong.
+	 *             If things go wrong writing the contents.
 	 */
 	void setContents(@NonNull byte[] data) throws RemoteException, IOException;
 
@@ -43,14 +47,18 @@ public interface RemoteFile extends RemoteDirectoryEntry {
 	 * 
 	 * @param data
 	 *            The literal bytes that will be appended.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 * @throws IOException
-	 *             If things go wrong.
+	 *             If things go wrong writing the contents.
 	 */
 	void appendContents(@NonNull byte[] data) throws RemoteException,
 			IOException;
 
 	/**
 	 * @return The length of the file, in bytes.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	long getSize() throws RemoteException;
 
@@ -59,20 +67,26 @@ public interface RemoteFile extends RemoteDirectoryEntry {
 	 * 
 	 * @param sourceFile
 	 *            The other file to copy from.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 * @throws IOException
-	 *             If things go wrong.
+	 *             If things go wrong during the copy.
 	 */
 	void copy(@NonNull RemoteFile sourceFile) throws RemoteException,
 			IOException;
 
 	/**
 	 * @return The full native OS name for the file.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	@NonNull
 	String getNativeName() throws RemoteException;
 
 	/**
 	 * @return The host holding the file.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	@NonNull
 	String getNativeHost() throws RemoteException;

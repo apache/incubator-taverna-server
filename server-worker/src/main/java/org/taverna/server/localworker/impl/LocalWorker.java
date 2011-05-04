@@ -89,10 +89,18 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 
 	/**
 	 * @param executeWorkflowCommand
+	 *            The script used to execute workflows.
 	 * @param workflow
+	 *            The workflow to execute.
 	 * @param workerClass
+	 *            The class to instantiate as our local representative of the
+	 *            run.
+	 * @param urReceiver
+	 *            The remote class to report the generated usage record(s) to.
 	 * @throws RemoteException
 	 *             If registration of the worker fails.
+	 * @throws ImplementationException
+	 *             If something goes wrong during local setup.
 	 */
 	protected LocalWorker(String executeWorkflowCommand, String workflow,
 			Class<? extends Worker> workerClass, UsageRecordReceiver urReceiver)
@@ -325,7 +333,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		}
 
 		@Override
-		public void setKeystore(byte[] keystore) throws RemoteException, ImplementationException {
+		public void setKeystore(byte[] keystore) throws RemoteException,
+				ImplementationException {
 			if (status != Initialized)
 				throw new RemoteException("not initializing");
 			write(KEYSTORE_FILE, keystore);
@@ -340,7 +349,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		}
 
 		@Override
-		public void setTruststore(byte[] truststore) throws RemoteException, ImplementationException {
+		public void setTruststore(byte[] truststore) throws RemoteException,
+				ImplementationException {
 			if (status != Initialized)
 				throw new RemoteException("not initializing");
 			write(TRUSTSTORE_FILE, truststore);

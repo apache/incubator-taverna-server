@@ -35,6 +35,8 @@ public interface TavernaSecurityContext {
 	 * Describe the names of the users (as extracted from their
 	 * {@link Principal} objects) that may destroy the run or manipulate its
 	 * lifetime.
+	 * 
+	 * @return The names of the users who may use destroy operations.
 	 */
 	Set<String> getPermittedDestroyers();
 
@@ -42,6 +44,9 @@ public interface TavernaSecurityContext {
 	 * Sets the collection of names of users (as extracted from their
 	 * {@link Principal} objects) that may destroy the run or manipulate its
 	 * lifetime.
+	 * 
+	 * @param destroyers
+	 *            The names of the users who may use destroy operations.
 	 */
 	void setPermittedDestroyers(Set<String> destroyers);
 
@@ -49,6 +54,8 @@ public interface TavernaSecurityContext {
 	 * Describe the names of the users (as extracted from their
 	 * {@link Principal} objects) that may update the run (including writing to
 	 * files).
+	 * 
+	 * @return The names of the users who may use update operations.
 	 */
 	Set<String> getPermittedUpdaters();
 
@@ -56,6 +63,9 @@ public interface TavernaSecurityContext {
 	 * Sets the collection of names of users (as extracted from their
 	 * {@link Principal} objects) that may update the run (including writing to
 	 * its files).
+	 * 
+	 * @param updaters
+	 *            The names of the users who may use update operations.
 	 */
 	void setPermittedUpdaters(Set<String> updaters);
 
@@ -63,6 +73,8 @@ public interface TavernaSecurityContext {
 	 * Describe the names of the users (as extracted from their
 	 * {@link Principal} objects) that may read from the run (including its
 	 * files).
+	 * 
+	 * @return The names of the users who may use read operations.
 	 */
 	Set<String> getPermittedReaders();
 
@@ -70,6 +82,9 @@ public interface TavernaSecurityContext {
 	 * Sets the collection of names of users (as extracted from their
 	 * {@link Principal} objects) that may read from the run (including its
 	 * files).
+	 * 
+	 * @param readers
+	 *            The names of the users who may use read operations.
 	 */
 	void setPermittedReaders(Set<String> readers);
 

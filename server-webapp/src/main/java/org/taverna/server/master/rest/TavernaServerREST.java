@@ -181,6 +181,13 @@ public interface TavernaServerREST {
 	 * @author Donal Fellows
 	 */
 	public interface PolicyView {
+		/**
+		 * Describe the URIs in this view of the server's policies.
+		 * 
+		 * @param ui
+		 *            About the URI used to retrieve the description.
+		 * @return The description, which may be serialised as XML or JSON.
+		 */
 		@GET
 		@Path("/")
 		@Produces({ "application/xml", "application/json" })
@@ -277,7 +284,12 @@ public interface TavernaServerREST {
 			public PolicyDescription() {
 			}
 
-			/** Make a server description. */
+			/**
+			 * Make a server description.
+			 * 
+			 * @param ui
+			 *            About the URI used to access this description.
+			 */
 			public PolicyDescription(UriInfo ui) {
 				super(true);
 				runLimit = new Uri(ui, true, "runLimit");
@@ -372,6 +384,11 @@ public interface TavernaServerREST {
 
 		/**
 		 * Make a list of references to workflow runs.
+		 * 
+		 * @param runs
+		 *            The mapping of runs to describe.
+		 * @param ub
+		 *            How to construct URIs to the runs.
 		 */
 		public RunList(Map<String, TavernaRun> runs, UriBuilder ub) {
 			run = new ArrayList<RunReference>(runs.size());
@@ -409,8 +426,16 @@ public interface TavernaServerREST {
 		}
 	}
 
+	/**
+	 * The interface exposed by the Atom feed of events.
+	 * 
+	 * @author Donal Fellows
+	 */
 	@RolesAllowed(USER)
 	public interface EventFeed {
+		/**
+		 * @return the feed of events for the current user.
+		 */
 		@GET
 		@Path("/")
 		@Produces({ "application/xml", "application/json",
@@ -419,6 +444,11 @@ public interface TavernaServerREST {
 		@NonNull
 		Events getFeed();
 
+		/**
+		 * @param id
+		 *            The identifier for a particular event.
+		 * @return the details about the given event.
+		 */
 		@GET
 		@Path("{id}")
 		@Produces({ "application/xml", "application/json",
@@ -428,14 +458,30 @@ public interface TavernaServerREST {
 		AbstractEvent getEvent(@NonNull @PathParam("id") String id);
 	}
 
+	/**
+	 * A description of an collection of events.
+	 * 
+	 * @author Donal Fellows
+	 */
 	@XmlType
 	public static abstract class Events extends VersionedElement {
+		/**
+		 * @return The owner of the events in question.
+		 */
 		@XmlAttribute
 		public abstract String getOwner();
 
+		/**
+		 * @return The actual list of events.
+		 */
 		@XmlElement
 		public abstract List<AbstractEvent> getEvents();
 
+		/**
+		 * @param id
+		 *            The identifier of a particular event.
+		 * @return The details about that event.
+		 */
 		public abstract AbstractEvent getEvent(String id);
 	}
 }

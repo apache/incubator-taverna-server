@@ -25,6 +25,11 @@ import org.taverna.server.master.utils.UsernamePrincipal;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 
+/**
+ * The database interface that supports the event feed.
+ * 
+ * @author Donal Fellows
+ */
 @PersistenceAware
 public class EventDAO extends JDOSupport<AbstractEvent> implements
 		MessageDispatcher {
@@ -46,6 +51,13 @@ public class EventDAO extends JDOSupport<AbstractEvent> implements
 		this.ubf = ubf;
 	}
 
+	/**
+	 * Get the given user's list of events.
+	 * 
+	 * @param user
+	 *            The identity of the user to get the events for.
+	 * @return A copy of the list of events currently known about.
+	 */
 	@NonNull
 	@WithinSingleTransaction
 	public List<AbstractEvent> getEvents(@NonNull UsernamePrincipal user) {
@@ -62,6 +74,12 @@ public class EventDAO extends JDOSupport<AbstractEvent> implements
 		return result;
 	}
 
+	/**
+	 * Get a particular event.
+	 * @param user The identity of the user to get the event for.
+	 * @param id The handle of the event to look up.
+	 * @return A copy of the event.
+	 */
 	@NonNull
 	@WithinSingleTransaction
 	public AbstractEvent getEvent(@NonNull UsernamePrincipal user,
@@ -77,11 +95,18 @@ public class EventDAO extends JDOSupport<AbstractEvent> implements
 		return detach(getById(ids.get(0)));
 	}
 
+	/**
+	 * Delete a particular event.
+	 * @param id The identifier of the event to delete.
+	 */
 	@WithinSingleTransaction
 	public void deleteEventById(@NonNull String id) {
 		delete(getById(id));
 	}
 
+	/**
+	 * Delete all events that have expired.
+	 */
 	@WithinSingleTransaction
 	public void deleteExpiredEvents() {
 		Date death = new DateTime().plusDays(-expiryAgeDays).toDate();

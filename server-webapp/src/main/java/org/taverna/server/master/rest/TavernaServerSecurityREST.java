@@ -383,27 +383,43 @@ public interface TavernaServerSecurityREST {
 	Response makePermission(@NonNull PermissionDescription desc,
 			@NonNull @Context UriInfo ui);
 
-	// TODO document this helper class
 	/**
 	 * A description of the security resources associated with a workflow run.
+	 * 
 	 * @author Donal Fellows
 	 */
 	@XmlRootElement(name = "securityDescriptor")
 	@XmlType(name = "SecurityDescriptor")
 	public static final class Descriptor extends VersionedElement {
+		/** The identity of the owner of the enclosing workflow run. */
 		@XmlElement
 		public String owner;
+		/** Where to get the permissions on the run. */
 		@XmlElement
 		public Uri permissions;
 
+		/** Characterisation of the credentials attached to the run. */
 		@XmlElement
 		public Credentials credentials;
+		/** Characterisation of the trusted certificates attached to the run. */
 		@XmlElement
 		public Trusts trusts;
 
 		public Descriptor() {
 		}
 
+		/**
+		 * Initialise a description of the security context.
+		 * 
+		 * @param ub
+		 *            How to build URIs.
+		 * @param owner
+		 *            Who owns the context.
+		 * @param credential
+		 *            The credentials associated with the context.
+		 * @param trust
+		 *            The trusted certificates associated with the context.
+		 */
 		public Descriptor(@NonNull UriBuilder ub, @NonNull String owner,
 				@NonNull Credential[] credential, @NonNull Trust[] trust) {
 			super(true);
@@ -414,17 +430,31 @@ public interface TavernaServerSecurityREST {
 			this.trusts = new Trusts(ub.build("trusts"), trust);
 		}
 
-		// TODO document this helper class
+		/**
+		 * A description of credentials associated with a workflow run.
+		 * 
+		 * @author Donal Fellows
+		 */
 		@XmlType(name = "CredentialCollection")
 		public static final class Credentials {
+			/** Reference to the collection of credentials */
 			@XmlAttribute(name = "href", namespace = XLINK)
 			public URI href;
+			/** Descriptions of the credentials themselves. */
 			@XmlElement
 			public Credential[] credential;
 
 			public Credentials() {
 			}
 
+			/**
+			 * Initialise a description of the credentials.
+			 * 
+			 * @param uri
+			 *            the URI of the collection.
+			 * @param credential
+			 *            The credentials in the collection.
+			 */
 			public Credentials(@NonNull URI uri,
 					@NonNull Credential[] credential) {
 				this.href = uri;
@@ -432,17 +462,31 @@ public interface TavernaServerSecurityREST {
 			}
 		}
 
-		// TODO document this helper class
+		/**
+		 * A description of trusted certificates associated with a workflow run.
+		 * 
+		 * @author Donal Fellows
+		 */
 		@XmlType(name = "TrustCollection")
 		public static final class Trusts {
+			/** Reference to the collection of trusted certs */
 			@XmlAttribute(name = "href", namespace = XLINK)
 			public URI href;
+			/** Descriptions of the trusted certs themselves. */
 			@XmlElement
 			public Trust[] trust;
 
 			public Trusts() {
 			}
 
+			/**
+			 * Initialise a description of the trusted certificates.
+			 * 
+			 * @param uri
+			 *            the URI of the collection.
+			 * @param trust
+			 *            The trusted certificates in the collection.
+			 */
 			public Trusts(@NonNull URI uri, @NonNull Trust[] trust) {
 				this.href = uri;
 				this.trust = trust.clone();
@@ -450,49 +494,96 @@ public interface TavernaServerSecurityREST {
 		}
 	}
 
-	// TODO document this helper class
+	/**
+	 * A simple list of credential descriptions.
+	 * 
+	 * @author Donal Fellows
+	 */
 	@XmlRootElement(name = "credentials")
 	public static final class CredentialList extends VersionedElement {
+		/** The descriptions of the credentials */
 		@XmlElement
 		public Credential[] credential;
 
 		public CredentialList() {
 		}
 
+		/**
+		 * Initialise the list of credentials.
+		 * 
+		 * @param credential
+		 *            The descriptions of individual credentials.
+		 */
 		public CredentialList(@NonNull Credential[] credential) {
 			super(true);
 			this.credential = credential.clone();
 		}
 	}
 
-	// TODO document this helper class
+	/**
+	 * A simple list of trusted certificate descriptions.
+	 * 
+	 * @author Donal Fellows
+	 */
 	@XmlRootElement(name = "trustedIdentities")
 	public static final class TrustList extends VersionedElement {
+		/** The descriptions of the trusted certificates */
 		@XmlElement
 		public Trust[] trust;
 
 		public TrustList() {
 		}
 
+		/**
+		 * Initialise the list of trusted certificates.
+		 * 
+		 * @param trust
+		 *            The descriptions of individual certificates.
+		 */
 		public TrustList(@NonNull Trust[] trust) {
 			super(true);
 			this.trust = trust.clone();
 		}
 	}
 
-	// TODO document this helper class
+	/**
+	 * A description of the permissions granted to others by the owner of a
+	 * workflow run.
+	 * 
+	 * @author Donal Fellows
+	 */
 	@XmlRootElement(name = "permissionsDescriptor")
 	public static class PermissionsDescription extends VersionedElement {
+		/**
+		 * A description of the permissions granted to one user by the owner of
+		 * a workflow run.
+		 * 
+		 * @author Donal Fellows
+		 */
 		@XmlRootElement(name = "userPermission")
 		public static class LinkedPermissionDescription extends Uri {
+			/** Who is this granted to? */
 			@XmlElement
 			public String userName;
+			/** What are they granted? */
 			@XmlElement
 			public Permission permission;
 
 			public LinkedPermissionDescription() {
 			}
 
+			/**
+			 * Initialise a description of one user's permissions.
+			 * 
+			 * @param ub
+			 *            How to build the URI to this permission.
+			 * @param userName
+			 *            Who this relates to.
+			 * @param permission
+			 *            What permission is granted.
+			 * @param strings
+			 *            Parameters to the URI builder.
+			 */
 			public LinkedPermissionDescription(@NonNull UriBuilder ub,
 					@NonNull String userName, @NonNull Permission permission,
 					String... strings) {
@@ -502,6 +593,7 @@ public interface TavernaServerSecurityREST {
 			}
 		}
 
+		/** List of descriptions of permissions. */
 		@XmlElement
 		public List<LinkedPermissionDescription> permission;
 
@@ -509,6 +601,14 @@ public interface TavernaServerSecurityREST {
 			permission = emptyList();
 		}
 
+		/**
+		 * Initialise the description of a collection of permissions.
+		 * 
+		 * @param ub
+		 *            How to build URIs to this collection.
+		 * @param permissionMap
+		 *            The permissions to describe.
+		 */
 		public PermissionsDescription(@NonNull UriBuilder ub,
 				@NonNull Map<String, Permission> permissionMap) {
 			permission = new ArrayList<LinkedPermissionDescription>();
@@ -521,11 +621,17 @@ public interface TavernaServerSecurityREST {
 		}
 	}
 
-	// TODO document this helper class
+	/**
+	 * An instruction to update the permissions for a user.
+	 * 
+	 * @author Donal Fellows
+	 */
 	@XmlRootElement(name = "permissionUpdate")
 	public static class PermissionDescription {
+		/** Who to set the permission for? */
 		@XmlElement
 		public String userName;
+		/** What permission to grant them? */
 		@XmlElement
 		public Permission permission;
 	}

@@ -12,6 +12,8 @@ public interface RemoteSingleRun extends Remote {
 	/**
 	 * @return The name of the Baclava file to use for all inputs, or
 	 *         <tt>null</tt> if no Baclava file is set.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	@Nullable
 	public String getInputBaclavaFile() throws RemoteException;
@@ -24,12 +26,16 @@ public interface RemoteSingleRun extends Remote {
 	 *            The filename to use. Must not start with a <tt>/</tt> or
 	 *            contain any <tt>..</tt> segments. Will be interpreted relative
 	 *            to the run's working directory.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	public void setInputBaclavaFile(@NonNull String filename)
 			throws RemoteException;
 
 	/**
 	 * @return The list of input assignments.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	@NonNull
 	public List<RemoteInput> getInputs() throws RemoteException;
@@ -40,6 +46,8 @@ public interface RemoteSingleRun extends Remote {
 	 * @param name
 	 *            The name of the port that this will be an input for.
 	 * @return The assignment reference.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	@NonNull
 	public RemoteInput makeInput(@NonNull String name) throws RemoteException;
@@ -49,6 +57,8 @@ public interface RemoteSingleRun extends Remote {
 	 *         of the run to as a Baclava document, or <tt>null</tt> if they are
 	 *         to be written to non-Baclava files in a directory called
 	 *         <tt>out</tt>.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	@Nullable
 	public String getOutputBaclavaFile() throws RemoteException;
@@ -63,12 +73,16 @@ public interface RemoteSingleRun extends Remote {
 	 *            Where to write the Baclava file (or <tt>null</tt> to cause the
 	 *            output to be written to individual files); overwrites any
 	 *            previous setting of this value.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	public void setOutputBaclavaFile(@Nullable String filename)
 			throws RemoteException;
 
 	/**
 	 * @return The current status of the run.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	@NonNull
 	public RemoteStatus getStatus() throws RemoteException;
@@ -82,15 +96,21 @@ public interface RemoteSingleRun extends Remote {
 	 * @throws IllegalStateTransitionException
 	 *             If the requested state change is impossible. (Note that it is
 	 *             always legal to set the status to the current status.)
-	 * @throws ImplementationException 
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
+	 * @throws ImplementationException
+	 *             If something goes horribly wrong on the back end.
 	 */
 	public void setStatus(@NonNull RemoteStatus s)
-			throws IllegalStateTransitionException, RemoteException, ImplementationException;
+			throws IllegalStateTransitionException, RemoteException,
+			ImplementationException;
 
 	/**
 	 * @return When this workflow run was found to have finished, or
 	 *         <tt>null</tt> if it has never finished (either still running or
 	 *         never started).
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	@Nullable
 	public Date getFinishTimestamp() throws RemoteException;
@@ -98,18 +118,24 @@ public interface RemoteSingleRun extends Remote {
 	/**
 	 * @return When this workflow run was started, or <tt>null</tt> if it has
 	 *         never been started.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	@Nullable
 	public Date getStartTimestamp() throws RemoteException;
 
 	/**
 	 * @return Handle to the main working directory of the run.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	@NonNull
 	public RemoteDirectory getWorkingDirectory() throws RemoteException;
 
 	/**
 	 * @return The list of listener instances attached to the run.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	@NonNull
 	public List<RemoteListener> getListeners() throws RemoteException;
@@ -119,21 +145,32 @@ public interface RemoteSingleRun extends Remote {
 	 * 
 	 * @param listener
 	 *            The listener to add.
-	 * @throws ImplementationException 
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
+	 * @throws ImplementationException
+	 *             If something goes wrong when adding the listener.
 	 */
 	public void addListener(@NonNull RemoteListener listener)
 			throws RemoteException, ImplementationException;
 
 	/**
 	 * @return The security context structure for this run.
-	 * @throws ImplementationException 
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
+	 * @throws ImplementationException
+	 *             If something goes wrong when getting the context.
 	 */
 	@NonNull
-	public RemoteSecurityContext getSecurityContext() throws RemoteException, ImplementationException;
+	public RemoteSecurityContext getSecurityContext() throws RemoteException,
+			ImplementationException;
 
 	/**
 	 * Kill off this run, removing all resources which it consumes.
-	 * @throws ImplementationException 
+	 * 
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
+	 * @throws ImplementationException
+	 *             If something goes horribly wrong when destroying the run.
 	 */
 	public void destroy() throws RemoteException, ImplementationException;
 
@@ -141,6 +178,8 @@ public interface RemoteSingleRun extends Remote {
 	 * Get the types of listener supported by this run.
 	 * 
 	 * @return A list of listener type names.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	@NonNull
 	public List<String> getListenerTypes() throws RemoteException;
@@ -155,6 +194,8 @@ public interface RemoteSingleRun extends Remote {
 	 *            The configuration document for this listener. The nature of
 	 *            the contents of this are determined by the type.
 	 * @return A handle for the listener.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	@NonNull
 	public RemoteListener makeListener(@NonNull String type,

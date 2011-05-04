@@ -22,6 +22,8 @@ public interface UsageRecordReceiver extends Remote {
 	 * 
 	 * @param usageRecord
 	 *            The serialised XML of the usage record.
+	 * @throws RemoteException
+	 *             if anything goes wrong.
 	 */
 	void acceptUsageRecord(String usageRecord) throws RemoteException;
 }

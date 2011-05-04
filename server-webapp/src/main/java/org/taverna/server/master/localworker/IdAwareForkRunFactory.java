@@ -49,6 +49,8 @@ import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.interfaces.LocalIdentityMapper;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 /**
  * A simple factory for workflow runs that forks runs from a subprocess.
  * 
@@ -574,6 +576,32 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 
 	private LocalIdentityMapper mapper;
 
+	/**
+	 * The real core of the run builder, factored out from its reliability
+	 * support.
+	 * 
+	 * @param creator
+	 *            Who created this workflow?
+	 * @param username
+	 *            What user account is this workflow to be executed in?
+	 * @param wf
+	 *            The serialized workflow.
+	 * @return The remote handle of the workflow run.
+	 * @throws RemoteException
+	 *             If anything fails (communications error, etc.)
+	 */
+	private RemoteSingleRun getRealRun(@NonNull UsernamePrincipal creator,
+			@NonNull String username, @NonNull String wf)
+			throws RemoteException {
+		String globaluser = "Unknown Person";
+		if (creator != null)
+			globaluser = creator.getName();
+		RemoteSingleRun rsr = factory.get(username).make(wf, globaluser,
+				makeURReciver(creator));
+		totalRuns++;
+		return rsr;
+	}
+
 	@Override
 	protected RemoteSingleRun getRealRun(UsernamePrincipal creator,
 			Workflow workflow) throws Exception {
@@ -586,13 +614,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 			if (!factory.containsKey(username))
 				initFactory(username);
 			try {
-				String globaluser = "Unknown Person";
-				if (creator != null)
-					globaluser = creator.getName();
-				RemoteSingleRun rsr = factory.get(username).make(wf,
-						globaluser, makeURReciver());
-				totalRuns++;
-				return rsr;
+				return getRealRun(creator, username, wf);
 			} catch (ConnectException e) {
 				// factory was lost; try to recreate
 			} catch (ConnectIOException e) {
@@ -622,8 +644,8 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 		if (state.getExecuteWorkflowScript() != null) {
 			log.info("configured executeWorkflowScript from context as "
 					+ state.getExecuteWorkflowScript());
-			if (state.getDefaultExecuteWorkflowScript()
-					.startsWith("/some/where/executeWorkflow."))
+			if (state.getDefaultExecuteWorkflowScript().startsWith(
+					"/some/where/executeWorkflow."))
 				log.warn("unexpected default value!");
 		}
 

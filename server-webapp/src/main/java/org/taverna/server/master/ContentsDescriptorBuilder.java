@@ -304,6 +304,11 @@ public class ContentsDescriptorBuilder {
 		return desc;
 	}
 
+	/**
+	 * How to manufacture URIs to workflow runs.
+	 * 
+	 * @author Donal Fellows
+	 */
 	public interface UriBuilderFactory {
 		/**
 		 * Given a run, get a factory for RESTful URIs to resources associated
@@ -315,6 +320,10 @@ public class ContentsDescriptorBuilder {
 		 */
 		UriBuilder getRunUriBuilder(TavernaRun run);
 
+		/**
+		 * @return a URI factory that is preconfigured to point to the base of
+		 *         the webapp.
+		 */
 		UriBuilder getBaseUriBuilder();
 	}
 }

@@ -113,6 +113,16 @@ public class RunConnection {
 		doneTransitionToFinished = (finished ? 1 : 0);
 	}
 
+	/**
+	 * Manufacture a persistent representation of the given workflow run. Must
+	 * be called within the context of a transaction.
+	 * 
+	 * @param rrd
+	 *            The remote delegate of the workflow run.
+	 * @return The persistent object.
+	 * @throws IOException
+	 *             If serialisation fails.
+	 */
 	@NonNull
 	public static RunConnection toDBform(@NonNull RemoteRunDelegate rrd)
 			throws IOException {
@@ -122,12 +132,22 @@ public class RunConnection {
 		return rc;
 	}
 
-	private static List<String> list(String[]ary) {
+	private static List<String> list(String[] ary) {
 		if (ary == null)
 			return emptyList();
 		return asList(ary);
 	}
 
+	/**
+	 * Get the remote run delegate for a particular persistent connection. Must
+	 * be called within the context of a transaction.
+	 * 
+	 * @param db
+	 *            The database facade.
+	 * @return The delegate object.
+	 * @throws Exception
+	 *             If anything goes wrong.
+	 */
 	@NonNull
 	public RemoteRunDelegate fromDBform(@NonNull RunDBSupport db)
 			throws Exception {
@@ -147,6 +167,15 @@ public class RunConnection {
 		return rrd;
 	}
 
+	/**
+	 * Flush changes from a remote run delegate to the database. Must be called
+	 * within the context of a transaction.
+	 * 
+	 * @param rrd
+	 *            The remote run delegate object that has potential changes.
+	 * @throws IOException
+	 *             If anything goes wrong in serialization.
+	 */
 	public void makeChanges(@NonNull RemoteRunDelegate rrd) throws IOException {
 		// Properties that are set exactly once
 		if (creationInstant == null) {

@@ -103,6 +103,12 @@ public class TwitterDispatcher extends RateLimitedDispatcher {
 		}
 	}
 
+	/**
+	 * Indicates that the dispatcher has not been configured with service
+	 * credentials.
+	 * 
+	 * @author Donal Fellows
+	 */
 	public static class NotConfiguredException extends Exception {
 		NotConfiguredException() {
 			super("not configured with xAuth key and secret; "
@@ -110,6 +116,11 @@ public class TwitterDispatcher extends RateLimitedDispatcher {
 		}
 	}
 
+	/**
+	 * Indicates that the user did not supply their credentials.
+	 * 
+	 * @author Donal Fellows
+	 */
 	public static class NoCredentialsException extends Exception {
 		NoCredentialsException() {
 			super("no consumer key and secret present; "

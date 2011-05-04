@@ -87,6 +87,8 @@ public class NotificationEngine {
 	/**
 	 * Dispatch a message over the notification fabric.
 	 * 
+	 * @param originator
+	 *            What workflow run was the source of this message?
 	 * @param destination
 	 *            Where the message should get delivered to. The correct format
 	 *            of this is either as a URI of some form (where the scheme
@@ -115,8 +117,8 @@ public class NotificationEngine {
 	}
 
 	/**
-	 * What message dispatchers are actually available (i.e., not disabled by
-	 * configuration somewhere).
+	 * @return The message dispatchers that are actually available (i.e., not
+	 *         disabled by configuration somewhere).
 	 */
 	public List<String> listAvailableDispatchers() {
 		ArrayList<String> result = new ArrayList<String>();

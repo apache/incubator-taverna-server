@@ -18,11 +18,17 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 
+/**
+ * Dispatch termination messages via SMS.
+ * 
+ * @author Donal Fellows
+ */
 public class SMSDispatcher extends RateLimitedDispatcher {
 	public SMSDispatcher() {
 		super("sms");
 	}
 
+	/** The address of the SMS gateway service used by default. */
 	public static final String DEFAULT_SMS_GATEWAY = "https://www.intellisoftware.co.uk/smsgateway/sendmsg.aspx";
 	private HttpClient client;
 	private URI service;
@@ -31,27 +37,35 @@ public class SMSDispatcher extends RateLimitedDispatcher {
 			destinationField = "to", messageField = "text";
 
 	/**
-	 * The name of the field that conveys the sending username; this is the
-	 * <i>server</i>'s identity.
+	 * @param usernameField
+	 *            The name of the field that conveys the sending username; this
+	 *            is the <i>server</i>'s identity.
 	 */
 	public void setUsernameField(String usernameField) {
 		this.usernameField = usernameField;
 	}
 
 	/**
-	 * The field holding the password to authenticate the server to the SMS
-	 * gateway.
+	 * @param passwordField
+	 *            The field holding the password to authenticate the server to
+	 *            the SMS gateway.
 	 */
 	public void setPasswordField(String passwordField) {
 		this.passwordField = passwordField;
 	}
 
-	/** The field holding the number to send the SMS to. */
+	/**
+	 * @param destinationField
+	 *            The field holding the number to send the SMS to.
+	 */
 	public void setDestinationField(String destinationField) {
 		this.destinationField = destinationField;
 	}
 
-	/** The field holding the plain-text message to send. */
+	/**
+	 * @param messageField
+	 *            The field holding the plain-text message to send.
+	 */
 	public void setMessageField(String messageField) {
 		this.messageField = messageField;
 	}

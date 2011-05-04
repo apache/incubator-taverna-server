@@ -52,6 +52,7 @@ import org.taverna.server.master.utils.UsernamePrincipal;
  * 
  * @author Donal Fellows
  */
+// TODO: Ensure that this works with the persistence engine
 public class SecurityContextDelegate implements TavernaSecurityContext {
 	private Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
 	private final UsernamePrincipal owner;
@@ -61,6 +62,27 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 	private final Object lock = new Object();
 	private final SecurityContextFactory factory;
 
+	private transient KeyStore keystore;
+	private transient char[] password;
+	private transient HashMap<URI, String> uriToAliasMap;
+
+	/** The type of certificates that are processed if we don't say otherwise. */
+	private static final String DEFAULT_CERTIFICATE_TYPE = "X.509";
+	private static final char USERNAME_PASSWORD_SEPARATOR = '\u0000';
+	private static final String USERNAME_PASSWORD_KEY_ALGORITHM = "DUMMY";
+	/** What passwords are encoded as. */
+	private static final Charset UTF8 = Charset.forName("UTF-8");
+
+	/**
+	 * Initialise the context delegate.
+	 * 
+	 * @param run
+	 *            What workflow run is this for?
+	 * @param owner
+	 *            Who owns the workflow run?
+	 * @param factory
+	 *            What class built this object?
+	 */
 	protected SecurityContextDelegate(RemoteRunDelegate run,
 			UsernamePrincipal owner, SecurityContextFactory factory) {
 		this.run = run;
@@ -128,9 +150,6 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 		}
 	}
 
-	/** The type of certificates that are processed if we don't say otherwise. */
-	private static final String DEFAULT_CERTIFICATE_TYPE = "X.509";
-
 	@Override
 	public void validateCredential(Credential c)
 			throws InvalidCredentialException {
@@ -143,11 +162,6 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 		else
 			throw new InvalidCredentialException("unknown credential type");
 	}
-
-	private static final char USERNAME_PASSWORD_SEPARATOR = '\u0000';
-	private static final String USERNAME_PASSWORD_KEY_ALGORITHM = "DUMMY";
-	/** What passwords are encoded as. */
-	private static final Charset UTF8 = Charset.forName("UTF-8");
 
 	private void validatePasswordCredential(Credential.Password c) {
 		String keyToSave = c.username + USERNAME_PASSWORD_SEPARATOR
@@ -257,10 +271,23 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 		// do nothing in this implementation
 	}
 
+	/**
+	 * Get an empty keystore for use with credentials (client certs, passwords,
+	 * etc.)
+	 * 
+	 * @return A keystore
+	 * @throws GeneralSecurityException
+	 */
 	protected KeyStore getInitialKeyStore() throws GeneralSecurityException {
 		return KeyStore.getInstance("JCEKS");
 	}
 
+	/**
+	 * Get an empty trust-store for use with trusted certificates.
+	 * 
+	 * @return A trust-store
+	 * @throws GeneralSecurityException
+	 */
 	protected KeyStore getInitialTrustStore() throws GeneralSecurityException {
 		return KeyStore.getInstance("JCEKS");
 	}
@@ -371,10 +398,22 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 		return stream.toByteArray();
 	}
 
+	/**
+	 * @return A new password with a reasonable level of randomness.
+	 */
 	protected char[] generateNewPassword() {
 		return randomUUID().toString().toCharArray();
 	}
 
+	/**
+	 * Adds a service certificate to the set that are trusted.
+	 * 
+	 * @param ts
+	 *            The trust-store.
+	 * @param cert
+	 *            The certificate to add
+	 * @throws KeyStoreException
+	 */
 	protected void addCertificateToTruststore(KeyStore ts, Certificate cert)
 			throws KeyStoreException {
 		X509Certificate c = (X509Certificate) cert;
@@ -389,10 +428,15 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 		ts.setCertificateEntry(alias, c);
 	}
 
-	private transient KeyStore keystore;
-	private transient char[] password;
-	private transient HashMap<URI, String> uriToAliasMap;
-
+	/**
+	 * Adds a credential to the current keystore.
+	 * 
+	 * @param alias
+	 *            The alias to create within the keystore.
+	 * @param c
+	 *            The key-pair.
+	 * @throws KeyStoreException
+	 */
 	protected final void addKeypairToKeystore(String alias, Credential c)
 			throws KeyStoreException {
 		if (uriToAliasMap.containsKey(c.serviceURI))
@@ -401,6 +445,13 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 		uriToAliasMap.put(c.serviceURI, alias);
 	}
 
+	/**
+	 * Adds a key-pair to the current keystore.
+	 * 
+	 * @param c
+	 *            The key-pair.
+	 * @throws KeyStoreException
+	 */
 	protected void addKeypairToKeystore(Credential.KeyPair c)
 			throws KeyStoreException {
 		X509Certificate subjectCert = ((X509Certificate) c.loadedTrustChain[0]);
@@ -413,6 +464,13 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 		addKeypairToKeystore(alias, c);
 	}
 
+	/**
+	 * Adds a username/password credential pair to the current keystore.
+	 * 
+	 * @param c
+	 *            The username and password.
+	 * @throws KeyStoreException
+	 */
 	protected void addUserPassToKeystore(Credential.Password c)
 			throws KeyStoreException {
 		String alias = "password#" + c.serviceURI;

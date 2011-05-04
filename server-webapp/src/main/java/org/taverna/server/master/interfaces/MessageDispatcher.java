@@ -7,6 +7,10 @@ package org.taverna.server.master.interfaces;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 
+/**
+ * The interface supported by all notification message dispatchers.
+ * @author Donal Fellows
+ */
 public interface MessageDispatcher {
 	/**
 	 * @return Whether this message dispatcher is actually available (fully

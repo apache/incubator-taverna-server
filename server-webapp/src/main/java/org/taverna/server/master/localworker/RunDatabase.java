@@ -22,6 +22,11 @@ import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.notification.NotificationEngine;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
+/**
+ * The main facade bean that interfaces to the database of runs.
+ * 
+ * @author Donal Fellows
+ */
 public class RunDatabase implements RunStore, RunDBSupport {
 	private Log log = LogFactory.getLog("Taverna.Server.LocalWorker.RunDB");
 	private RunDatabaseDAO dao;

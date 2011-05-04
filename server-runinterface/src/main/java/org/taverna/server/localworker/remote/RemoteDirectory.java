@@ -16,6 +16,10 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 public interface RemoteDirectory extends RemoteDirectoryEntry {
 	/**
 	 * @return A list of the contents of the directory.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
+	 * @throws IOException
+	 *             If anything goes wrong with listing the directory.
 	 */
 	@NonNull
 	public Collection<RemoteDirectoryEntry> getContents()
@@ -27,8 +31,10 @@ public interface RemoteDirectory extends RemoteDirectoryEntry {
 	 * @param name
 	 *            The name of the sub-directory.
 	 * @return A handle to the newly-created directory.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 * @throws IOException
-	 *             If things go wrong.
+	 *             If things go wrong with creating the subdirectory.
 	 */
 	@NonNull
 	public RemoteDirectory makeSubdirectory(@NonNull String name)
@@ -40,6 +46,10 @@ public interface RemoteDirectory extends RemoteDirectoryEntry {
 	 * @param name
 	 *            The name of the file to create.
 	 * @return A handle to the newly-created file.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
+	 * @throws IOException
+	 *             If anything goes wrong with creating the file.
 	 */
 	@NonNull
 	public RemoteFile makeEmptyFile(@NonNull String name)

@@ -74,13 +74,16 @@
 				<entry
 					key="org.taverna.server.master.notification.atom.TerminationEvent">
 					<bean id="Atom.EntryWriter"
-						class="org.taverna.server.master.notification.atom.EntryWriter" />
+						class="org.taverna.server.master.notification.atom.EntryWriter">
+						<property name="feed" ref="feed" />
+					</bean>
 				</entry>
 			</map>
 		</property>
 		<property name="collectionGetters">
 			<map>
-				<entry key="org.taverna.server.master.AtomFeed$Feed" value="getEvents" />
+				<entry key="org.taverna.server.master.notification.atom.AtomFeed$Feed"
+					value="getEvents" />
 			</map>
 		</property>
 	</bean>

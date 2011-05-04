@@ -124,7 +124,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 */
 	public static final String SECURITY_POLICY_FILE = "security.policy";
 	LocalWorkerState state;
-	private RunDBSupport runDB;
+	RunDBSupport runDB;
 	private SecurityContextFactory securityFactory;
 	UsageRecordRecorder usageRecordSink;
 	TaskExecutor urProcessorPool;
@@ -331,9 +331,11 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	/**
 	 * Make a Remote object that can act as a consumer for usage records.
 	 * 
+	 * @param creator
+	 * 
 	 * @return The receiver, or <tt>null</tt> if the construction fails.
 	 */
-	protected UsageRecordReceiver makeURReciver() {
+	protected UsageRecordReceiver makeURReciver(UsernamePrincipal creator) {
 		try {
 			@edu.umd.cs.findbugs.annotations.SuppressWarnings({
 					"SE_BAD_FIELD_INNER_CLASS", "SE_NO_SERIALVERSIONID" })
@@ -352,6 +354,12 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 								usageRecordSink.storeUsageRecord(usageRecord);
 							}
 						});
+					urProcessorPool.execute(new Runnable() {
+						@Override
+						public void run() {
+							runDB.checkForFinishNow();
+						}
+					});
 				}
 			}
 			return new URReceiver();

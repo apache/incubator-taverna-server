@@ -92,6 +92,9 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 @WebService(endpointInterface = "org.taverna.server.master.soap.TavernaServerSOAP", serviceName = "TavernaServer", targetNamespace = SERVER_SOAP)
 public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		TavernaServerREST, TavernaServer {
+	/**
+	 * The root of descriptions of the server in JMX.
+	 */
 	public static final String JMX_ROOT = "Taverna:group=Server-v2,name=";
 
 	/** The logger for the server framework. */
@@ -219,7 +222,11 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	@CallCounted
 	public abstract PolicyView getPolicyDescription();
 
-	/** Construct a RESTful interface to a run. */
+	/**
+	 * Construct a RESTful interface to a run.
+	 * 
+	 * @return The handle to the interface, as decorated by Spring.
+	 */
 	protected abstract RunREST makeRunInterface();
 
 	/**
@@ -806,7 +813,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		pathInfo = pathInfo.replaceFirst("/rest/.+$", "/rest/");
 		return fromUri(pathInfo);
 	}
-	
+
 	private Map<String, TavernaRun> runs() {
 		return runStore.listRuns(support.getPrincipal(), policy);
 	}

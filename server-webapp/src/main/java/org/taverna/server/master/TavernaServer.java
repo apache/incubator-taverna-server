@@ -69,6 +69,10 @@ public interface TavernaServer extends TavernaServerSOAP, TavernaServerREST,
 	@Required
 	void setSupport(@NonNull TavernaServerSupport support);
 	
+	/**
+	 * @param eventSource
+	 *            The event source bean being installed by Spring.
+	 */
 	@Required
 	void setEventSource(@NonNull EventDAO eventSource);
 

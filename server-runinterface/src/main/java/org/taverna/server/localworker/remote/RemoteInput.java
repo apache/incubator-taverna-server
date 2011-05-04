@@ -17,12 +17,16 @@ public interface RemoteInput extends Remote {
 	/**
 	 * @return The file currently assigned to this input port, or <tt>null</tt>
 	 *         if no file is assigned.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	@Nullable
 	public String getFile() throws RemoteException;
 
 	/**
 	 * @return The name of this input port. This may not be changed.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	@NonNull
 	public String getName() throws RemoteException;
@@ -30,6 +34,8 @@ public interface RemoteInput extends Remote {
 	/**
 	 * @return The value currently assigned to this input port, or <tt>null</tt>
 	 *         if no value is assigned.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	@Nullable
 	public String getValue() throws RemoteException;
@@ -42,6 +48,8 @@ public interface RemoteInput extends Remote {
 	 *            The filename to use. Must not start with a <tt>/</tt> or
 	 *            contain any <tt>..</tt> segments. Will be interpreted relative
 	 *            to the run's working directory.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	public void setFile(@NonNull String file) throws RemoteException;
 
@@ -51,6 +59,8 @@ public interface RemoteInput extends Remote {
 	 * 
 	 * @param value
 	 *            The value to use.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	public void setValue(@NonNull String value) throws RemoteException;
 }

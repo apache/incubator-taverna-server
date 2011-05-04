@@ -53,6 +53,9 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 		return (List<String>) namedQuery("names").execute();
 	}
 
+	/**
+	 * @return The number of workflow runs in the database.
+	 */
 	@WithinSingleTransaction
 	public int countRuns() {
 		log.debug("counting the number of runs");
@@ -102,6 +105,13 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+	/**
+	 * Obtain a workflow run handle.
+	 * 
+	 * @param name
+	 *            The identifier of the run.
+	 * @return The run handle, or <tt>null</tt> if there is no such run.
+	 */
 	@WithinSingleTransaction
 	public TavernaRun get(String name) {
 		try {
@@ -112,6 +122,15 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 		}
 	}
 
+	/**
+	 * Get the runs that a user can read things from.
+	 * 
+	 * @param user
+	 *            Who is asking?
+	 * @param p
+	 *            The policy that determines what they can see.
+	 * @return A mapping from run IDs to run handles.
+	 */
 	@WithinSingleTransaction
 	public Map<String, TavernaRun> listRuns(UsernamePrincipal user, Policy p) {
 		Map<String, TavernaRun> result = new HashMap<String, TavernaRun>();
@@ -127,6 +146,9 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 		return result;
 	}
 
+	/**
+	 * @return A list of the IDs for all workflow runs.
+	 */
 	@WithinSingleTransaction
 	public List<String> listRunNames() {
 		ArrayList<String> runNames = new ArrayList<String>();
@@ -137,6 +159,11 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 		return runNames;
 	}
 
+	/**
+	 * @return An arbitrary, representative workflow run.
+	 * @throws Exception
+	 *             If anything goes wrong.
+	 */
 	@WithinSingleTransaction
 	public RemoteRunDelegate pickArbitraryRun() throws Exception {
 		for (RunConnection rc : allRuns()) {
@@ -147,11 +174,26 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 		return null;
 	}
 
+	/**
+	 * Make a workflow run persistent. Must only be called once per workflow
+	 * run.
+	 * 
+	 * @param rrd
+	 *            The workflow run to persist.
+	 * @throws IOException
+	 *             If anything goes wrong with serialisation of the run.
+	 */
 	@WithinSingleTransaction
 	public void persistRun(RemoteRunDelegate rrd) throws IOException {
 		persist(rrd);
 	}
 
+	/**
+	 * Stop a workflow run from being persistent.
+	 * 
+	 * @param name
+	 *            The ID of the run.
+	 */
 	@WithinSingleTransaction
 	public void unpersistRun(String name) {
 		RunConnection rc = pickRun(name);
@@ -159,11 +201,22 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 			delete(rc);
 	}
 
+	/**
+	 * Ensure that the given workflow run is synchronized with the database.
+	 * 
+	 * @param run
+	 *            The run to synchronise.
+	 * @throws IOException
+	 *             If serialization of anything fails.
+	 */
 	@WithinSingleTransaction
 	public void flushToDisk(RemoteRunDelegate run) throws IOException {
-			getById(run.id).makeChanges(run);
+		getById(run.id).makeChanges(run);
 	}
 
+	/**
+	 * Remove all workflow runs that have expired.
+	 */
 	@WithinSingleTransaction
 	public void doClean() {
 		log.debug("deleting runs that timed out before " + new Date());
@@ -173,6 +226,10 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 			delete(getById(id));
 	}
 
+	/**
+	 * @return A list of workflow runs that are candidates for doing
+	 *         notification of termination.
+	 */
 	@WithinSingleTransaction
 	public List<RemoteRunDelegate> getNotifiable() {
 		List<RemoteRunDelegate> toNotify = new ArrayList<RemoteRunDelegate>();

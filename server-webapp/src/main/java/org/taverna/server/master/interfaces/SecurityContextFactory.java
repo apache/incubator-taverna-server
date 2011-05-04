@@ -10,6 +10,11 @@ import java.io.Serializable;
 import org.taverna.server.master.localworker.RemoteRunDelegate;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
+/**
+ * How to create instances of a security context.
+ * 
+ * @author Donal Fellows
+ */
 public interface SecurityContextFactory extends Serializable {
 	/**
 	 * Creates a security context.

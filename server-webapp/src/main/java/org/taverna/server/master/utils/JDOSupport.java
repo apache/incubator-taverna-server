@@ -59,6 +59,7 @@ public abstract class JDOSupport<T> {
 	/**
 	 * Has this class actually been configured with a persistence manager by
 	 * Spring?
+	 * @return Whether there is a persistence manager installed.
 	 */
 	protected boolean isPersistent() {
 		return pm != null;

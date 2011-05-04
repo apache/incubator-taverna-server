@@ -330,7 +330,8 @@ public interface TavernaServerListenersREST {
 		 * Make a description of the whole group out of the given list of
 		 * listener descriptions.
 		 * 
-		 * @param listeners
+		 * @param listeners The collection of (partial) listener descriptions.
+		 * @param ub How to build the location of the listeners.
 		 */
 		public Listeners(List<ListenerDescription> listeners, UriBuilder ub) {
 			super(true);

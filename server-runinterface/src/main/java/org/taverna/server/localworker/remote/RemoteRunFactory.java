@@ -30,6 +30,8 @@ public interface RemoteRunFactory extends Remote {
 	 *            Where to write any usage records. May be <tt>null</tt> to
 	 *            cause them to not be written.
 	 * @return A remote handle for the run.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	@NonNull
 	public RemoteSingleRun make(@NonNull String workflow,
@@ -40,6 +42,8 @@ public interface RemoteRunFactory extends Remote {
 	/**
 	 * Asks this factory to unregister itself from the registry and cease
 	 * operation.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
 	 */
 	public void shutdown() throws RemoteException;
 }

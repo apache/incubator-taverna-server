@@ -15,7 +15,7 @@ import org.taverna.server.master.ManagementModel;
  * @author Donal Fellows
  */
 public class HandlerCore {
-	protected ManagementModel managementModel;
+	private ManagementModel managementModel;
 
 	/**
 	 * @param managementModel
@@ -39,5 +39,24 @@ public class HandlerCore {
 			log.info("converting exception to response", exception);
 		return status(status).type(TEXT_PLAIN_TYPE)
 				.entity(exception.getMessage()).build();
+	}
+
+	/**
+	 * Simplified interface for building responses.
+	 * 
+	 * @param status
+	 *            What status code to use?
+	 * @param partialMessage
+	 *            The prefix to the message.
+	 * @param exception
+	 *            What exception to report on?
+	 * @return The build response.
+	 */
+	protected Response respond(Response.Status status, String partialMessage,
+			Exception exception) {
+		if (managementModel.getLogOutgoingExceptions())
+			log.info("converting exception to response", exception);
+		return status(status).type(TEXT_PLAIN_TYPE)
+				.entity(partialMessage + "\n" + exception.getMessage()).build();
 	}
 }

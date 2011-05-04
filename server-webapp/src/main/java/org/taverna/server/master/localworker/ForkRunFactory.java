@@ -36,6 +36,8 @@ import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 /**
  * A simple factory for workflow runs that forks runs from a subprocess.
  * 
@@ -370,6 +372,29 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		super.finalize();
 	}
 
+	/**
+	 * The real core of the run builder, factored out from its reliability
+	 * support.
+	 * 
+	 * @param creator
+	 *            Who created this workflow?
+	 * @param wf
+	 *            The serialized workflow.
+	 * @return The remote handle of the workflow run.
+	 * @throws RemoteException
+	 *             If anything fails (communications error, etc.)
+	 */
+	private RemoteSingleRun getRealRun(@NonNull UsernamePrincipal creator,
+			@NonNull String wf) throws RemoteException {
+		String globaluser = "Unknown Person";
+		if (creator != null)
+			globaluser = creator.getName();
+		RemoteSingleRun rsr = factory.make(wf, globaluser,
+				makeURReciver(creator));
+		totalRuns++;
+		return rsr;
+	}
+
 	@Override
 	protected RemoteSingleRun getRealRun(UsernamePrincipal creator,
 			Workflow workflow) throws Exception {
@@ -378,13 +403,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 			if (factory == null)
 				initFactory();
 			try {
-				String globaluser = "Unknown Person";
-				if (creator != null)
-					globaluser = creator.getName();
-				RemoteSingleRun rsr = factory.make(wf, globaluser,
-						makeURReciver());
-				totalRuns++;
-				return rsr;
+				return getRealRun(creator, wf);
 			} catch (ConnectException e) {
 				// factory was lost; try to recreate
 			} catch (ConnectIOException e) {

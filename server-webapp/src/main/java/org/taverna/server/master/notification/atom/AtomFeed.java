@@ -3,7 +3,7 @@
  * 
  * See the file "LICENSE.txt" for license terms.
  */
-package org.taverna.server.master;
+package org.taverna.server.master.notification.atom;
 
 import static javax.ws.rs.core.UriBuilder.fromUri;
 
@@ -14,10 +14,9 @@ import javax.servlet.ServletContext;
 import javax.ws.rs.core.UriBuilder;
 
 import org.springframework.web.context.ServletContextAware;
+import org.taverna.server.master.TavernaServerSupport;
 import org.taverna.server.master.ContentsDescriptorBuilder.UriBuilderFactory;
 import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.notification.atom.AbstractEvent;
-import org.taverna.server.master.notification.atom.EventDAO;
 import org.taverna.server.master.rest.TavernaServerREST.EventFeed;
 import org.taverna.server.master.rest.TavernaServerREST.Events;
 import org.taverna.server.master.utils.UsernamePrincipal;
@@ -33,9 +32,16 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  */
 public class AtomFeed implements EventFeed, UriBuilderFactory,
 		ServletContextAware {
+	/**
+	 * The name of a parameter that states what address we should claim that the
+	 * feed's internally-generated URIs are relative to. If not set, a default
+	 * will be guessed.
+	 */
+	public static final String PREFERRED_URI_PARAM = "taverna.preferredUserUri";
 	private EventDAO eventSource;
 	private TavernaServerSupport support;
 	private URI baseURI;
+	private String feedLanguage = "en";
 
 	public void setEventSource(EventDAO eventSource) {
 		this.eventSource = eventSource;
@@ -45,6 +51,19 @@ public class AtomFeed implements EventFeed, UriBuilderFactory,
 		this.support = support;
 	}
 
+	public void setFeedLanguage(String language) {
+		this.feedLanguage = language;
+	}
+
+	public String getFeedLanguage() {
+		return feedLanguage;
+	}
+
+	/**
+	 * The implementation of a feed of events for a workflow run.
+	 * 
+	 * @author Donal Fellows
+	 */
 	public static class Feed extends Events {
 		private UsernamePrincipal owner;
 		private EventDAO eventSource;
@@ -95,8 +114,7 @@ public class AtomFeed implements EventFeed, UriBuilderFactory,
 
 	@Override
 	public void setServletContext(ServletContext servletContext) {
-		String base = servletContext
-				.getInitParameter("taverna.preferredUserUri");
+		String base = servletContext.getInitParameter(PREFERRED_URI_PARAM);
 		if (base == null)
 			baseURI = URI.create(servletContext.getContextPath());
 		else

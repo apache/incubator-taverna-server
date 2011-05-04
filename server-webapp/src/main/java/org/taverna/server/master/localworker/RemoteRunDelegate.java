@@ -115,6 +115,17 @@ public class RemoteRunDelegate implements TavernaRun {
 		return id;
 	}
 
+	/**
+	 * Attach a listener to a workflow run and return its local delegate.
+	 * 
+	 * @param type
+	 *            The type of listener to create.
+	 * @param config
+	 *            The configuration of the listener.
+	 * @return The local delegate of the listener.
+	 * @throws NoListenerException
+	 *             If anything goes wrong.
+	 */
 	public Listener makeListener(String type, String config)
 			throws NoListenerException {
 		try {

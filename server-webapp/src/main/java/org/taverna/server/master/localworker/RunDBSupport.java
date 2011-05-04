@@ -7,6 +7,11 @@ import org.taverna.server.master.notification.NotificationEngine;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 
+/**
+ * The interface to the database of runs.
+ * 
+ * @author Donal Fellows
+ */
 public interface RunDBSupport {
 	/**
 	 * Scan each run to see if it has finished yet and issue registered
@@ -19,7 +24,11 @@ public interface RunDBSupport {
 	 */
 	void cleanNow();
 
-	/** How many runs are stored in the database. */
+	/**
+	 * How many runs are stored in the database.
+	 * 
+	 * @return The current size of the run table.
+	 */
 	int countRuns();
 
 	/**
@@ -31,15 +40,34 @@ public interface RunDBSupport {
 	 */
 	void flushToDisk(@NonNull RemoteRunDelegate run);
 
-	/** Select an arbitrary representative run. */
+	/**
+	 * Select an arbitrary representative run.
+	 * 
+	 * @return The selected run.
+	 * @throws Exception
+	 *             If anything goes wrong.
+	 */
 	@Nullable
 	RemoteRunDelegate pickArbitraryRun() throws Exception;
 
-	/** Get a list of all the run names. */
+	/**
+	 * Get a list of all the run names.
+	 * 
+	 * @return The names (i.e., UUIDs) of all the runs.
+	 */
 	@NonNull
 	List<String> listRunNames();
 
+	/**
+	 * @param notificationEngine
+	 *            A reference to the notification fabric bean.
+	 */
 	void setNotificationEngine(NotificationEngine notificationEngine);
 
+	/**
+	 * @param notifier
+	 *            A reference to the bean that creates messages about workflow
+	 *            run termination.
+	 */
 	void setNotifier(CompletionNotifier notifier);
 }

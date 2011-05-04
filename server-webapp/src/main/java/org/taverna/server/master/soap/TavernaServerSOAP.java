@@ -599,6 +599,7 @@ public interface TavernaServerSOAP {
 	 * @throws NotOwnerException
 	 *             If the user is permitted to see the run, but isn't the owner;
 	 *             only the owner may manipulate the credentials.
+	 * @throws NoCredentialException If the given credentialID does not exist.
 	 * @throws BadStateChangeException
 	 *             If an attempt to manipulate the credentials is done after the
 	 *             workflow has started running.
@@ -673,6 +674,7 @@ public interface TavernaServerSOAP {
 	 * @throws NotOwnerException
 	 *             If the user is permitted to see the run, but isn't the owner;
 	 *             only the owner may manipulate the certificates.
+	 * @throws NoCredentialException If the given certificateID does not exist.
 	 * @throws BadStateChangeException
 	 *             If an attempt to manipulate the credentials is done after the
 	 *             workflow has started running.
