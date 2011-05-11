@@ -56,7 +56,6 @@ public final class Trust implements Serializable {
 	 * The collection of certificates loaded from the specified file. This is
 	 * always <tt>null</tt> before validation.
 	 */
-	@XmlTransient
 	public transient Collection<? extends Certificate> loadedCertificates;
 
 	@Override

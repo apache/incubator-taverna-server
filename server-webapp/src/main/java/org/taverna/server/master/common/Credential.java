@@ -50,10 +50,8 @@ public abstract class Credential implements Serializable {
 	@XmlElement
 	public byte[] credentialBytes;
 	/** The key extracted from the keystore. */
-	@XmlTransient
 	public transient Key loadedKey;
 	/** The trust chain of the key extracted from the keystore. */
-	@XmlTransient
 	public transient Certificate[] loadedTrustChain;
 
 	@Override
