@@ -197,15 +197,25 @@
 		<property name="self" ref="usageRecordSink" />
 	</bean>
 
+	<bean id="factory.config"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="ignoreUnresolvablePlaceholders" value="true" />
+		<property name="order" value="2" />
+		<property name="properties">
+			<value>backEndFactory=org.taverna.server.master.localworker.IdAwareForkRunFactory</value>
+		</property>
+	</bean>
+
 	<bean id="localworker.factory" scope="singleton" lazy-init="false"
-		class="org.taverna.server.master.localworker.IdAwareForkRunFactory">
+		class="${backEndFactory}">
 		<description>
 			The simple policy manager and factory for the baseline
 			localworker case.
 		</description>
 		<property name="state" ref="localworker.state" />
 		<property name="runDB" ref="localworker.rundb" />
-		<property name="idMapper" ref="IdentityMapper" />
+		<!-- Handled by autowiring to make type-resilient. -->
+		<!-- <property name="idMapper" ref="IdentityMapper" /> -->
 		<property name="securityContextFactory" ref="localworker.securityContext" />
 		<property name="usageRecordSink" ref="usageRecordSink" />
 		<property name="URProcessorPool" ref="URThreads" />

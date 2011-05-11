@@ -39,6 +39,7 @@ import javax.servlet.ServletContext;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.web.context.ServletContextAware;
@@ -570,6 +571,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 		super.finalize();
 	}
 
+	@Autowired
 	public void setIdMapper(LocalIdentityMapper mapper) {
 		this.mapper = mapper;
 	}
@@ -606,7 +608,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	protected RemoteSingleRun getRealRun(UsernamePrincipal creator,
 			Workflow workflow) throws Exception {
 		String wf = serializeWorkflow(workflow);
-		String username = mapper.getUsernameForPrincipal(creator);
+		String username = mapper == null ? null : mapper.getUsernameForPrincipal(creator);
 		if (username == null)
 			throw new Exception("cannot determine who to run workflow as; "
 					+ "local identity mapper returned null");

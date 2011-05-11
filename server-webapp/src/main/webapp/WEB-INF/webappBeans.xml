@@ -122,48 +122,7 @@
 		<property name="pattern" value="SERVICE_URI/" />
 	</bean>
 
-	<bean id="MBeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
-		<property name="locateExistingServerIfPossible" value="true" />
-	</bean>
-	<context:mbean-export server="MBeanServer"
-		default-domain="${my.domain}" registration="ignoreExisting" />
-
 	<aop:aspectj-autoproxy proxy-target-class="true" />
-	<security:http realm="tavernaserver" create-session="never">
-		<security:http-basic />
-		<security:intercept-url pattern="/" filters="none" />
-		<security:intercept-url pattern="/services"
-			filters="none" />
-		<!-- These next one doesn't work; only authorized users may get schemas 
-			:-( -->
-		<!-- <security:intercept-url pattern="/soap?wsdl**" filters="none" /> -->
-		<security:intercept-url pattern="/soap/**"
-			access="ROLE_tavernauser" requires-channel="https" method="POST" />
-		<security:intercept-url pattern="/rest"
-			filters="none" />
-		<security:intercept-url pattern="/rest/runs"
-			access="ROLE_tavernauser" requires-channel="https" />
-		<security:intercept-url pattern="/rest/runs/**"
-			access="ROLE_tavernauser" requires-channel="https" />
-		<security:intercept-url pattern="/rest/policy"
-			filters="none" />
-		<security:intercept-url pattern="/rest/policy/**"
-			access="ROLE_tavernauser" requires-channel="https" />
-		<security:intercept-url pattern="/feed"
-			access="ROLE_tavernauser" requires-channel="https" />
-		<security:intercept-url pattern="/admin"
-			access="ROLE_tavernauser" requires-channel="https" />
-	</security:http>
-	<bean class="org.taverna.server.master.common.Uri.Rewriter"
-		autowire="byType" id="URI-Rewriter-Thunk" />
 	<security:global-method-security
 		jsr250-annotations="enabled" />
-	<security:authentication-manager>
-		<security:authentication-provider>
-			<security:user-service id="users"
-				properties="/WEB-INF/security/users.properties">
-				<!-- FIXME -->
-			</security:user-service>
-		</security:authentication-provider>
-	</security:authentication-manager>
 </beans>

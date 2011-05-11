@@ -94,14 +94,31 @@ public class Uri {
 		ref = ub.path(path).build((Object[]) strings);
 	}
 
+	/**
+	 * A bean that allows configuration of how to rewrite generated URIs to be
+	 * secure.
+	 * 
+	 * @author Donal Fellows
+	 */
 	public static class Rewriter {
 		private static Rewriter instance;
 		private PortMapper portMapper;
+		private boolean suppress;
 
 		@Autowired
 		@Required
 		public void setPortMapper(PortMapper portMapper) {
 			this.portMapper = portMapper;
+		}
+
+		/**
+		 * Whether to suppress rewriting of URIs to be secure.
+		 * 
+		 * @param suppressSecurity
+		 *            True if no rewriting should be done.
+		 */
+		public void setSuppressSecurity(boolean suppressSecurity) {
+			suppress = suppressSecurity;
 		}
 
 		@SuppressWarnings
@@ -117,6 +134,8 @@ public class Uri {
 
 		@NonNull
 		static UriBuilder getSecuredUriBuilder(@NonNull UriBuilder ub) {
+			if (instance != null && instance.suppress)
+				return ub;
 			Integer secPort = null;
 			if (instance != null && instance.portMapper != null)
 				secPort = instance.portMapper.lookupHttpsPort(ub.build()

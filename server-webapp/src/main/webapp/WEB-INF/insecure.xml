@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (C) 2010-2011 The University of Manchester See the file "LICENSE.txt" 
+	for license terms. -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs" xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xmlns:cxf="http://cxf.apache.org/core" xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+	http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd
+	http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+	http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+	http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd">
+
+	<description>
+		The Taverna Server bean, plus supporting configuration.
+		THIS IS AN INSECURE CONFIGURATION!
+	</description>
+
+	<bean id="factory.config.override"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="ignoreUnresolvablePlaceholders" value="true" />
+		<property name="properties">
+			<value>backEndFactory=org.taverna.server.master.localworker.ForkRunFactory</value>
+		</property>
+	</bean>
+
+	<import resource="webappBeans.xml" />
+	<security:http realm="tavernaserver" create-session="never">
+		<security:http-basic />
+		<security:intercept-url pattern="/" filters="none" />
+		<security:intercept-url pattern="/services" filters="none" />
+		<security:intercept-url pattern="/soap/**" method="POST"
+			access="ROLE_tavernauser" />
+		<security:intercept-url pattern="/rest" filters="none" />
+		<security:intercept-url pattern="/rest/runs"
+			access="ROLE_tavernauser" />
+		<security:intercept-url pattern="/rest/runs/**"
+			access="ROLE_tavernauser" />
+		<security:intercept-url pattern="/rest/policy"
+			filters="none" />
+		<security:intercept-url pattern="/rest/policy/**"
+			access="ROLE_tavernauser" />
+		<security:intercept-url pattern="/feed"
+			access="ROLE_tavernauser" />
+		<security:intercept-url pattern="/admin"
+			access="ROLE_tavernauser" />
+	</security:http>
+	<bean class="org.taverna.server.master.common.Uri.Rewriter"
+		autowire="byType" id="URI-Rewriter-Thunk">
+		<property name="suppressSecurity" value="true" />
+	</bean>
+	<security:authentication-manager>
+		<security:authentication-provider>
+			<security:user-service id="users">
+				<security:user name="taverna"
+					authorities="ROLE_tavernauser,ROLE_tavernasuperuser"
+					password="taverna" />
+			</security:user-service>
+		</security:authentication-provider>
+	</security:authentication-manager>
+</beans>
