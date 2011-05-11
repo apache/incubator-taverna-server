@@ -7,6 +7,7 @@ package org.taverna.server.master.localworker;
 
 import java.io.Serializable;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.springframework.beans.factory.annotation.Required;
@@ -41,9 +42,12 @@ public class SecurityContextFactory implements
 		instance = null;
 	}
 
-	public SecurityContextFactory() {
-		if (instance == null)
-			instance = this;
+	@SuppressWarnings({ "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
+			"UPM_UNCALLED_PRIVATE_METHOD" })
+	@java.lang.SuppressWarnings("unused")
+	@PostConstruct
+	private void setAsSingleton() {
+		instance = this;
 	}
 
 	@Required

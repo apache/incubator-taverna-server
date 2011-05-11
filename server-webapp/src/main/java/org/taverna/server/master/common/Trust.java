@@ -7,6 +7,7 @@ package org.taverna.server.master.common;
 
 import static org.taverna.server.master.common.Namespaces.XLINK;
 
+import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.Collection;
 
@@ -25,7 +26,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlType(name = "TrustDescriptor")
 @XmlRootElement(name = "trustedIdentity")
-public final class Trust {
+public final class Trust implements Serializable {
 	/** The location of this descriptor in the REST world. */
 	@XmlAttribute(namespace = XLINK)
 	public String href;
@@ -56,7 +57,7 @@ public final class Trust {
 	 * always <tt>null</tt> before validation.
 	 */
 	@XmlTransient
-	public Collection<? extends Certificate> loadedCertificates;
+	public transient Collection<? extends Certificate> loadedCertificates;
 
 	@Override
 	public int hashCode() {

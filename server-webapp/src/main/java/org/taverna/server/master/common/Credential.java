@@ -7,6 +7,7 @@ package org.taverna.server.master.common;
 
 import static org.taverna.server.master.common.Namespaces.XLINK;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.security.Key;
 import java.security.cert.Certificate;
@@ -27,7 +28,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "CredentialDescriptor")
 @XmlSeeAlso({ Credential.KeyPair.class, Credential.Password.class,
 		Credential.CaGridProxy.class })
-public abstract class Credential {
+public abstract class Credential implements Serializable {
 	/** The location of this descriptor in the REST world. */
 	@XmlAttribute(namespace = XLINK)
 	public String href;
@@ -50,10 +51,10 @@ public abstract class Credential {
 	public byte[] credentialBytes;
 	/** The key extracted from the keystore. */
 	@XmlTransient
-	public Key loadedKey;
+	public transient Key loadedKey;
 	/** The trust chain of the key extracted from the keystore. */
 	@XmlTransient
-	public Certificate[] loadedTrustChain;
+	public transient Certificate[] loadedTrustChain;
 
 	@Override
 	public int hashCode() {

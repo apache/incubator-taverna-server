@@ -29,6 +29,8 @@ import javax.jdo.annotations.Query;
 import javax.jdo.annotations.Serialized;
 
 import org.taverna.server.localworker.remote.RemoteSingleRun;
+import org.taverna.server.master.common.Credential;
+import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.interfaces.SecurityContextFactory;
 import org.taverna.server.master.utils.UsernamePrincipal;
@@ -98,6 +100,12 @@ public class RunConnection {
 	@Persistent(defaultFetchGroup = "true")
 	@Serialized
 	private SecurityContextFactory securityContextFactory;
+	@Persistent(defaultFetchGroup = "true")
+	@Serialized
+	private Credential[] credentials;
+	@Persistent(defaultFetchGroup = "true")
+	@Serialized
+	private Trust[] trust;
 
 	private static final String[] STRING_ARY = new String[0];
 
@@ -163,6 +171,7 @@ public class RunConnection {
 		rrd.doneTransitionToFinished = isFinished();
 		rrd.secContext = securityContextFactory.create(rrd,
 				new UsernamePrincipal(owner));
+		((SecurityContextDelegate)rrd.secContext).setCredentialsAndTrust(credentials,trust);
 		rrd.db = db;
 		return rrd;
 	}
@@ -190,6 +199,8 @@ public class RunConnection {
 		readers = rrd.getReaders().toArray(STRING_ARY);
 		writers = rrd.getWriters().toArray(STRING_ARY);
 		destroyers = rrd.getDestroyers().toArray(STRING_ARY);
+		credentials = rrd.getSecurityContext().getCredentials();
+		trust = rrd.getSecurityContext().getTrusted();
 		setFinished(rrd.doneTransitionToFinished);
 	}
 }

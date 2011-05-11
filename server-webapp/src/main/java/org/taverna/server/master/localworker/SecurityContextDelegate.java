@@ -17,6 +17,7 @@ import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.KeyStoreSpi;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -34,6 +35,7 @@ import javax.xml.ws.handler.MessageContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.bouncycastle.jce.provider.JDKKeyStore.BouncyCastleStore;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.taverna.server.localworker.remote.ImplementationException;
@@ -52,7 +54,6 @@ import org.taverna.server.master.utils.UsernamePrincipal;
  * 
  * @author Donal Fellows
  */
-// TODO: Ensure that this works with the persistence engine
 public class SecurityContextDelegate implements TavernaSecurityContext {
 	private Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
 	private final UsernamePrincipal owner;
@@ -62,7 +63,7 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 	private final Object lock = new Object();
 	private final SecurityContextFactory factory;
 
-	private transient KeyStore keystore;
+	private transient KeyStoreSpi keystore;
 	private transient char[] password;
 	private transient HashMap<URI, String> uriToAliasMap;
 
@@ -115,6 +116,7 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 				credentials.set(idx, toAdd);
 			else
 				credentials.add(toAdd);
+			factory.db.flushToDisk(run);
 		}
 	}
 
@@ -122,6 +124,7 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 	public void deleteCredential(Credential toDelete) {
 		synchronized (lock) {
 			credentials.remove(toDelete);
+			factory.db.flushToDisk(run);
 		}
 	}
 
@@ -140,6 +143,7 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 				trusted.set(idx, toAdd);
 			else
 				trusted.add(toAdd);
+			factory.db.flushToDisk(run);
 		}
 	}
 
@@ -147,6 +151,7 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 	public void deleteTrusted(Trust toDelete) {
 		synchronized (lock) {
 			trusted.remove(toDelete);
+			factory.db.flushToDisk(run);
 		}
 	}
 
@@ -275,11 +280,12 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 	 * Get an empty keystore for use with credentials (client certs, passwords,
 	 * etc.)
 	 * 
-	 * @return A keystore
+	 * @return A keystore <i>back-end</i>, so we circumvent some of the more
+	 *         annoying features of the API.
 	 * @throws GeneralSecurityException
 	 */
-	protected KeyStore getInitialKeyStore() throws GeneralSecurityException {
-		return KeyStore.getInstance("JCEKS");
+	protected KeyStoreSpi getInitialKeyStore() throws GeneralSecurityException {
+		return new BouncyCastleStore();
 	}
 
 	/**
@@ -309,15 +315,17 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 			ImplementationException {
 		RemoteSecurityContext rc = run.run.getSecurityContext();
 
-		if (credentials.isEmpty() && trusted.isEmpty())
-			return;
+		synchronized (lock) {
+			if (credentials.isEmpty() && trusted.isEmpty())
+				return;
+		}
 		char[] password = null;
 		try {
 			password = generateNewPassword();
 
 			log.info("constructing merged keystore");
 			KeyStore truststore = getInitialTrustStore();
-			KeyStore keystore = getInitialKeyStore();
+			KeyStoreSpi keystore = getInitialKeyStore();
 			HashMap<URI, String> uriToAliasMap = new HashMap<URI, String>();
 			int trustedCount = 0, keyCount = 0;
 
@@ -345,6 +353,9 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 					this.password = null;
 					this.uriToAliasMap = null;
 					this.keystore = null;
+					credentials.clear();
+					trusted.clear();
+					factory.db.flushToDisk(run);
 				}
 			}
 
@@ -398,6 +409,14 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 		return stream.toByteArray();
 	}
 
+	private static byte[] serialize(KeyStoreSpi ks, char[] password)
+			throws GeneralSecurityException, IOException {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		ks.engineStore(stream, password);
+		stream.close();
+		return stream.toByteArray();
+	}
+
 	/**
 	 * @return A new password with a reasonable level of randomness.
 	 */
@@ -441,7 +460,8 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 			throws KeyStoreException {
 		if (uriToAliasMap.containsKey(c.serviceURI))
 			log.warn("duplicate URI in alias mapping: " + c.serviceURI);
-		keystore.setKeyEntry(alias, c.loadedKey, password, c.loadedTrustChain);
+		keystore.engineSetKeyEntry(alias, c.loadedKey, password,
+				c.loadedTrustChain);
 		uriToAliasMap.put(c.serviceURI, alias);
 	}
 
@@ -525,5 +545,40 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 	@Override
 	public void setPermittedReaders(Set<String> readers) {
 		run.setReaders(readers);
+	}
+
+	/**
+	 * Reinstall the credentials and the trust extracted from serialization to
+	 * the database.
+	 * 
+	 * @param credentials
+	 *            The credentials to reinstall.
+	 * @param trust
+	 *            The trusted certificates to reinstall.
+	 */
+	void setCredentialsAndTrust(Credential[] credentials, Trust[] trust) {
+		synchronized (lock) {
+			this.credentials.clear();
+			if (credentials != null) {
+				for (Credential c : credentials)
+					try {
+						validateCredential(c);
+						this.credentials.add(c);
+					} catch (InvalidCredentialException e) {
+						log.warn("failed to revalidate credential: " + c, e);
+					}
+			}
+			this.trusted.clear();
+			if (trusted != null) {
+				for (Trust t : trust)
+					try {
+						validateTrusted(t);
+						this.trusted.add(t);
+					} catch (InvalidCredentialException e) {
+						log.warn("failed to revalidate trust assertion: " + t,
+								e);
+					}
+			}
+		}
 	}
 }
