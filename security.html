@@ -63,22 +63,47 @@
 		Authorisation of users is done through the use of Spring Security to
 		assign them <i>on each connection</i> a set of security authorities.
 		In particular, the key authorities are:
+	</p>
 	<ul>
 		<li><tt>ROLE_tavernauser</tt> &mdash; allows the user to access
-			the main operational parts of the server.
+			the main operational parts of the server.</li>
 		<li><tt>ROLE_tavernasuperuser</tt> &mdash; allows the user to
 			read and write all non-security characteristics of all workflows, and
-			also grants access to the <tt>/admin</tt> pages.
-		<li><tt>LOCALUSER_*</tt> (where the <tt>*</tt> is replaced with a
-			local user name) &mdash; specifies what local user name the user
-			should be executing workflows as; the prefix (<tt>LOCALUSER_</tt>) is
-			simply stripped and the remainder is used as a user name. If absent,
-			the default user name (<tt>taverna</tt>) will be used; two users
-			mapped to the same user name will be able to see each others
+			also grants access to the <tt>/admin</tt> pages.</li>
+		<li><tt>
+				LOCALUSER_<i>*</i>
+			</tt> (where the <tt>
+				<i>*</i>
+			</tt> is replaced with a local user name) &mdash; specifies what local
+			user name the user should be executing workflows as; the prefix (<tt>LOCALUSER_</tt>)
+			is simply stripped and the remainder is used as a user name. If
+			absent, the default user name (<tt>taverna</tt>) will be used; two
+			users mapped to the same user name will be able to see each others
 			workflows if they can work out where the job working directories are
 			located, but will not be able to see them inside Taverna Server
 			itself (unless one user grants the other authority to do so, of
-			course).
+			course).</li>
 	</ul>
+	<p>
+		The default source of authorities is the file
+		<tt>WEB-INF/security/users.properties</tt>
+		(relative to the directory which is the expanded webapp).
+	</p>
+	<h2>Insecure Mode</h2>
+	<p>
+		The server can be switched into insecure mode by editing its
+		<tt>WEB-INF/web.xml</tt>
+		file so that it pulls its Spring configuration from
+		<tt>insecure.xml</tt>
+		instead of from
+		<tt>secure.xml</tt>
+		(the default). This alternate configuration disabled URI rewriting,
+		restricts the set of users to a single one (
+		<tt>taverna</tt>
+		with a password
+		<tt>taverna</tt>
+		) and arranges for execution of workflow runs to be done in the same
+		local userid as is running the host servlet container (Tomcat, etc.)
+	</p>
 </body>
 </html>
