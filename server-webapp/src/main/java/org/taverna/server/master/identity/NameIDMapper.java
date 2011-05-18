@@ -1,4 +1,4 @@
-package org.taverna.server.master;
+package org.taverna.server.master.identity;
 
 import static java.util.regex.Pattern.compile;
 

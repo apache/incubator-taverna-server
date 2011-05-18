@@ -3,7 +3,7 @@
  * 
  * See the file "LICENSE.txt" for license terms.
  */
-package org.taverna.server.master;
+package org.taverna.server.master.identity;
 
 import static org.apache.commons.logging.LogFactory.getLog;
 

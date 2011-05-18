@@ -3,7 +3,7 @@
  * 
  * See the file "LICENSE.txt" for license terms.
  */
-package org.taverna.server.master;
+package org.taverna.server.master.identity;
 
 import org.taverna.server.master.interfaces.LocalIdentityMapper;
 import org.taverna.server.master.utils.UsernamePrincipal;
