@@ -144,6 +144,7 @@ public interface TavernaServerInputREST {
 	@PUT
 	@Path("input/{name}")
 	@Consumes({ "application/xml", "application/json" })
+	@Produces({ "application/xml", "application/json" })
 	@Description("Sets the source for a particular input port.")
 	@NonNull
 	InDesc setInput(@NonNull @PathParam("name") String name,
