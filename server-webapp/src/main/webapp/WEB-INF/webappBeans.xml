@@ -21,6 +21,13 @@
 
 	<context:annotation-config />
 	<context:component-scan base-package="org.taverna.server" />
+	<bean id="servletContextPropertyConfigurer"
+		class="org.springframework.web.context.support.ServletContextPropertyPlaceholderConfigurer">
+		<property name="ignoreUnresolvablePlaceholders" value="true" />
+		<property name="contextOverride" value="true" />
+		<property name="order" value="0" />
+		<property name="location" value="/WEB-INF/tavernaserver.properties" />
+	</bean>
 
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
 	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
@@ -98,24 +105,24 @@
 		<jaxrs:serviceBeans>
 			<ref bean="admin" />
 		</jaxrs:serviceBeans>
-		<!-- <jaxrs:dataBinding><ref bean="addStylesheet"/></jaxrs:dataBinding> -->
+		<jaxrs:dataBinding>
+			<ref bean="addStylesheet"/>
+		</jaxrs:dataBinding>
 	</jaxrs:server>
 
 	<!-- How to supply a stylesheet with the results so that browsers can
 	     show things properly; requires selecting a stylesheet to use. -->
-<!--
 	<bean id="addStylesheet" class="org.apache.cxf.jaxb.JAXBDataBinding">
 		<property name="marshallerProperties">
 			<map>
 				<entry key="com.sun.xml.bind.xmlHeaders">
 					<value><![CDATA[
-						<?xml-stylesheet type='text/xsl' href='xml2html.xsl'?>
+						<?xml-stylesheet type='text/xsl' href='${xml.stylesheet.url}'?>
 					]]></value>
 				</entry>
 			</map>
 		</property>
 	</bean>
--->
 
 	<bean id="root_facade" class="org.taverna.server.master.facade.Facade">
 		<property name="file" value="welcome.html" />

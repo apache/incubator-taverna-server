@@ -108,7 +108,7 @@
 		class="org.taverna.server.master.notification.atom.AtomFeed">
 		<property name="eventSource" ref="dispatch.atom" />
 		<property name="support" ref="webapp.support" />
-		<property name="feedLanguage" value="en" />
+		<property name="feedLanguage" value="${atom.language}" />
 	</bean>
 
 	<bean id="admin" class="org.taverna.server.master.admin.AdminBean">
@@ -142,7 +142,7 @@
 				<bean id="Constant" class="org.taverna.server.master.identity.ConstantIDMapper">
 					<description>How to map web principals to local users. This one
 						maps everyone to the same user, "taverna".</description>
-					<property name="constantId" value="taverna" />
+					<property name="constantId" value="${default.localusername}" />
 				</bean>
 			</list>
 		</property>
@@ -221,7 +221,7 @@
 		<property name="URProcessorPool" ref="URThreads" />
 	</bean>
 
-	<task:executor id="URThreads" pool-size="2" />
+	<task:executor id="URThreads" pool-size="${pool.size}" />
 
 	<bean id="localworker.securityContext"
 		class="org.taverna.server.master.localworker.SecurityContextFactory">
@@ -298,7 +298,7 @@
 		<task:scheduled ref="localworker.rundb" method="checkForFinishNow"
 			fixed-delay="10000" />
 		<task:scheduled ref="dispatch.atom" method="deleteExpiredEvents"
-			fixed-delay="3600000" />
+			fixed-delay="${atom.cleaninterval}" />
 	</task:scheduled-tasks>
 
 	<bean id="notificationFabric"
@@ -327,8 +327,8 @@
 	</bean>
 
 	<bean id="dispatch.email" class="org.taverna.server.master.notification.EmailDispatcher">
-		<property name="from" value="taverna.server@localhost" />
-		<property name="messageContentType" value="text/plain" />
+		<property name="from" value="${email.from}" />
+		<property name="messageContentType" value="${email.type}" />
 	</bean>
 	<bean id="dispatch.twitter"
 		class="org.taverna.server.master.notification.TwitterDispatcher">
@@ -339,36 +339,34 @@
 				<prop key="oauth.accessTokenSecret"></prop>
 			</props>
 		</property>
-		<property name="cooldownSeconds" value="300" />
+		<property name="cooldownSeconds" value="${message.cooldown}" />
 	</bean>
 	<bean id="dispatch.xmpp" class="org.taverna.server.master.notification.JabberDispatcher">
-		<property name="resource" value="TavernaServer" />
+		<property name="resource" value="${xmpp.resource}" />
 	</bean>
 	<bean id="dispatch.sms" class="org.taverna.server.master.notification.SMSDispatcher">
-		<property name="usernameField" value="username" />
-		<property name="passwordField" value="password" />
-		<property name="destinationField" value="to" />
-		<property name="messageField" value="text" />
-		<property name="cooldownSeconds" value="300" />
+		<property name="usernameField" value="${sms.userfield}" />
+		<property name="passwordField" value="${sms.passfield}" />
+		<property name="destinationField" value="${sms.destfield}" />
+		<property name="messageField" value="${sms.msgfield}" />
+		<property name="cooldownSeconds" value="${message.cooldown}" />
 	</bean>
 
 	<bean id="dispatch.atom" class="org.taverna.server.master.notification.atom.EventDAO">
-		<property name="expiryAgeDays" value="7" />
+		<property name="expiryAgeDays" value="${atom.lifespan}" />
 		<property name="persistenceManagerFactory" ref="pmf" />
 		<property name="uriBuilderFactory" ref="feed" />
 	</bean>
 
 	<bean id="localworker.notifier"
 		class="org.taverna.server.master.localworker.SimpleFormattedCompletionNotifier">
-		<property name="subject" value="Taverna workflow run finished" />
-		<property name="messageFormat">
-			<value>Your job with ID={0} has finished with exit code {1,number,integer}.</value>
-		</property>
+		<property name="subject" value="${message.termination.subject}" />
+		<property name="messageFormat" value="${message.termination.body}" />
 	</bean>
 
 	<alias name="localworker.factory" alias="listenerFactory" />
 
 	<bean id="fileUtils" class="org.taverna.server.master.utils.FilenameUtils" />
 	<bean id="x500Utils" class="org.taverna.server.master.utils.X500Utils" />
-	<task:scheduler id="taskScheduler" pool-size="2" />
+	<task:scheduler id="taskScheduler" pool-size="${pool.size}" />
 </beans>
