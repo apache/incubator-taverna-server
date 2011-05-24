@@ -238,11 +238,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-site-plugin</artifactId>
-				<version>3.0-beta-3</version>
-			</plugin>
 		</plugins>
 	</build>
 	<dependencies>
@@ -335,12 +330,31 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>2.2</version>
+				<version>2.3.1</version>
 			</plugin>
 		</plugins>
 	</reporting>
 
 	<profiles>
+		<profile>
+			<id>site</id>
+			<activation>
+				<file>
+					<exists>${basedir}</exists>
+				</file>
+			</activation>
+			<build>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-site-plugin</artifactId>
+							<version>3.0-beta-3</version>
+						</plugin>
+					</plugins>
+				</pluginManagement>
+			</build>
+		</profile>
 		<profile>
 			<id>full-site</id>
 			<reporting>
@@ -358,7 +372,7 @@
 							<groups>
 								<group>
 									<title>Server Core WebService</title>
-									<packages>org.taverna.server.master:org.taverna.server.master.common:org.taverna.server.master.rest:org.taverna.server.master.soap</packages>
+									<packages>org.taverna.server.master:org.taverna.server.master.admin:org.taverna.server.master.common:org.taverna.server.master.facade:org.taverna.server.master.rest:org.taverna.server.master.soap</packages>
 								</group>
 								<group>
 									<title>Server SPI</title>
@@ -366,7 +380,7 @@
 								</group>
 								<group>
 									<title>Server Coupling to RMI Back End</title>
-									<packages>org.taverna.server.master.localworker</packages>
+									<packages>org.taverna.server.master.identity:org.taverna.server.master.localworker</packages>
 								</group>
 								<group>
 									<title>Mocked Implementations for Testing</title>
@@ -374,12 +388,19 @@
 								</group>
 								<group>
 									<title>Server RMI Interface to Back End</title>
-									<packages>org.taverna.server.localworker.remote</packages>
+									<packages>org.taverna.server.localworker.remote:org.taverna.server.localworker.server</packages>
 								</group>
 								<group>
-									<title>Server Back End Factory Coupling to Command Line
-										Executor</title>
-									<packages>org.taverna.server.localworker.impl</packages>
+									<title>Externally-Defined Document Formats</title>
+									<packages>org.taverna.server.input_description:org.taverna.server.output_description:org.ogf.usage:org.ogf.usage.v1_0:org.w3._2000._09.xmldsig_</packages>
+								</group>
+								<group>
+									<title>Server Back End Factory Coupling to Command Line Executor</title>
+									<packages>org.taverna.server.localworker.impl:org.taverna.server.unixforker:org.taverna.server.winforker</packages>
+								</group>
+								<group>
+									<title>Utilities</title>
+									<packages>org.taverna.server.master.utils:org.taverna.server.localworker.impl.utils</packages>
 								</group>
 							</groups>
 						</configuration>
