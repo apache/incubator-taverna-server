@@ -1,7 +1,5 @@
 package org.taverna.server.master.rest;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
-import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static org.taverna.server.master.TavernaServerImpl.log;
 
 import java.io.IOException;
@@ -9,7 +7,6 @@ import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
-import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -25,7 +22,6 @@ import org.taverna.server.master.interfaces.File;
  * @author Donal Fellows
  */
 @Provider
-@Produces(APPLICATION_OCTET_STREAM)
 public class FileMessageHandler implements MessageBodyWriter<File> {
 	/** How much to pull from the worker in one read. */
 	private int maxChunkSize;
@@ -41,8 +37,7 @@ public class FileMessageHandler implements MessageBodyWriter<File> {
 	@Override
 	public boolean isWriteable(Class<?> type, Type genericType,
 			Annotation[] annotations, MediaType mediaType) {
-		return File.class.isAssignableFrom(type)
-				&& mediaType.isCompatible(APPLICATION_OCTET_STREAM_TYPE);
+		return File.class.isAssignableFrom(type);
 	}
 
 	@Override
