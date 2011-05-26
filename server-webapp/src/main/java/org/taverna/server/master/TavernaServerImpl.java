@@ -37,6 +37,7 @@ import javax.ws.rs.core.UriInfo;
 import javax.xml.ws.WebServiceContext;
 
 import org.apache.commons.logging.Log;
+import org.apache.cxf.annotations.WSDLDocumentation;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.TavernaServerImpl.SupportAware;
 import org.taverna.server.master.common.Credential;
@@ -90,6 +91,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 @Path("/")
 @DeclareRoles({ USER, ADMIN })
 @WebService(endpointInterface = "org.taverna.server.master.soap.TavernaServerSOAP", serviceName = "TavernaServer", targetNamespace = SERVER_SOAP)
+@WSDLDocumentation("An instance of Taverna 2.3 Server Release 1.")
 public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		TavernaServerREST, TavernaServer {
 	/**
