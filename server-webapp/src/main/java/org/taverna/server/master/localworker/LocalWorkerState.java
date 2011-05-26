@@ -335,7 +335,7 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 * @return the registryHost
 	 */
 	public String getRegistryHost() {
-		return registryHost.isEmpty() ? null : registryHost;
+		return (registryHost == null || registryHost.isEmpty()) ? null : registryHost;
 	}
 
 	/**
