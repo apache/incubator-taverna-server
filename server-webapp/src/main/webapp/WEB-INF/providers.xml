@@ -2,8 +2,9 @@
 <!-- Copyright (C) 2010-2011 The University of Manchester See the file "LICENSE.txt" 
 	for license terms. -->
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd">
 
 	<import resource="beans.xml" />
 
@@ -69,24 +70,22 @@
 		class="org.taverna.server.master.rest.InputStreamMessageHandler">
 	</bean>
 	<bean id="MessagingProvider.Atom" class="org.apache.cxf.jaxrs.provider.AtomPojoProvider">
-		<property name="atomWriters">
-			<map>
-				<entry
-					key="org.taverna.server.master.notification.atom.TerminationEvent">
-					<bean id="Atom.EntryWriter"
-						class="org.taverna.server.master.notification.atom.EntryWriter">
-						<property name="feed" ref="feed" />
-					</bean>
-				</entry>
-			</map>
-		</property>
-		<property name="collectionGetters">
-			<map>
-				<entry key="org.taverna.server.master.notification.atom.AtomFeed$Feed"
-					value="getEvents" />
-			</map>
-		</property>
+		<property name="atomWriters" ref="atomEntryBinding" />
+		<property name="collectionGetters" ref="atomFeedBinding" />
 	</bean>
+	<util:map id="atomEntryBinding">
+		<entry key="org.taverna.server.master.notification.atom.TerminationEvent">
+			<bean id="Atom.EntryWriter"
+				class="org.taverna.server.master.notification.atom.EntryWriter">
+				<property name="feed" ref="feed" />
+			</bean>
+
+		</entry>
+	</util:map>
+	<util:map id="atomFeedBinding">
+		<entry key="org.taverna.server.master.notification.atom.AtomFeed$Feed"
+			value="getEvents" />
+	</util:map>
 
 	<bean id="Provider.RuntimeExceptionRemapping" class="org.taverna.server.master.utils.RuntimeExceptionWrapper" />
 </beans>

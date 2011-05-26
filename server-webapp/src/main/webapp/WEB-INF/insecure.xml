@@ -4,24 +4,27 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:security="http://www.springframework.org/schema/security"
-	xsi:schemaLocation="
-	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-	http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd">
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://cxf.apache.org/configuration/security http://cxf.apache.org/schemas/configuration/security.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
 	<description>
 		The Taverna Server bean, plus supporting configuration.
 		THIS IS AN INSECURE CONFIGURATION!
 	</description>
 
-	<bean id="factory.config.override"
-		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="ignoreUnresolvablePlaceholders" value="true" />
-		<property name="properties">
-			<value>backEndFactory=org.taverna.server.master.localworker.ForkRunFactory</value>
-		</property>
-	</bean>
-
 	<import resource="webappBeans.xml" />
+
+	<context:property-placeholder order="0" ignore-unresolvable="true"
+		 properties-ref="factory.config.override" />
+	<util:properties id="factory.config.override">
+		<prop key="backEndFactory">org.taverna.server.master.localworker.ForkRunFactory</prop>
+	</util:properties>
+
 	<security:http realm="tavernaserver" create-session="never">
 		<security:http-basic />
 		<security:intercept-url pattern="/" filters="none" />

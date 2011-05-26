@@ -3,21 +3,34 @@
 	for license terms. -->
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:jaxrs="http://cxf.apache.org/jaxrs" xmlns:jaxws="http://cxf.apache.org/jaxws"
-	xmlns:cxf="http://cxf.apache.org/core" xmlns:security="http://www.springframework.org/schema/security"
-	xsi:schemaLocation="
-	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
-	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
-	http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd
-	http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
-	http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
-	http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd">
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+	xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xmlns:cxf="http://cxf.apache.org/core"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+		http://cxf.apache.org/configuration/security http://cxf.apache.org/schemas/configuration/security.xsd
+		http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+		http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+		http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
 	<description>
 		The Taverna Server bean, plus supporting configuration.
 	</description>
+
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-jaxrs-binding.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-jaxws.xml" />
+
+	<import resource="providers.xml" />
 
 	<context:annotation-config />
 	<context:component-scan base-package="org.taverna.server" />
@@ -28,14 +41,6 @@
 		<property name="order" value="0" />
 		<property name="location" value="/WEB-INF/tavernaserver.properties" />
 	</bean>
-
-	<import resource="classpath:META-INF/cxf/cxf.xml" />
-	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
-	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
-	<import resource="classpath:META-INF/cxf/cxf-extension-jaxrs-binding.xml" />
-	<import resource="classpath:META-INF/cxf/cxf-extension-jaxws.xml" />
-
-	<import resource="providers.xml" />
 
 	<jaxws:server id="master_SOAP"
 		serviceClass="org.taverna.server.master.TavernaServerImpl" address="/soap">
@@ -87,6 +92,24 @@
 		</jaxrs:providers>
 		<!-- <jaxrs:dataBinding><ref bean="addStylesheet"/></jaxrs:dataBinding> -->
 	</jaxrs:server>
+
+	<bean id="jaxbProvider" class="org.apache.cxf.jaxrs.provider.JSONProvider">
+		<property name="namespaceMap" ref="jsonNamespaceMap" />
+	</bean>
+	<util:map id="jsonNamespaceMap" map-class="java.util.Hashtable">
+		<entry key="http://www.w3.org/1999/xlink" value="xlink" />
+		<entry key="http://www.w3.org/2000/09/xmldsig#" value="xmldsig" />
+		<entry key="http://schema.ogf.org/urf/2003/09/urf" value="ur" />
+		<entry key="http://ns.taverna.org.uk/2010/xml/server/" value="" />
+		<entry key="http://ns.taverna.org.uk/2010/xml/server/rest/" value="" />
+		<entry key="http://ns.taverna.org.uk/2010/xml/server/soap/" value="" />
+		<entry key="http://ns.taverna.org.uk/2010/xml/server/feed/" value="" />
+		<entry key="http://ns.taverna.org.uk/2010/xml/server/admin/" value="" />
+		<entry key="http://www.w3.org/1999/02/22-rdf-syntax-ns#" value="rdf" />
+		<entry key="http://ns.taverna.org.uk/2010/data/" value="io" />
+		<entry key="http://ns.taverna.org.uk/2010/data/in" value="io" />
+		<entry key="http://ns.taverna.org.uk/2010/run/" value="io" />
+	</util:map>
 
 	<jaxrs:server id="AtomFeed" address="/feed">
 		<jaxrs:serviceBeans>
