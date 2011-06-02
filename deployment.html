@@ -5,23 +5,169 @@
 <title>Taverna 2 Server: Deployment and Administration</title>
 </head>
 <body>
+<div class="head">
 	<img
 		src="http://www.taverna.org.uk/pages/wp-content/uploads/2010/07/taverna-server-logo.png"
 		style="float: left" width="100" height="100" />
 	<h1>Deployment and Administration of Taverna 2.3 Server</h1>
+	<br clear="all">
+	<hr>
+</div>
+<div class="section">
+	<h2>Deployment within Tomcat</h2>
+	<p>
+		Deployment of web applications into Tomcat can be done through
+		multiple mechanisms, notably through command line tools and through
+		Tomcat's online administration interface. This document describes the
+		latter mechanism. Note also that we currently only support the use of
+		Taverna Server within a Unix environment (e.g., Linux, Mac OS X);
+		there is no reason in principle why the code should not be adaptable
+		to Microsoft Windows, but there is currently no impersonation module
+		written to integrate Taverna Server with that operating platform.
+	</p>
+	<p>
+		This assumes that you installing into Tomcat 6 running on top of Java
+		6; this was tested with Tomcat 6.0.26 over the Sun JRE 1.6.0_14.
+		Later patch version from the same major versions are also recommended
+		(if available).
+	</p>
+	<p>
+		To deploy Taverna Server within Tomcat, it is first <i>necessary</i>
+		to install of the Taverna command line tool; we assume for the rest of
+		this document that this is in
+		<tt>/usr/taverna</tt>
+		i.e., that that directory that contains the
+		<tt>executeworkflow.sh</tt>
+		script. With that basic prerequisite, installation is done by writing
+		a context descriptor document. An example of that XML document is
+		below:
+	</p>
+<div class="sample" style="background-color: #EEEEEE"><pre>
+&lt;Context path="<font color="red">/taverna2</font>"&gt;
+    <font color="#909090"><i>&lt;!-- Sample logging configuration. --&gt;</i></font>
+    &lt;Valve className="org.apache.catalina.valves.AccessLogValve" /&gt;
 
+    <font color="#909090"><i>&lt;!-- REQUIRED configuration parameter. --&gt;</i></font>
+    &lt;Parameter name="executeWorkflowScript"
+        value="<font color="red">/usr/taverna/executeworkflow.sh</font>" /&gt;
+
+    <font color="#909090"><i>&lt;!-- For email-dispatched notifications. --&gt;</i></font>
+    &lt;Resource name="mail/Session" auth="Container" type="javax.mail.Session"
+        mail.smtp.host="<font color="red">localhost</font>" /&gt;
+&lt;/Context&gt;
+</pre></div>
+	<p>
+		The context descriptor is typically in a file called
+		<tt>context.xml</tt>
+		and there is a sample context descriptor with this distribution, in
+		the
+		<tt>context.sample.xml</tt>
+		file. There are a substantial number of properties that may be tuned
+		during installation (see below) but the principal ones are the
+		<tt>executeWorkflowScript</tt>
+		parameter and the ones in relation to impersonation (see the
+		discussion in <b>Configuration of Impersonation</b> for more
+		information about the latter; not all configuration is necessarily of
+		the webapp!)
+	</p>
+	<p>
+		The actual deployment is done by giving the actual context location
+		(i.e., the base URL of the webapp relative to the whole Tomcat
+		container) as a separate field, together with URLs (it is useful to
+		use
+		<tt>file:</tt>
+		URLs for this) to the context descriptor document and the distributed
+		WAR file.
+	</p>
+</div>
+<div class="section">
+	<h2>Configuration Property List</h2>
+	<p>
+		This is a list of all the properties that are set by default in the
+		Server (NB: the properites in <font color="red">red</font> are
+		actually unset by default, but they are all understood). They may be
+		overridden by the use of configuration parameters as described above;
+		for example, to override the default local user name, the
+		<tt>default.localusername</tt>
+		configuration parameter would be set.
+	</p>
+<div class="sample" style="background-color: #EEEEEE"><pre>
+<font color="#909090"><i># Script in Taverna installation to run to actually execute workflows</i></font>
+executeWorkflowScript:      <font color="red">/usr/taverna/executeworkflow.sh</font>
+
+<font color="#909090"><i># User name to use by default for impersonation if nothing else specified</i></font>
+default.localusername:      taverna
+
+<font color="#909090"><i># Location of impersonation credentials</i></font>
+secureForkPasswordFile:     <font color="red">/usr/local/tomcat6.0/conf/sudopass.txt</font>
+
+<font color="#909090"><i># URI to server's REST interface</i></font>
+taverna.preferredUserUri:   <font color="red">https://some.host:8443/tavernaserver/rest/</font>
+
+<font color="#909090"><i># Delays used in the task executor, both in milliseconds</i></font> 
+purge.interval:             30000
+finish.interval:            10000
+
+<font color="#909090"><i># Thread pool sizing</i></font>
+pool.size:                  2
+
+<font color="#909090"><i># Stylesheet to apply to generated XML - EXPERIMENTAL!</i></font>
+xml.stylesheet.url:         http://www.linkwerk.com/pub/xml/xml2html/xml2html.xslt
+
+<font color="#909090"><i>### Usage Record handling</i></font>
+usage.logFile:              none
+usage.disableDB:            no
+
+<font color="#909090"><i>### General configuration of messaging</i></font>
+<font color="#909090"><i># cooldown in seconds</i></font>
+message.cooldown:           300
+message.termination.subject:        Taverna workflow run finished
+message.termination.body:   Your job with ID={0} has finished with exit code {1,number,integer}.
+
+<font color="#909090"><i>### Email-specific options</i></font>
+email.from:                 taverna.server@localhost
+email.type:                 text/plain
+
+<font color="#909090"><i>### Jabber-specific options</i></font>
+xmpp.server:                <font color="red">xmpp://some.host:5222</font>
+xmpp.resource:              TavernaServer
+xmpp.user:                  <font color="red">taverna</font>
+xmpp.password:              <font color="red">*******</font>
+
+<font color="#909090"><i>### Atom/RSS feed; lifespan in days, cleaninterval in milliseconds</i></font>
+atom.language:              en
+atom.lifespan:              7
+atom.cleaninterval:         3600000
+
+<font color="#909090"><i>### SMS-specific options</i></font>
+sms.service:                <font color="red">https://www.intellisoftware.co.uk/smsgateway/sendmsg.aspx</font>
+sms.userfield:              username
+sms.passfield:              password
+sms.destfield:              to
+sms.msgfield:               text
+sms.user:                   <font color="red">taverna</font>
+sms.pass:                   <font color="red">*******</font>
+
+<font color="#909090"><i>### Twitter-specific options</i></font>
+twitter.oauth.accessToken:  <font color="red">*******</font>
+twitter.oauth.accessTokenSecret:    <font color="red">*******</font>
+</pre></div>
+</div>
+<div class="section">
 	<h2>Configuration of Impersonation</h2>
-	If it is desired to separate each user of Taverna Server from the
-	others, it is necessary to configure impersonation of users. That is,
-	the user account that is running the servlet container (Tomcat, etc.)
-	must have permission somehow to execute code as other users. (If this
-	is not desired, the service should be configured to use the simpler
-	non-impersonating worker factory &mdash; see the
-	<tt>backEndFactory</tt>
-	property above &mdash; or the fallback user identity to use for
-	impersonation should be set in the
-	<tt>default.localusername</tt>
-	to the same identity as the user account used for running the server.)
+	<p>
+		If it is desired to separate each user of Taverna Server from the
+		others, it is necessary to configure impersonation of users. That is,
+		the user account that is running the servlet container (Tomcat, etc.)
+		must have permission somehow to execute code as other users. (If this
+		is not desired, the service should be configured to use the simpler
+		non-impersonating worker factory &mdash; see the
+		<tt>backEndFactory</tt>
+		property above &mdash; or the fallback user identity to use for
+		impersonation should be set in the
+		<tt>default.localusername</tt>
+		to the same identity as the user account used for running the server.)
+	</p>
 	<p>
 		This is done by either instructing the service what password is to be
 		used with
@@ -53,20 +199,28 @@
 		all members of the
 		<tt>taverna</tt>
 		Unix group.
-	<pre>
-# Flags for the tavserv user (keep things quiet)
+	</p>
+<div class="sample" style="background-color: #EEEEEE"><pre>
+<font color="#909090"><i># Flags for the tavserv user (keep things quiet)</i></font>
 Defaults:tavserv   !lecture, timestamp_timeout=0, passwd_tries=1
 
-# Who can we impersonate? Manage via Unix group called 'taverna'
+<font color="#909090"><i># Who can we impersonate? Manage via Unix group called 'taverna'</i></font>
 Runas_Alias        TAV = %taverna
 
-# The actual permission to impersonate, with permission to run anything
+<font color="#909090"><i># The actual permission to impersonate, with permission to run anything</i></font>
 tavserv            ALL=(TAV) NOPASSWD: ALL
-</pre>
-	Care should be taken as without a password specified and without
-	permission to execute as another user, an attempt to create a workflow
-	run will
-	<i>hang</i> instead of failing.
-
+</pre></div>
+	<p>
+		Care should be taken as without a password specified and without
+		permission to execute as another user, an attempt to create a workflow
+		run will
+		<i>hang</i> instead of failing.
+	</p>
+</div>
+<div class="footer">
+	<p>
+		<small>Copyright &copy; 2011. The University of Manchester.</small>
+	</p>
+</div>
 </body>
 </html>
