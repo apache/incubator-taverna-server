@@ -136,7 +136,6 @@
 			<groupId>uk.org.taverna.server</groupId>
 			<artifactId>server-worker</artifactId>
 			<version>${project.parent.version}</version>
-			<type>jar</type>
 			<classifier>jar-with-dependencies</classifier>
 			<scope>runtime</scope>
 		</dependency>
@@ -144,7 +143,6 @@
 			<groupId>uk.org.taverna.server</groupId>
 			<artifactId>${forker.module}</artifactId>
 			<version>${project.parent.version}</version>
-			<type>jar</type>
 			<classifier>jar-with-dependencies</classifier>
 			<scope>runtime</scope>
 		</dependency>
@@ -219,7 +217,6 @@
 			<groupId>cglib</groupId>
 			<artifactId>cglib</artifactId>
 			<version>2.2</version>
-			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -268,7 +265,11 @@
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk16</artifactId>
 			<version>1.46</version>
-			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-support</artifactId>
+			<version>${version.spring}</version>
 		</dependency>
 	</dependencies>
 
@@ -284,14 +285,12 @@
 				<groupId>asm</groupId>
 				<artifactId>asm</artifactId>
 				<version>${version.asm}</version>
-				<type>jar</type>
 				<scope>compile</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.xml.bind</groupId>
 				<artifactId>jaxb-impl</artifactId>
 				<version>2.1.13</version>
-				<type>jar</type>
 				<scope>compile</scope>
 			</dependency>
 			<dependency>
@@ -353,14 +352,7 @@
 				<groupId>commons-collections</groupId>
 				<artifactId>commons-collections</artifactId>
 				<version>3.2.1</version>
-				<type>jar</type>
 				<scope>compile</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.geronimo.specs</groupId>
-				<artifactId>geronimo-javamail_1.4_spec</artifactId>
-				<version>1.6</version>
-				<scope>provided</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.abdera</groupId>
@@ -371,6 +363,12 @@
 				<groupId>org.codehaus.woodstox</groupId>
 				<artifactId>wstx-asl</artifactId>
 				<version>3.2.9</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.geronimo.specs</groupId>
+				<artifactId>geronimo-javamail_1.4_spec</artifactId>
+				<version>1.7.1</version>
+				<scope>provided</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

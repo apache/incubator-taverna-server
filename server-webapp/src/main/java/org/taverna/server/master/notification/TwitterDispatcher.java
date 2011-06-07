@@ -27,26 +27,26 @@ import twitter4j.http.AuthorizationFactory;
  * @author Donal Fellows
  */
 public class TwitterDispatcher extends RateLimitedDispatcher {
-	public TwitterDispatcher() {
-		super("twitter");
-	}
-
 	public static final int MAX_MESSAGE_LENGTH = 140;
 	public static final char ELLIPSIS = '\u2026';
 
-	private Properties getConfig() throws NotConfiguredException {
-		Properties p = super.getProperties();
+	private String token = "";
+	private String secret = "";
 
-		String str;
-		str = getParam(ACCESS_TOKEN_PROP);
-		if (!str.isEmpty())
-			p.setProperty(ACCESS_TOKEN_PROP, str);
-		str = getParam(ACCESS_SECRET_PROP);
-		if (!str.isEmpty())
-			p.setProperty(ACCESS_SECRET_PROP, str);
-		if (p.getProperty(ACCESS_TOKEN_PROP, "").isEmpty()
-				|| p.getProperty(ACCESS_SECRET_PROP, "").isEmpty())
+	public void setAccessToken(String token) {
+		this.token = valid(token, "");
+	}
+
+	public void setAccessSecret(String secret) {
+		this.secret = valid(secret, "");
+	}
+
+	private Properties getConfig() throws NotConfiguredException {
+		if (token.isEmpty() || secret.isEmpty())
 			throw new NotConfiguredException();
+		Properties p = new Properties();
+		p.setProperty(ACCESS_TOKEN_PROP, token);
+		p.setProperty(ACCESS_SECRET_PROP, secret);
 		return p;
 	}
 

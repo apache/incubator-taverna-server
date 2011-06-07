@@ -198,6 +198,8 @@
 		<property name="contextualizer" ref="contextualizer" />
 		<property name="persistenceManagerFactory" ref="pmf" />
 		<property name="self" ref="usageRecordSink" />
+		<property name="disableDB" value="${usage.disableDB}" />
+		<property name="logFile" value="${usage.logFile}" />
 	</bean>
 
 	<context:property-placeholder ignore-unresolvable="true" order="2"
@@ -268,6 +270,7 @@
 			to the executeworkflow.sh in either the Taverna 2 Workbench distribution 
 			or the Taverna 2 Command Line distribution.</description> </property> -->
 		<property name="self" ref="localworker.state" />
+		<property name="defaultExecuteWorkflowScript" value="${executeWorkflowScript}" />
 	</bean>
 
 	<bean id="localworker.policy" class="org.taverna.server.master.localworker.PolicyImpl">
@@ -329,20 +332,25 @@
 	<bean id="dispatch.email" class="org.taverna.server.master.notification.EmailDispatcher">
 		<property name="from" value="${email.from}" />
 		<property name="messageContentType" value="${email.type}" />
+		<property name="cooldownSeconds" value="${message.cooldown}" />
+		<property name="smtpHost" value="${email.host}" />
+		<property name="sender">
+			<bean class="org.springframework.mail.javamail.JavaMailSenderImpl" id="javamail">
+				<property name="host" value="${email.host}" />
+			</bean>
+		</property>
 	</bean>
 	<bean id="dispatch.twitter"
 		class="org.taverna.server.master.notification.TwitterDispatcher">
-		<property name="properties">
-			<description>See twitter4j.conf.PropertyConfiguration</description>
-			<props>
-				<prop key="oauth.accessToken"></prop>
-				<prop key="oauth.accessTokenSecret"></prop>
-			</props>
-		</property>
 		<property name="cooldownSeconds" value="${message.cooldown}" />
+		<property name="accessToken" value="${twitter.oauth.accessToken}"/>
+		<property name="accessSecret" value="${twitter.oauth.accessTokenSecret}" />
 	</bean>
 	<bean id="dispatch.xmpp" class="org.taverna.server.master.notification.JabberDispatcher">
 		<property name="resource" value="${xmpp.resource}" />
+		<property name="host" value="${xmpp.service}" />
+		<property name="username" value="${xmpp.user}" />
+		<property name="password" value="${xmpp.password}" />
 	</bean>
 	<bean id="dispatch.sms" class="org.taverna.server.master.notification.SMSDispatcher">
 		<property name="usernameField" value="${sms.userfield}" />

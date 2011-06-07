@@ -52,9 +52,10 @@
 	<Parameter name="usage.disableDB" value="no"
 		description="Set to yes to disable writing of URs to the database." />
 	<!-- For email-dispatched notifications. -->
-	<Resource name="mail/Session" auth="Container" type="javax.mail.Session"
-		mail.smtp.host="localhost"
-		description="Where the SMTP server for sending notification emails is located." />
+	<Parameter name="email.host" value="localhost"
+		description="Where the SMTP server for sending notification emails is located."/>
+	<Parameter name="email.from" value="taverna.server@localhost"
+		description="Who to send notification emails as."/>
 	<!-- The next two are for Twitter-brokered notification; they may be omitted 
 		if support is not wanted. -->
 	<Parameter name="twitter.oauth.accessToken" value=""

@@ -6,6 +6,7 @@
 
 package org.taverna.server.master.notification;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.apache.commons.logging.Log;
@@ -15,19 +16,21 @@ import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Message;
+import org.taverna.server.master.interfaces.MessageDispatcher;
+import org.taverna.server.master.interfaces.TavernaRun;
 
 /**
  * Send notifications by Jabber/XMPP.
  * 
  * @author Donal Fellows
  */
-public class JabberDispatcher extends AbstractConfiguredDispatcher {
-	public JabberDispatcher() {
-		super("xmpp");
-	}
-
+public class JabberDispatcher implements MessageDispatcher {
+	private Log log = LogFactory.getLog("Taverna.Server.Notification");
 	private XMPPConnection conn;
 	private String resource = "TavernaServer";
+	private String host = "";
+	private String user = "";
+	private String pass = "";
 
 	/**
 	 * @param resource
@@ -38,15 +41,48 @@ public class JabberDispatcher extends AbstractConfiguredDispatcher {
 		this.resource = resource;
 	}
 
-	@Override
-	public void reconfigured() {
-		close();
+	/**
+	 * @param service
+	 *            The XMPP service URL.
+	 */
+	public void setHost(String service) {
+		if (service == null || service.trim().isEmpty()
+				|| service.trim().startsWith("$"))
+			this.host = "";
+		else
+			this.host = service.trim();
+	}
+
+	/**
+	 * @param user
+	 *            The user identity to use with the XMPP service.
+	 */
+	public void setUsername(String user) {
+		if (user == null || user.trim().isEmpty()
+				|| user.trim().startsWith("$"))
+			this.user = "";
+		else
+			this.user = user.trim();
+	}
+
+	/**
+	 * @param pass
+	 *            The password to use with the XMPP service.
+	 */
+	public void setPassword(String pass) {
+		if (pass == null || pass.trim().isEmpty()
+				|| pass.trim().startsWith("$"))
+			this.pass = "";
+		else
+			this.pass = pass.trim();
+	}
+
+	@PostConstruct
+	void setup() {
 		try {
-			String host = getParam("service");
-			String user = getParam("user");
-			String pass = getParam("password");
 			if (host.isEmpty() || user.isEmpty() || pass.isEmpty()) {
 				log.info("disabling XMPP support; incomplete configuration");
+				conn = null;
 				return;
 			}
 			ConnectionConfiguration cfg = new ConnectionConfiguration(host);
@@ -75,8 +111,8 @@ public class JabberDispatcher extends AbstractConfiguredDispatcher {
 	}
 
 	@Override
-	public void dispatch(String messageSubject, String messageContent,
-			String targetParameter) throws Exception {
+	public void dispatch(TavernaRun ignored, String messageSubject,
+			String messageContent, String targetParameter) throws Exception {
 		Chat chat = conn.getChatManager().createChat(targetParameter,
 				new DroppingListener());
 		Message m = new Message();
@@ -86,7 +122,9 @@ public class JabberDispatcher extends AbstractConfiguredDispatcher {
 	}
 
 	static class DroppingListener implements MessageListener {
-		private Log log = LogFactory.getLog("Taverna.Server.Notification.Jabber");
+		private Log log = LogFactory
+				.getLog("Taverna.Server.Notification.Jabber");
+
 		@Override
 		public void processMessage(Chat chat, Message message) {
 			log.debug("unexpectedly received XMPP message from <"

@@ -641,16 +641,6 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 			l.add(e.nextElement());
 		log.info("have init-params: " + l);
 
-		state.setDefaultExecuteWorkflowScript(servletContext
-				.getInitParameter("executeWorkflowScript"));
-		if (state.getExecuteWorkflowScript() != null) {
-			log.info("configured executeWorkflowScript from context as "
-					+ state.getExecuteWorkflowScript());
-			if (state.getDefaultExecuteWorkflowScript().startsWith(
-					"/some/where/executeWorkflow."))
-				log.warn("unexpected default value!");
-		}
-
 		state.setDefaultPasswordFile(servletContext
 				.getInitParameter("secureForkPasswordFile"));
 		if (state.getPasswordFile() != null)

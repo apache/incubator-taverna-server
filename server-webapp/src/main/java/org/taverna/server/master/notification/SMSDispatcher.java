@@ -3,6 +3,7 @@ package org.taverna.server.master.notification;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +18,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.springframework.beans.factory.annotation.Required;
 
 /**
  * Dispatch termination messages via SMS.
@@ -24,10 +26,6 @@ import org.apache.http.message.BasicNameValuePair;
  * @author Donal Fellows
  */
 public class SMSDispatcher extends RateLimitedDispatcher {
-	public SMSDispatcher() {
-		super("sms");
-	}
-
 	/** The address of the SMS gateway service used by default. */
 	public static final String DEFAULT_SMS_GATEWAY = "https://www.intellisoftware.co.uk/smsgateway/sendmsg.aspx";
 	private HttpClient client;
@@ -41,6 +39,7 @@ public class SMSDispatcher extends RateLimitedDispatcher {
 	 *            The name of the field that conveys the sending username; this
 	 *            is the <i>server</i>'s identity.
 	 */
+	@Required
 	public void setUsernameField(String usernameField) {
 		this.usernameField = usernameField;
 	}
@@ -50,6 +49,7 @@ public class SMSDispatcher extends RateLimitedDispatcher {
 	 *            The field holding the password to authenticate the server to
 	 *            the SMS gateway.
 	 */
+	@Required
 	public void setPasswordField(String passwordField) {
 		this.passwordField = passwordField;
 	}
@@ -58,6 +58,7 @@ public class SMSDispatcher extends RateLimitedDispatcher {
 	 * @param destinationField
 	 *            The field holding the number to send the SMS to.
 	 */
+	@Required
 	public void setDestinationField(String destinationField) {
 		this.destinationField = destinationField;
 	}
@@ -66,8 +67,31 @@ public class SMSDispatcher extends RateLimitedDispatcher {
 	 * @param messageField
 	 *            The field holding the plain-text message to send.
 	 */
+	@Required
 	public void setMessageField(String messageField) {
 		this.messageField = messageField;
+	}
+
+	public void setService(String serviceURL) {
+		String s = valid(serviceURL, "");
+		if (s.isEmpty()) {
+			log.warn("did not get sms.service from servlet config; using default ("
+					+ DEFAULT_SMS_GATEWAY + ")");
+			s = DEFAULT_SMS_GATEWAY;
+		}
+		try {
+			service = new URI(s);
+		} catch (URISyntaxException e) {
+			service = null;
+		}
+	}
+
+	public void setUser(String user) {
+		this.user = valid(user, "");
+	}
+
+	public void setPassword(String pass) {
+		this.pass = valid(pass, "");
 	}
 
 	@PostConstruct
@@ -77,25 +101,9 @@ public class SMSDispatcher extends RateLimitedDispatcher {
 
 	@PreDestroy
 	void close() {
+		if (client != null && client.getConnectionManager() != null)
+			client.getConnectionManager().shutdown();
 		client = null;
-	}
-
-	@Override
-	public void reconfigured() {
-		String s = getParam("service");
-		try {
-			if (s.isEmpty()) {
-				log.warn("did not get sms.service from servlet config; using default ("
-						+ DEFAULT_SMS_GATEWAY + ")");
-				s = DEFAULT_SMS_GATEWAY;
-			}
-			service = URI.create(s);
-			user = getParam("user");
-			pass = getParam("pass");
-		} catch (RuntimeException e) {
-			service = null;
-			user = pass = "";
-		}
 	}
 
 	@Override

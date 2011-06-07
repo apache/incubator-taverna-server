@@ -190,7 +190,7 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 				: executeWorkflowScript;
 	}
 
-	void setDefaultExecuteWorkflowScript(String defaultExecuteWorkflowScript) {
+	public void setDefaultExecuteWorkflowScript(String defaultExecuteWorkflowScript) {
 		this.defaultExecuteWorkflowScript = defaultExecuteWorkflowScript;
 	}
 

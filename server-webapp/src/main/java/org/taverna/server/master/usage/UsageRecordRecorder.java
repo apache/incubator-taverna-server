@@ -15,12 +15,10 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.PreDestroy;
-import javax.servlet.ServletContext;
 import javax.xml.bind.JAXBException;
 
 import org.ogf.usage.JobUsageRecord;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.web.context.ServletContextAware;
 import org.taverna.server.master.ManagementModel;
 import org.taverna.server.master.utils.Contextualizer;
 import org.taverna.server.master.utils.JDOSupport;
@@ -31,15 +29,15 @@ import org.taverna.server.master.utils.JDOSupport;
  * 
  * @author Donal Fellows
  */
-public class UsageRecordRecorder extends JDOSupport<UsageRecord> implements
-		ServletContextAware {
+public class UsageRecordRecorder extends JDOSupport<UsageRecord> {
 	public UsageRecordRecorder() {
 		super(UsageRecord.class);
 	}
 
+	private String logFile = null;
+	private boolean disableDB = false;
 	private ManagementModel state;
 	private Contextualizer contextualizer;
-	private ServletContext config;
 	private String logDestination;
 	private PrintWriter writer;
 	private Object lock = new Object();
@@ -59,6 +57,14 @@ public class UsageRecordRecorder extends JDOSupport<UsageRecord> implements
 		this.self = self;
 	}
 
+	public void setLogFile(String logFile) {
+		this.logFile = (logFile == null || logFile.equals("none")) ? null : logFile;
+	}
+
+	public void setDisableDB(String disable) {
+		disableDB = "yes".equalsIgnoreCase(disable);
+	}
+
 	/**
 	 * @param contextualizer
 	 *            the system's contextualizer, used to allow making the UR dump
@@ -69,11 +75,6 @@ public class UsageRecordRecorder extends JDOSupport<UsageRecord> implements
 		this.contextualizer = contextualizer;
 	}
 
-	@Override
-	public void setServletContext(ServletContext servletConfig) {
-		this.config = servletConfig;
-	}
-
 	/**
 	 * Accept a usage record for recording.
 	 * 
@@ -82,8 +83,8 @@ public class UsageRecordRecorder extends JDOSupport<UsageRecord> implements
 	 */
 	public void storeUsageRecord(String usageRecord) {
 		String logfile = state.getUsageRecordLogFile();
-		if (logfile == null && config != null) {
-			logfile = config.getInitParameter("usage.logFile");
+		if (logfile == null) {
+			logfile = logFile;
 		}
 		if (logfile != null) {
 			logfile = contextualizer.contextualize(logfile);
@@ -107,8 +108,7 @@ public class UsageRecordRecorder extends JDOSupport<UsageRecord> implements
 			}
 		}
 
-		String disable = config.getInitParameter("usage.disableDB");
-		if ((disable == null || !"yes".equals(disable)))
+		if (!disableDB)
 			saveURtoDB(usageRecord);
 	}
 

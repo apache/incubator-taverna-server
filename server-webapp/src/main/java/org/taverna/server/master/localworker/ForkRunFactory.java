@@ -23,13 +23,11 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Calendar;
 
-import javax.servlet.ServletContext;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
-import org.springframework.web.context.ServletContextAware;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.master.common.Workflow;
@@ -44,8 +42,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * @author Donal Fellows
  */
 @ManagedResource(objectName = JMX_ROOT + "ForkRunFactory", description = "The factory for simple singleton forked run.")
-public class ForkRunFactory extends AbstractRemoteRunFactory implements
-		ServletContextAware {
+public class ForkRunFactory extends AbstractRemoteRunFactory {
 	private int lastStartupCheckCount;
 	private Integer lastExitCode;
 	private int totalRuns;
@@ -413,16 +410,5 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		}
 		throw new NoCreateException("total failure to connect to factory "
 				+ factoryProcessName + "despite attempting restart");
-	}
-
-	@Override
-	public void setServletContext(ServletContext servletContext) {
-		if (state.getExecuteWorkflowScript() == null && servletContext != null) {
-			state.setDefaultExecuteWorkflowScript(servletContext
-					.getInitParameter("executeWorkflowScript"));
-			if (state.getExecuteWorkflowScript() != null)
-				log.info("configured executeWorkflowScript from context as "
-						+ state.getExecuteWorkflowScript());
-		}
 	}
 }

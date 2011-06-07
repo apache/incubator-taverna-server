@@ -52,8 +52,7 @@
         value="<font color="red">/usr/taverna/executeworkflow.sh</font>" /&gt;
 
     <font color="#909090"><i>&lt;!-- For email-dispatched notifications. --&gt;</i></font>
-    &lt;Resource name="mail/Session" auth="Container" type="javax.mail.Session"
-        mail.smtp.host="<font color="red">localhost</font>" /&gt;
+    &lt;Parameter name="email.host" value="<font color="red">localhost</font>" /&gt;
 &lt;/Context&gt;
 </pre></div>
 	<p>
@@ -127,6 +126,7 @@ message.termination.body:   Your job with ID={0} has finished with exit code {1,
 <font color="#909090"><i>### Email-specific options</i></font>
 email.from:                 taverna.server@localhost
 email.type:                 text/plain
+email.host:                 <font color="red">localhost</font>
 
 <font color="#909090"><i>### Jabber-specific options</i></font>
 xmpp.server:                <font color="red">xmpp://some.host:5222</font>
