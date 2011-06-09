@@ -97,6 +97,19 @@ executeWorkflowScript:      <font color="red">/usr/taverna/executeworkflow.sh</f
 <font color="#909090"><i># User name to use by default for impersonation if nothing else specified</i></font>
 default.localusername:      taverna
 
+<font color="#909090"><i># How to pick a user name out of a global identity</i></font>
+localusernameregexp:	^TAVERNAUSER=(.*)$
+<font color="#909090"><i># Whether to log incoming workflows; noisy if enabled</i></font>
+default.logworkflows:	false
+<font color="#909090"><i># Whether to log outgoing exceptions; noisy if enabled</i></font>
+default.logexceptions:	false
+<font color="#909090"><i># Whether to allow workflows to be submitted; adjustable via admin interfaces</i></font>
+default.permitsubmit:	true
+<font color="#909090"><i># How long a workflow run should live by default, in seconds</i></font>
+default.lifetime:		1440
+<font color="#909090"><i># Maximum number of simultaneous workflow runs, in any state</i></font>
+default.runlimit:		100
+
 <font color="#909090"><i># Location of impersonation credentials</i></font>
 secureForkPasswordFile:     <font color="red">/usr/local/tomcat6.0/conf/sudopass.txt</font>
 

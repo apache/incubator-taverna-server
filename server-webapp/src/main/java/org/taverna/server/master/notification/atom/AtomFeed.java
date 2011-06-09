@@ -116,7 +116,7 @@ public class AtomFeed implements EventFeed, UriBuilderFactory,
 	public void setServletContext(ServletContext servletContext) {
 		String base = servletContext.getInitParameter(PREFERRED_URI_PARAM);
 		if (base == null)
-			baseURI = URI.create(servletContext.getContextPath());
+			baseURI = URI.create(servletContext.getContextPath() + "/rest");
 		else
 			baseURI = URI.create(base);
 	}

@@ -27,22 +27,19 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.servlet.ServletContext;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
-import org.springframework.web.context.ServletContextAware;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.master.common.Workflow;
@@ -58,8 +55,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * @author Donal Fellows
  */
 @ManagedResource(objectName = JMX_ROOT + "IdAwareForkRunFactory", description = "The factory for simple singleton forked run.")
-public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
-		ServletContextAware {
+public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 	private int totalRuns;
 	private MetaFactory forker;
 	private Map<String, RemoteRunFactory> factory;
@@ -608,7 +604,8 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	protected RemoteSingleRun getRealRun(UsernamePrincipal creator,
 			Workflow workflow) throws Exception {
 		String wf = serializeWorkflow(workflow);
-		String username = mapper == null ? null : mapper.getUsernameForPrincipal(creator);
+		String username = mapper == null ? null : mapper
+				.getUsernameForPrincipal(creator);
 		if (username == null)
 			throw new Exception("cannot determine who to run workflow as; "
 					+ "local identity mapper returned null");
@@ -628,28 +625,17 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 				+ factoryProcessName + "despite attempting restart");
 	}
 
-	@Override
-	@SuppressWarnings("unchecked")
-	public void setServletContext(ServletContext servletContext) {
-		log.info("installing defaults from ServletContext into core state model");
-		if (servletContext == null)
-			return;
-
-		List<String> l = new ArrayList<String>();
-		Enumeration<String> e = servletContext.getInitParameterNames();
-		while (e.hasMoreElements())
-			l.add(e.nextElement());
-		log.info("have init-params: " + l);
-
-		state.setDefaultPasswordFile(servletContext
-				.getInitParameter("secureForkPasswordFile"));
-		if (state.getPasswordFile() != null)
+	@Value("${secureForkPasswordFile}")
+	public void setPasswordSource(String passwordSource) {
+		if (passwordSource == null || passwordSource.isEmpty()
+				|| passwordSource.startsWith("${"))
+			state.setDefaultPasswordFile(null);
+		else
+			state.setDefaultPasswordFile(passwordSource);
+		if (state.getPasswordFile() == null)
+			log.info("assuming password-free forking enabled");
+		else
 			log.info("configured secureForkPasswordFile from context as "
 					+ state.getPasswordFile());
-
-		if (forker != null) {
-			log.warn("updated the servlet config after a metafactory existed");
-			reinitFactory();
-		}
 	}
 }

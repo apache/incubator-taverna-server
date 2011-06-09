@@ -3,10 +3,10 @@
 	for license terms. -->
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:task="http://www.springframework.org/schema/task"
-	default-lazy-init="false"
 	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
 	xmlns:util="http://www.springframework.org/schema/util"
+	default-lazy-init="false"
 	xsi:schemaLocation="http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
@@ -55,9 +55,9 @@
 
 	<bean id="webapp.state" class="org.taverna.server.master.ManagementState">
 		<description>The initial state of the webapp.</description>
-		<property name="logIncomingWorkflows" value="false" />
-		<property name="allowNewWorkflowRuns" value="true" />
-		<property name="logOutgoingExceptions" value="false" />
+		<property name="logIncomingWorkflows" value="${default.logworkflows}" />
+		<property name="allowNewWorkflowRuns" value="${default.permitsubmit}" />
+		<property name="logOutgoingExceptions" value="${default.logexceptions}" />
 		<property name="persistenceManagerFactory" ref="pmf" />
 		<property name="self" ref="webapp.state" />
 	</bean>
@@ -136,7 +136,7 @@
 					<description>An alternate mechanism for mapping users. This tries
 						to use an RE to extract the user name from the principal name.
 					</description>
-					<property name="regexp" value="^TAVERNAUSER=(.*)$">
+					<property name="regexp" value="${localusernameregexp}">
 						<description>An optional regexp to extract the local user name
 							from the principal's string description. The first capturing
 							group will be the result of the mapping operation.</description>
@@ -238,11 +238,11 @@
 			The state of the simple factory for the identity-aware
 			local worker.
 		</description>
-		<property name="defaultLifetime" value="1440">
+		<property name="defaultLifetime" value="${default.lifetime}">
 			<description>How long the run lasts for by default, in seconds.
 			</description>
 		</property>
-		<property name="maxRuns" value="100">
+		<property name="maxRuns" value="${default.runlimit}">
 			<description>The maximum simultaneous number of runs.</description>
 		</property>
 		<property name="extraArgs">
@@ -297,9 +297,9 @@
 	</bean>
 	<task:scheduled-tasks scheduler="taskScheduler">
 		<task:scheduled ref="localworker.rundb" method="cleanNow"
-			fixed-delay="30000" />
+			fixed-delay="${purge.interval}" />
 		<task:scheduled ref="localworker.rundb" method="checkForFinishNow"
-			fixed-delay="10000" />
+			fixed-delay="${finish.interval}" />
 		<task:scheduled ref="dispatch.atom" method="deleteExpiredEvents"
 			fixed-delay="${atom.cleaninterval}" />
 	</task:scheduled-tasks>
@@ -335,7 +335,8 @@
 		<property name="cooldownSeconds" value="${message.cooldown}" />
 		<property name="smtpHost" value="${email.host}" />
 		<property name="sender">
-			<bean class="org.springframework.mail.javamail.JavaMailSenderImpl" id="javamail">
+			<bean class="org.springframework.mail.javamail.JavaMailSenderImpl"
+				id="javamail">
 				<property name="host" value="${email.host}" />
 			</bean>
 		</property>
