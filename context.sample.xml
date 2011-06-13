@@ -1,41 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Example doctype for a Tomcat <Context>; not complete; not really even 
-	correct for Valve. -->
-<!DOCTYPE Context [
-	<!ELEMENT Parameter		EMPTY>
-	<!ELEMENT Environment	EMPTY>
-	<!ELEMENT Resource		EMPTY>
-	<!ELEMENT Valve			EMPTY>
-	<!ELEMENT Context		((Parameter|Environment|Resource|Valve)*)>
-	<!ATTLIST Context		path CDATA #REQUIRED>
-	<!ATTLIST Parameter		name NMTOKEN #REQUIRED
-							override CDATA "false" 
-							value CDATA #REQUIRED
-							description CDATA #IMPLIED>
-	<!ATTLIST Environment	name NMTOKEN #REQUIRED
-							override CDATA "false"
-							value CDATA #REQUIRED
-							type CDATA #REQUIRED
-							description CDATA #IMPLIED>
-	<!ATTLIST Resource		auth NMTOKEN #IMPLIED
-							name CDATA #REQUIRED
-							override CDATA "false"
-							scope NMTOKEN "Shareable"
-							type CDATA #REQUIRED
-							description CDATA #IMPLIED
-							mail.smtp.host CDATA #IMPLIED>
-	<!ATTLIST Valve			className NMTOKEN #REQUIRED
-							directory CDATA #IMPLIED
-							pattern CDATA "common"
-							prefix CDATA "taverna_server."
-							resolveHosts CDATA "false"
-							suffix CDATA ".log"
-							rotatable CDATA "true"
-							condition CDATA #IMPLIED
-							fileDateFormat CDATA #IMPLIED
-							buffered CDATA "true">
-]>
-<Context path="/taverna2">
+<!-- Example doctype for a Tomcat <Context>; not complete or even 
+	correct. -->
+<Context path="/taverna2" xmlns="urn:tomcat6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="urn:tomcat6 tomcatcontext.xsd">
 	<!-- Sample logging configuration. -->
 	<Valve className="org.apache.catalina.valves.AccessLogValve" />
 

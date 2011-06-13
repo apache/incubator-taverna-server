@@ -66,6 +66,12 @@ public abstract class Credential implements Serializable {
 		return id.equals(((Credential) o).id);
 	}
 
+	/**
+	 * A description of a credential that is a public/private key-pair in some
+	 * kind of key store.
+	 * 
+	 * @author Donal Fellows
+	 */
 	@XmlRootElement(name = "keypair")
 	@XmlType(name = "KeyPairCredential")
 	public static class KeyPair extends Credential {
@@ -92,6 +98,11 @@ public abstract class Credential implements Serializable {
 		public String unlockPassword;
 	}
 
+	/**
+	 * A description of a credential that is a username and password.
+	 * 
+	 * @author Donal Fellows
+	 */
 	@XmlRootElement(name = "password")
 	@XmlType(name = "PasswordCredential")
 	public static class Password extends Credential {
@@ -101,6 +112,9 @@ public abstract class Credential implements Serializable {
 		public String password;
 	}
 
+	/**
+	 * Special credential type for proxy certificates as understood by CAGrid.
+	 */
 	@XmlRootElement(name = "cagridproxy")
 	@XmlType(name = "CaGridProxyCredential")
 	public static class CaGridProxy extends KeyPair {
