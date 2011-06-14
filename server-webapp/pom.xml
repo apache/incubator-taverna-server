@@ -59,6 +59,7 @@
 		<version.datanucleus>2.2.2</version.datanucleus>
 		<version.asm>3.3</version.asm>
 		<version.smack>3.1.0</version.smack>
+		<version.commandline>2.2.0</version.commandline>
 		<forker.module>server-unix-forker</forker.module>
 	</properties>
 
@@ -452,6 +453,27 @@
 								</artifactItem>
 							</artifactItems>
 							<outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes/util</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<excludeTransitive>true</excludeTransitive>
+						</configuration>
+					</execution>
+					<execution>
+						<id>unpack-taverna-commandline</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>net.sf.taverna.t2</groupId>
+									<artifactId>taverna-commandline</artifactId>
+									<version>${version.commandline}</version>
+									<type>zip</type>
+									<outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes/util</outputDirectory>
+								</artifactItem>
+							</artifactItems>
 							<overWriteReleases>false</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
 							<excludeTransitive>true</excludeTransitive>

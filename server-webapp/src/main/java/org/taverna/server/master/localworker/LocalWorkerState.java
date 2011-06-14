@@ -11,6 +11,9 @@ import static java.rmi.registry.Registry.REGISTRY_PORT;
 import static org.taverna.server.master.localworker.LocalWorkerManagementState.KEY;
 import static org.taverna.server.master.localworker.LocalWorkerManagementState.makeInstance;
 
+import java.io.File;
+import java.io.FilenameFilter;
+
 import javax.annotation.PostConstruct;
 import javax.jdo.annotations.PersistenceAware;
 
@@ -190,8 +193,31 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 				: executeWorkflowScript;
 	}
 
-	public void setDefaultExecuteWorkflowScript(String defaultExecuteWorkflowScript) {
-		this.defaultExecuteWorkflowScript = defaultExecuteWorkflowScript;
+	private static String guessWorkflowScript() {
+		File utilDir = new File(DEFAULT_WORKER_JAR).getParentFile();
+		File[] dirs = utilDir.listFiles(new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.startsWith("taverna-commandline-");
+			}
+		});
+		assert dirs.length > 0;
+		return new File(dirs[0], "executeworkflow.sh").toString();
+	}
+
+	/**
+	 * Set what executeworkflow script to use by default. This is the value that
+	 * is used if not overridden by the administration interface.
+	 * 
+	 * @param defaultScript
+	 *            Full path to the script to use.
+	 */
+	public void setDefaultExecuteWorkflowScript(String defaultScript) {
+		if (defaultScript.startsWith("${")) {
+			this.defaultExecuteWorkflowScript = guessWorkflowScript();
+			return;
+		}
+		this.defaultExecuteWorkflowScript = defaultScript;
 	}
 
 	String getDefaultExecuteWorkflowScript() {

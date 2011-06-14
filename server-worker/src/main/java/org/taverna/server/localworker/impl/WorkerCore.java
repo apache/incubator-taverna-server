@@ -173,9 +173,28 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			File workingDir, File inputBaclava, Map<String, File> inputFiles,
 			Map<String, String> inputValues, File outputBaclava,
 			File securityDir, char[] password) throws IOException {
-		// How we execute the workflow in a subprocess
-		ProcessBuilder pb = new ProcessBuilder()
-				.command(executeWorkflowCommand);
+		ProcessBuilder pb = new ProcessBuilder();
+		/*
+		 * WARNING!  HERE THERE BE DRAGONS!  BE CAREFUL HERE!
+		 * 
+		 * Work around _Maven_ bug with permissions in zip files! The executable
+		 * bit is stripped by Maven's handling of file permissions, and there's
+		 * no practical way to work around it without massively increasing the
+		 * pain in other ways. Only want this on Unix - Windows isn't affected
+		 * by this - so we use the file separator as a proxy for whether this is
+		 * a true POSIX system. Ugly! Ugly ugly ugly...
+		 * 
+		 * http://jira.codehaus.org/browse/MASSEMBLY-337 is relevant, but not
+		 * the whole story as we don't want to use a non-standard packaging
+		 * method as there's a real chance of it going wrong in an unexpected
+		 * way then. Other parts of the story are that the executable bit isn't
+		 * preserved when unpacking with the dependency plugin, and there's no
+		 * way to be sure that the servlet container will preserve the bit
+		 * either (as that's probably using a Java-based ZIP engine).
+		 */
+		if (File.separatorChar == '/')
+			pb.command().add("/bin/sh");
+		pb.command().add(executeWorkflowCommand);
 
 		if (securityDir != null) {
 			pb.command().add("-cmdir");
