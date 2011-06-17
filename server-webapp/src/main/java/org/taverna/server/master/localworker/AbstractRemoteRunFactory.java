@@ -23,10 +23,12 @@ import java.util.Date;
 import java.util.List;
 
 import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
@@ -129,18 +131,18 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	UsageRecordRecorder usageRecordSink;
 	TaskExecutor urProcessorPool;
 
-	@Required
-	public void setState(LocalWorkerState state) {
+	@Autowired(required = true)
+	void setState(LocalWorkerState state) {
 		this.state = state;
 	}
 
-	@Required
-	public void setRunDB(RunDBSupport runDB) {
+	@Autowired(required = true)
+	void setRunDB(RunDBSupport runDB) {
 		this.runDB = runDB;
 	}
 
-	@Required
-	public void setSecurityContextFactory(SecurityContextFactory factory) {
+	@Autowired(required = true)
+	void setSecurityContextFactory(SecurityContextFactory factory) {
 		this.securityFactory = factory;
 	}
 
@@ -176,22 +178,14 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		state.setRegistryPort(port);
 	}
 
-	/**
-	 * @param usageRecordSink
-	 *            the usageRecordSink to set
-	 */
-	public void setUsageRecordSink(UsageRecordRecorder usageRecordSink) {
+	@Autowired(required = true)
+	void setUsageRecordSink(UsageRecordRecorder usageRecordSink) {
 		this.usageRecordSink = usageRecordSink;
 	}
 
-	/**
-	 * @return the usageRecordSink
-	 */
-	public UsageRecordRecorder getUsageRecordSink() {
-		return usageRecordSink;
-	}
-
-	public void setURProcessorPool(TaskExecutor urProcessorPool) {
+	@Resource(name = "URThreads")
+	@Required
+	void setURProcessorPool(TaskExecutor urProcessorPool) {
 		this.urProcessorPool = urProcessorPool;
 	}
 

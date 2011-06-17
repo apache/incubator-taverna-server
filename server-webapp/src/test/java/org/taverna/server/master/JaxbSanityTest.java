@@ -18,6 +18,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.taverna.server.master.admin.Admin;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
@@ -259,5 +260,10 @@ public class JaxbSanityTest {
 				TavernaServerSecurityREST.Descriptor.class,
 				TavernaServerSecurityREST.PermissionDescription.class,
 				TavernaServerSecurityREST.PermissionsDescription.class);
+	}
+
+	@Test
+	public void testJAXBforAdmininstration() throws Exception {
+		testJAXB(Admin.AdminDescription.class);
 	}
 }

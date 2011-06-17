@@ -26,7 +26,7 @@
 
 	<bean id="webapp.support" class="org.taverna.server.master.TavernaServerSupport">
 		<property name="policy" ref="localworker.policy" />
-		<property name="listenerFactory" ref="listenerFactory" />
+		<property name="listenerFactory" ref="localworker.factory" />
 		<property name="runFactory" ref="localworker.factory" />
 		<property name="runStore" ref="localworker.rundb" />
 		<property name="stateModel" ref="webapp.state" />
@@ -44,7 +44,7 @@
 	<bean id="webapp.policyView" class="org.taverna.server.master.PolicyREST">
 		<property name="support" ref="webapp.support" />
 		<property name="policy" ref="localworker.policy" />
-		<property name="listenerFactory" ref="listenerFactory" />
+		<property name="listenerFactory" ref="localworker.factory" />
 		<property name="notificationEngine" ref="notificationFabric" />
 	</bean>
 
@@ -208,6 +208,8 @@
 		<prop key="backEndFactory">org.taverna.server.master.localworker.IdAwareForkRunFactory</prop>
 	</util:properties>
 
+	<!-- This bean configuration replaced with org.taverna.server.master.localworker.ConfigBean -->
+<!--
 	<bean id="localworker.factory" scope="singleton" lazy-init="false"
 		class="${backEndFactory}">
 		<description>
@@ -216,12 +218,15 @@
 		</description>
 		<property name="state" ref="localworker.state" />
 		<property name="runDB" ref="localworker.rundb" />
+-->
 		<!-- Handled by autowiring to make type-resilient. -->
 		<!-- <property name="idMapper" ref="IdentityMapper" /> -->
+<!--
 		<property name="securityContextFactory" ref="localworker.securityContext" />
 		<property name="usageRecordSink" ref="usageRecordSink" />
 		<property name="URProcessorPool" ref="URThreads" />
 	</bean>
+-->
 
 	<task:executor id="URThreads" pool-size="${pool.size}" />
 
@@ -372,8 +377,6 @@
 		<property name="subject" value="${message.termination.subject}" />
 		<property name="messageFormat" value="${message.termination.body}" />
 	</bean>
-
-	<alias name="localworker.factory" alias="listenerFactory" />
 
 	<bean id="fileUtils" class="org.taverna.server.master.utils.FilenameUtils" />
 	<bean id="x500Utils" class="org.taverna.server.master.utils.X500Utils" />

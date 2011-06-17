@@ -59,7 +59,7 @@
 		<version.datanucleus>2.2.2</version.datanucleus>
 		<version.asm>3.3</version.asm>
 		<version.smack>3.1.0</version.smack>
-		<version.commandline>2.2.0</version.commandline>
+		<version.commandline>2.3-SNAPSHOT</version.commandline>
 		<forker.module>server-unix-forker</forker.module>
 	</properties>
 

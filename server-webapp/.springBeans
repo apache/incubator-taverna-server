@@ -17,9 +17,12 @@
 		<configSet>
 			<name><![CDATA[Default]]></name>
 			<allowBeanDefinitionOverriding>true</allowBeanDefinitionOverriding>
-			<incomplete>false</incomplete>
+			<incomplete>true</incomplete>
 			<configs>
 				<config>src/main/webapp/WEB-INF/beans.xml</config>
+				<config>src/main/webapp/WEB-INF/providers.xml</config>
+				<config>src/main/webapp/WEB-INF/secure.xml</config>
+				<config>src/main/webapp/WEB-INF/webappBeans.xml</config>
 			</configs>
 		</configSet>
 	</configSets>

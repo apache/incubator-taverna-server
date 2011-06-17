@@ -89,13 +89,17 @@
 			<ref bean="ExceptionProvider.UnknownRun" />
 			<ref bean="MessagingProvider.File" />
 			<ref bean="MessagingProvider.InputStream" />
+<!-- 			<ref bean="jsonProvider" /> -->
 		</jaxrs:providers>
+<!-- 
 		<jaxrs:dataBinding>
 			<ref bean="addStylesheet"/>
 		</jaxrs:dataBinding>
-	</jaxrs:server>
+ -->
+ 	</jaxrs:server>
 
-	<bean id="jaxbProvider" class="org.apache.cxf.jaxrs.provider.JSONProvider">
+<!-- 
+	<bean id="jsonProvider" class="org.apache.cxf.jaxrs.provider.JSONProvider">
 		<property name="namespaceMap" ref="jsonNamespaceMap" />
 	</bean>
 	<util:map id="jsonNamespaceMap" map-class="java.util.Hashtable">
@@ -112,7 +116,7 @@
 		<entry key="http://ns.taverna.org.uk/2010/data/in" value="io" />
 		<entry key="http://ns.taverna.org.uk/2010/run/" value="io" />
 	</util:map>
-
+ -->
 	<jaxrs:server id="AtomFeed" address="/feed">
 		<jaxrs:serviceBeans>
 			<ref bean="feed" />
@@ -120,9 +124,11 @@
 		<jaxrs:properties>
 			<entry key="org.apache.cxf.endpoint.private" value="true" />
 		</jaxrs:properties>
+<!-- 
 		<jaxrs:providers>
 			<ref bean="MessagingProvider.Atom" />
 		</jaxrs:providers>
+ -->
 	</jaxrs:server>
 
 	<jaxrs:server id="AdministrationInterface" address="/admin"
