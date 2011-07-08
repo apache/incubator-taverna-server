@@ -5,11 +5,8 @@
  */
 package org.taverna.server.master.admin;
 
-import static org.taverna.server.master.common.Roles.ADMIN;
-
 import java.util.List;
 
-import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -33,7 +30,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * 
  * @author Donal Fellows
  */
-@RolesAllowed(ADMIN)
 @Description("Administration interface for Taverna Server.")
 public interface Admin {
 	/**

@@ -5,8 +5,11 @@
  */
 package org.taverna.server.master.admin;
 
+import static org.taverna.server.master.common.Roles.ADMIN;
+
 import java.util.Arrays;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.core.UriInfo;
 
 import org.springframework.beans.factory.annotation.Required;
@@ -53,61 +56,73 @@ public class AdminBean implements Admin {
 	IdAwareForkRunFactory factory;
 	private UsageRecordRecorder usageRecords;
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public AdminDescription getDescription(UriInfo ui) {
 		return new AdminDescription(ui);
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public BoolProperty allowNew() {
 		return new AllowNewProperty(this);
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public BoolProperty logWorkflows() {
 		return new LogWorkflowsProperty(this);
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public BoolProperty logFaults() {
 		return new LogFaultsProperty(this);
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public StringProperty urFile() {
 		return new URFileProperty(this);
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public int invokeCount() {
 		return counter.getCount();
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public int runCount() {
 		return runDB.countRuns();
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public StringProperty registryHost() {
 		return new RegistryHostProperty(this);
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public IntegerProperty registryPort() {
 		return new RegistryPortProperty(this);
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public IntegerProperty runLimit() {
 		return new RunLimitProperty(this);
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public IntegerProperty defaultLifetime() {
 		return new DefaultLifetimeProperty(this);
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public StringList currentRuns() {
 		StringList result = new StringList();
@@ -115,56 +130,67 @@ public class AdminBean implements Admin {
 		return result;
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public StringProperty javaBinary() {
 		return new JavaBinaryProperty(this);
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public StringListProperty extraArguments() {
 		return new ExtraArgsProperty(this);
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public StringProperty serverWorkerJar() {
 		return new ServerWorkerProperty(this);
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public StringProperty executeWorkflowScript() {
 		return new ExecuteWorkflowProperty(this);
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public IntegerProperty registrationWaitSeconds() {
 		return new RegistrationWaitProperty(this);
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public IntegerProperty registrationPollMillis() {
 		return new RegistrationPollProperty(this);
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public StringProperty runasPasswordFile() {
 		return new RunAsPasswordFileProperty(this);
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public StringProperty serverForkerJar() {
 		return new ServerForkerProperty(this);
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public int startupTime() {
 		return factory.getLastStartupCheckCount();
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public Integer lastExitCode() {
 		return factory.getLastExitCode();
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public StringList factoryProcessMapping() {
 		StringList result = new StringList();
@@ -172,6 +198,7 @@ public class AdminBean implements Admin {
 		return result;
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public URList usageRecords() {
 		URList result = new URList();
