@@ -50,10 +50,10 @@ public class AdminBean implements Admin {
 		this.usageRecords = usageRecords;
 	}
 
-	ManagementModel state;
+	private ManagementModel state;
 	private InvocationCounter counter;
 	private RunDBSupport runDB;
-	IdAwareForkRunFactory factory;
+	private IdAwareForkRunFactory factory;
 	private UsageRecordRecorder usageRecords;
 
 	@RolesAllowed(ADMIN)
