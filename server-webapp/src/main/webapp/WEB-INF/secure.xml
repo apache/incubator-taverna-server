@@ -42,7 +42,11 @@
 			access="ROLE_tavernauser" requires-channel="https" />
 		<security:intercept-url pattern="/feed"
 			access="ROLE_tavernauser" requires-channel="https" />
+		<security:intercept-url pattern="/feed/**"
+			access="ROLE_tavernauser" requires-channel="https" />
 		<security:intercept-url pattern="/admin"
+			access="ROLE_tavernasuperuser" requires-channel="https" />
+		<security:intercept-url pattern="/admin/**"
 			access="ROLE_tavernasuperuser" requires-channel="https" />
 	</security:http>
 	<bean class="org.taverna.server.master.common.Uri.Rewriter"
