@@ -46,40 +46,106 @@ public interface Admin {
 	AdminDescription getDescription(@Context UriInfo ui);
 
 	/**
-	 * The property for whether to allow new workflow runs to be created.
+	 * Get whether to allow new workflow runs to be created.
 	 * 
-	 * @return An updatable property.
+	 * @return The current setting.
 	 */
+	@GET
 	@Path("allowNew")
+	@Produces("text/plain")
 	@Description("Whether to allow new workflow runs to be created.")
-	BoolProperty allowNew();
+	boolean getAllowNew();
 
 	/**
-	 * The property for whether to log the workflows submitted.
+	 * Set whether to allow new workflow runs to be created.
 	 * 
-	 * @return An updatable property.
+	 * @param newValue
+	 *            What to set it to.
+	 * @return The new setting.
 	 */
+	@PUT
+	@Path("allowNew")
+	@Consumes("text/plain")
+	@Produces("text/plain")
+	@Description("Whether to allow new workflow runs to be created.")
+	boolean setAllowNew(boolean newValue);
+
+	/**
+	 * Get whether to log the workflows submitted.
+	 * 
+	 * @return The current setting.
+	 */
+	@GET
 	@Path("logWorkflows")
+	@Produces("text/plain")
 	@Description("Whether to log the workflows submitted.")
-	BoolProperty logWorkflows();
+	boolean getLogWorkflows();
 
 	/**
-	 * The property for whether to log the user-directed faults.
+	 * Set whether to log the workflows submitted.
 	 * 
-	 * @return An updatable property.
+	 * @param logWorkflows
+	 *            What to set it to.
+	 * @return The new setting.
 	 */
+	@PUT
+	@Path("logWorkflows")
+	@Consumes("text/plain")
+	@Produces("text/plain")
+	@Description("Whether to log the workflows submitted.")
+	boolean setLogWorkflows(boolean logWorkflows);
+
+	/**
+	 * Get whether to log the user-directed faults.
+	 * 
+	 * @return The current setting.
+	 */
+	@GET
 	@Path("logFaults")
+	@Produces("text/plain")
 	@Description("Whether to log the user-directed faults.")
-	BoolProperty logFaults();
+	boolean getLogFaults();
 
 	/**
-	 * The property for what file to dump usage records to.
+	 * Set whether to log the user-directed faults.
 	 * 
-	 * @return An updatable property.
+	 * @param logFaults
+	 *            What to set it to.
+	 * @return The new setting.
 	 */
+	@PUT
+	@Path("logFaults")
+	@Consumes("text/plain")
+	@Produces("text/plain")
+	@Description("Whether to log the user-directed faults.")
+	boolean setLogFaults(boolean logFaults);
+
+	/**
+	 * Get what file to dump usage records to.
+	 * 
+	 * @return The current setting.
+	 */
+	@GET
 	@Path("usageRecordDumpFile")
+	@Produces("text/plain")
 	@Description("What file to dump usage records to.")
-	StringProperty urFile();
+	@NonNull
+	String getURFile();
+
+	/**
+	 * Set what file to dump usage records to.
+	 * 
+	 * @param urFile
+	 *            What to set it to.
+	 * @return The new setting.
+	 */
+	@PUT
+	@Path("usageRecordDumpFile")
+	@Consumes("text/plain")
+	@Produces("text/plain")
+	@Description("What file to dump usage records to.")
+	@NonNull
+	String setURFile(@NonNull String urFile);
 
 	/**
 	 * The property for the number of times the service methods have been
@@ -105,40 +171,106 @@ public interface Admin {
 	int runCount();
 
 	/**
-	 * The property for the location of the RMI registry.
+	 * Get the location of the RMI registry.
 	 * 
-	 * @return An updatable property.
+	 * @return The current setting.
 	 */
+	@GET
 	@Path("registryHost")
+	@Produces("text/plain")
 	@Description("Where is the RMI registry?")
-	StringProperty registryHost();
+	@NonNull
+	String getRegistryHost();
 
 	/**
-	 * The property for the port of the RMI registry.
+	 * Set the location of the RMI registry.
 	 * 
-	 * @return An updatable property.
+	 * @param registryHost
+	 *            What to set it to.
+	 * @return The new setting.
 	 */
+	@PUT
+	@Path("registryHost")
+	@Consumes("text/plain")
+	@Produces("text/plain")
+	@Description("Where is the RMI registry?")
+	@NonNull
+	String setRegistryHost(@NonNull String registryHost);
+
+	/**
+	 * Get the port of the RMI registry.
+	 * 
+	 * @return The current setting.
+	 */
+	@GET
 	@Path("registryPort")
+	@Produces("text/plain")
 	@Description("On what port is the RMI registry?")
-	IntegerProperty registryPort();
+	int getRegistryPort();
 
 	/**
-	 * The property for the maximum number of simultaneous runs.
+	 * Set the port of the RMI registry.
 	 * 
-	 * @return An updatable property.
+	 * @param registryPort
+	 *            What to set it to.
+	 * @return The new setting.
 	 */
+	@PUT
+	@Path("registryPort")
+	@Consumes("text/plain")
+	@Produces("text/plain")
+	@Description("On what port is the RMI registry?")
+	int setRegistryPort(int registryPort);
+
+	/**
+	 * Get the maximum number of simultaneous runs.
+	 * 
+	 * @return The current setting.
+	 */
+	@GET
 	@Path("runLimit")
+	@Produces("text/plain")
 	@Description("What is the maximum number of simultaneous runs?")
-	IntegerProperty runLimit();
+	int getRunLimit();
 
 	/**
-	 * The property for the default lifetime of workflow runs.
+	 * Set the maximum number of simultaneous runs.
 	 * 
-	 * @return An updatable property.
+	 * @param runLimit
+	 *            What to set it to.
+	 * @return The new setting.
 	 */
+	@PUT
+	@Path("runLimit")
+	@Consumes("text/plain")
+	@Produces("text/plain")
+	@Description("What is the maximum number of simultaneous runs?")
+	int setRunLimit(int runLimit);
+
+	/**
+	 * Get the default lifetime of workflow runs.
+	 * 
+	 * @return The current setting.
+	 */
+	@GET
 	@Path("defaultLifetime")
+	@Produces("text/plain")
 	@Description("What is the default lifetime of workflow runs, in seconds?")
-	IntegerProperty defaultLifetime();
+	int getDefaultLifetime();
+
+	/**
+	 * Set the default lifetime of workflow runs.
+	 * 
+	 * @param defaultLifetime
+	 *            What to set it to.
+	 * @return The new setting.
+	 */
+	@PUT
+	@Path("defaultLifetime")
+	@Consumes("text/plain")
+	@Produces("text/plain")
+	@Description("What is the default lifetime of workflow runs, in seconds?")
+	int setDefaultLifetime(int defaultLifetime);
 
 	/**
 	 * The property for the list of IDs of current runs.
@@ -152,80 +284,222 @@ public interface Admin {
 	StringList currentRuns();
 
 	/**
-	 * The property for the Java binary to be used for execution of
-	 * subprocesses.
+	 * Get the Java binary to be used for execution of subprocesses.
 	 * 
-	 * @return An updatable property.
+	 * @return The current setting.
 	 */
+	@GET
 	@Path("javaBinary")
+	@Produces("text/plain")
 	@Description("Which Java binary should be used for execution of subprocesses?")
-	StringProperty javaBinary();
+	@NonNull
+	String getJavaBinary();
 
 	/**
-	 * The property for the extra arguments to be supplied to Java subprocesses.
+	 * Set the Java binary to be used for execution of subprocesses.
 	 * 
-	 * @return An updatable property.
+	 * @param javaBinary
+	 *            What to set it to.
+	 * @return The new setting.
 	 */
+	@PUT
+	@Path("javaBinary")
+	@Consumes("text/plain")
+	@Produces("text/plain")
+	@Description("Which Java binary should be used for execution of subprocesses?")
+	@NonNull
+	String setJavaBinary(@NonNull String javaBinary);
+
+	/**
+	 * Get the extra arguments to be supplied to Java subprocesses.
+	 * 
+	 * @return The current setting.
+	 */
+	@GET
 	@Path("extraArguments")
+	@Produces("text/plain")
 	@Description("What extra arguments should be supplied to Java subprocesses?")
-	StringListProperty extraArguments();
+	@NonNull
+	StringList getExtraArguments();
 
 	/**
-	 * The property for the full pathname of the worker JAR file.
+	 * Set the extra arguments to be supplied to Java subprocesses.
 	 * 
-	 * @return An updatable property.
+	 * @param extraArguments
+	 *            What to set it to.
+	 * @return The new setting.
 	 */
+	@PUT
+	@Path("extraArguments")
+	@Consumes("text/plain")
+	@Produces("text/plain")
+	@Description("What extra arguments should be supplied to Java subprocesses?")
+	@NonNull
+	StringList setExtraArguments(@NonNull StringList extraArguments);
+
+	/**
+	 * Get the full pathname of the worker JAR file.
+	 * 
+	 * @return The current setting.
+	 */
+	@GET
 	@Path("serverWorkerJar")
+	@Produces("text/plain")
 	@Description("What is the full pathname of the server's per-user worker executable JAR file?")
-	StringProperty serverWorkerJar();
+	@NonNull
+	String getServerWorkerJar();
 
 	/**
-	 * The property for the full pathname of the executeWorkflow.sh file.
+	 * Set the full pathname of the worker JAR file.
 	 * 
-	 * @return An updatable property.
+	 * @param serverWorkerJar
+	 *            What to set it to.
+	 * @return The new setting.
 	 */
+	@PUT
+	@Path("serverWorkerJar")
+	@Consumes("text/plain")
+	@Produces("text/plain")
+	@Description("What is the full pathname of the server's per-user worker executable JAR file?")
+	@NonNull
+	String setServerWorkerJar(@NonNull String serverWorkerJar);
+
+	/**
+	 * Get the full pathname of the executeWorkflow.sh file.
+	 * 
+	 * @return The current setting.
+	 */
+	@GET
 	@Path("executeWorkflowScript")
+	@Produces("text/plain")
 	@Description("What is the full pathname of the core Taverna executeWorkflow script?")
-	StringProperty executeWorkflowScript();
+	@NonNull
+	String getExecuteWorkflowScript();
 
 	/**
-	 * The property for the total duration of time to wait for the start of the
+	 * Set the full pathname of the executeWorkflow.sh file.
+	 * 
+	 * @param executeWorkflowScript
+	 *            What to set it to.
+	 * @return The new setting.
+	 */
+	@PUT
+	@Path("executeWorkflowScript")
+	@Consumes("text/plain")
+	@Produces("text/plain")
+	@Description("What is the full pathname of the core Taverna executeWorkflow script?")
+	@NonNull
+	String setExecuteWorkflowScript(@NonNull String executeWorkflowScript);
+
+	/**
+	 * Get the total duration of time to wait for the start of the
 	 * forker process.
 	 * 
-	 * @return An updatable property.
+	 * @return The current setting.
 	 */
+	@GET
 	@Path("registrationWaitSeconds")
+	@Produces("text/plain")
 	@Description("How long in total should the core wait for registration of the \"forker\" process, in seconds.")
-	IntegerProperty registrationWaitSeconds();
+	int getRegistrationWaitSeconds();
 
 	/**
-	 * The property for the interval between checks for registration of the
+	 * Set the total duration of time to wait for the start of the
 	 * forker process.
 	 * 
-	 * @return An updatable property.
+	 * @param registrationWaitSeconds
+	 *            What to set it to.
+	 * @return The new setting.
 	 */
-	@Path("registrationPollMillis")
-	@Description("What is the interval between checks for registration of the \"forker\" process, in milliseconds.")
-	IntegerProperty registrationPollMillis();
+	@PUT
+	@Path("registrationWaitSeconds")
+	@Consumes("text/plain")
+	@Produces("text/plain")
+	@Description("How long in total should the core wait for registration of the \"forker\" process, in seconds.")
+	int setRegistrationWaitSeconds(int registrationWaitSeconds);
 
 	/**
-	 * The property for the full pathname of the file containing the
+	 * Get the interval between checks for registration of the
+	 * forker process.
+	 * 
+	 * @return The current setting.
+	 */
+	@GET
+	@Path("registrationPollMillis")
+	@Produces("text/plain")
+	@Description("What is the interval between checks for registration of the \"forker\" process, in milliseconds.")
+	int getRegistrationPollMillis();
+
+	/**
+	 * Set the interval between checks for registration of the
+	 * forker process.
+	 * 
+	 * @param registrationPollMillis
+	 *            What to set it to.
+	 * @return The new setting.
+	 */
+	@PUT
+	@Path("registrationPollMillis")
+	@Consumes("text/plain")
+	@Produces("text/plain")
+	@Description("What is the interval between checks for registration of the \"forker\" process, in milliseconds.")
+	int setRegistrationPollMillis(int registrationPollMillis);
+
+	/**
+	 * Get the full pathname of the file containing the
 	 * impersonation credentials for the forker process.
 	 * 
-	 * @return An updatable property.
+	 * @return The current setting.
 	 */
+	@GET
 	@Path("runasPasswordFile")
+	@Produces("text/plain")
 	@Description("What is the full pathname of the file containing the password used for impersonating other users? (On Unix, this is the password for the deployment user to use \"sudo\".)")
-	StringProperty runasPasswordFile();
+	@NonNull
+	String getRunasPasswordFile();
 
 	/**
-	 * The property for the full pathname of the forker's JAR.
+	 * Set the full pathname of the file containing the
+	 * impersonation credentials for the forker process.
 	 * 
-	 * @return An updatable property.
+	 * @param runasPasswordFile
+	 *            What to set it to.
+	 * @return The new setting.
 	 */
+	@PUT
+	@Path("runasPasswordFile")
+	@Consumes("text/plain")
+	@Produces("text/plain")
+	@Description("What is the full pathname of the file containing the password used for impersonating other users? (On Unix, this is the password for the deployment user to use \"sudo\".)")
+	@NonNull
+	String setRunasPasswordFile(@NonNull String runasPasswordFile);
+
+	/**
+	 * Get the full pathname of the forker's JAR.
+	 * 
+	 * @return The current setting.
+	 */
+	@GET
 	@Path("serverForkerJar")
+	@Produces("text/plain")
 	@Description("What is the full pathname of the server's special authorized \"forker\" executable JAR file?")
-	StringProperty serverForkerJar();
+	@NonNull
+	String getServerForkerJar();
+
+	/**
+	 * Set the full pathname of the forker's JAR.
+	 * 
+	 * @param serverForkerJar
+	 *            What to set it to.
+	 * @return The new setting.
+	 */
+	@PUT
+	@Path("serverForkerJar")
+	@Consumes("text/plain")
+	@Produces("text/plain")
+	@Description("What is the full pathname of the server's special authorized \"forker\" executable JAR file?")
+	@NonNull
+	String setServerForkerJar(@NonNull String serverForkerJar);
 
 	/**
 	 * The property for the length of time it took to start the forker.
@@ -270,88 +544,6 @@ public interface Admin {
 	@Produces("application/xml")
 	@Description("What is the list of usage records that have been collected?")
 	URList usageRecords();
-
-	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-
-	/**
-	 * A boolean REST property.
-	 * 
-	 * @author Donal Fellows
-	 */
-	public interface BoolProperty {
-		@GET
-		@Path("/")
-		@Produces("text/plain")
-		@NonNull
-		public boolean get();
-
-		@PUT
-		@Path("/")
-		@Consumes("text/plain")
-		@Produces("text/plain")
-		@NonNull
-		public boolean set(@NonNull boolean newValue);
-	}
-
-	/**
-	 * A string REST property.
-	 * 
-	 * @author Donal Fellows
-	 */
-	public interface StringProperty {
-		@GET
-		@Path("/")
-		@Produces("text/plain")
-		@NonNull
-		public String get();
-
-		@PUT
-		@Path("/")
-		@Consumes("text/plain")
-		@Produces("text/plain")
-		@NonNull
-		public String set(@NonNull String newValue);
-	}
-
-	/**
-	 * A string-list REST property.
-	 * 
-	 * @author Donal Fellows
-	 */
-	public interface StringListProperty {
-		@GET
-		@Path("/")
-		@Produces({ "application/xml", "application/json" })
-		@NonNull
-		public StringList get();
-
-		@PUT
-		@Path("/")
-		@Consumes({ "application/xml", "application/json" })
-		@Produces({ "application/xml", "application/json" })
-		@NonNull
-		public StringList set(@NonNull StringList newValue);
-	}
-
-	/**
-	 * An integer REST property.
-	 * 
-	 * @author Donal Fellows
-	 */
-	public interface IntegerProperty {
-		@GET
-		@Path("/")
-		@Produces("text/plain")
-		@NonNull
-		public int get();
-
-		@PUT
-		@Path("/")
-		@Consumes("text/plain")
-		@Produces("text/plain")
-		@NonNull
-		public int set(@NonNull int newValue);
-	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 

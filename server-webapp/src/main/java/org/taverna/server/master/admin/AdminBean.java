@@ -64,26 +64,54 @@ public class AdminBean implements Admin {
 
 	@RolesAllowed(ADMIN)
 	@Override
-	public BoolProperty allowNew() {
-		return new AllowNewProperty(this);
+	public boolean getAllowNew() {
+		return state.getAllowNewWorkflowRuns();
 	}
 
 	@RolesAllowed(ADMIN)
 	@Override
-	public BoolProperty logWorkflows() {
-		return new LogWorkflowsProperty(this);
+	public boolean setAllowNew(boolean newValue) {
+		state.setAllowNewWorkflowRuns(newValue);
+		return state.getAllowNewWorkflowRuns();
 	}
 
 	@RolesAllowed(ADMIN)
 	@Override
-	public BoolProperty logFaults() {
-		return new LogFaultsProperty(this);
+	public boolean getLogWorkflows() {
+		return state.getLogIncomingWorkflows();
 	}
 
 	@RolesAllowed(ADMIN)
 	@Override
-	public StringProperty urFile() {
-		return new URFileProperty(this);
+	public boolean setLogWorkflows(boolean newValue) {
+		state.setLogIncomingWorkflows(newValue);
+		return state.getLogIncomingWorkflows();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public boolean getLogFaults() {
+		return state.getLogOutgoingExceptions();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public boolean setLogFaults(boolean newValue) {
+		state.setLogOutgoingExceptions(newValue);
+		return state.getLogOutgoingExceptions();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public String getURFile() {
+		return state.getUsageRecordLogFile();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public String setURFile(String newValue) {
+		state.setUsageRecordLogFile(newValue);
+		return state.getUsageRecordLogFile();
 	}
 
 	@RolesAllowed(ADMIN)
@@ -100,26 +128,54 @@ public class AdminBean implements Admin {
 
 	@RolesAllowed(ADMIN)
 	@Override
-	public StringProperty registryHost() {
-		return new RegistryHostProperty(this);
+	public String getRegistryHost() {
+		return factory.getRegistryHost();
 	}
 
 	@RolesAllowed(ADMIN)
 	@Override
-	public IntegerProperty registryPort() {
-		return new RegistryPortProperty(this);
+	public String setRegistryHost(String newValue) {
+		factory.setRegistryHost(newValue);
+		return factory.getRegistryHost();
 	}
 
 	@RolesAllowed(ADMIN)
 	@Override
-	public IntegerProperty runLimit() {
-		return new RunLimitProperty(this);
+	public int getRegistryPort() {
+		return factory.getRegistryPort();
 	}
 
 	@RolesAllowed(ADMIN)
 	@Override
-	public IntegerProperty defaultLifetime() {
-		return new DefaultLifetimeProperty(this);
+	public int setRegistryPort(int newValue) {
+		factory.setRegistryPort(newValue);
+		return factory.getRegistryPort();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public int getRunLimit() {
+		return factory.getMaxRuns();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public int setRunLimit(int newValue) {
+		factory.setMaxRuns(newValue);
+		return factory.getMaxRuns();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public int getDefaultLifetime() {
+		return factory.getDefaultLifetime();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public int setDefaultLifetime(int newValue) {
+		factory.setDefaultLifetime(newValue);
+		return factory.getDefaultLifetime();
 	}
 
 	@RolesAllowed(ADMIN)
@@ -132,50 +188,109 @@ public class AdminBean implements Admin {
 
 	@RolesAllowed(ADMIN)
 	@Override
-	public StringProperty javaBinary() {
-		return new JavaBinaryProperty(this);
+	public String getJavaBinary() {
+		return factory.getJavaBinary();
 	}
 
 	@RolesAllowed(ADMIN)
 	@Override
-	public StringListProperty extraArguments() {
-		return new ExtraArgsProperty(this);
+	public String setJavaBinary(String newValue) {
+		factory.setJavaBinary(newValue);
+		return factory.getJavaBinary();
 	}
 
 	@RolesAllowed(ADMIN)
 	@Override
-	public StringProperty serverWorkerJar() {
-		return new ServerWorkerProperty(this);
+	public StringList getExtraArguments() {
+		StringList result = new StringList();
+		result.string = Arrays.asList(factory.getExtraArguments());
+		return result;
+	}
+	@RolesAllowed(ADMIN)
+	@Override
+	public StringList setExtraArguments(StringList newValue) {
+		factory.setExtraArguments(newValue.string
+				.toArray(new String[newValue.string.size()]));
+		StringList result = new StringList();
+		result.string = Arrays.asList(factory.getExtraArguments());
+		return result;
 	}
 
 	@RolesAllowed(ADMIN)
 	@Override
-	public StringProperty executeWorkflowScript() {
-		return new ExecuteWorkflowProperty(this);
+	public String getServerWorkerJar() {
+		return factory.getServerWorkerJar();
 	}
 
 	@RolesAllowed(ADMIN)
 	@Override
-	public IntegerProperty registrationWaitSeconds() {
-		return new RegistrationWaitProperty(this);
+	public String setServerWorkerJar(String newValue) {
+		factory.setServerWorkerJar(newValue);
+		return factory.getServerWorkerJar();
 	}
 
 	@RolesAllowed(ADMIN)
 	@Override
-	public IntegerProperty registrationPollMillis() {
-		return new RegistrationPollProperty(this);
+	public String getExecuteWorkflowScript() {
+		return factory.getExecuteWorkflowScript();
 	}
 
 	@RolesAllowed(ADMIN)
 	@Override
-	public StringProperty runasPasswordFile() {
-		return new RunAsPasswordFileProperty(this);
+	public String setExecuteWorkflowScript(String newValue) {
+		factory.setExecuteWorkflowScript(newValue);
+		return factory.getExecuteWorkflowScript();
 	}
 
 	@RolesAllowed(ADMIN)
 	@Override
-	public StringProperty serverForkerJar() {
-		return new ServerForkerProperty(this);
+	public int getRegistrationWaitSeconds() {
+		return factory.getWaitSeconds();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public int setRegistrationWaitSeconds(int newValue) {
+		factory.setWaitSeconds(newValue);
+		return factory.getWaitSeconds();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public int getRegistrationPollMillis() {
+		return factory.getSleepTime();
+	}
+	@RolesAllowed(ADMIN)
+	@Override
+	public int setRegistrationPollMillis(int newValue) {
+		factory.setSleepTime(newValue);
+		return factory.getSleepTime();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public String getRunasPasswordFile() {
+		return factory.getPasswordFile();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public String setRunasPasswordFile(String newValue) {
+		factory.setPasswordFile(newValue);
+		return factory.getPasswordFile();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public String getServerForkerJar() {
+		return factory.getServerForkerJar();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public String setServerForkerJar(String newValue) {
+		factory.setServerForkerJar(newValue);
+		return factory.getServerForkerJar();
 	}
 
 	@RolesAllowed(ADMIN)
