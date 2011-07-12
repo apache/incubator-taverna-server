@@ -53,7 +53,7 @@
 	</pluginRepositories>
 
 	<properties>
-		<version.cxf>2.3.1</version.cxf>
+		<version.cxf>2.3.5</version.cxf>
 		<version.spring>3.0.5.RELEASE</version.spring>
 		<version.spring-security>3.0.2.RELEASE</version.spring-security>
 		<version.datanucleus>2.2.2</version.datanucleus>
