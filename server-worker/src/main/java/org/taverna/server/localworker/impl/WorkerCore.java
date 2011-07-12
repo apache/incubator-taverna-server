@@ -6,6 +6,7 @@
 package org.taverna.server.localworker.impl;
 
 import static java.io.File.createTempFile;
+import static java.io.File.pathSeparator;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.System.out;
 import static org.apache.commons.io.IOUtils.copy;
@@ -175,7 +176,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			File securityDir, char[] password) throws IOException {
 		ProcessBuilder pb = new ProcessBuilder();
 		/*
-		 * WARNING!  HERE THERE BE DRAGONS!  BE CAREFUL HERE!
+		 * WARNING! HERE THERE BE DRAGONS! BE CAREFUL HERE!
 		 * 
 		 * Work around _Maven_ bug with permissions in zip files! The executable
 		 * bit is stripped by Maven's handling of file permissions, and there's
@@ -276,6 +277,13 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		// Indicate what working directory to use
 		pb.directory(workingDir);
 		wd = workingDir;
+
+		// Patch the environment to deal with TAVUTILS-17
+		assert pb.environment().get("PATH") != null;
+		pb.environment().put(
+				"PATH",
+				new File(System.getProperty("java.home"), "bin")
+						+ pathSeparator + pb.environment().get("PATH"));
 
 		// Start the subprocess
 		out.println("starting " + pb.command() + " in directory " + workingDir);
