@@ -56,7 +56,7 @@
 	<inceptionYear>2010</inceptionYear>
 	<licenses>
 		<license>
-			<name>LGPL</name>
+			<name>LGPL 2.1</name>
 			<url>http://www.opensource.org/licenses/lgpl-2.1.php</url>
 			<comments>This software is made available under the LGPL v2.1. There is no requirement for you to contact us in order to use it, modify it, etc., but please let us know if you are using this software, especially scientifically. We love citations!</comments>
 		</license>
