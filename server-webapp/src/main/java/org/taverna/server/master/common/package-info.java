@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 /**
  * This package contains the common XML elements used throughout Taverna Server's various interfaces.
  * @author Donal Fellows

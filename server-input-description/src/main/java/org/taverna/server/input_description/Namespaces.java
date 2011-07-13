@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.input_description;
 
 public interface Namespaces {

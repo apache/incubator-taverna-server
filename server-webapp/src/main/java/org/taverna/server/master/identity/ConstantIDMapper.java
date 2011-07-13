@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.identity;
 
 import org.taverna.server.master.interfaces.LocalIdentityMapper;
@@ -18,15 +23,6 @@ public class ConstantIDMapper implements LocalIdentityMapper {
 	 */
 	public void setConstantId(String id) {
 		this.id = id;
-	}
-
-	/**
-	 * Gets what local user ID all users should be mapped to.
-	 * 
-	 * @return The local user ID.
-	 */
-	public String getConstantID() {
-		return id;
 	}
 
 	@Override

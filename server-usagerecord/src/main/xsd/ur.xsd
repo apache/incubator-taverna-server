@@ -6,6 +6,7 @@
 	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
 	xsi:schemaLocation="http://www.w3.org/2001/XMLSchema http://www.w3.org/2001/XMLSchema.xsd">
 	<xsd:annotation>
+		<!-- Copyright (c) 2003-2008 Open Grid Forum -->
 		<xsd:documentation xml:lang="en">Usage Record Working Group XML Schema definition</xsd:documentation>
 		<xsd:appinfo>
 			<jaxb:schemaBindings>

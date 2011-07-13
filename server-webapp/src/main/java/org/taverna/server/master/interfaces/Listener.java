@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2010 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.interfaces;
 
 import org.taverna.server.master.exceptions.BadPropertyValueException;

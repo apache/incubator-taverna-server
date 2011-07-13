@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 @XmlSchema(namespace = DATA, elementFormDefault = QUALIFIED, attributeFormDefault = QUALIFIED, xmlns = {
 		@XmlNs(prefix = "xlink", namespaceURI = XLINK),
 		@XmlNs(prefix = "rdf", namespaceURI = RDF),

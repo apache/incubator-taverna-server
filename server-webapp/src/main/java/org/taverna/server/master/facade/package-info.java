@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 /**
  * Simple facade used at the top level of the Taverna Server in order to
  * provide an entry splash page.

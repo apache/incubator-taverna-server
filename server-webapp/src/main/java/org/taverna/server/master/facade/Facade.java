@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2010-2011 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.facade;
 
 import static javax.ws.rs.core.MediaType.TEXT_HTML_TYPE;
@@ -77,7 +82,7 @@ public class Facade {
 	 */
 	@GET
 	public Response get(@Context UriInfo ui) {
-		String url = ui.getAbsolutePath().toString();
+		String url = ui.getAbsolutePath().toString().replace("%2D", "-");
 		if (!url.endsWith("/"))
 			url += "/";
 		return ok(welcome.replaceAll(pattern, url), TEXT_HTML_TYPE).build();
