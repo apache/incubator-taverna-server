@@ -88,6 +88,7 @@
 			<ref bean="ExceptionProvider.NotOwner" />
 			<ref bean="ExceptionProvider.UnknownRun" />
 			<ref bean="MessagingProvider.File" />
+			<ref bean="MessagingProvider.FileSegment" />
 			<ref bean="MessagingProvider.InputStream" />
 <!-- 			<ref bean="jsonProvider" /> -->
 		</jaxrs:providers>
@@ -124,11 +125,9 @@
 		<jaxrs:properties>
 			<entry key="org.apache.cxf.endpoint.private" value="true" />
 		</jaxrs:properties>
-<!-- 
 		<jaxrs:providers>
 			<ref bean="MessagingProvider.Atom" />
 		</jaxrs:providers>
- -->
 	</jaxrs:server>
 
 	<jaxrs:server id="AdministrationInterface" address="/admin"
@@ -136,9 +135,11 @@
 		<jaxrs:serviceBeans>
 			<ref bean="admin" />
 		</jaxrs:serviceBeans>
+<!-- 
 		<jaxrs:dataBinding>
 			<ref bean="addStylesheet"/>
 		</jaxrs:dataBinding>
+ -->
 	</jaxrs:server>
 
 	<!-- How to supply a stylesheet with the results so that browsers can

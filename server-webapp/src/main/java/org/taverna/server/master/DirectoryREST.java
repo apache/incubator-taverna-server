@@ -43,6 +43,7 @@ import org.taverna.server.master.interfaces.DirectoryEntry;
 import org.taverna.server.master.interfaces.File;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.rest.DirectoryContents;
+import org.taverna.server.master.rest.FileSegment;
 import org.taverna.server.master.rest.MakeOrUpdateDirEntry;
 import org.taverna.server.master.rest.MakeOrUpdateDirEntry.MakeDirectory;
 import org.taverna.server.master.rest.TavernaServerDirectoryREST;
@@ -191,11 +192,9 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 		if (de instanceof File) {
 			// Only for files...
 			result = de;
-			if (wanted.getType().equals("text")) {
-				File f = (File) de;
-				result = new String(f.getContents(0, (int) f.getSize()),
-						defaultCharset());
-				// Explicitly assumed that the system's charset is correct
+			List<String> range = headers.getRequestHeader("Range");
+			if (range != null && range.size() == 1) {
+				return new FileSegment((File) de, range.get(0)).toResponse(wanted);
 			}
 		} else {
 			// Only for directories...

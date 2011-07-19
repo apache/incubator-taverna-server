@@ -64,7 +64,10 @@
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
 	<bean id="MessagingProvider.File" class="org.taverna.server.master.rest.FileMessageHandler">
-		<property name="maxChunkSize" value="65536" />
+		<property name="maxChunkSize" value="${default.messageSize}" />
+	</bean>
+	<bean id="MessagingProvider.FileSegment" class="org.taverna.server.master.rest.FileSegmentHandler">
+		<property name="maxChunkSize" value="${default.messageSize}" />
 	</bean>
 	<bean id="MessagingProvider.InputStream"
 		class="org.taverna.server.master.rest.InputStreamMessageHandler">
