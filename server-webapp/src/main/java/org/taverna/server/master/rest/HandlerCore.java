@@ -40,7 +40,8 @@ public class HandlerCore {
 	 * @return The build response.
 	 */
 	protected Response respond(Response.Status status, Exception exception) {
-		if (managementModel.getLogOutgoingExceptions())
+		if (managementModel.getLogOutgoingExceptions()
+				|| status.getStatusCode() >= 500)
 			log.info("converting exception to response", exception);
 		return status(status).type(TEXT_PLAIN_TYPE)
 				.entity(exception.getMessage()).build();
@@ -59,7 +60,8 @@ public class HandlerCore {
 	 */
 	protected Response respond(Response.Status status, String partialMessage,
 			Exception exception) {
-		if (managementModel.getLogOutgoingExceptions())
+		if (managementModel.getLogOutgoingExceptions()
+				|| status.getStatusCode() >= 500)
 			log.info("converting exception to response", exception);
 		return status(status).type(TEXT_PLAIN_TYPE)
 				.entity(partialMessage + "\n" + exception.getMessage()).build();

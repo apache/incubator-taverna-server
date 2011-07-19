@@ -202,8 +202,9 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public StringList getExtraArguments() {
+		String[] xargs = factory.getExtraArguments();
 		StringList result = new StringList();
-		result.string = Arrays.asList(factory.getExtraArguments());
+		result.string = Arrays.asList(xargs == null ? new String[0] : xargs);
 		return result;
 	}
 	@RolesAllowed(ADMIN)
