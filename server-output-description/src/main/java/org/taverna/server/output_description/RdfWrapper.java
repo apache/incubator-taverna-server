@@ -30,8 +30,8 @@ public class RdfWrapper {
 			@XmlElement(name = "error", type = ErrorValue.class, nillable = false),
 			@XmlElement(name = "absent", type = AbsentValue.class, nillable = false) })
 	public List<AbstractValue> outputs = new ArrayList<AbstractValue>();
-	@XmlElement
-	public Run run;
+	@XmlElement(nillable = false)
+	public Run run = new Run();
 
 	@XmlRootElement(name = "workflowRun", namespace = RUN)
 	@XmlType(propOrder = {}, namespace = RUN)
@@ -41,7 +41,7 @@ public class RdfWrapper {
 		@XmlAttribute(namespace = XLINK)
 		public URI href;
 		@XmlElement(name = "runOf", namespace = RUN, nillable = false)
-		public RunID runid;
+		public RunID runid = new RunID();
 
 		@XmlType(name = "")
 		public static class RunID {

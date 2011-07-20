@@ -90,34 +90,11 @@
 			<ref bean="MessagingProvider.File" />
 			<ref bean="MessagingProvider.FileSegment" />
 			<ref bean="MessagingProvider.InputStream" />
-<!-- 			<ref bean="jsonProvider" /> -->
+			<ref bean="jsonProvider" />
+			<ref bean="jaxbProvider" />
 		</jaxrs:providers>
-<!-- 
-		<jaxrs:dataBinding>
-			<ref bean="addStylesheet"/>
-		</jaxrs:dataBinding>
- -->
  	</jaxrs:server>
 
-<!-- 
-	<bean id="jsonProvider" class="org.apache.cxf.jaxrs.provider.JSONProvider">
-		<property name="namespaceMap" ref="jsonNamespaceMap" />
-	</bean>
-	<util:map id="jsonNamespaceMap" map-class="java.util.Hashtable">
-		<entry key="http://www.w3.org/1999/xlink" value="xlink" />
-		<entry key="http://www.w3.org/2000/09/xmldsig#" value="xmldsig" />
-		<entry key="http://schema.ogf.org/urf/2003/09/urf" value="ur" />
-		<entry key="http://ns.taverna.org.uk/2010/xml/server/" value="" />
-		<entry key="http://ns.taverna.org.uk/2010/xml/server/rest/" value="" />
-		<entry key="http://ns.taverna.org.uk/2010/xml/server/soap/" value="" />
-		<entry key="http://ns.taverna.org.uk/2010/xml/server/feed/" value="" />
-		<entry key="http://ns.taverna.org.uk/2010/xml/server/admin/" value="" />
-		<entry key="http://www.w3.org/1999/02/22-rdf-syntax-ns#" value="rdf" />
-		<entry key="http://ns.taverna.org.uk/2010/data/" value="io" />
-		<entry key="http://ns.taverna.org.uk/2010/data/in" value="io" />
-		<entry key="http://ns.taverna.org.uk/2010/run/" value="io" />
-	</util:map>
- -->
 	<jaxrs:server id="AtomFeed" address="/feed">
 		<jaxrs:serviceBeans>
 			<ref bean="feed" />
@@ -135,26 +112,45 @@
 		<jaxrs:serviceBeans>
 			<ref bean="admin" />
 		</jaxrs:serviceBeans>
-<!-- 
-		<jaxrs:dataBinding>
-			<ref bean="addStylesheet"/>
-		</jaxrs:dataBinding>
- -->
+		<jaxrs:providers>
+			<ref bean="jsonProvider" />
+			<ref bean="jaxbProvider" />
+		</jaxrs:providers>
 	</jaxrs:server>
+
+	<bean id="jsonProvider" class="org.apache.cxf.jaxrs.provider.JSONProvider">
+		<property name="ignoreNamespaces" value="true" />
+		<property name="namespaceMap" ref="jsonNamespaceMap" />
+	</bean>
+	<util:map id="jsonNamespaceMap" key-type="java.lang.String"
+		value-type="java.lang.String">
+		<entry key="http://www.w3.org/1999/xlink" value="xlink" />
+		<entry key="http://www.w3.org/2000/09/xmldsig#" value="xmldsig" />
+		<entry key="http://schema.ogf.org/urf/2003/09/urf" value="ur" />
+		<entry key="http://ns.taverna.org.uk/2010/xml/server/" value="" />
+		<entry key="http://ns.taverna.org.uk/2010/xml/server/rest/" value="" />
+		<entry key="http://ns.taverna.org.uk/2010/xml/server/soap/" value="" />
+		<entry key="http://ns.taverna.org.uk/2010/xml/server/feed/" value="" />
+		<entry key="http://ns.taverna.org.uk/2010/xml/server/admin/" value="" />
+		<entry key="http://www.w3.org/1999/02/22-rdf-syntax-ns#" value="rdf" />
+		<entry key="http://ns.taverna.org.uk/2010/data/" value="" />
+		<entry key="http://ns.taverna.org.uk/2010/data/in" value="" />
+		<entry key="http://ns.taverna.org.uk/2010/run/" value="" />
+	</util:map>
 
 	<!-- How to supply a stylesheet with the results so that browsers can
 	     show things properly; requires selecting a stylesheet to use. -->
-	<bean id="addStylesheet" class="org.apache.cxf.jaxb.JAXBDataBinding">
-		<property name="marshallerProperties">
-			<map key-type="java.lang.String" value-type="java.lang.Object">
-				<entry key="com.sun.xml.bind.xmlHeaders">
-					<value type="java.lang.String"><![CDATA[
-						<?xml-stylesheet type='text/xsl' href='${xml.stylesheet.url}'?>
-					]]></value>
-				</entry>
-			</map>
-		</property>
+	<bean id="jaxbProvider" class="org.apache.cxf.jaxrs.provider.JAXBElementProvider">
+		<property name="marshallerProperties" ref="jaxbProps" />
 	</bean>
+	<util:map id="jaxbProps" key-type="java.lang.String"
+		value-type="java.lang.String">
+		<entry key="com.sun.xml.bind.xmlHeaders">
+			<value type="java.lang.String"><![CDATA[
+				<?xml-stylesheet type='text/xsl' href='${xml.stylesheet.url}'?>
+			]]></value>
+		</entry>
+	</util:map>
 
 	<bean id="root_facade" class="org.taverna.server.master.facade.Facade">
 		<property name="file" value="welcome.html" />

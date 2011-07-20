@@ -38,6 +38,7 @@ import org.taverna.server.output_description.LeafValue;
 import org.taverna.server.output_description.ListValue;
 import org.taverna.server.output_description.Outputs.Contains;
 import org.taverna.server.output_description.RdfWrapper;
+import org.taverna.server.output_description.RdfWrapper.Run;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -212,6 +213,7 @@ public class ContentsDescriptorBuilder {
 		else
 			ub = fromUri(ui.getAbsolutePathBuilder().path("..").build());
 		descriptor.run.href = ub.build();
+		descriptor.run.runid.resource = run.getId();
 		if (run.getOutputBaclavaFile() != null) {
 			return descriptor;
 		}
