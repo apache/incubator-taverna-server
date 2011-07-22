@@ -15,6 +15,7 @@ import java.security.cert.Certificate;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
@@ -43,6 +44,7 @@ public abstract class Credential implements Serializable {
 	 * the <i>default</i> credential to use.
 	 */
 	@XmlElement
+	@XmlSchemaType(name = "anyURI")
 	public URI serviceURI;
 	/**
 	 * The encoded serialized keystore containing the credential.
@@ -119,8 +121,10 @@ public abstract class Credential implements Serializable {
 	@XmlType(name = "CaGridProxyCredential")
 	public static class CaGridProxy extends KeyPair {
 		@XmlElement(required = true)
+		@XmlSchemaType(name = "anyURI")
 		public URI authenticationService;
 		@XmlElement(required = true)
+		@XmlSchemaType(name = "anyURI")
 		public URI dorianService;
 	}
 

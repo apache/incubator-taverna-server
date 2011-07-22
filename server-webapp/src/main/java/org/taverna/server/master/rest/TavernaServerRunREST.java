@@ -25,6 +25,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
@@ -349,6 +350,7 @@ public interface TavernaServerRunREST {
 			 * Where to go to read the exiry
 			 */
 			@XmlAttribute(name = "href", namespace = Namespaces.XLINK)
+			@XmlSchemaType(name = "anyURI")
 			public URI ref;
 			/**
 			 * What the expiry currently is.

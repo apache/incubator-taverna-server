@@ -12,6 +12,7 @@ import java.net.URI;
 import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
@@ -33,6 +34,7 @@ import org.taverna.server.master.interfaces.DirectoryEntry;
 public class DirEntryReference {
 	/** A link to the entry. Ignored on input. */
 	@XmlAttribute(name = "href", namespace = XLINK)
+	@XmlSchemaType(name = "anyURI")
 	public URI link;
 	/** The last, user-displayable part of the name. Ignored on input. */
 	@XmlAttribute

@@ -28,6 +28,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.cxf.jaxrs.ext.Description;
@@ -224,6 +225,7 @@ public interface TavernaServerListenersREST {
 	public class ListenerDescription extends VersionedElement {
 		/** Where this listener is located. */
 		@XmlAttribute(name = "href", namespace = XLINK)
+		@XmlSchemaType(name = "anyURI")
 		public URI location;
 		/** The (arbitrary) name of the event listener. */
 		@XmlAttribute

@@ -14,6 +14,7 @@ import java.net.URI;
 import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
@@ -32,6 +33,7 @@ public class RunReference {
 	 * Where to get information about the run. For REST.
 	 */
 	@XmlAttribute(name = "href", namespace = XLINK)
+	@XmlSchemaType(name = "anyURI")
 	public URI link;
 	/** What version of server produced this element? */
 	@XmlAttribute(namespace = SERVER)

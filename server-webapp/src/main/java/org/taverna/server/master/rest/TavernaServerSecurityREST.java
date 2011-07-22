@@ -31,6 +31,7 @@ import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.cxf.jaxrs.ext.Description;
@@ -439,6 +440,7 @@ public interface TavernaServerSecurityREST {
 		public static final class Credentials {
 			/** Reference to the collection of credentials */
 			@XmlAttribute(name = "href", namespace = XLINK)
+			@XmlSchemaType(name = "anyURI")
 			public URI href;
 			/** Descriptions of the credentials themselves. */
 			@XmlElement
@@ -471,6 +473,7 @@ public interface TavernaServerSecurityREST {
 		public static final class Trusts {
 			/** Reference to the collection of trusted certs */
 			@XmlAttribute(name = "href", namespace = XLINK)
+			@XmlSchemaType(name = "anyURI")
 			public URI href;
 			/** Descriptions of the trusted certs themselves. */
 			@XmlElement

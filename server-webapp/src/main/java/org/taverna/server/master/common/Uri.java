@@ -13,6 +13,7 @@ import javax.annotation.PreDestroy;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,7 @@ public class Uri {
 	 * other element.
 	 */
 	@XmlAttribute(name = "href", namespace = XLINK)
+	@XmlSchemaType(name = "anyURI")
 	public URI ref;
 
 	/** Make a reference that points nowhere. */
