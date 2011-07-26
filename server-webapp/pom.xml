@@ -61,6 +61,7 @@
 		<version.smack>3.1.0</version.smack>
 		<version.commandline>2.3.0</version.commandline>
 		<forker.module>server-unix-forker</forker.module>
+		<util.dir>${project.build.directory}/${project.build.finalName}/WEB-INF/classes/util</util.dir>
 	</properties>
 
 	<dependencies>
@@ -138,14 +139,14 @@
 			<artifactId>server-worker</artifactId>
 			<version>${project.parent.version}</version>
 			<classifier>jar-with-dependencies</classifier>
-			<scope>runtime</scope>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>uk.org.taverna.server</groupId>
 			<artifactId>${forker.module}</artifactId>
 			<version>${project.parent.version}</version>
 			<classifier>jar-with-dependencies</classifier>
-			<scope>runtime</scope>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -452,7 +453,7 @@
 									<destFileName>secure.fork.jar</destFileName>
 								</artifactItem>
 							</artifactItems>
-							<outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes/util</outputDirectory>
+							<outputDirectory>${util.dir}</outputDirectory>
 							<overWriteReleases>false</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
 							<excludeTransitive>true</excludeTransitive>
@@ -471,7 +472,7 @@
 									<artifactId>taverna-commandline</artifactId>
 									<version>${version.commandline}</version>
 									<type>zip</type>
-									<outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes/util</outputDirectory>
+									<outputDirectory>${util.dir}</outputDirectory>
 								</artifactItem>
 							</artifactItems>
 							<overWriteReleases>false</overWriteReleases>
