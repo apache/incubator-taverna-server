@@ -437,6 +437,7 @@ abstract class DEDelegate implements DirectoryEntry {
 	private Log log = getLog("Taverna.Server.LocalWorker");
 	private RemoteDirectoryEntry entry;
 	private String name;
+	private String full;
 
 	DEDelegate(RemoteDirectoryEntry entry) {
 		this.entry = entry;
@@ -454,6 +455,8 @@ abstract class DEDelegate implements DirectoryEntry {
 
 	@Override
 	public String getFullName() {
+		if (full != null)
+			return full;
 		String n = getName();
 		RemoteDirectoryEntry re = entry;
 		try {
@@ -467,7 +470,7 @@ abstract class DEDelegate implements DirectoryEntry {
 		} catch (RemoteException e) {
 			log.warn("failed to generate full name", e);
 		}
-		return n;
+		return (full = n);
 	}
 
 	@Override
@@ -479,6 +482,21 @@ abstract class DEDelegate implements DirectoryEntry {
 				log.error("failed to get name", e);
 			}
 		return name;
+	}
+
+	@Override
+	public int compareTo(DirectoryEntry de) {
+		return getFullName().compareTo(de.getFullName());
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		return o != null && o instanceof DEDelegate
+				&& getFullName().equals(((DEDelegate) o).getFullName());
+	}
+	@Override
+	public int hashCode() {
+		return getFullName().hashCode();
 	}
 }
 

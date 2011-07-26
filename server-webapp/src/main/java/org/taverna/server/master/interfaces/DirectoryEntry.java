@@ -14,7 +14,7 @@ import org.taverna.server.master.exceptions.FilesystemAccessException;
  * @see Directory
  * @see File
  */
-public interface DirectoryEntry {
+public interface DirectoryEntry extends Comparable<DirectoryEntry> {
 	/**
 	 * @return The "local" name of the entry. This will never be "<tt>..</tt>"
 	 *         or contain the character "<tt>/</tt>".

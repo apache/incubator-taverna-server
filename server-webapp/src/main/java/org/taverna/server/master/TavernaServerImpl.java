@@ -79,7 +79,7 @@ import org.taverna.server.master.soap.PermissionList;
 import org.taverna.server.master.soap.TavernaServerSOAP;
 import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
-import org.taverna.server.output_description.RdfWrapper;
+import org.taverna.server.output_description.Outputs;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -529,7 +529,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	@Override
 	@CallCounted
-	public RdfWrapper getRunOutputDescription(String runName)
+	public Outputs getRunOutputDescription(String runName)
 			throws UnknownRunException, BadStateChangeException,
 			FilesystemAccessException, NoDirectoryEntryException {
 		TavernaRun run = support.getRun(runName);

@@ -37,7 +37,7 @@ import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.NotOwnerException;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.rest.TavernaServerREST;
-import org.taverna.server.output_description.RdfWrapper;
+import org.taverna.server.output_description.Outputs;
 
 /**
  * The SOAP service interface to Taverna 2.3 Server Release 1.
@@ -319,7 +319,7 @@ public interface TavernaServerSOAP {
 	 * 
 	 * @param runName
 	 *            The handle of the run.
-	 * @return RDF as XML
+	 * @return Description document (higher level than filesystem traverse).
 	 * @throws UnknownRunException
 	 *             If the server doesn't know about the run or if the user is
 	 *             not permitted to see it.
@@ -333,7 +333,7 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "OutputDescription")
 	@WSDLDocumentation("Return a description of the outputs of a run. Only known during/after the run.")
-	RdfWrapper getRunOutputDescription(
+	Outputs getRunOutputDescription(
 			@WebParam(name = "runName") String runName)
 			throws UnknownRunException, BadStateChangeException,
 			FilesystemAccessException, NoDirectoryEntryException;

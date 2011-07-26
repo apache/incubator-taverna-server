@@ -6,17 +6,15 @@
 package org.taverna.server.master;
 
 import static eu.medsea.util.MimeUtil.getMimeType;
-import static java.lang.Integer.parseInt;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.Iterator;
 
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
@@ -36,9 +34,8 @@ import org.taverna.server.output_description.AbstractValue;
 import org.taverna.server.output_description.ErrorValue;
 import org.taverna.server.output_description.LeafValue;
 import org.taverna.server.output_description.ListValue;
-import org.taverna.server.output_description.Outputs.Contains;
-import org.taverna.server.output_description.RdfWrapper;
-import org.taverna.server.output_description.RdfWrapper.Run;
+import org.taverna.server.output_description.Outputs;
+import org.taverna.server.output_description.Outputs.Port;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -80,115 +77,90 @@ public class ContentsDescriptorBuilder {
 	 * @param expected
 	 *            The list of outputs that are <i>expected</i> to be produced;
 	 *            they might not actually produce anything though.
+	 * @throws NoDirectoryEntryException
+	 * @throws FilesystemAccessException
 	 */
-	private void constructContents(TavernaRun run, UriBuilder ub,
-			RdfWrapper descriptor, ArrayList<String> expected) {
+	private void constructPorts(TavernaRun run, UriBuilder ub,
+			Outputs descriptor) throws FilesystemAccessException,
+			NoDirectoryEntryException {
 		NodeList nl, nl2;
 		Element e = run.getWorkflow().content[0];
 		nl = e.getElementsByTagNameNS(T2FLOW_NS, "dataflow");
 		if (nl.getLength() == 0)
 			return; // Not t2flow
-		String id = ((Element) nl.item(0)).getAttribute("id");
-		if (id != null && !id.isEmpty())
-			descriptor.run.about = RDF_BASE + id;
 		nl = ((Element) nl.item(0)).getElementsByTagNameNS(T2FLOW_NS,
 				"outputPorts");
 		if (nl.getLength() == 0)
 			return; // No outputs
 		nl = ((Element) nl.item(0)).getElementsByTagNameNS(T2FLOW_NS, "port");
+		Collection<DirectoryEntry> outs = fileUtils.getDirectory(run, "out")
+				.getContents();
 		for (int i = 0; i < nl.getLength(); i++) {
 			nl2 = ((Element) nl.item(i)).getElementsByTagNameNS(T2FLOW_NS,
 					"name");
 			if (nl2.getLength() == 1) {
-				Contains c = new Contains();
-				c.resource = "out/" + nl2.item(0).getTextContent();
-				descriptor.outputsDescription.contains.add(c);
+				Port p = new Port();
+				p.name = nl2.item(0).getTextContent();
+				p.output = constructValue(outs, ub, p.name);
+				descriptor.ports.add(p);
 			}
 		}
 	}
 
-	/**
-	 * Fills in attributes specific to a leaf value.
-	 * 
-	 * @param f
-	 *            The file which is the source of the information.
-	 * @param lv
-	 *            The value that is to be updated.
-	 */
-	private void fillInLeafValue(File f, LeafValue lv) {
-		try {
-			lv.byteLength = f.getSize();
-		} catch (FilesystemAccessException e) {
-			// Ignore exception; will result in omitted attribute
-		}
-		try {
-			byte[] head = f.getContents(0, 1024);
-			lv.contentType = getMimeType(new ByteArrayInputStream(head));
-		} catch (Exception e) {
-			lv.contentType = APPLICATION_OCTET_STREAM_TYPE.toString();
-		}
-	}
-
-	/**
-	 * Fill in attributes and contents specific to a list value.
-	 * 
-	 * @param d
-	 *            The directory which is the source of the information.
-	 * @param baseURI
-	 *            The base URI of the directory.
-	 * @param lv
-	 *            The list value to be built.
-	 */
-	private void fillInListValue(Directory d, URI baseURI, ListValue lv) {
-		Map<Integer, DirectoryEntry> numbered = new HashMap<Integer, DirectoryEntry>();
-		Set<Integer> errors = new HashSet<Integer>();
-		try {
-			for (DirectoryEntry de : d.getContents()) {
-				String name = de.getName();
+	private AbstractValue constructValue(
+			Collection<DirectoryEntry> parentContents, UriBuilder ub,
+			String name) throws FilesystemAccessException {
+		String error = name + ".err";
+		String prefix = name + ".";
+		for (DirectoryEntry entry : parentContents) {
+			if (entry.getName().equals(error)) {
+				ErrorValue v = new ErrorValue();
+				v.href = ub.build(entry.getFullName());
+				return v;
+			}
+			if (!entry.getName().equals(name)
+					&& !entry.getName().startsWith(prefix))
+				continue;
+			if (entry instanceof File) {
+				File f = (File) entry;
+				LeafValue v = new LeafValue();
+				v.href = ub.build(f.getFullName());
+				v.byteLength = f.getSize();
 				try {
-					if (name.endsWith(".err")) {
-						name = name.substring(0, name.length() - 4);
-						int i = parseInt(name);
-						if (i >= 0)
-							errors.add(i);
-					} else {
-						int i = parseInt(name);
-						if (i >= 0)
-							numbered.put(i, de);
-					}
-				} catch (NumberFormatException nfe) {
-					// skip
-					break;
+					byte[] head = f.getContents(0, 1024);
+					v.contentType = getMimeType(new ByteArrayInputStream(head));
+				} catch (Exception e) {
+					v.contentType = APPLICATION_OCTET_STREAM_TYPE.toString();
 				}
-			}
-		} catch (FilesystemAccessException e) {
-			// Couldn't list the directory contents;
-			// We model this as an empty directory.
-		}
-		for (int i = 0; !(numbered.isEmpty() && errors.isEmpty()); i++) {
-			AbstractValue av;
-			DirectoryEntry de = numbered.remove(i);
-			if (de != null) {
-				if (de instanceof Directory) {
-					av = new ListValue();
-					fillInListValue(
-							(Directory) de,
-							fromUri(baseURI).path("{dir}").build(
-									Integer.toString(i)), (ListValue) av);
-				} else {
-					av = new LeafValue();
-					fillInLeafValue((File) de, (LeafValue) av);
-				}
-				av.setAddress(baseURI, Integer.toString(i));
-			} else if (errors.remove(i)) {
-				av = new ErrorValue();
-				av.setAddress(baseURI, i + ".err");
+				return v;
 			} else {
-				av = new AbsentValue();
-				av.setAddress(baseURI, Integer.toString(i));
+				ListValue v = new ListValue();
+				Directory dir = (Directory) entry;
+				HashSet<DirectoryEntry> contents = new HashSet<DirectoryEntry>(
+						dir.getContents());
+				Iterator<DirectoryEntry> it = contents.iterator();
+				while (it.hasNext())
+					if (!it.next().getName().matches("^[0-9]+([.].*)$"))
+						it.remove();
+				for (int i = 0; !contents.isEmpty(); i++) {
+					v.length = i;
+					String exact = Integer.toString(i);
+					AbstractValue subval = constructValue(contents, ub, exact);
+					v.contents.add(subval);
+					if (!(subval instanceof AbsentValue)) {
+						String pfx = i + ".";
+						for (DirectoryEntry de : contents)
+							if (de.getName().equals(exact)
+									|| de.getName().startsWith(pfx)) {
+								contents.remove(de);
+								break;
+							}
+					}
+				}
+				return v;
 			}
-			lv.contents.add(av);
 		}
+		return new AbsentValue();
 	}
 
 	/**
@@ -204,50 +176,33 @@ public class ContentsDescriptorBuilder {
 	 * @throws NoDirectoryEntryException
 	 *             If something goes wrong reading the directories.
 	 */
-	public RdfWrapper makeOutputDescriptor(TavernaRun run, UriInfo ui)
+	public Outputs makeOutputDescriptor(TavernaRun run, UriInfo ui)
 			throws FilesystemAccessException, NoDirectoryEntryException {
-		RdfWrapper descriptor = new RdfWrapper();
+		Outputs descriptor = new Outputs();
+		// RdfWrapper descriptor = new RdfWrapper();
 		UriBuilder ub;
 		if (ui == null)
 			ub = uriBuilderFactory.getRunUriBuilder(run);
 		else
 			ub = fromUri(ui.getAbsolutePathBuilder().path("..").build());
-		descriptor.run.href = ub.build();
-		descriptor.run.runid.resource = run.getId();
+		descriptor.workflowRun = ub.build();
+		try {
+			Element elem = run.getWorkflow().content[0];
+			NodeList nl = elem.getElementsByTagNameNS(T2FLOW_NS, "dataflow");
+			if (nl.getLength() > 0) {
+				elem = (Element) nl.item(0);
+				if (elem.hasAttribute("id"))
+					descriptor.workflowId = elem.getAttribute("id");
+			}
+		} catch (Exception e) {
+			// Ignore
+		}
 		if (run.getOutputBaclavaFile() != null) {
 			return descriptor;
 		}
 
-		ArrayList<String> expected = new ArrayList<String>();
-		constructContents(run, ub, descriptor, expected);
-		Directory out = (Directory) fileUtils.getDirEntry(run, "out");
-		URI outUri = ub.path("out").build();
-
-		for (String outputName : expected) {
-			String eName = outputName + ".err";
-			AbstractValue v = new AbsentValue();
-			for (DirectoryEntry de : out.getContents()) {
-				if (outputName.equals(de.getName())) {
-					if (de instanceof Directory) {
-						v = new ListValue();
-						fillInListValue((Directory) de, outUri, (ListValue) v);
-						break;
-					} else if (de instanceof File) {
-						v = new LeafValue();
-						fillInLeafValue((File) de, (LeafValue) v);
-						break;
-					} else {
-						continue;
-					}
-				} else if (eName.equals(de.getName())) {
-					v = new ErrorValue();
-					break;
-				}
-			}
-			v.setAddress(outUri, outputName);
-			v.output = outputName;
-			descriptor.outputs.add(v);
-		}
+		// ArrayList<String> expected = new ArrayList<String>();
+		constructPorts(run, ub.clone().path("wd/{path}"), descriptor);
 		return descriptor;
 	}
 

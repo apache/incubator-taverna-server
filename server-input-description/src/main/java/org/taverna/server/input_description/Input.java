@@ -13,10 +13,12 @@ import java.net.URI;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 
 @XmlRootElement
 public class Input {
 	@XmlAttribute(namespace = XLINK)
+	@XmlSchemaType(name = "anyURI")
 	public URI href;
 	@XmlAttribute(namespace = RDF)
 	public String about;

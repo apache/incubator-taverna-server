@@ -186,7 +186,12 @@ class InputREST implements TavernaServerInputREST, InputBean {
 		}
 
 		@Override
-		public void destroy() throws FilesystemAccessException {
+		public void destroy() {
+		}
+
+		@Override
+		public int compareTo(DirectoryEntry o) {
+			return p.compareTo(o.getFullName());
 		}
 	}
 }

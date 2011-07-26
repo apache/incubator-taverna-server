@@ -5,7 +5,6 @@
  */
 package org.taverna.server.master;
 
-import static java.nio.charset.Charset.defaultCharset;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;

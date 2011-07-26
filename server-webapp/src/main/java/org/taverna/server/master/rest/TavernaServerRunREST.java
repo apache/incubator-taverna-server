@@ -43,7 +43,7 @@ import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.NotOwnerException;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.output_description.RdfWrapper;
+import org.taverna.server.output_description.Outputs;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 
@@ -256,11 +256,11 @@ public interface TavernaServerRunREST {
 	public String getOutputFile();
 
 	/**
-	 * Get a description of the outputs as RDF.
+	 * Get a description of the outputs.
 	 * 
 	 * @param ui
 	 *            About the URI used to access this operation.
-	 * @return RDF as XML
+	 * @return A description of the outputs (higher level than the filesystem).
 	 * @throws BadStateChangeException
 	 *             If the run is in the {@link Status#Initialized Initialized}
 	 *             state.
@@ -271,10 +271,10 @@ public interface TavernaServerRunREST {
 	 */
 	@GET
 	@Path("output")
-	@Produces("application/xml")
+	@Produces({ "application/xml", "application/json" })
 	@Description("Gives an RDF description of the outputs, as currently understood")
 	@NonNull
-	public RdfWrapper getOutputDescription(@NonNull @Context UriInfo ui)
+	public Outputs getOutputDescription(@NonNull @Context UriInfo ui)
 			throws BadStateChangeException, FilesystemAccessException,
 			NoDirectoryEntryException;
 
