@@ -102,11 +102,112 @@ public class ContentsDescriptorBuilder {
 				Port p = new Port();
 				p.name = nl2.item(0).getTextContent();
 				p.output = constructValue(outs, ub, p.name);
+				p.depth = computeDepth(p.output);
 				descriptor.ports.add(p);
 			}
 		}
 	}
 
+	/**
+	 * Computes the depth of value in a descriptor.
+	 * 
+	 * @param value
+	 *            The value description to characterise.
+	 * @return Its depth (i.e., the depth of the port outputting the value) or
+	 *         <tt>null</tt> if that is impossible to determine.
+	 */
+	private Integer computeDepth(AbstractValue value) {
+		if (value instanceof ListValue) {
+			Integer mv = null;
+			for (AbstractValue v : ((ListValue) value).contents) {
+				Integer d = computeDepth(v);
+				if (d != null && (mv == null || mv < d))
+					mv = d + 1;
+			}
+			return mv;
+		} else if (value instanceof LeafValue)
+			return 0;
+		else
+			return null;
+	}
+
+	/**
+	 * Build a description of a leaf value.
+	 * 
+	 * @param file
+	 *            The file representing the value.
+	 * @param ub
+	 *            The factory for URIs.
+	 * @return A value descriptor.
+	 * @throws FilesystemAccessException
+	 *             If anything goes wrong.
+	 */
+	private LeafValue constructLeafValue(File file, UriBuilder ub)
+			throws FilesystemAccessException {
+		LeafValue v = new LeafValue();
+		v.about = file.getFullName();
+		v.href = ub.build(file.getFullName());
+		v.byteLength = file.getSize();
+		try {
+			byte[] head = file.getContents(0, 1024);
+			v.contentType = getMimeType(new ByteArrayInputStream(head));
+		} catch (Exception e) {
+			v.contentType = APPLICATION_OCTET_STREAM_TYPE.toString();
+		}
+		return v;
+	}
+
+	/**
+	 * Build a description of a list value.
+	 * 
+	 * @param dir
+	 *            The directory representing the list.
+	 * @param ub
+	 *            The factory for URIs.
+	 * @return A value descriptor.
+	 * @throws FilesystemAccessException
+	 *             If anything goes wrong.
+	 */
+	private ListValue constructListValue(Directory dir, UriBuilder ub)
+			throws FilesystemAccessException {
+		ListValue v = new ListValue();
+		HashSet<DirectoryEntry> contents = new HashSet<DirectoryEntry>(
+				dir.getContents());
+		Iterator<DirectoryEntry> it = contents.iterator();
+		while (it.hasNext())
+			if (!it.next().getName().matches("^[0-9]+([.].*)?$"))
+				it.remove();
+		for (int i = 0; !contents.isEmpty(); i++) {
+			v.length = i;
+			String exact = Integer.toString(i);
+			AbstractValue subval = constructValue(contents, ub, exact);
+			v.contents.add(subval);
+			if (!(subval instanceof AbsentValue)) {
+				String pfx = i + ".";
+				for (DirectoryEntry de : contents)
+					if (de.getName().equals(exact)
+							|| de.getName().startsWith(pfx)) {
+						contents.remove(de);
+						break;
+					}
+			}
+		}
+		return v;
+	}
+
+	/**
+	 * Build a value description.
+	 * 
+	 * @param parentContents
+	 *            The contents of the parent directory.
+	 * @param ub
+	 *            The factory for URIs.
+	 * @param name
+	 *            The name of the value's file/directory representative.
+	 * @return A value descriptor.
+	 * @throws FilesystemAccessException
+	 *             If anything goes wrong.
+	 */
 	private AbstractValue constructValue(
 			Collection<DirectoryEntry> parentContents, UriBuilder ub,
 			String name) throws FilesystemAccessException {
@@ -122,42 +223,9 @@ public class ContentsDescriptorBuilder {
 					&& !entry.getName().startsWith(prefix))
 				continue;
 			if (entry instanceof File) {
-				File f = (File) entry;
-				LeafValue v = new LeafValue();
-				v.href = ub.build(f.getFullName());
-				v.byteLength = f.getSize();
-				try {
-					byte[] head = f.getContents(0, 1024);
-					v.contentType = getMimeType(new ByteArrayInputStream(head));
-				} catch (Exception e) {
-					v.contentType = APPLICATION_OCTET_STREAM_TYPE.toString();
-				}
-				return v;
+				return constructLeafValue((File) entry, ub);
 			} else {
-				ListValue v = new ListValue();
-				Directory dir = (Directory) entry;
-				HashSet<DirectoryEntry> contents = new HashSet<DirectoryEntry>(
-						dir.getContents());
-				Iterator<DirectoryEntry> it = contents.iterator();
-				while (it.hasNext())
-					if (!it.next().getName().matches("^[0-9]+([.].*)$"))
-						it.remove();
-				for (int i = 0; !contents.isEmpty(); i++) {
-					v.length = i;
-					String exact = Integer.toString(i);
-					AbstractValue subval = constructValue(contents, ub, exact);
-					v.contents.add(subval);
-					if (!(subval instanceof AbsentValue)) {
-						String pfx = i + ".";
-						for (DirectoryEntry de : contents)
-							if (de.getName().equals(exact)
-									|| de.getName().startsWith(pfx)) {
-								contents.remove(de);
-								break;
-							}
-					}
-				}
-				return v;
+				return constructListValue((Directory) entry, ub);
 			}
 		}
 		return new AbsentValue();

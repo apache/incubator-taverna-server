@@ -5,11 +5,13 @@
  */
 @XmlSchema(namespace = DATA, elementFormDefault = QUALIFIED, attributeFormDefault = QUALIFIED, xmlns = {
 		@XmlNs(prefix = "xlink", namespaceURI = XLINK),
+		@XmlNs(prefix = "rdf", namespaceURI = RDF),
 		@XmlNs(prefix = "out-desc", namespaceURI = DATA) })
 package org.taverna.server.output_description;
 
 import static javax.xml.bind.annotation.XmlNsForm.QUALIFIED;
 import static org.taverna.server.output_description.Namespaces.DATA;
+import static org.taverna.server.output_description.Namespaces.RDF;
 import static org.taverna.server.output_description.Namespaces.XLINK;
 
 import javax.xml.bind.annotation.XmlNs;
