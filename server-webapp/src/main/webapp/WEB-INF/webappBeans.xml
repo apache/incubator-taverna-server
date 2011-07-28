@@ -133,8 +133,7 @@
 		<entry key="http://ns.taverna.org.uk/2010/xml/server/feed/" value="" />
 		<entry key="http://ns.taverna.org.uk/2010/xml/server/admin/" value="" />
 		<entry key="http://www.w3.org/1999/02/22-rdf-syntax-ns#" value="rdf" />
-		<entry key="http://ns.taverna.org.uk/2010/data/" value="" />
-		<entry key="http://ns.taverna.org.uk/2010/data/in" value="" />
+		<entry key="http://ns.taverna.org.uk/2010/port/" value="" />
 		<entry key="http://ns.taverna.org.uk/2010/run/" value="" />
 	</util:map>
 
@@ -146,9 +145,10 @@
 	<util:map id="jaxbProps" key-type="java.lang.String"
 		value-type="java.lang.String">
 		<entry key="com.sun.xml.bind.xmlHeaders">
+			<!-- Newlines matter in literal value; be careful! -->
 			<value type="java.lang.String"><![CDATA[
-				<?xml-stylesheet type='text/xsl' href='${xml.stylesheet.url}'?>
-			]]></value>
+<?xml-stylesheet type="text/xml" href="${xml.stylesheet.url}"?>
+]]></value>
 		</entry>
 	</util:map>
 

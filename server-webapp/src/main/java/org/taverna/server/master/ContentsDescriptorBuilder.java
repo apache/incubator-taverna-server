@@ -83,7 +83,7 @@ public class ContentsDescriptorBuilder {
 	private void constructPorts(TavernaRun run, UriBuilder ub,
 			Outputs descriptor) throws FilesystemAccessException,
 			NoDirectoryEntryException {
-		NodeList nl, nl2;
+		NodeList nl, nl2, nl3;
 		Element e = run.getWorkflow().content[0];
 		nl = e.getElementsByTagNameNS(T2FLOW_NS, "dataflow");
 		if (nl.getLength() == 0)
@@ -96,13 +96,21 @@ public class ContentsDescriptorBuilder {
 		Collection<DirectoryEntry> outs = fileUtils.getDirectory(run, "out")
 				.getContents();
 		for (int i = 0; i < nl.getLength(); i++) {
-			nl2 = ((Element) nl.item(i)).getElementsByTagNameNS(T2FLOW_NS,
-					"name");
+			Element port = (Element) nl.item(i);
+			nl2 = port.getElementsByTagNameNS(T2FLOW_NS, "name");
+			nl3 = port.getElementsByTagNameNS(T2FLOW_NS, "depth");
 			if (nl2.getLength() == 1) {
 				Port p = new Port();
 				p.name = nl2.item(0).getTextContent();
 				p.output = constructValue(outs, ub, p.name);
-				p.depth = computeDepth(p.output);
+				try {
+					if (nl3.getLength() == 1)
+						p.depth = new Integer(nl3.item(0).getTextContent());
+				} catch (RuntimeException ex) {
+					// Ignore
+				}
+				if (p.depth == null)
+					p.depth = computeDepth(p.output);
 				descriptor.ports.add(p);
 			}
 		}
@@ -177,12 +185,12 @@ public class ContentsDescriptorBuilder {
 		while (it.hasNext())
 			if (!it.next().getName().matches("^[0-9]+([.].*)?$"))
 				it.remove();
-		for (int i = 0; !contents.isEmpty(); i++) {
-			v.length = i;
+		for (int i = 1; !contents.isEmpty(); i++) {
 			String exact = Integer.toString(i);
 			AbstractValue subval = constructValue(contents, ub, exact);
 			v.contents.add(subval);
 			if (!(subval instanceof AbsentValue)) {
+				v.length = i;
 				String pfx = i + ".";
 				for (DirectoryEntry de : contents)
 					if (de.getName().equals(exact)

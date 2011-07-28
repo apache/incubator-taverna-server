@@ -6,7 +6,7 @@
 @XmlSchema(namespace = DATA, elementFormDefault = QUALIFIED, attributeFormDefault = QUALIFIED, xmlns = {
 		@XmlNs(prefix = "xlink", namespaceURI = XLINK),
 		@XmlNs(prefix = "rdf", namespaceURI = RDF),
-		@XmlNs(prefix = "out-desc", namespaceURI = DATA) })
+		@XmlNs(prefix = "port", namespaceURI = DATA) })
 package org.taverna.server.output_description;
 
 import static javax.xml.bind.annotation.XmlNsForm.QUALIFIED;
