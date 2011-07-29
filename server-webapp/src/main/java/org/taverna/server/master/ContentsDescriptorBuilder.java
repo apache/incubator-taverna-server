@@ -126,10 +126,10 @@ public class ContentsDescriptorBuilder {
 	 */
 	private Integer computeDepth(AbstractValue value) {
 		if (value instanceof ListValue) {
-			Integer mv = null;
+			Integer mv = 1;
 			for (AbstractValue v : ((ListValue) value).contents) {
 				Integer d = computeDepth(v);
-				if (d != null && (mv == null || mv < d))
+				if (d != null && mv < d)
 					mv = d + 1;
 			}
 			return mv;
@@ -154,7 +154,7 @@ public class ContentsDescriptorBuilder {
 			throws FilesystemAccessException {
 		LeafValue v = new LeafValue();
 		v.about = file.getFullName();
-		v.href = ub.build(file.getFullName());
+		v.href = ub.build(file.getFullName().replaceFirst("^/", ""));
 		v.byteLength = file.getSize();
 		try {
 			byte[] head = file.getContents(0, 1024);
@@ -179,6 +179,7 @@ public class ContentsDescriptorBuilder {
 	private ListValue constructListValue(Directory dir, UriBuilder ub)
 			throws FilesystemAccessException {
 		ListValue v = new ListValue();
+		v.length = 0;
 		HashSet<DirectoryEntry> contents = new HashSet<DirectoryEntry>(
 				dir.getContents());
 		Iterator<DirectoryEntry> it = contents.iterator();
@@ -219,7 +220,7 @@ public class ContentsDescriptorBuilder {
 	private AbstractValue constructValue(
 			Collection<DirectoryEntry> parentContents, UriBuilder ub,
 			String name) throws FilesystemAccessException {
-		String error = name + ".err";
+		String error = name + ".error";
 		String prefix = name + ".";
 		for (DirectoryEntry entry : parentContents) {
 			if (entry.getName().equals(error)) {
@@ -260,7 +261,7 @@ public class ContentsDescriptorBuilder {
 		if (ui == null)
 			ub = uriBuilderFactory.getRunUriBuilder(run);
 		else
-			ub = fromUri(ui.getAbsolutePathBuilder().path("..").build());
+			ub = fromUri(ui.getAbsolutePath().toString().replaceAll("/output/?$", ""));
 		descriptor.workflowRun = ub.build();
 		try {
 			Element elem = run.getWorkflow().content[0];
@@ -278,7 +279,7 @@ public class ContentsDescriptorBuilder {
 		}
 
 		// ArrayList<String> expected = new ArrayList<String>();
-		constructPorts(run, ub.clone().path("wd/{path}"), descriptor);
+		constructPorts(run, ub.path("wd/{path}"), descriptor);
 		return descriptor;
 	}
 
