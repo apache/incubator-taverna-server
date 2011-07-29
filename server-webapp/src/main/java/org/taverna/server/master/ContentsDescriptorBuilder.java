@@ -83,7 +83,7 @@ public class ContentsDescriptorBuilder {
 	private void constructPorts(TavernaRun run, UriBuilder ub,
 			Outputs descriptor) throws FilesystemAccessException,
 			NoDirectoryEntryException {
-		NodeList nl, nl2, nl3;
+		NodeList nl, nl2;
 		Element e = run.getWorkflow().content[0];
 		nl = e.getElementsByTagNameNS(T2FLOW_NS, "dataflow");
 		if (nl.getLength() == 0)
@@ -98,19 +98,11 @@ public class ContentsDescriptorBuilder {
 		for (int i = 0; i < nl.getLength(); i++) {
 			Element port = (Element) nl.item(i);
 			nl2 = port.getElementsByTagNameNS(T2FLOW_NS, "name");
-			nl3 = port.getElementsByTagNameNS(T2FLOW_NS, "depth");
 			if (nl2.getLength() == 1) {
 				Port p = new Port();
 				p.name = nl2.item(0).getTextContent();
 				p.output = constructValue(outs, ub, p.name);
-				try {
-					if (nl3.getLength() == 1)
-						p.depth = new Integer(nl3.item(0).getTextContent());
-				} catch (RuntimeException ex) {
-					// Ignore
-				}
-				if (p.depth == null)
-					p.depth = computeDepth(p.output);
+				p.depth = computeDepth(p.output);
 				descriptor.ports.add(p);
 			}
 		}
@@ -129,7 +121,7 @@ public class ContentsDescriptorBuilder {
 			Integer mv = 1;
 			for (AbstractValue v : ((ListValue) value).contents) {
 				Integer d = computeDepth(v);
-				if (d != null && mv < d)
+				if (d != null && mv <= d)
 					mv = d + 1;
 			}
 			return mv;
@@ -225,7 +217,7 @@ public class ContentsDescriptorBuilder {
 		for (DirectoryEntry entry : parentContents) {
 			if (entry.getName().equals(error)) {
 				ErrorValue v = new ErrorValue();
-				v.href = ub.build(entry.getFullName());
+				v.href = ub.build(entry.getFullName().replaceFirst("^/", ""));
 				return v;
 			}
 			if (!entry.getName().equals(name)
