@@ -11,7 +11,6 @@ import static org.taverna.server.input_description.Namespaces.XLINK;
 import java.net.URI;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 
@@ -22,8 +21,8 @@ public class Input {
 	public URI href;
 	@XmlAttribute(namespace = RDF)
 	public String about;
-	@XmlElement(required = true)
+	@XmlAttribute(required = true)
 	public String name;
-	@XmlElement
+	@XmlAttribute
 	public Integer depth;
 }
