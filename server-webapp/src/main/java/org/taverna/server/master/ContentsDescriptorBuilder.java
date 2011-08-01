@@ -6,22 +6,29 @@
 package org.taverna.server.master;
 
 import static eu.medsea.util.MimeUtil.getMimeType;
+import static java.util.Collections.singletonList;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static javax.ws.rs.core.UriBuilder.fromUri;
+import static javax.xml.xpath.XPathConstants.NODE;
+import static javax.xml.xpath.XPathConstants.NODESET;
+import static org.taverna.server.master.TavernaServerSupport.log;
 
 import java.io.ByteArrayInputStream;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import javax.xml.XMLConstants;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.input_description.Input;
-import org.taverna.server.input_description.InputDescription;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.interfaces.Directory;
@@ -29,13 +36,16 @@ import org.taverna.server.master.interfaces.DirectoryEntry;
 import org.taverna.server.master.interfaces.File;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.utils.FilenameUtils;
-import org.taverna.server.output_description.AbsentValue;
-import org.taverna.server.output_description.AbstractValue;
-import org.taverna.server.output_description.ErrorValue;
-import org.taverna.server.output_description.LeafValue;
-import org.taverna.server.output_description.ListValue;
-import org.taverna.server.output_description.Outputs;
-import org.taverna.server.output_description.Outputs.Port;
+import org.taverna.server.port_description.AbsentValue;
+import org.taverna.server.port_description.AbstractPortDescription;
+import org.taverna.server.port_description.AbstractValue;
+import org.taverna.server.port_description.ErrorValue;
+import org.taverna.server.port_description.InputDescription;
+import org.taverna.server.port_description.InputDescription.InputPort;
+import org.taverna.server.port_description.LeafValue;
+import org.taverna.server.port_description.ListValue;
+import org.taverna.server.port_description.OutputDescription;
+import org.taverna.server.port_description.OutputDescription.OutputPort;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -49,6 +59,49 @@ import org.w3c.dom.NodeList;
 public class ContentsDescriptorBuilder {
 	private FilenameUtils fileUtils;
 	private UriBuilderFactory uriBuilderFactory;
+	private XPathExpression inputPorts;
+	private XPathExpression outputPortNames;
+	private XPathExpression portName;
+	private XPathExpression portDepth;
+	private XPathExpression dataflow;
+
+	public ContentsDescriptorBuilder() throws XPathExpressionException {
+		XPath xp = XPathFactory.newInstance().newXPath();
+		xp.setNamespaceContext(new NamespaceContext() {
+			@Override
+			public String getNamespaceURI(String prefix) {
+				if (prefix.equals("t2flow"))
+					return T2FLOW_NS;
+				if (prefix.equals(XMLConstants.XML_NS_PREFIX))
+					return XMLConstants.XML_NS_URI;
+				if (prefix.equals(XMLConstants.XMLNS_ATTRIBUTE))
+					return XMLConstants.XMLNS_ATTRIBUTE_NS_URI;
+				return XMLConstants.NULL_NS_URI;
+			}
+
+			@Override
+			public String getPrefix(String namespaceURI) {
+				if (namespaceURI.equals(T2FLOW_NS))
+					return "t2flow";
+				if (namespaceURI.equals(XMLConstants.XML_NS_URI))
+					return XMLConstants.XML_NS_PREFIX;
+				if (namespaceURI.equals(XMLConstants.XMLNS_ATTRIBUTE_NS_URI))
+					return XMLConstants.XMLNS_ATTRIBUTE;
+				return null;
+			}
+
+			@Override
+			public Iterator<String> getPrefixes(String namespaceURI) {
+				return singletonList(getPrefix(namespaceURI)).iterator();
+			}
+		});
+		dataflow = xp.compile("//t2flow:dataflow[1]");
+		inputPorts = xp.compile("./t2flow:inputPorts/t2flow:port");
+		outputPortNames = xp
+				.compile("./t2flow:outputPorts/t2flow:port/t2flow:name");
+		portName = xp.compile("./t2flow:name");
+		portDepth = xp.compile("./t2flow:depth");
+	}
 
 	@Required
 	public void setUriBuilderFactory(UriBuilderFactory uriBuilderFactory) {
@@ -62,14 +115,22 @@ public class ContentsDescriptorBuilder {
 
 	/** Namespace for use when pulling apart a .t2flow document. */
 	private static final String T2FLOW_NS = "http://taverna.sf.net/2008/xml/t2flow";
-	/** Where RDF names are rooted. */
-	private static final String RDF_BASE = "http://ns.taverna.org.uk/2010/run/";
+
+	private Element fillInFromWorkflow(TavernaRun run, UriBuilder ub,
+			AbstractPortDescription portDesc) throws XPathExpressionException {
+		Element elem = run.getWorkflow().content[0];
+		portDesc.fillInBaseData(elem.getAttribute("id"), run.getId(),
+				ub.build());
+		return (Element) dataflow.evaluate(elem, NODE);
+	}
 
 	/**
 	 * Build the contents description.
 	 * 
 	 * @param run
 	 *            The workflow run this is talking about.
+	 * @param dataflow
+	 *            The dataflow element of the T2flow document.
 	 * @param ub
 	 *            How to build URIs.
 	 * @param descriptor
@@ -79,32 +140,22 @@ public class ContentsDescriptorBuilder {
 	 *            they might not actually produce anything though.
 	 * @throws NoDirectoryEntryException
 	 * @throws FilesystemAccessException
+	 * @throws XPathExpressionException
 	 */
-	private void constructPorts(TavernaRun run, UriBuilder ub,
-			Outputs descriptor) throws FilesystemAccessException,
-			NoDirectoryEntryException {
-		NodeList nl, nl2;
-		Element e = run.getWorkflow().content[0];
-		nl = e.getElementsByTagNameNS(T2FLOW_NS, "dataflow");
-		if (nl.getLength() == 0)
-			return; // Not t2flow
-		nl = ((Element) nl.item(0)).getElementsByTagNameNS(T2FLOW_NS,
-				"outputPorts");
-		if (nl.getLength() == 0)
-			return; // No outputs
-		nl = ((Element) nl.item(0)).getElementsByTagNameNS(T2FLOW_NS, "port");
+	private void constructPorts(TavernaRun run, Element dataflow,
+			UriBuilder ub, OutputDescription descriptor)
+			throws FilesystemAccessException, NoDirectoryEntryException,
+			XPathExpressionException {
+		NodeList portNodeNames = (NodeList) outputPortNames.evaluate(dataflow,
+				NODESET);
 		Collection<DirectoryEntry> outs = fileUtils.getDirectory(run, "out")
 				.getContents();
-		for (int i = 0; i < nl.getLength(); i++) {
-			Element port = (Element) nl.item(i);
-			nl2 = port.getElementsByTagNameNS(T2FLOW_NS, "name");
-			if (nl2.getLength() == 1) {
-				Port p = new Port();
-				p.name = nl2.item(0).getTextContent();
-				p.output = constructValue(outs, ub, p.name);
-				p.depth = computeDepth(p.output);
-				descriptor.ports.add(p);
-			}
+		for (int i = 0; i < portNodeNames.getLength(); i++) {
+			OutputPort p = new OutputPort();
+			p.name = portNodeNames.item(i).getTextContent();
+			p.output = constructValue(outs, ub, p.name);
+			p.depth = computeDepth(p.output);
+			descriptor.ports.add(p);
 		}
 	}
 
@@ -145,7 +196,7 @@ public class ContentsDescriptorBuilder {
 	private LeafValue constructLeafValue(File file, UriBuilder ub)
 			throws FilesystemAccessException {
 		LeafValue v = new LeafValue();
-		v.about = file.getFullName();
+		v.fileName = file.getFullName();
 		v.href = ub.build(file.getFullName().replaceFirst("^/", ""));
 		v.byteLength = file.getSize();
 		try {
@@ -239,40 +290,33 @@ public class ContentsDescriptorBuilder {
 	 *            The workflow run whose outputs are to be described.
 	 * @param ui
 	 *            The origin for URIs.
-	 * @return The description, which can be serialized to RDF+XML.
+	 * @return The description, which can be serialized to XML.
 	 * @throws FilesystemAccessException
 	 *             If something goes wrong reading the directories.
 	 * @throws NoDirectoryEntryException
 	 *             If something goes wrong reading the directories.
 	 */
-	public Outputs makeOutputDescriptor(TavernaRun run, UriInfo ui)
+	public OutputDescription makeOutputDescriptor(TavernaRun run, UriInfo ui)
 			throws FilesystemAccessException, NoDirectoryEntryException {
-		Outputs descriptor = new Outputs();
-		// RdfWrapper descriptor = new RdfWrapper();
-		UriBuilder ub;
-		if (ui == null)
-			ub = uriBuilderFactory.getRunUriBuilder(run);
-		else
-			ub = fromUri(ui.getAbsolutePath().toString().replaceAll("/output/?$", ""));
-		descriptor.workflowRun = ub.build();
+		OutputDescription descriptor = new OutputDescription();
 		try {
-			Element elem = run.getWorkflow().content[0];
-			NodeList nl = elem.getElementsByTagNameNS(T2FLOW_NS, "dataflow");
-			if (nl.getLength() > 0) {
-				elem = (Element) nl.item(0);
-				if (elem.hasAttribute("id"))
-					descriptor.workflowId = elem.getAttribute("id");
-			}
-		} catch (Exception e) {
-			// Ignore
+			UriBuilder ub = getRunUriBuilder(run, ui);
+			Element dataflow = fillInFromWorkflow(run, ub, descriptor);
+			if (dataflow == null || run.getOutputBaclavaFile() != null)
+				return descriptor;
+			constructPorts(run, dataflow, ub.path("wd/{path}"), descriptor);
+		} catch (XPathExpressionException e) {
+			log.info("failure in XPath evaluation", e);
 		}
-		if (run.getOutputBaclavaFile() != null) {
-			return descriptor;
-		}
-
-		// ArrayList<String> expected = new ArrayList<String>();
-		constructPorts(run, ub.path("wd/{path}"), descriptor);
 		return descriptor;
+	}
+
+	private UriBuilder getRunUriBuilder(TavernaRun run, UriInfo ui) {
+		if (ui == null)
+			return uriBuilderFactory.getRunUriBuilder(run);
+		else
+			return fromUri(ui.getAbsolutePath().toString()
+					.replaceAll("/(out|in)put/?$", ""));
 	}
 
 	/**
@@ -280,43 +324,26 @@ public class ContentsDescriptorBuilder {
 	 * 
 	 * @param run
 	 *            The run to build for.
-	 * @param ub
+	 * @param ui
 	 *            The mechanism for building URIs.
 	 * @return The description of the <i>expected</i> inputs of the run.
 	 */
-	public InputDescription makeInputDescriptor(TavernaRun run, UriBuilder ub) {
-		NodeList nl;
+	public InputDescription makeInputDescriptor(TavernaRun run, UriInfo ui) {
 		InputDescription desc = new InputDescription();
-		ub = ub.path("{name}");
-		desc.input = new ArrayList<Input>();
 		try {
-			Element elem = run.getWorkflow().content[0];
-			nl = elem.getElementsByTagNameNS(T2FLOW_NS, "dataflow");
-			if (nl.getLength() == 0)
+			UriBuilder ub = getRunUriBuilder(run, ui);
+			Element elem = fillInFromWorkflow(run, ub, desc);
+			ub = ub.path("input/{name}");
+			if (elem == null)
 				return desc; // Not t2flow
-			elem = (Element) nl.item(0);
-			if (elem.hasAttribute("id"))
-				desc.about = RDF_BASE + elem.getAttribute("id");
-
 			// Foreach "./inputPorts/port"
-			nl = elem.getElementsByTagNameNS(T2FLOW_NS, "inputPorts");
-			if (nl.getLength() == 0)
-				return desc; // Not t2flow or no inputs
-			elem = (Element) nl.item(0);
-			nl = elem.getElementsByTagNameNS(T2FLOW_NS, "port");
+			NodeList nl = (NodeList) inputPorts.evaluate(elem, NODESET);
 			for (int i = 0; i < nl.getLength(); i++) {
-				Input in = new Input();
-				elem = (Element) nl.item(i);
-				NodeList names = elem.getElementsByTagNameNS(T2FLOW_NS, "name");
-				in.name = names.item(0).getTextContent();
+				InputPort in = new InputPort();
+				in.name = portName.evaluate(nl.item(i)); // "./name"
 				in.href = ub.build(in.name);
-				if (desc.about != null)
-					in.about = desc.about + "/input/" + in.name;
 				try {
-					NodeList depths = elem.getElementsByTagNameNS(T2FLOW_NS,
-							"depth");
-					in.depth = Integer.valueOf(depths.item(0).getTextContent(),
-							10);
+					in.depth = Integer.valueOf(portDepth.evaluate(nl.item(i))); // "./depth"
 				} catch (NumberFormatException ex) {
 					in.depth = null;
 				} catch (DOMException ex) {
@@ -324,8 +351,8 @@ public class ContentsDescriptorBuilder {
 				}
 				desc.input.add(in);
 			}
-		} catch (DOMException ex) {
-			// Ignore this exception; just results in failure to fill out desc
+		} catch (XPathExpressionException e) {
+			log.info("failure in XPath evaluation", e);
 		}
 		return desc;
 	}

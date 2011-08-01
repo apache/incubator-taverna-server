@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
 import org.apache.cxf.jaxrs.ext.Description;
-import org.taverna.server.input_description.InputDescription;
+import org.taverna.server.port_description.InputDescription;
 import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.exceptions.BadInputPortNameException;

@@ -37,7 +37,7 @@ import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.NotOwnerException;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.rest.TavernaServerREST;
-import org.taverna.server.output_description.Outputs;
+import org.taverna.server.port_description.OutputDescription;
 
 /**
  * The SOAP service interface to Taverna 2.3 Server Release 1.
@@ -177,7 +177,7 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "RunInputDescriptor")
 	@WSDLDocumentation("Get a description of what inputs the given workflow run expects to receive.")
-	org.taverna.server.input_description.InputDescription getRunInputDescriptor(
+	org.taverna.server.port_description.InputDescription getRunInputDescriptor(
 			@WebParam(name = "runName") String runName)
 			throws UnknownRunException;
 
@@ -333,7 +333,7 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "OutputDescription")
 	@WSDLDocumentation("Return a description of the outputs of a run. Only known during/after the run.")
-	Outputs getRunOutputDescription(
+	OutputDescription getRunOutputDescription(
 			@WebParam(name = "runName") String runName)
 			throws UnknownRunException, BadStateChangeException,
 			FilesystemAccessException, NoDirectoryEntryException;

@@ -50,7 +50,7 @@ public class JaxbSanityTest {
 
 	@Test
 	public void testJAXBForInput() throws Exception {
-		schemaTest(InputPort.class);
+		schemaTest(InputDescription.InputPort.class);
 	}
 
 	@Test
@@ -92,7 +92,7 @@ public class JaxbSanityTest {
 	public void testJAXBForEverythingAtOnce() throws Exception {
 		schemaTest(AbsentValue.class, AbstractValue.class, ListValue.class,
 				LeafValue.class, ErrorValue.class, OutputDescription.class,
-				InputPort.class, InputDescription.class);
+				InputDescription.InputPort.class, InputDescription.class);
 		// System.out.println(schema());
 	}
 }

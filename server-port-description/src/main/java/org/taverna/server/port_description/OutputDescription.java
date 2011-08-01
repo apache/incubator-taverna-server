@@ -5,35 +5,27 @@
  */
 package org.taverna.server.port_description;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
+/**
+ * A description of the outputs of a workflow run, as they are currently known
+ * about.
+ * 
+ * @author Donal Fellows
+ */
 @XmlRootElement(name = "workflowOutputs")
-@XmlType(propOrder = {})
-public class OutputDescription {
-	@XmlAttribute
-	public String workflowId;
-	@XmlAttribute
-	@XmlSchemaType(name = "anyURI")
-	public URI workflowRun;
-
+public class OutputDescription extends AbstractPortDescription {
 	@XmlElement(name = "output")
-	public List<Port> ports = new ArrayList<Port>();
+	public List<OutputPort> ports = new ArrayList<OutputPort>();
 
 	@XmlType
-	public static class Port {
-		@XmlAttribute(required = true)
-		public String name;
-		@XmlAttribute
-		public Integer depth;
+	public static class OutputPort extends AbstractPort {
 		@XmlElements({
 				@XmlElement(name = "value", type = LeafValue.class, nillable = false, required = true),
 				@XmlElement(name = "list", type = ListValue.class, nillable = false, required = true),

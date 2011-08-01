@@ -34,7 +34,7 @@ import org.taverna.server.master.rest.TavernaServerListenersREST;
 import org.taverna.server.master.rest.TavernaServerRunREST;
 import org.taverna.server.master.rest.TavernaServerSecurityREST;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
-import org.taverna.server.output_description.Outputs;
+import org.taverna.server.port_description.OutputDescription;
 
 /**
  * RESTful interface to a single workflow run.
@@ -190,7 +190,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
-	public Outputs getOutputDescription(UriInfo ui)
+	public OutputDescription getOutputDescription(UriInfo ui)
 			throws BadStateChangeException, FilesystemAccessException,
 			NoDirectoryEntryException {
 		if (run.getStatus() == Initialized)

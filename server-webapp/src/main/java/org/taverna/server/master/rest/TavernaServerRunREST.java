@@ -43,7 +43,7 @@ import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.NotOwnerException;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.output_description.Outputs;
+import org.taverna.server.port_description.OutputDescription;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 
@@ -272,9 +272,9 @@ public interface TavernaServerRunREST {
 	@GET
 	@Path("output")
 	@Produces({ "application/xml", "application/json" })
-	@Description("Gives an RDF description of the outputs, as currently understood")
+	@Description("Gives a description of the outputs, as currently understood")
 	@NonNull
-	public Outputs getOutputDescription(@NonNull @Context UriInfo ui)
+	public OutputDescription getOutputDescription(@NonNull @Context UriInfo ui)
 			throws BadStateChangeException, FilesystemAccessException,
 			NoDirectoryEntryException;
 

@@ -132,7 +132,6 @@
 		<entry key="http://ns.taverna.org.uk/2010/xml/server/soap/" value="" />
 		<entry key="http://ns.taverna.org.uk/2010/xml/server/feed/" value="" />
 		<entry key="http://ns.taverna.org.uk/2010/xml/server/admin/" value="" />
-		<entry key="http://www.w3.org/1999/02/22-rdf-syntax-ns#" value="" />
 		<entry key="http://ns.taverna.org.uk/2010/port/" value="" />
 		<entry key="http://ns.taverna.org.uk/2010/run/" value="" />
 	</util:map>

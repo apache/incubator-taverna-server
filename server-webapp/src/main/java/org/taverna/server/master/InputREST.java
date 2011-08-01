@@ -13,7 +13,6 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.apache.cxf.jaxrs.model.URITemplate;
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.input_description.InputDescription;
 import org.taverna.server.master.TavernaServerImpl.SupportAware;
 import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.exceptions.BadInputPortNameException;
@@ -32,6 +31,7 @@ import org.taverna.server.master.rest.TavernaServerInputREST.InDesc.AbstractCont
 import org.taverna.server.master.rest.TavernaServerInputREST.InDesc.Reference;
 import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
+import org.taverna.server.port_description.InputDescription;
 
 /**
  * RESTful interface to the input descriptor of a single workflow run.
@@ -78,7 +78,7 @@ class InputREST implements TavernaServerInputREST, InputBean {
 	@Override
 	@CallCounted
 	public InputDescription getExpected() {
-		return cdBuilder.makeInputDescriptor(run, ui.getAbsolutePathBuilder());
+		return cdBuilder.makeInputDescriptor(run, ui);
 	}
 
 	@Override

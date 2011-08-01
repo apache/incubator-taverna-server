@@ -24,7 +24,7 @@ import static org.taverna.server.master.common.Namespaces.SERVER;
 import static org.taverna.server.master.common.Namespaces.SERVER_REST;
 import static org.taverna.server.master.common.Namespaces.SERVER_SOAP;
 import static org.taverna.server.master.common.Namespaces.XLINK;
-import static org.taverna.server.output_description.Namespaces.DATA;
+import static org.taverna.server.port_description.Namespaces.DATA;
 
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlSchema;

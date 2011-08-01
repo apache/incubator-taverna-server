@@ -79,7 +79,7 @@ import org.taverna.server.master.soap.PermissionList;
 import org.taverna.server.master.soap.TavernaServerSOAP;
 import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
-import org.taverna.server.output_description.Outputs;
+import org.taverna.server.port_description.OutputDescription;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -529,7 +529,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	@Override
 	@CallCounted
-	public Outputs getRunOutputDescription(String runName)
+	public OutputDescription getRunOutputDescription(String runName)
 			throws UnknownRunException, BadStateChangeException,
 			FilesystemAccessException, NoDirectoryEntryException {
 		TavernaRun run = support.getRun(runName);
@@ -757,11 +757,9 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	@Override
 	@CallCounted
-	public org.taverna.server.input_description.InputDescription getRunInputDescriptor(
+	public org.taverna.server.port_description.InputDescription getRunInputDescriptor(
 			String runName) throws UnknownRunException {
-		TavernaRun run = support.getRun(runName);
-		return cdBuilder.makeInputDescriptor(run,
-				getRunUriBuilder(run).path("inputs"));
+		return cdBuilder.makeInputDescriptor(support.getRun(runName), null);
 	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
