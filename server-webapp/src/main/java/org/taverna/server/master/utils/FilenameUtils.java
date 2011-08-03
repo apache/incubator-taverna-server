@@ -240,4 +240,29 @@ public class FilenameUtils {
 			return (File) dirEntry;
 		throw new FilesystemAccessException(NOT_A_FILE);
 	}
+
+	/**
+	 * Get a named file from a workflow run.
+	 * 
+	 * @param run
+	 *            The run whose working directory is to be used as the root of
+	 *            the search.
+	 * @param name
+	 *            The name of the file to look up.
+	 * @return The file whose name is equal to the last part of the path in the
+	 *         directory reference; an empty path will retrieve the working
+	 *         directory handle itself.
+	 * @throws FilesystemAccessException
+	 *             If the file isn't specified or isn't readable, or if the name
+	 *             doesn't refer to a file.
+	 * @throws NoDirectoryEntryException
+	 *             If there is no such entry.
+	 */
+	public File getFile(TavernaRun run, String name)
+			throws FilesystemAccessException, NoDirectoryEntryException {
+		DirectoryEntry dirEntry = getDirEntry(run, name);
+		if (dirEntry instanceof File)
+			return (File) dirEntry;
+		throw new FilesystemAccessException(NOT_A_FILE);
+	}
 }

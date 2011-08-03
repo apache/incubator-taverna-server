@@ -901,6 +901,33 @@ public interface TavernaServerSOAP {
 			NoDirectoryEntryException;
 
 	/**
+	 * Get the contents of a file under the run's working directory via MTOM.
+	 * Runs do not share working directories.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @param file
+	 *            The name of the file to fetch; the main working directory is
+	 *            <tt>/</tt> and <tt>..</tt> is always disallowed.
+	 * @return The contents, described for transfer via MTOM.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 * @throws FilesystemAccessException
+	 *             If some assumption is violated (e.g., reading the contents of
+	 *             a directory).
+	 * @throws NoDirectoryEntryException
+	 *             If the file doesn't exist.
+	 */
+	@WebResult(name = "FileContentsMTOM")
+	@WSDLDocumentation("Get the contents of a file via MTOM.")
+	FileContents getRunFileContentsMTOM(
+			@WebParam(name = "runName") String runName,
+			@WebParam(name = "fileName") DirEntryReference file)
+			throws UnknownRunException, FilesystemAccessException,
+			NoDirectoryEntryException;
+
+	/**
 	 * Set the contents of a file under the run's working directory. Runs do not
 	 * share working directories.
 	 * 
@@ -926,6 +953,32 @@ public interface TavernaServerSOAP {
 	void setRunFileContents(@WebParam(name = "runName") String runName,
 			@WebParam(name = "fileName") DirEntryReference file,
 			@WebParam(name = "contents") byte[] newContents)
+			throws UnknownRunException, NoUpdateException,
+			FilesystemAccessException, NoDirectoryEntryException;
+
+	/**
+	 * Set the contents of a file under the run's working directory. Runs do not
+	 * share working directories.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @param newContents
+	 *            The description of what file to set, and what to the file
+	 *            contents should be set to.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 * @throws NoUpdateException
+	 *             If the user is not allowed to make modifications to the run.
+	 * @throws FilesystemAccessException
+	 *             If some assumption is violated (e.g., writing the contents of
+	 *             a directory).
+	 * @throws NoDirectoryEntryException
+	 *             If the file doesn't exist.
+	 */
+	@WSDLDocumentation("Set the contents of a file under the run's working directory.")
+	void setRunFileContentsMTOM(@WebParam(name = "runName") String runName,
+			@WebParam(name = "contents") FileContents newContents)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, NoDirectoryEntryException;
 

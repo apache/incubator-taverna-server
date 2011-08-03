@@ -18,6 +18,7 @@ import static org.taverna.server.master.common.Roles.ADMIN;
 import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.common.Status.Initialized;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
@@ -75,6 +76,7 @@ import org.taverna.server.master.rest.TavernaServerREST.PermittedListeners;
 import org.taverna.server.master.rest.TavernaServerREST.PermittedWorkflows;
 import org.taverna.server.master.rest.TavernaServerREST.PolicyView;
 import org.taverna.server.master.rest.TavernaServerRunREST;
+import org.taverna.server.master.soap.FileContents;
 import org.taverna.server.master.soap.PermissionList;
 import org.taverna.server.master.soap.TavernaServerSOAP;
 import org.taverna.server.master.utils.FilenameUtils;
@@ -614,6 +616,32 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		TavernaRun w = support.getRun(runName);
 		support.permitUpdate(w);
 		fileUtils.getFile(w, d).setContents(newContents);
+	}
+
+	@Override
+	@CallCounted
+	public FileContents getRunFileContentsMTOM(String runName,
+			DirEntryReference d) throws UnknownRunException,
+			FilesystemAccessException, NoDirectoryEntryException {
+		File f = fileUtils.getFile(support.getRun(runName), d);
+		FileContents fc = new FileContents();
+		fc.setFile(f, support.getEstimatedContentType(f));
+		return fc;
+	}
+
+	@Override
+	@CallCounted
+	public void setRunFileContentsMTOM(String runName, FileContents newContents)
+			throws UnknownRunException, NoUpdateException,
+			FilesystemAccessException, NoDirectoryEntryException {
+		TavernaRun w = support.getRun(runName);
+		support.permitUpdate(w);
+		try {
+			newContents.writeToFile(fileUtils.getFile(w, newContents.name));
+		} catch (IOException e) {
+			throw new FilesystemAccessException(
+					"problem reading from data source", e);
+		}
 	}
 
 	@Override
