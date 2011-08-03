@@ -6,7 +6,6 @@
 package org.taverna.server.master;
 
 import static eu.medsea.util.MimeUtil.getMimeType;
-import static java.util.Collections.singletonList;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static javax.xml.xpath.XPathConstants.NODE;
@@ -15,20 +14,21 @@ import static org.taverna.server.master.TavernaServerSupport.log;
 
 import java.io.ByteArrayInputStream;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-import javax.xml.XMLConstants;
-import javax.xml.namespace.NamespaceContext;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.util.xml.SimpleNamespaceContext;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.interfaces.Directory;
@@ -46,7 +46,6 @@ import org.taverna.server.port_description.LeafValue;
 import org.taverna.server.port_description.ListValue;
 import org.taverna.server.port_description.OutputDescription;
 import org.taverna.server.port_description.OutputDescription.OutputPort;
-import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -57,50 +56,66 @@ import org.w3c.dom.NodeList;
  * @author Donal Fellows
  */
 public class ContentsDescriptorBuilder {
+	/** Namespace for use when pulling apart a .t2flow document. */
+	private static final String T2FLOW_NS = "http://taverna.sf.net/2008/xml/t2flow";
+	/** Prefix for t2flow namespace. */
+	private static final String T2FLOW_PFX = "t2";
+
 	private FilenameUtils fileUtils;
 	private UriBuilderFactory uriBuilderFactory;
 	private XPathExpression inputPorts;
-	private XPathExpression outputPortNames;
+	private XPathExpression outputPorts;
 	private XPathExpression portName;
 	private XPathExpression portDepth;
 	private XPathExpression dataflow;
 
 	public ContentsDescriptorBuilder() throws XPathExpressionException {
 		XPath xp = XPathFactory.newInstance().newXPath();
-		xp.setNamespaceContext(new NamespaceContext() {
-			@Override
-			public String getNamespaceURI(String prefix) {
-				if (prefix.equals("t2flow"))
-					return T2FLOW_NS;
-				if (prefix.equals(XMLConstants.XML_NS_PREFIX))
-					return XMLConstants.XML_NS_URI;
-				if (prefix.equals(XMLConstants.XMLNS_ATTRIBUTE))
-					return XMLConstants.XMLNS_ATTRIBUTE_NS_URI;
-				return XMLConstants.NULL_NS_URI;
-			}
+		SimpleNamespaceContext ctxt = new SimpleNamespaceContext();
+		ctxt.bindNamespaceUri(T2FLOW_PFX, T2FLOW_NS);
+		xp.setNamespaceContext(ctxt);
 
-			@Override
-			public String getPrefix(String namespaceURI) {
-				if (namespaceURI.equals(T2FLOW_NS))
-					return "t2flow";
-				if (namespaceURI.equals(XMLConstants.XML_NS_URI))
-					return XMLConstants.XML_NS_PREFIX;
-				if (namespaceURI.equals(XMLConstants.XMLNS_ATTRIBUTE_NS_URI))
-					return XMLConstants.XMLNS_ATTRIBUTE;
-				return null;
-			}
+		dataflow = xp.compile("//t2:dataflow[1]");
+		inputPorts = xp.compile("./t2:inputPorts/t2:port");
+		outputPorts = xp.compile("./t2:outputPorts/t2:port");
+		portName = xp.compile("./t2:name/text()");
+		portDepth = xp.compile("./t2:depth/text()");
+	}
 
-			@Override
-			public Iterator<String> getPrefixes(String namespaceURI) {
-				return singletonList(getPrefix(namespaceURI)).iterator();
-			}
-		});
-		dataflow = xp.compile("//t2flow:dataflow[1]");
-		inputPorts = xp.compile("./t2flow:inputPorts/t2flow:port");
-		outputPortNames = xp
-				.compile("./t2flow:outputPorts/t2flow:port/t2flow:name");
-		portName = xp.compile("./t2flow:name");
-		portDepth = xp.compile("./t2flow:depth");
+	private Element dataflow(Element root) throws XPathExpressionException {
+		return (Element) dataflow.evaluate(root, NODE);
+	}
+
+	private List<Element> inputPorts(Element dataflow)
+			throws XPathExpressionException {
+		List<Element> result = new ArrayList<Element>();
+		if (dataflow == null)
+			return result;
+		NodeList nl = (NodeList) inputPorts.evaluate(dataflow, NODESET);
+		// Wrap as a list so we can iterate over it <sigh>
+		for (int i = 0; i < nl.getLength(); i++)
+			result.add((Element) nl.item(i));
+		return result;
+	}
+
+	private List<Element> outputPorts(Element dataflow)
+			throws XPathExpressionException {
+		List<Element> result = new ArrayList<Element>();
+		if (dataflow == null)
+			return result;
+		NodeList nl = (NodeList) outputPorts.evaluate(dataflow, NODESET);
+		// Wrap as a list so we can iterate over it <sigh>
+		for (int i = 0; i < nl.getLength(); i++)
+			result.add((Element) nl.item(i));
+		return result;
+	}
+
+	private String portName(Element port) throws XPathExpressionException {
+		return portName.evaluate(port);
+	}
+
+	private String portDepth(Element port) throws XPathExpressionException {
+		return portDepth.evaluate(port);
 	}
 
 	@Required
@@ -113,15 +128,14 @@ public class ContentsDescriptorBuilder {
 		this.fileUtils = fileUtils;
 	}
 
-	/** Namespace for use when pulling apart a .t2flow document. */
-	private static final String T2FLOW_NS = "http://taverna.sf.net/2008/xml/t2flow";
+	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 	private Element fillInFromWorkflow(TavernaRun run, UriBuilder ub,
 			AbstractPortDescription portDesc) throws XPathExpressionException {
 		Element elem = run.getWorkflow().content[0];
 		portDesc.fillInBaseData(elem.getAttribute("id"), run.getId(),
 				ub.build());
-		return (Element) dataflow.evaluate(elem, NODE);
+		return dataflow(elem);
 	}
 
 	/**
@@ -146,13 +160,11 @@ public class ContentsDescriptorBuilder {
 			UriBuilder ub, OutputDescription descriptor)
 			throws FilesystemAccessException, NoDirectoryEntryException,
 			XPathExpressionException {
-		NodeList portNodeNames = (NodeList) outputPortNames.evaluate(dataflow,
-				NODESET);
 		Collection<DirectoryEntry> outs = fileUtils.getDirectory(run, "out")
 				.getContents();
-		for (int i = 0; i < portNodeNames.getLength(); i++) {
+		for (Element output : outputPorts(dataflow)) {
 			OutputPort p = new OutputPort();
-			p.name = portNodeNames.item(i).getTextContent();
+			p.name = portName(output);
 			p.output = constructValue(outs, ub, p.name);
 			p.depth = computeDepth(p.output);
 			descriptor.ports.add(p);
@@ -169,7 +181,7 @@ public class ContentsDescriptorBuilder {
 	 */
 	private Integer computeDepth(AbstractValue value) {
 		if (value instanceof ListValue) {
-			Integer mv = 1;
+			int mv = 1;
 			for (AbstractValue v : ((ListValue) value).contents) {
 				Integer d = computeDepth(v);
 				if (d != null && mv <= d)
@@ -332,21 +344,15 @@ public class ContentsDescriptorBuilder {
 		InputDescription desc = new InputDescription();
 		try {
 			UriBuilder ub = getRunUriBuilder(run, ui);
-			Element elem = fillInFromWorkflow(run, ub, desc);
+			Element dataflow = fillInFromWorkflow(run, ub, desc);
 			ub = ub.path("input/{name}");
-			if (elem == null)
-				return desc; // Not t2flow
-			// Foreach "./inputPorts/port"
-			NodeList nl = (NodeList) inputPorts.evaluate(elem, NODESET);
-			for (int i = 0; i < nl.getLength(); i++) {
+			for (Element port : inputPorts(dataflow)) {
 				InputPort in = new InputPort();
-				in.name = portName.evaluate(nl.item(i)); // "./name"
+				in.name = portName(port);
 				in.href = ub.build(in.name);
 				try {
-					in.depth = Integer.valueOf(portDepth.evaluate(nl.item(i))); // "./depth"
+					in.depth = Integer.valueOf(portDepth(port));
 				} catch (NumberFormatException ex) {
-					in.depth = null;
-				} catch (DOMException ex) {
 					in.depth = null;
 				}
 				desc.input.add(in);
