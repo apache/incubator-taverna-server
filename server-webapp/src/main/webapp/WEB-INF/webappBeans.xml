@@ -93,6 +93,7 @@
 			<ref bean="MessagingProvider.File" />
 			<ref bean="MessagingProvider.FileSegment" />
 			<ref bean="MessagingProvider.InputStream" />
+			<ref bean="MessagingProvider.T2flow" />
 			<ref bean="jsonProvider" />
 			<ref bean="jaxbProvider" />
 		</jaxrs:providers>

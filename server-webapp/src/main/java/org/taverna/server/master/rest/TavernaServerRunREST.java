@@ -7,6 +7,7 @@ package org.taverna.server.master.rest;
 
 import static org.joda.time.format.ISODateTimeFormat.basicDateTime;
 import static org.taverna.server.master.common.Roles.USER;
+import static org.taverna.server.master.rest.T2FlowDocumentHandler.T2FLOW;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -89,7 +90,7 @@ public interface TavernaServerRunREST {
 	 */
 	@GET
 	@Path("workflow")
-	@Produces({ "application/xml", "application/json" })
+	@Produces({ T2FLOW, "application/xml", "application/json" })
 	@Description("Gives the workflow document used to create the workflow run.")
 	@NonNull
 	public Workflow getWorkflow();

@@ -6,6 +6,7 @@
 package org.taverna.server.master.rest;
 
 import static org.taverna.server.master.common.Roles.USER;
+import static org.taverna.server.master.rest.T2FlowDocumentHandler.T2FLOW;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,7 +95,7 @@ public interface TavernaServerREST {
 	 */
 	@POST
 	@Path("runs")
-	@Consumes("application/xml")
+	@Consumes({ T2FLOW, "application/xml" })
 	@RolesAllowed(USER)
 	@Description("Accepts (or not) a request to create a new run executing the given workflow.")
 	@NonNull

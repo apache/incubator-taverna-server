@@ -72,6 +72,8 @@
 	<bean id="MessagingProvider.InputStream"
 		class="org.taverna.server.master.rest.InputStreamMessageHandler">
 	</bean>
+	<bean id="MessagingProvider.T2flow" class="org.taverna.server.master.rest.T2FlowDocumentHandler">
+	</bean>
 	<bean id="MessagingProvider.Atom" class="org.apache.cxf.jaxrs.provider.AtomPojoProvider">
 		<property name="atomWriters" ref="atomEntryBinding" />
 		<property name="collectionGetters" ref="atomFeedBinding" />
