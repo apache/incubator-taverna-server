@@ -131,6 +131,16 @@ public interface TavernaServerSecurityREST {
 	 * @throws BadStateChangeException
 	 *             If the workflow run is not in the initialising state.
 	 */
+	//@PUT
+	//@Path("credentials/{id}")
+	//@Consumes({ "application/xml", "application/json" })
+	//@Produces({ "application/xml", "application/json" })
+	//@Description("Updates a particular credential.")
+	@NonNull
+	Credential setParticularCredential(@NonNull @PathParam("id") String id,
+			@NonNull Credential c, @NonNull @Context UriInfo ui)
+			throws InvalidCredentialException, BadStateChangeException;
+
 	@PUT
 	@Path("credentials/{id}")
 	@Consumes({ "application/xml", "application/json" })
@@ -138,7 +148,27 @@ public interface TavernaServerSecurityREST {
 	@Description("Updates a particular credential.")
 	@NonNull
 	Credential setParticularCredential(@NonNull @PathParam("id") String id,
-			@NonNull Credential c, @NonNull @Context UriInfo ui)
+			@NonNull Credential.Password c, @NonNull @Context UriInfo ui)
+			throws InvalidCredentialException, BadStateChangeException;
+
+	@PUT
+	@Path("credentials/{id}")
+	@Consumes({ "application/xml", "application/json" })
+	@Produces({ "application/xml", "application/json" })
+	@Description("Updates a particular credential.")
+	@NonNull
+	Credential setParticularCredential(@NonNull @PathParam("id") String id,
+			@NonNull Credential.KeyPair c, @NonNull @Context UriInfo ui)
+			throws InvalidCredentialException, BadStateChangeException;
+
+	@PUT
+	@Path("credentials/{id}")
+	@Consumes({ "application/xml", "application/json" })
+	@Produces({ "application/xml", "application/json" })
+	@Description("Updates a particular credential.")
+	@NonNull
+	Credential setParticularCredential(@NonNull @PathParam("id") String id,
+			@NonNull Credential.CaGridProxy c, @NonNull @Context UriInfo ui)
 			throws InvalidCredentialException, BadStateChangeException;
 
 	/**
@@ -154,12 +184,36 @@ public interface TavernaServerSecurityREST {
 	 * @throws BadStateChangeException
 	 *             If the workflow run is not in the initialising state.
 	 */
+	//@POST
+	//@Path("credentials")
+	//@Consumes({ "application/xml", "application/json" })
+	//@Description("Creates a new credential.")
+	@NonNull
+	Response addCredential(@NonNull Credential c, @NonNull @Context UriInfo ui)
+			throws InvalidCredentialException, BadStateChangeException;
+
 	@POST
 	@Path("credentials")
 	@Consumes({ "application/xml", "application/json" })
 	@Description("Creates a new credential.")
 	@NonNull
-	Response addCredential(@NonNull Credential c, @NonNull @Context UriInfo ui)
+	Response addCredential(@NonNull Credential.Password c, @NonNull @Context UriInfo ui)
+			throws InvalidCredentialException, BadStateChangeException;
+
+	@POST
+	@Path("credentials")
+	@Consumes({ "application/xml", "application/json" })
+	@Description("Creates a new credential.")
+	@NonNull
+	Response addCredential(@NonNull Credential.KeyPair c, @NonNull @Context UriInfo ui)
+			throws InvalidCredentialException, BadStateChangeException;
+
+	@POST
+	@Path("credentials")
+	@Consumes({ "application/xml", "application/json" })
+	@Description("Creates a new credential.")
+	@NonNull
+	Response addCredential(@NonNull Credential.CaGridProxy c, @NonNull @Context UriInfo ui)
 			throws InvalidCredentialException, BadStateChangeException;
 
 	/**

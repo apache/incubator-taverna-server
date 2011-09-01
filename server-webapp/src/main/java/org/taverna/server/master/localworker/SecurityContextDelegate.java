@@ -12,13 +12,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.KeyStoreSpi;
-import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -28,8 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-import javax.crypto.spec.SecretKeySpec;
-import javax.security.auth.x500.X500Principal;
 import javax.ws.rs.core.HttpHeaders;
 import javax.xml.ws.handler.MessageContext;
 
@@ -54,7 +50,7 @@ import org.taverna.server.master.utils.UsernamePrincipal;
  * 
  * @author Donal Fellows
  */
-public class SecurityContextDelegate implements TavernaSecurityContext {
+public abstract class SecurityContextDelegate implements TavernaSecurityContext {
 	private Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
 	private final UsernamePrincipal owner;
 	private final List<Credential> credentials = new ArrayList<Credential>();
@@ -69,10 +65,6 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 
 	/** The type of certificates that are processed if we don't say otherwise. */
 	private static final String DEFAULT_CERTIFICATE_TYPE = "X.509";
-	private static final char USERNAME_PASSWORD_SEPARATOR = '\u0000';
-	private static final String USERNAME_PASSWORD_KEY_ALGORITHM = "DUMMY";
-	/** What passwords are encoded as. */
-	private static final Charset UTF8 = Charset.forName("UTF-8");
 
 	/**
 	 * Initialise the context delegate.
@@ -156,79 +148,8 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 	}
 
 	@Override
-	public void validateCredential(Credential c)
-			throws InvalidCredentialException {
-		if (c instanceof Credential.CaGridProxy)
-			validateProxyCredential((Credential.CaGridProxy) c);
-		else if (c instanceof Credential.Password)
-			validatePasswordCredential((Credential.Password) c);
-		else if (c instanceof Credential.KeyPair)
-			validateKeyCredential((Credential.KeyPair) c);
-		else
-			throw new InvalidCredentialException("unknown credential type");
-	}
-
-	private void validatePasswordCredential(Credential.Password c) {
-		String keyToSave = c.username + USERNAME_PASSWORD_SEPARATOR
-				+ c.password;
-		c.loadedKey = new SecretKeySpec(keyToSave.getBytes(UTF8),
-				USERNAME_PASSWORD_KEY_ALGORITHM);
-		c.loadedTrustChain = null;
-		c.credentialBytes = null;
-	}
-
-	private void validateKeyCredential(Credential.KeyPair c)
-			throws InvalidCredentialException {
-		if (c.credentialName == null || c.credentialName.trim().length() == 0)
-			throw new InvalidCredentialException(
-					"absent or empty credentialName");
-
-		InputStream contentsAsStream;
-		if (c.credentialBytes != null && c.credentialBytes.length > 0) {
-			contentsAsStream = new ByteArrayInputStream(c.credentialBytes);
-			c.credentialFile = null;
-		} else if (c.credentialFile == null
-				|| c.credentialFile.trim().length() == 0)
-			throw new InvalidCredentialException(
-					"absent or empty credentialFile");
-		else {
-			contentsAsStream = contents(c.credentialFile);
-			c.credentialBytes = new byte[0];
-		}
-		if (c.fileType == null || c.fileType.trim().length() == 0)
-			c.fileType = KeyStore.getDefaultType();
-		c.fileType = c.fileType.trim();
-		try {
-			KeyStore ks = KeyStore.getInstance(c.fileType);
-			char[] password = c.unlockPassword.toCharArray();
-			ks.load(contentsAsStream, password);
-			try {
-				c.loadedKey = ks.getKey(c.credentialName, password);
-			} catch (UnrecoverableKeyException ignored) {
-				c.loadedKey = ks.getKey(c.credentialName, new char[0]);
-			}
-			if (c.loadedKey == null)
-				throw new InvalidCredentialException(
-						"no such credential in key store");
-			c.loadedTrustChain = ks.getCertificateChain(c.credentialName);
-		} catch (InvalidCredentialException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new InvalidCredentialException(e);
-		}
-	}
-
-	private void validateProxyCredential(Credential.CaGridProxy c)
-			throws InvalidCredentialException {
-		// Proxies are just normal credentials at this point
-		validateKeyCredential(c);
-
-		if (c.authenticationService.toString().length() == 0)
-			throw new InvalidCredentialException(
-					"missing authenticationService");
-		if (c.dorianService.toString().length() == 0)
-			throw new InvalidCredentialException("missing dorianService");
-	}
+	public abstract void validateCredential(Credential c)
+			throws InvalidCredentialException;
 
 	@Override
 	public void validateTrusted(Trust t) throws InvalidCredentialException {
@@ -311,8 +232,8 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 	 *             If the conveyancing fails.
 	 */
 	@Override
-	public void conveySecurity() throws GeneralSecurityException, IOException,
-			ImplementationException {
+	public final void conveySecurity() throws GeneralSecurityException,
+			IOException, ImplementationException {
 		RemoteSecurityContext rc = run.run.getSecurityContext();
 
 		synchronized (lock) {
@@ -341,12 +262,7 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 					this.uriToAliasMap = uriToAliasMap;
 					this.keystore = keystore;
 					for (Credential c : credentials) {
-						if (c instanceof Credential.Password)
-							addUserPassToKeystore((Credential.Password) c);
-						else if (c instanceof Credential.CaGridProxy)
-							addPoxyToKeystore((Credential.CaGridProxy) c);
-						else
-							addKeypairToKeystore((Credential.KeyPair) c);
+						addCredentialToKeystore(c);
 						keyCount++;
 					}
 				} finally {
@@ -466,48 +382,32 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 	}
 
 	/**
-	 * Adds a key-pair to the current keystore.
+	 * Adds a credential to the current keystore.
 	 * 
 	 * @param c
-	 *            The key-pair.
+	 *            The credential to add.
 	 * @throws KeyStoreException
 	 */
-	protected void addKeypairToKeystore(Credential.KeyPair c)
-			throws KeyStoreException {
-		X509Certificate subjectCert = ((X509Certificate) c.loadedTrustChain[0]);
-		X500Principal subject = subjectCert.getSubjectX500Principal();
-		X500Principal issuer = subjectCert.getIssuerX500Principal();
-		String alias = "keypair#"
-				+ factory.x500Utils.getName(subject, "CN", "COMMONNAME") + "#"
-				+ factory.x500Utils.getName(issuer, "CN", "COMMONNAME") + "#"
-				+ factory.x500Utils.getSerial(subjectCert);
-		addKeypairToKeystore(alias, c);
-	}
+	public abstract void addCredentialToKeystore(Credential c)
+			throws KeyStoreException;
 
 	/**
-	 * Adds a username/password credential pair to the current keystore.
+	 * Read a file up to 20kB in size.
 	 * 
-	 * @param c
-	 *            The username and password.
-	 * @throws KeyStoreException
+	 * @param name
+	 *            The path name of the file, relative to the context run's
+	 *            working directory.
+	 * @return A stream of the file's contents.
+	 * @throws InvalidCredentialException
+	 *             If anything goes wrong.
 	 */
-	protected void addUserPassToKeystore(Credential.Password c)
-			throws KeyStoreException {
-		String alias = "password#" + c.serviceURI;
-		addKeypairToKeystore(alias, c);
-	}
-
-	private void addPoxyToKeystore(Credential.CaGridProxy c)
-			throws KeyStoreException {
-		String alias = "cagridproxy#" + c.authenticationService + " "
-				+ c.dorianService;
-		addKeypairToKeystore(alias, c);
-	}
-
-	private InputStream contents(String name) throws InvalidCredentialException {
+	InputStream contents(String name) throws InvalidCredentialException {
 		try {
 			File f = (File) factory.fileUtils.getDirEntry(run, name);
-			return new ByteArrayInputStream(f.getContents(0, (int) f.getSize()));
+			long size = f.getSize();
+			if (size > 20 * 1024)
+				throw new InvalidCredentialException("20kB limit hit");
+			return new ByteArrayInputStream(f.getContents(0, (int) size));
 		} catch (NoDirectoryEntryException e) {
 			throw new InvalidCredentialException(e);
 		} catch (FilesystemAccessException e) {
@@ -559,7 +459,7 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 	void setCredentialsAndTrust(Credential[] credentials, Trust[] trust) {
 		synchronized (lock) {
 			this.credentials.clear();
-			if (credentials != null) {
+			if (credentials != null)
 				for (Credential c : credentials)
 					try {
 						validateCredential(c);
@@ -567,9 +467,8 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 					} catch (InvalidCredentialException e) {
 						log.warn("failed to revalidate credential: " + c, e);
 					}
-			}
 			this.trusted.clear();
-			if (trusted != null) {
+			if (trust != null)
 				for (Trust t : trust)
 					try {
 						validateTrusted(t);
@@ -578,7 +477,6 @@ public class SecurityContextDelegate implements TavernaSecurityContext {
 						log.warn("failed to revalidate trust assertion: " + t,
 								e);
 					}
-			}
 		}
 	}
 }

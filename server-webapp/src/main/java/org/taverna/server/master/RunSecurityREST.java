@@ -19,6 +19,9 @@ import javax.ws.rs.core.UriInfo;
 
 import org.taverna.server.master.TavernaServerImpl.SupportAware;
 import org.taverna.server.master.common.Credential;
+import org.taverna.server.master.common.Credential.CaGridProxy;
+import org.taverna.server.master.common.Credential.KeyPair;
+import org.taverna.server.master.common.Credential.Password;
 import org.taverna.server.master.common.Permission;
 import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.exceptions.BadStateChangeException;
@@ -238,6 +241,49 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 		return created(
 				ui.getAbsolutePathBuilder().path("{user}").build(desc.userName))
 				.build();
+	}
+
+	@Override
+	@CallCounted
+	public Credential setParticularCredential(String id, Password c, UriInfo ui)
+			throws InvalidCredentialException, BadStateChangeException {
+		return setParticularCredential(id, (Credential) c, ui);
+	}
+
+	@Override
+	@CallCounted
+	public Credential setParticularCredential(String id, KeyPair c, UriInfo ui)
+			throws InvalidCredentialException, BadStateChangeException {
+		return setParticularCredential(id, (Credential) c, ui);
+	}
+
+	@Override
+	@CallCounted
+	public Credential setParticularCredential(String id, CaGridProxy c,
+			UriInfo ui) throws InvalidCredentialException,
+			BadStateChangeException {
+		return setParticularCredential(id, (Credential) c, ui);
+	}
+
+	@Override
+	@CallCounted
+	public Response addCredential(Password c, UriInfo ui)
+			throws InvalidCredentialException, BadStateChangeException {
+		return addCredential((Credential) c, ui);
+	}
+
+	@Override
+	@CallCounted
+	public Response addCredential(KeyPair c, UriInfo ui)
+			throws InvalidCredentialException, BadStateChangeException {
+		return addCredential((Credential) c, ui);
+	}
+
+	@Override
+	@CallCounted
+	public Response addCredential(CaGridProxy c, UriInfo ui)
+			throws InvalidCredentialException, BadStateChangeException {
+		return addCredential((Credential) c, ui);
 	}
 }
 

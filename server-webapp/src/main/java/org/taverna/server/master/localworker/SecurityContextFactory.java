@@ -5,11 +5,15 @@
  */
 package org.taverna.server.master.localworker;
 
+import static java.security.Security.addProvider;
+import static org.apache.commons.logging.LogFactory.getLog;
+
 import java.io.Serializable;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.UsernamePrincipal;
@@ -48,6 +52,13 @@ public class SecurityContextFactory implements
 	@PostConstruct
 	private void setAsSingleton() {
 		instance = this;
+		try {
+			addProvider(new BouncyCastleProvider());
+		} catch (SecurityException e) {
+			getLog("Taverna.Server.LocalWorker").warn(
+					"failed to install BouncyCastle security provider; "
+							+ "might be OK if already configured", e);
+		}
 	}
 
 	@Required
@@ -68,7 +79,7 @@ public class SecurityContextFactory implements
 	@Override
 	public SecurityContextDelegate create(RemoteRunDelegate run,
 			UsernamePrincipal owner) throws Exception {
-		return new SecurityContextDelegate(run, owner, this);
+		return new SecurityContextDelegateImpl(run, owner, this);
 	}
 
 	private Object readResolve() {

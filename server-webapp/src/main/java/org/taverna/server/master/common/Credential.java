@@ -20,6 +20,8 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 /**
  * A description of a private credential. This description is characterised by a
  * file visible to the workflow run that contains a particular key-pair.
@@ -46,11 +48,6 @@ public abstract class Credential implements Serializable {
 	@XmlElement
 	@XmlSchemaType(name = "anyURI")
 	public URI serviceURI;
-	/**
-	 * The encoded serialized keystore containing the credential.
-	 */
-	@XmlElement
-	public byte[] credentialBytes;
 	/** The key extracted from the keystore. */
 	public transient Key loadedKey;
 	/** The trust chain of the key extracted from the keystore. */
@@ -62,10 +59,13 @@ public abstract class Credential implements Serializable {
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public final boolean equals(Object o) {
 		if (o == null || !(o instanceof Credential))
 			return false;
-		return id.equals(((Credential) o).id);
+		return equals((Credential) o);
+	}
+	protected boolean equals(@NonNull Credential c) {
+		return id.equals(c.id);
 	}
 
 	/**
@@ -98,6 +98,11 @@ public abstract class Credential implements Serializable {
 		 */
 		@XmlElement
 		public String unlockPassword;
+		/**
+		 * The encoded serialized keystore containing the credential.
+		 */
+		@XmlElement
+		public byte[] credentialBytes;
 	}
 
 	/**
@@ -105,7 +110,7 @@ public abstract class Credential implements Serializable {
 	 * 
 	 * @author Donal Fellows
 	 */
-	@XmlRootElement(name = "password")
+	@XmlRootElement(name = "userpass")
 	@XmlType(name = "PasswordCredential")
 	public static class Password extends Credential {
 		@XmlElement(required = true)

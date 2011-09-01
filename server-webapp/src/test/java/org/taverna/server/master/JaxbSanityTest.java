@@ -9,6 +9,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 
 import javax.xml.bind.JAXBContext;
@@ -20,6 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.taverna.server.master.admin.Admin;
 import org.taverna.server.master.common.Credential;
+import org.taverna.server.master.common.Credential.Password;
 import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
 import org.taverna.server.master.common.Permission;
@@ -260,6 +262,21 @@ public class JaxbSanityTest {
 				TavernaServerSecurityREST.Descriptor.class,
 				TavernaServerSecurityREST.PermissionDescription.class,
 				TavernaServerSecurityREST.PermissionsDescription.class);
+	}
+
+	@Test
+	public void testUserPassSerializeDeserialize() throws Exception {
+		JAXBContext c = JAXBContext.newInstance(Credential.class);
+		Password credIn = new Password();
+		credIn.username = "foo";
+		credIn.password = "bar";
+		StringWriter sw = new StringWriter();
+		c.createMarshaller().marshal(credIn, sw);
+		StringReader sr = new StringReader(sw.toString());
+		Object credOut = c.createUnmarshaller().unmarshal(sr);
+		assertEquals(credIn.getClass(), credOut.getClass());
+		assertEquals(credIn.username, ((Password) credOut).username);
+		assertEquals(credIn.password, ((Password) credOut).password);
 	}
 
 	@Test
