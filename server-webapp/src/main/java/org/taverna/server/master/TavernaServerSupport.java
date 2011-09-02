@@ -14,6 +14,7 @@ import static org.taverna.server.master.common.Roles.ADMIN;
 
 import java.io.ByteArrayInputStream;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -446,25 +447,43 @@ public class TavernaServerSupport {
 		}
 
 		permSet = context.getPermittedReaders();
-		if (doRead)
-			permSet.add(userName);
-		else
+		if (doRead) {
+			if (!permSet.contains(userName)) {
+				permSet = new HashSet<String>(permSet);
+				permSet.add(userName);
+				context.setPermittedReaders(permSet);
+			}
+		} else if (permSet.contains(userName)) {
+			permSet = new HashSet<String>(permSet);
 			permSet.remove(userName);
-		context.setPermittedReaders(permSet);
+			context.setPermittedReaders(permSet);
+		}
 
 		permSet = context.getPermittedUpdaters();
-		if (doWrite)
-			permSet.add(userName);
-		else
+		if (doWrite) {
+			if (!permSet.contains(userName)) {
+				permSet = new HashSet<String>(permSet);
+				permSet.add(userName);
+				context.setPermittedUpdaters(permSet);
+			}
+		} else if (permSet.contains(userName)) {
+			permSet = new HashSet<String>(permSet);
 			permSet.remove(userName);
-		context.setPermittedUpdaters(permSet);
+			context.setPermittedUpdaters(permSet);
+		}
 
 		permSet = context.getPermittedDestroyers();
-		if (doKill)
-			permSet.add(userName);
-		else
+		if (doKill) {
+			if (!permSet.contains(userName)) {
+				permSet = new HashSet<String>(permSet);
+				permSet.add(userName);
+				context.setPermittedDestroyers(permSet);
+			}
+		} else if (permSet.contains(userName)) {
+			permSet = new HashSet<String>(permSet);
 			permSet.remove(userName);
-		context.setPermittedDestroyers(permSet);
+			context.setPermittedDestroyers(permSet);
+		}
 	}
 
 	/**
