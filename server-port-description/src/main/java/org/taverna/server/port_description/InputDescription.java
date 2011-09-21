@@ -34,4 +34,18 @@ public class InputDescription extends AbstractPortDescription {
 		@XmlSchemaType(name = "anyURI")
 		public URI href;
 	}
+
+	/**
+	 * Add an input port to the list of ports.
+	 * 
+	 * @param name
+	 *            The name of the port to add.
+	 * @return The port (so that its details may be set);
+	 */
+	public InputPort addPort(String name) {
+		InputPort p = new InputPort();
+		p.name = name;
+		input.add(p);
+		return p;
+	}
 }

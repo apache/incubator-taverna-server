@@ -33,4 +33,18 @@ public class OutputDescription extends AbstractPortDescription {
 				@XmlElement(name = "absent", type = AbsentValue.class, nillable = false, required = true) })
 		public AbstractValue output;
 	}
+
+	/**
+	 * Add an output port to the list of ports.
+	 * 
+	 * @param name
+	 *            The name of the port to add.
+	 * @return The port (so that its value may be set);
+	 */
+	public OutputPort addPort(String name) {
+		OutputPort p = new OutputPort();
+		p.name = name;
+		ports.add(p);
+		return p;
+	}
 }

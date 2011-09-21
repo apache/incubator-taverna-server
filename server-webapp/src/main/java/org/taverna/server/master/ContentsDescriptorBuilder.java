@@ -163,11 +163,9 @@ public class ContentsDescriptorBuilder {
 		Collection<DirectoryEntry> outs = fileUtils.getDirectory(run, "out")
 				.getContents();
 		for (Element output : outputPorts(dataflow)) {
-			OutputPort p = new OutputPort();
-			p.name = portName(output);
+			OutputPort p = descriptor.addPort(portName(output));
 			p.output = constructValue(outs, ub, p.name);
 			p.depth = computeDepth(p.output);
-			descriptor.ports.add(p);
 		}
 	}
 
@@ -347,15 +345,13 @@ public class ContentsDescriptorBuilder {
 			Element dataflow = fillInFromWorkflow(run, ub, desc);
 			ub = ub.path("input/{name}");
 			for (Element port : inputPorts(dataflow)) {
-				InputPort in = new InputPort();
-				in.name = portName(port);
+				InputPort in = desc.addPort(portName(port));
 				in.href = ub.build(in.name);
 				try {
 					in.depth = Integer.valueOf(portDepth(port));
 				} catch (NumberFormatException ex) {
 					in.depth = null;
 				}
-				desc.input.add(in);
 			}
 		} catch (XPathExpressionException e) {
 			log.info("failure in XPath evaluation", e);
