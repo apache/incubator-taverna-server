@@ -53,10 +53,10 @@
 	</pluginRepositories>
 
 	<properties>
-		<version.cxf>2.3.5</version.cxf>
+		<version.cxf>2.4.2</version.cxf>
 		<version.spring>3.0.5.RELEASE</version.spring>
 		<version.spring-security>3.0.2.RELEASE</version.spring-security>
-		<version.datanucleus>2.2.2</version.datanucleus>
+		<version.datanucleus>2.2.3</version.datanucleus>
 		<version.asm>3.3</version.asm>
 		<version.smack>3.1.0</version.smack>
 		<version.commandline>2.3.0</version.commandline>
@@ -251,6 +251,7 @@
 		<dependency>
 			<groupId>org.apache.abdera</groupId>
 			<artifactId>abdera-core</artifactId>
+			<version>1.1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.abdera</groupId>
@@ -287,8 +288,7 @@
 			<dependency>
 				<groupId>com.sun.xml.bind</groupId>
 				<artifactId>jaxb-impl</artifactId>
-				<version>2.1.13</version>
-				<scope>compile</scope>
+				<version>2.2.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework</groupId>
@@ -333,7 +333,7 @@
 			<dependency>
 				<groupId>commons-lang</groupId>
 				<artifactId>commons-lang</artifactId>
-				<version>2.5</version>
+				<version>2.6</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-codec</groupId>
@@ -349,7 +349,6 @@
 				<groupId>commons-collections</groupId>
 				<artifactId>commons-collections</artifactId>
 				<version>3.2.1</version>
-				<scope>compile</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.abdera</groupId>
@@ -386,7 +385,6 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>2.3.2</version>
 					<configuration>
 						<encoding>US-ASCII</encoding>
 						<source>1.6</source>
@@ -420,8 +418,8 @@
 		<defaultGoal>package</defaultGoal>
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.1</version>
 				<executions>
 					<execution>
 						<id>copy-executable-library-jars</id>
@@ -522,7 +520,6 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>2.3.2</version>
 					<configuration>
 						<encoding>US-ASCII</encoding>
 						<source>1.6</source>

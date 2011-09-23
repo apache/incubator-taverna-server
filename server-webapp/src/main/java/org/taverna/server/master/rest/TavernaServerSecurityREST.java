@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
-import org.apache.cxf.jaxrs.ext.Description;
+import org.apache.cxf.jaxrs.model.wadl.Description;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.Permission;
 import org.taverna.server.master.common.Trust;

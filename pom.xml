@@ -162,7 +162,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-release-plugin</artifactId>
-					<version>2.0</version>
+					<version>2.1</version>
 					<configuration>
 						<autoVersionSubmodules>true</autoVersionSubmodules>
 						<tagBase>https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/tags</tagBase>
@@ -171,7 +171,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>2.3.1</version>
+					<version>2.3.2</version>
 					<configuration>
 						<encoding>US-ASCII</encoding>
 						<source>1.6</source>
@@ -192,7 +192,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
-					<version>2.4.3</version>
+					<version>2.5</version>
 					<configuration>
 						<encoding>US-ASCII</encoding>
 					</configuration>
@@ -202,13 +202,37 @@
 					<artifactId>maven-jar-plugin</artifactId>
 					<version>2.3.1</version>
 				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>2.1.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.8</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jarsigner-plugin</artifactId>
+					<version>1.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>2.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>2.2.1</version>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
-				<version>2.0</version>
 				<configuration>
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<tagBase>https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/tags</tagBase>
@@ -217,7 +241,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jarsigner-plugin</artifactId>
-				<version>1.2</version>
 				<executions>
 					<execution>
 						<goals>
@@ -296,6 +319,10 @@
 							<packages>org.taverna.server.master.exceptions:org.taverna.server.master.factories:org.taverna.server.master.interfaces</packages>
 						</group>
 						<group>
+							<title>Notification and Accounting</title>
+							<packages>org.taverna.server.master.notification:org.taverna.server.master.notification.atom:org.taverna.server.master.usage</packages>
+						</group>
+						<group>
 							<title>Server Coupling to RMI Back End</title>
 							<packages>org.taverna.server.master.identity:org.taverna.server.master.localworker</packages>
 						</group>
@@ -309,7 +336,7 @@
 						</group>
 						<group>
 							<title>Externally-Defined Document Formats</title>
-							<packages>org.taverna.server.input_description:org.taverna.server.output_description:org.ogf.usage:org.ogf.usage.v1_0:org.w3._2000._09.xmldsig_</packages>
+							<packages>org.taverna.server.port_description:org.ogf.usage:org.ogf.usage.v1_0:org.w3._2000._09.xmldsig_</packages>
 						</group>
 						<group>
 							<title>Server Back End Factory Coupling to Command Line Executor</title>
@@ -320,12 +347,16 @@
 							<packages>org.taverna.server.master.utils:org.taverna.server.localworker.impl.utils</packages>
 						</group>
 					</groups>
+					<detectJavaApiLink>true</detectJavaApiLink>
 				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-changelog-plugin</artifactId>
 				<version>2.2</version>
+				<configuration>
+					<issueLinkUrl>http://www.mygrid.org.uk/dev/issues/browse/%ISSUE%</issueLinkUrl>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -379,6 +410,10 @@
 									<packages>org.taverna.server.master.exceptions:org.taverna.server.master.factories:org.taverna.server.master.interfaces</packages>
 								</group>
 								<group>
+									<title>Notification and Accounting</title>
+									<packages>org.taverna.server.master.notification:org.taverna.server.master.notification.atom:org.taverna.server.master.usage</packages>
+								</group>
+								<group>
 									<title>Server Coupling to RMI Back End</title>
 									<packages>org.taverna.server.master.identity:org.taverna.server.master.localworker</packages>
 								</group>
@@ -392,7 +427,7 @@
 								</group>
 								<group>
 									<title>Externally-Defined Document Formats</title>
-									<packages>org.taverna.server.input_description:org.taverna.server.output_description:org.ogf.usage:org.ogf.usage.v1_0:org.w3._2000._09.xmldsig_</packages>
+									<packages>org.taverna.server.port_description:org.ogf.usage:org.ogf.usage.v1_0:org.w3._2000._09.xmldsig_</packages>
 								</group>
 								<group>
 									<title>Server Back End Factory Coupling to Command Line Executor</title>
@@ -403,12 +438,13 @@
 									<packages>org.taverna.server.master.utils:org.taverna.server.localworker.impl.utils</packages>
 								</group>
 							</groups>
+							<detectJavaApiLink>true</detectJavaApiLink>
 						</configuration>
 					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-changes-plugin</artifactId>
-						<version>2.3</version>
+						<version>2.4</version>
 						<reportSets>
 							<reportSet>
 								<id>jira-report</id>
@@ -421,7 +457,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-checkstyle-plugin</artifactId>
-						<version>2.5</version>
+						<version>2.6</version>
 					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
@@ -431,7 +467,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-surefire-report-plugin</artifactId>
-						<version>2.5</version>
+						<version>2.8</version>
 					</plugin>
 				</plugins>
 			</reporting>

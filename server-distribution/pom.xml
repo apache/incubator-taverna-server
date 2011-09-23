@@ -31,7 +31,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.2-beta-5</version>
 				<configuration>
 					<finalName>TavernaServer-${project.parent.version}</finalName>
 					<descriptors>
@@ -49,19 +48,21 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>2.1.2</version>
 				<executions>
 					<execution>
+						<id>default</id>
 						<phase>none</phase>
 					</execution>
 				</executions>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.3.1</version>
 				<executions>
 					<execution>
+						<id>default</id>
 						<phase>none</phase>
 					</execution>
 				</executions>

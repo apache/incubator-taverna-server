@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-import org.apache.cxf.jaxrs.ext.Description;
+import org.apache.cxf.jaxrs.model.wadl.Description;
 import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.common.VersionedElement;

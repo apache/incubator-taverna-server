@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
-import org.apache.cxf.jaxrs.ext.Description;
+import org.apache.cxf.jaxrs.model.wadl.Description;
 import org.joda.time.format.DateTimeFormatter;
 import org.taverna.server.master.common.Namespaces;
 import org.taverna.server.master.common.Status;

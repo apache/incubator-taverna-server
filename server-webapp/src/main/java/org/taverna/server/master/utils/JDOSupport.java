@@ -28,7 +28,7 @@ import org.springframework.beans.factory.annotation.Required;
  * 
  * @author Donal Fellows
  * 
- * @param <T>
+ * @param &lt;T&gt;
  *            The context class that the subclass will be working with.
  */
 public abstract class JDOSupport<T> {

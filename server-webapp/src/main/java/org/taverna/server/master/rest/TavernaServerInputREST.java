@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
-import org.apache.cxf.jaxrs.ext.Description;
+import org.apache.cxf.jaxrs.model.wadl.Description;
 import org.taverna.server.port_description.InputDescription;
 import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.common.VersionedElement;
