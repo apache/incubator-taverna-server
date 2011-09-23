@@ -167,7 +167,12 @@
 		<dd>
 			Get the contents of a file. <small><i>(Implementation
 					note: Consider fetching large files by the REST interface, which
-					can handle much more data by virtue of using data streaming.)</i> </small>
+					can handle much more data by virtue of using data streaming, or
+					via the MTOM-enabled operation.)</i> </small>
+		</dd>
+		<dt>getRunFileContentsMTOM</dt>
+		<dd>
+			Get the contents of a file. <small><i>(MTOM-enabled.)</i> </small>
 		</dd>
 		<dt>getRunFileType</dt>
 		<dd>Get an estimate of the content type of a file.</dd>
@@ -179,7 +184,12 @@
 		<dd>
 			Set the contents of an existing file. <small><i>(Implementation
 					note: Consider uploading large files by the REST interface, which
-					can handle much more data by virtue of using data streaming.)</i> </small>
+					can handle much more data by virtue of using data streaming, or
+					via the MTOM-enabled operation.)</i> </small>
+		</dd>
+		<dt>setRunFileContentsMTOM</dt>
+		<dd>
+			Set the contents of an existing file. <small><i>(MTOM-enabled.)</i> </small>
 		</dd>
 	</dl>
 	<h2>Event Listeners</h2>
@@ -197,6 +207,8 @@
 			listener.</dd>
 		<dt>getRunListenerProperty</dt>
 		<dt>setRunListenerProperty</dt>
+		<dd>Get and set the values of individual properites; properties are
+			always strings.</dd>
 	</dl>
 	<p>
 		There is one standard listener,

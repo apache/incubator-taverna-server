@@ -23,11 +23,11 @@ import org.taverna.server.master.interfaces.File;
  */
 public class FileSegment {
 	/** The file to read a segment of. */
-	final File file;
+	public final File file;
 	/** The offset of the first byte of the segment to read. */
-	Integer from;
+	public Integer from;
 	/** The offset of the first byte after the segment to read. */
-	Integer to;
+	public Integer to;
 
 	/**
 	 * Parse the HTTP Range header and determine what exact range of the file to

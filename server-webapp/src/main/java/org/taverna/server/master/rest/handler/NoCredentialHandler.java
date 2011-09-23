@@ -3,7 +3,7 @@
  * 
  * See the file "LICENSE.txt" for license terms.
  */
-package org.taverna.server.master.rest;
+package org.taverna.server.master.rest.handler;
 
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 

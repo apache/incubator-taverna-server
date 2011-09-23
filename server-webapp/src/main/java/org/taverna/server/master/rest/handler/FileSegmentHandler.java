@@ -3,7 +3,7 @@
  * 
  * See the file "LICENSE.txt" for license terms.
  */
-package org.taverna.server.master.rest;
+package org.taverna.server.master.rest.handler;
 
 import static java.lang.Math.min;
 
@@ -19,6 +19,7 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
 import org.taverna.server.master.exceptions.FilesystemAccessException;
+import org.taverna.server.master.rest.FileSegment;
 
 /**
  * How to write out a segment of a file with JAX-RS.

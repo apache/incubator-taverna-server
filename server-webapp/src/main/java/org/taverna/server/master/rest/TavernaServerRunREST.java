@@ -7,7 +7,7 @@ package org.taverna.server.master.rest;
 
 import static org.joda.time.format.ISODateTimeFormat.basicDateTime;
 import static org.taverna.server.master.common.Roles.USER;
-import static org.taverna.server.master.rest.T2FlowDocumentHandler.T2FLOW;
+import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 
 import java.net.URI;
 import java.util.ArrayList;

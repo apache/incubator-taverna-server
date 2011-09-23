@@ -6,7 +6,7 @@
 package org.taverna.server.master.rest;
 
 import static org.taverna.server.master.common.Roles.USER;
-import static org.taverna.server.master.rest.T2FlowDocumentHandler.T2FLOW;
+import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -172,7 +172,7 @@ public interface TavernaServerREST {
 			policy = new Uri(ui, "policy");
 			feed = new Uri(ui, true, "../feed");
 			// database = new Uri(ui, true, "database");
-			// TODO make the database point to something real
+			// TODO TAVSERV-69: Make the database point to something real
 		}
 	}
 

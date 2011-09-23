@@ -312,7 +312,7 @@
 					<groups>
 						<group>
 							<title>Server Core WebService</title>
-							<packages>org.taverna.server.master:org.taverna.server.master.admin:org.taverna.server.master.common:org.taverna.server.master.facade:org.taverna.server.master.rest:org.taverna.server.master.soap</packages>
+							<packages>org.taverna.server.master:org.taverna.server.master.admin:org.taverna.server.master.common:org.taverna.server.master.facade:org.taverna.server.master.rest:org.taverna.server.master.rest.handler:org.taverna.server.master.soap</packages>
 						</group>
 						<group>
 							<title>Server SPI</title>
@@ -403,7 +403,7 @@
 							<groups>
 								<group>
 									<title>Server Core WebService</title>
-									<packages>org.taverna.server.master:org.taverna.server.master.admin:org.taverna.server.master.common:org.taverna.server.master.facade:org.taverna.server.master.rest:org.taverna.server.master.soap</packages>
+									<packages>org.taverna.server.master:org.taverna.server.master.admin:org.taverna.server.master.common:org.taverna.server.master.facade:org.taverna.server.master.rest:org.taverna.server.master.rest.handler:org.taverna.server.master.soap</packages>
 								</group>
 								<group>
 									<title>Server SPI</title>

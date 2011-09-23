@@ -36,5 +36,5 @@ public interface DirectoryEntry extends Comparable<DirectoryEntry> {
 	 *             If the destroy fails for some reason.
 	 */
 	public void destroy() throws FilesystemAccessException;
-	// FIXME: Permissions (or decide not to do anything about them)
+	// TODO: Permissions (or decide not to do anything about them)
 }
