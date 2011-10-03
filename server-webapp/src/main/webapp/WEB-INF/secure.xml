@@ -52,11 +52,11 @@
 	<bean class="org.taverna.server.master.common.Uri.Rewriter"
 		autowire="byType" id="URI-Rewriter-Thunk" />
 	<security:authentication-manager>
-		<security:authentication-provider>
-			<security:user-service id="users"
+		<security:authentication-provider user-service-ref="userStore" />
+<!-- 			<security:user-service id="users"
 				properties="/WEB-INF/security/users.properties">
-				<!-- FIXME -->
+				FIXME
 			</security:user-service>
-		</security:authentication-provider>
+		</security:authentication-provider> -->
 	</security:authentication-manager>
 </beans>

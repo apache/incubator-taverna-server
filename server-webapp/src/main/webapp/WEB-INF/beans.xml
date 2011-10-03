@@ -121,6 +121,7 @@
 		<property name="runDB" ref="localworker.rundb" />
 		<property name="factory" ref="localworker.factory" />
 		<property name="usageRecords" ref="usageRecordSink" />
+		<property name="userStore" ref="userStore" />
 	</bean>
 
 	<bean id="IdentityMapper" class="org.taverna.server.master.identity.CompositeIDMapper">
@@ -149,6 +150,14 @@
 				</bean>
 			</list>
 		</property>
+	</bean>
+
+	<bean class="org.taverna.server.master.identity.UserStore" id="userStore">
+		<property name="persistenceManagerFactory" ref="pmf" />
+		<property name="baselineUserProperties">
+			<util:properties location="/WEB-INF/security/users.properties"/>
+		</property>
+		<property name="defaultLocalUser" value="${default.localusername}" />
 	</bean>
 
 	<!-- <bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean"> 

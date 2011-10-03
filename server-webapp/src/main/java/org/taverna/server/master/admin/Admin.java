@@ -5,14 +5,20 @@
  */
 package org.taverna.server.master.admin;
 
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -392,8 +398,8 @@ public interface Admin {
 	String setExecuteWorkflowScript(@NonNull String executeWorkflowScript);
 
 	/**
-	 * Get the total duration of time to wait for the start of the
-	 * forker process.
+	 * Get the total duration of time to wait for the start of the forker
+	 * process.
 	 * 
 	 * @return The current setting.
 	 */
@@ -404,8 +410,8 @@ public interface Admin {
 	int getRegistrationWaitSeconds();
 
 	/**
-	 * Set the total duration of time to wait for the start of the
-	 * forker process.
+	 * Set the total duration of time to wait for the start of the forker
+	 * process.
 	 * 
 	 * @param registrationWaitSeconds
 	 *            What to set it to.
@@ -419,8 +425,7 @@ public interface Admin {
 	int setRegistrationWaitSeconds(int registrationWaitSeconds);
 
 	/**
-	 * Get the interval between checks for registration of the
-	 * forker process.
+	 * Get the interval between checks for registration of the forker process.
 	 * 
 	 * @return The current setting.
 	 */
@@ -431,8 +436,7 @@ public interface Admin {
 	int getRegistrationPollMillis();
 
 	/**
-	 * Set the interval between checks for registration of the
-	 * forker process.
+	 * Set the interval between checks for registration of the forker process.
 	 * 
 	 * @param registrationPollMillis
 	 *            What to set it to.
@@ -446,8 +450,8 @@ public interface Admin {
 	int setRegistrationPollMillis(int registrationPollMillis);
 
 	/**
-	 * Get the full pathname of the file containing the
-	 * impersonation credentials for the forker process.
+	 * Get the full pathname of the file containing the impersonation
+	 * credentials for the forker process.
 	 * 
 	 * @return The current setting.
 	 */
@@ -459,8 +463,8 @@ public interface Admin {
 	String getRunasPasswordFile();
 
 	/**
-	 * Set the full pathname of the file containing the
-	 * impersonation credentials for the forker process.
+	 * Set the full pathname of the file containing the impersonation
+	 * credentials for the forker process.
 	 * 
 	 * @param runasPasswordFile
 	 *            What to set it to.
@@ -545,6 +549,37 @@ public interface Admin {
 	@Description("What is the list of usage records that have been collected?")
 	URList usageRecords();
 
+	@GET
+	@Path("users")
+	@Produces({ "application/xml", "application/json" })
+	@Description("What users are known to the server?")
+	UserList users(@Context UriInfo ui);
+
+	@GET
+	@Path("users/{id}")
+	@Produces({ "application/xml", "application/json" })
+	@Description("What do we know about a particular user?")
+	UserDesc user(@PathParam("id") String username);
+
+	@POST
+	@Path("users")
+	@Consumes({ "application/xml", "application/json" })
+	@Description("Create a user.")
+	Response useradd(UserDesc userdesc, @NonNull @Context UriInfo ui);
+
+	@PUT
+	@Path("users/{id}")
+	@Produces({ "application/xml", "application/json" })
+	@Consumes({ "application/xml", "application/json" })
+	@Description("Update a user.")
+	UserDesc userset(@PathParam("id") String username, UserDesc userdesc);
+
+	@DELETE
+	@Path("users/{id}")
+	@Produces({ "application/xml", "application/json" })
+	@Description("What do we know about a particular user?")
+	Response userdel(@PathParam("id") String username);
+
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 	/**
@@ -620,6 +655,33 @@ public interface Admin {
 	public static class StringList {
 		@XmlElement
 		public List<String> string;
+	}
+
+	/**
+	 * A list of users, as XML.
+	 * 
+	 * @author Donal Fellows
+	 */
+	@XmlRootElement(name = "userList")
+	@XmlType(name = "UserList")
+	public static class UserList {
+		@XmlElement
+		public List<URI> user = new ArrayList<URI>();
+	}
+
+	@XmlRootElement(name = "userDesc")
+	@XmlType(name = "UserDesc")
+	public static class UserDesc {
+		@XmlElement
+		public String username;
+		@XmlElement
+		public String password;
+		@XmlElement
+		public String localUserId;
+		@XmlElement
+		public Boolean enabled;
+		@XmlElement
+		public Boolean admin;
 	}
 
 	/**

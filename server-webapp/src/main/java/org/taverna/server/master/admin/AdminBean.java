@@ -8,12 +8,17 @@ package org.taverna.server.master.admin;
 import static org.taverna.server.master.common.Roles.ADMIN;
 
 import java.util.Arrays;
+import java.util.UUID;
 
 import javax.annotation.security.RolesAllowed;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.ManagementModel;
+import org.taverna.server.master.identity.User;
+import org.taverna.server.master.identity.UserStore;
 import org.taverna.server.master.localworker.IdAwareForkRunFactory;
 import org.taverna.server.master.localworker.RunDBSupport;
 import org.taverna.server.master.usage.UsageRecordRecorder;
@@ -50,11 +55,17 @@ public class AdminBean implements Admin {
 		this.usageRecords = usageRecords;
 	}
 
+	@Required
+	public void setUserStore(UserStore userStore) {
+		this.userStore = userStore;
+	}
+
 	private ManagementModel state;
 	private InvocationCounter counter;
 	private RunDBSupport runDB;
 	private IdAwareForkRunFactory factory;
 	private UsageRecordRecorder usageRecords;
+	private UserStore userStore;
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -207,6 +218,7 @@ public class AdminBean implements Admin {
 		result.string = Arrays.asList(xargs == null ? new String[0] : xargs);
 		return result;
 	}
+
 	@RolesAllowed(ADMIN)
 	@Override
 	public StringList setExtraArguments(StringList newValue) {
@@ -261,6 +273,7 @@ public class AdminBean implements Admin {
 	public int getRegistrationPollMillis() {
 		return factory.getSleepTime();
 	}
+
 	@RolesAllowed(ADMIN)
 	@Override
 	public int setRegistrationPollMillis(int newValue) {
@@ -322,4 +335,75 @@ public class AdminBean implements Admin {
 		return result;
 	}
 
+	@RolesAllowed(ADMIN)
+	@Override
+	public UserList users(UriInfo ui) {
+		UserList ul = new UserList();
+		UriBuilder ub = ui.getAbsolutePathBuilder().path("{id}");
+		for (String user : userStore.getUserNames())
+			ul.user.add(ub.build(user));
+		return ul;
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public UserDesc user(String username) {
+		UserDesc desc = new UserDesc();
+		User u = userStore.getUser(username);
+		desc.username = u.getUsername();
+		desc.password = u.getPassword();
+		desc.localUserId = u.getLocalUsername();
+		desc.admin = u.isAdmin();
+		desc.enabled = u.isEnabled();
+		return desc;
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response useradd(UserDesc userdesc, UriInfo ui) {
+		if (userdesc.username == null)
+			throw new IllegalArgumentException("no user name supplied");
+		if (userdesc.password == null)
+			userdesc.password = UUID.randomUUID().toString();
+		userStore.addUser(userdesc.username, userdesc.password, false);
+		if (userdesc.localUserId != null)
+			userStore.setUserLocalUser(userdesc.username, userdesc.localUserId);
+		if (userdesc.admin != null && userdesc.admin)
+			userStore.setUserAdmin(userdesc.username, true);
+		if (userdesc.enabled != null && userdesc.enabled)
+			userStore.setUserEnabled(userdesc.username, true);
+		return Response.created(
+				ui.getAbsolutePathBuilder().path("{id}")
+						.build(userdesc.username)).build();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public UserDesc userset(String username, UserDesc userdesc) {
+		if (userdesc.password != null)
+			userStore.setUserPassword(username, userdesc.password);
+		if (userdesc.localUserId != null)
+			userStore.setUserLocalUser(username, userdesc.localUserId);
+		if (userdesc.admin != null)
+			userStore.setUserAdmin(username, userdesc.admin);
+		if (userdesc.enabled != null)
+			userStore.setUserEnabled(username, userdesc.enabled);
+		userdesc = null; // Stop reuse!
+
+		UserDesc desc = new UserDesc();
+		User u = userStore.getUser(username);
+		desc.username = u.getUsername();
+		desc.password = u.getPassword();
+		desc.localUserId = u.getLocalUsername();
+		desc.admin = u.isAdmin();
+		desc.enabled = u.isEnabled();
+		return desc;
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response userdel(String username) {
+		userStore.deleteUser(username);
+		return Response.noContent().build();
+	}
 }

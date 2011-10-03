@@ -16,7 +16,7 @@ import twitter4j.Twitter;
 import twitter4j.TwitterFactory;
 import twitter4j.conf.Configuration;
 import twitter4j.conf.PropertyConfiguration;
-import twitter4j.http.AuthorizationFactory;
+import twitter4j.auth.AuthorizationFactory;
 
 /**
  * Super simple-minded twitter dispatcher. You need to tell it your consumer key
