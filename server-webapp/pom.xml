@@ -19,43 +19,10 @@
 		<url>http://code.google.com/p/taverna/source/browse/taverna/products/uk.org.taverna.server/trunk/server-webapp</url>
 	</scm>
 
-	<repositories>
-		<repository>
-			<id>datanucleus</id>
-			<name>DataNucleus Repository</name>
-			<url>http://www.datanucleus.org/downloads/maven2</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>twitter4j</id>
-			<name>twitter4j.org Repository</name>
-			<url>http://twitter4j.org/maven2</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>datanucleus</id>
-			<name>DataNucleus Repository</name>
-			<url>http://www.datanucleus.org/downloads/maven2</url>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>interval:10080<!-- weekly --></updatePolicy>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</pluginRepository>
-	</pluginRepositories>
-
 	<properties>
 		<version.cxf>2.4.2</version.cxf>
-		<version.spring>3.0.5.RELEASE</version.spring>
-		<version.spring-security>3.0.2.RELEASE</version.spring-security>
+		<version.spring>3.0.6.RELEASE</version.spring>
+		<version.spring-security>3.0.7.RELEASE</version.spring-security>
 		<version.datanucleus>3.0.0-release</version.datanucleus>
 		<version.asm>3.3.1</version.asm>
 		<version.smack>3.2.1</version.smack>
@@ -189,6 +156,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.datanucleus</groupId>
+			<artifactId>datanucleus-api-jdo</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.datanucleus</groupId>
 			<artifactId>datanucleus-core</artifactId>
 		</dependency>
 		<dependency>
@@ -314,6 +285,11 @@
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-context</artifactId>
 				<version>${version.spring}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.datanucleus</groupId>
+				<artifactId>datanucleus-api-jdo</artifactId>
+				<version>[${version.datanucleus},)</version>
 			</dependency>
 			<dependency>
 				<groupId>org.datanucleus</groupId>

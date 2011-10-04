@@ -25,11 +25,6 @@
 	</description>
 
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
-	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
-	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
-	<import resource="classpath:META-INF/cxf/cxf-extension-jaxrs-binding.xml" />
-	<import resource="classpath:META-INF/cxf/cxf-extension-jaxws.xml" />
-
 	<import resource="providers.xml" />
 
 	<context:annotation-config />
