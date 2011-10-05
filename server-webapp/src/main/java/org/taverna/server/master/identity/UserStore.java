@@ -1,6 +1,9 @@
 package org.taverna.server.master.identity;
 
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
+import static org.taverna.server.master.common.Roles.ADMIN;
+import static org.taverna.server.master.common.Roles.USER;
+import static org.taverna.server.master.identity.AuthorityDerivedIDMapper.DEFAULT_PREFIX;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.PostConstruct;
 import javax.jdo.annotations.PersistenceAware;
 
 import org.springframework.dao.DataAccessException;
@@ -16,6 +20,7 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedOperationParameter;
 import org.springframework.jmx.export.annotation.ManagedOperationParameters;
 import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -30,7 +35,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		super(User.class);
 	}
 
-	Map<String, UserDetails> base = new HashMap<String, UserDetails>();
+	private Map<String, UserDetails> base = new HashMap<String, UserDetails>();
 	private String defLocalUser;
 
 	public void setBaselineUserProperties(Properties props) {
@@ -61,19 +66,66 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		this.defLocalUser = defLocalUser;
 	}
 
-	@WithinSingleTransaction
-	@ManagedAttribute(description = "The list of server accounts known about.")
-	public List<String> getUserNames() {
-		@SuppressWarnings("unchecked")
-		List<String> ids = (List<String>) namedQuery("users").execute();
-		return ids;
+	@SuppressWarnings("unchecked")
+	private List<String> getUsers() {
+		return (List<String>) namedQuery("users").execute();
 	}
 
+	@WithinSingleTransaction
+	@PostConstruct
+	void initDB() {
+		if (base == null || base.isEmpty() || !getUsers().isEmpty())
+			return;
+		for (String username : base.keySet()) {
+			UserDetails ud = base.get(username);
+			if (ud == null || !ud.getAuthorities().contains(USER))
+				continue;
+			User u = new User();
+			u.setUsername(username);
+			u.setPassword(ud.getPassword());
+			u.setAdmin(ud.getAuthorities().contains(ADMIN));
+			u.setDisabled(!ud.isEnabled());
+			for (GrantedAuthority ga : ud.getAuthorities())
+				if (ga.getAuthority().startsWith(DEFAULT_PREFIX)) {
+					u.setLocalUsername(ga.getAuthority().substring(
+							DEFAULT_PREFIX.length()));
+					break;
+				}
+			persist(u);
+		}
+		base.clear();
+	}
+
+	/**
+	 * List the currently-known account names.
+	 * 
+	 * @return A list of users in the database. Note that this is a snapshot.
+	 */
+	@WithinSingleTransaction
+	@ManagedAttribute(description = "The list of server accounts known about.", currencyTimeLimit = 30)
+	public List<String> getUserNames() {
+		return getUsers();
+	}
+
+	/**
+	 * Get a particular user's description.
+	 * 
+	 * @param userName
+	 *            The username to look up.
+	 * @return A <i>copy</i> of the user description.
+	 */
 	@WithinSingleTransaction
 	public User getUser(String userName) {
 		return detach(getById(userName));
 	}
 
+	/**
+	 * Get information about a server account.
+	 * 
+	 * @param userName
+	 *            The username to look up.
+	 * @return A description map intended for use by a server admin over JMX.
+	 */
 	@WithinSingleTransaction
 	@ManagedOperation(description = "Get information about a server account.")
 	@ManagedOperationParameters(@ManagedOperationParameter(name = "userName", description = "The username to look up."))
@@ -82,22 +134,37 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		Map<String, String> info = new HashMap<String, String>();
 		info.put("name", u.getUsername());
 		info.put("pass", u.getPassword());
-		info.put("admin", u.isAdmin() ? "1" : "0");
-		info.put("enabled", u.isEnabled() ? "1" : "0");
+		info.put("admin", u.isAdmin() ? "yes" : "no");
+		info.put("enabled", u.isEnabled() ? "yes" : "no");
 		info.put("localID", u.getLocalUsername());
 		return info;
 	}
 
+	/**
+	 * Get a list of all the users in the database.
+	 * 
+	 * @return A list of user details, <i>copied</i> out of the database.
+	 */
 	@WithinSingleTransaction
 	public List<UserDetails> listUsers() {
-		@SuppressWarnings("unchecked")
-		List<String> ids = (List<String>) namedQuery("users").execute();
 		ArrayList<UserDetails> result = new ArrayList<UserDetails>();
-		for (String id : ids)
+		for (String id : getUsers())
 			result.add(detach(getById(id)));
 		return result;
 	}
 
+	/**
+	 * Create a new user account; the account will be disabled and
+	 * non-administrative by default. Does not create any underlying system
+	 * account.
+	 * 
+	 * @param username
+	 *            The username to create.
+	 * @param password
+	 *            The password to use.
+	 * @param coupleLocalUsername
+	 *            Whether to set the local user name to the 'main' one.
+	 */
 	@WithinSingleTransaction
 	@ManagedOperation(description = "Create a new user account; the account will be disabled and non-administrative by default. Does not create any underlying system account.")
 	@ManagedOperationParameters({
@@ -121,6 +188,15 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		persist(u);
 	}
 
+	/**
+	 * Set or clear whether this account is enabled. Disabled accounts cannot be
+	 * used to log in.
+	 * 
+	 * @param username
+	 *            The username to adjust.
+	 * @param enabled
+	 *            Whether to enable the account.
+	 */
 	@WithinSingleTransaction
 	@ManagedOperation(description = "Set or clear whether this account is enabled. Disabled accounts cannot be used to log in.")
 	@ManagedOperationParameters({
@@ -131,6 +207,15 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		u.setDisabled(!enabled);
 	}
 
+	/**
+	 * Set or clear the mark on an account that indicates that it has
+	 * administrative privileges.
+	 * 
+	 * @param username
+	 *            The username to adjust.
+	 * @param admin
+	 *            Whether the account has admin privileges.
+	 */
 	@WithinSingleTransaction
 	@ManagedOperation(description = "Set or clear the mark on an account that indicates that it has administrative privileges.")
 	@ManagedOperationParameters({
@@ -141,6 +226,14 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		u.setAdmin(admin);
 	}
 
+	/**
+	 * Change the password for an account.
+	 * 
+	 * @param username
+	 *            The username to adjust.
+	 * @param password
+	 *            The new password to use.
+	 */
 	@WithinSingleTransaction
 	@ManagedOperation(description = "Change the password for an account.")
 	@ManagedOperationParameters({
@@ -151,6 +244,14 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		u.setPassword(password);
 	}
 
+	/**
+	 * Change what local system account to use for a server account.
+	 * 
+	 * @param username
+	 *            The username to adjust.
+	 * @param localUsername
+	 *            The new local user account use.
+	 */
 	@WithinSingleTransaction
 	@ManagedOperation(description = "Change what local system account to use for a server account.")
 	@ManagedOperationParameters({
@@ -161,6 +262,12 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		u.setLocalUsername(localUsername);
 	}
 
+	/**
+	 * Delete a server account. The underlying system account is not modified.
+	 * 
+	 * @param username
+	 *            The username to delete.
+	 */
 	@WithinSingleTransaction
 	@ManagedOperation(description = "Delete a server account. The underlying system account is not modified.")
 	@ManagedOperationParameters(@ManagedOperationParameter(name = "username", description = "The username to delete."))

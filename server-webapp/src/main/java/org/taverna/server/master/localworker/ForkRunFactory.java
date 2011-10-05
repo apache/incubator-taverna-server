@@ -11,6 +11,7 @@ import static java.util.Arrays.asList;
 import static java.util.Calendar.SECOND;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.logging.LogFactory.getLog;
+import static org.springframework.jmx.support.MetricType.COUNTER;
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 
 import java.io.BufferedReader;
@@ -27,6 +28,7 @@ import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
+import org.springframework.jmx.export.annotation.ManagedMetric;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
@@ -181,7 +183,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory {
 	}
 
 	/** @return How many times has a workflow run been spawned by this engine. */
-	@ManagedAttribute(description = "How many times has a workflow run been spawned by this engine.", currencyTimeLimit = 10)
+	@ManagedMetric(description = "How many times has a workflow run been spawned by this engine.", currencyTimeLimit = 10, metricType = COUNTER, category = "throughput")
 	public int getTotalRuns() {
 		return totalRuns;
 	}

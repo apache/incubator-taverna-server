@@ -10,6 +10,14 @@
 <title>Taverna 2 Server: Deployment and Administration</title>
 </head>
 <body>
+<div style="float: right; background: #eeeeee">
+<ul>
+	<li><a href="#tomcat">Deployment within Tomcat</a></li>
+	<li><a href="#properties">Configuration Property List</a></li>
+	<li><a href="#users">User Accounts</a></li>
+	<li><a href="#impersonation">Configuration of Impersonation</a></li>
+</ul>
+</div>
 <div class="head">
 	<img
 		src="http://www.taverna.org.uk/pages/wp-content/uploads/2010/07/taverna-server-logo.png"
@@ -19,6 +27,7 @@
 	<hr>
 </div>
 <div class="section">
+	<a name="tomcat"></a>
 	<h2>Deployment within Tomcat</h2>
 	<p>
 		Deployment of web applications into Tomcat can be done through
@@ -85,6 +94,7 @@
 	</p>
 </div>
 <div class="section">
+	<a name="properties"></a>
 	<h2>Configuration Property List</h2>
 	<p>
 		This is a list of all the properties that are set by default in the
@@ -172,6 +182,31 @@ twitter.oauth.accessTokenSecret:    <font color="red">*******</font>
 </pre></div>
 </div>
 <div class="section">
+	<a name="users"></a>
+	<h2>User Accounts</h2>
+		<p>
+			Once you have deployed the server, you can use either JMX or the
+			<tt>/admin</tt>
+			interface to create and manage accounts. Only accounts with
+			administrative permission can do such management. The initial set of
+			users is loaded into the database from the
+			<tt>WEB-INF/security/users.properties</tt>
+			file in the deployment package; see the comments in that file for a
+			more complete description of its contents; the file is only used if
+			the user database is empty.
+		</p>
+		<p>
+			By default, two enabled users are created. One is a normal user
+			(<tt>taverna</tt>, with password <tt>taverna</tt>) and the other is
+			an administrative user (<tt>admin</tt>, password <tt>admin</tt>).
+			<i>These defaults should be changed after installation as they are
+			not considered secure by default.</i> More information about the
+			mapping process is in the
+			<a href="security.html">security summary document</a>. 
+		</p>
+	</div>
+<div class="section">
+	<a name="impersonation"></a>
 	<h2>Configuration of Impersonation</h2>
 	<p>
 		If it is desired to separate each user of Taverna Server from the

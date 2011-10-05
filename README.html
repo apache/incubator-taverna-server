@@ -27,20 +27,32 @@
 <div><img
 	src="http://www.taverna.org.uk/pages/wp-content/uploads/2010/07/taverna-server-logo.png"
 	style="float: left" width="92" height="92"/>
-<h1>Taverna 2 Server release 2 README</h1>
-<p>This is the second (beta) release of the Taverna 2 Server, from
-the <a href="http://www.mygrid.org.uk/">myGrid</a> team at the <a
-	href="http://www.manchester.ac.uk/">University of Manchester</a>.</p>
-</div>
+<h1>Taverna 2.3 Server release 1 README</h1>
+		<p>
+			This is release of Taverna Server that is based on the Taverna 2.3
+			Platform, from the <a href="http://www.mygrid.org.uk/">myGrid</a>
+			team at the <a href="http://www.manchester.ac.uk/">University of
+				Manchester</a>.
+		</p>
+	</div>
 
 <br clear="right" />
 <div>
 <h2><a name="about" />About</h2>
-<p>This beta release is a feature-incomplete version of the Taverna
-2 Server that has been made available to allow people outside the core
-Taverna team the opportunity to provide input on their requirements from
-a basis of trying to integrate things into their own deployments.</p>
-<p>This release supports a number of key features:</p>
+<p>This release is a feature-complete version of the Taverna
+2 Server that is provided as a basis for deployments of serverized Taverna in a multi-user environment.</p>
+<p>In addition to its improved performance, this release supports a number of new key features:</p>
+<ul>
+	<li>Based on <b>Taverna 2.3</b></li>
+	<li><b>Multiple users</b>, with strong separation between them.</li>
+	<li>Limited <b>persistence over service restarts</b>, depending on exact deployment.</li>
+	<li><b>Workflow run introspection</b> capabilities; clients can ask the server what inputs they should supply and what outputs were provided.</li>
+	<li><b>Workflow run termination notifications</b> through multiple mechanisms (RSS feed, email, SMS, twitter, etc. depending on deployment).</li>
+	<li><b>Security</b></li>
+	<li><b>Administrative REST interface</b> including resource accounting</li>
+	<li>Streaming of <b>large files</b> both for download and upload.</li>
+</ul>
+<p>This is in addition to the features supported by the previous version of Taverna 2 Server:</p>
 <ul>
 	<li>
 	<p><b>Upload and Execution of arbitrary Taverna 2 workflows</b></p>
@@ -66,21 +78,13 @@ a basis of trying to integrate things into their own deployments.</p>
 	<p><b>JMX-based Management API</b></p>
 	</li>
 </ul>
-<p>There are a number of known-missing features; notably these
-include:</p>
+<p>There remain a number of known-missing features; notably these
+include access to:</p>
 <ul>
 	<li>
-	<p>Security and User Management</p>
+	<p>Provenance Database</p>
 	</li>
-	<li>
-	<p>Provenance Database Access</p>
-	</li>
-	<li>
-	<p>Workflow Event Listeners</p>
-	</li>
-	<li>
-	<p>Persistence across Service Restarts</p>
-	</li>
+	<li><b>Workflow Execution Model</b></li>
 </ul>
 <hr />
 </div>
@@ -88,6 +92,10 @@ include:</p>
 <div>
 <h2><a name="install" />Installation</h2>
 <h3><a name="install/needed" />Prerequisites</h3>
+		<p>You will need Unix of some kind. (The system security
+			integration does not work with the Windows security model, and the
+			restrictions on command-line lengths on that platform are another
+			significant issue.)</p>
 <p>You will need a <b>Java 6</b> installation.</p>
 <p>You will need a suitable <b>servlet container</b>.</p>
 <dl>
@@ -99,9 +107,11 @@ include:</p>
 	deployable code. We welcome feedback on which containers work, as well
 	as on how to configure them (if they are not Tomcat versions).</dd>
 </dl>
-<p>You will need <a
-	href="http://www.taverna.org.uk/download/taverna-2-2/"><b>Taverna
-2.2</b></a> (or later) installed.</p>
+		<p>
+			<font size="-1">Unlike in the previous version of Taverna
+				Server, you do not need a separate installation of the Taverna
+				Workbench or Command-line Tool with this release.</font>
+		</p>
 <h3><a name="install/tomcat" />Installation into Tomcat</h3>
 <p>Note that these instructions are Tomcat-specific.</p>
 <h4>Step 1. Configure Tomcat for JMX</h4>
@@ -119,10 +129,6 @@ JMX management layer is secure; see the <a
 	href="http://java.sun.com/javase/6/docs/technotes/guides/management/agent.html"
 	title="Monitoring and Management Using JMX Technology">Java JMX
 documentation</a> for a discussion of how to do this.</p>
-<p>Users on Windows should edit <tt>&lt;TOMCATDIR&gt;/bin/startup.bat</tt>
-instead, adding the line:</p>
-<blockquote><pre>set CATALINA_OPTS=-Dcom.sun.management.jmxremote</pre>
-</blockquote>
 <h4>Step 2. Configure Tomcat for General Management</h4>
 <p>Add a user entry in <tt>&lt;TOMCATDIR&gt;/conf/tomcat-users.xml</tt>
 so that the manager webapp can know who you are and that you have
@@ -139,13 +145,15 @@ will be addressed in future releases of Taverna Server.</p>
 <p>Now start Tomcat (or restart it).</p>
 <h4>Step 3. Prepare for T2Server WebApp Installation</h4>
 <p>Save the text below as <tt>context.xml</tt> on the machine where
-you are going to install the server, updating the bold part to say where
-your Taverna's <tt>executeworkflow.sh</tt> script is located. This is
-currently the <em>only</em> required configuration step.</p>
+you are going to install the server.</p>
 <blockquote><pre>&lt;Context path="/taverna-server"&gt;
-    &lt;Parameter name="executeWorkflowScript" override="false"
-           value="<b>/usr/local/taverna-2.2/executeworkflow.sh</b>"/&gt;
 &lt;/Context&gt;</pre></blockquote>
+		<p>
+			Additional configuration properties can be set in the
+			<tt>context.xml</tt>
+			file; see <a href="deployment.html">the detailed deployment
+				description document</a> for more information.
+		</p>
 <h4>Step 4. Download the Webapp ARchive</h4>
 <p>Make sure that the <tt>.war</tt> file is also saved to the
 machine on which you will be installing the server.</p>
@@ -416,16 +424,21 @@ properties is liable to change, but is as follows in this release:</p>
 	factory subprocess to start.</p>
 	</dd>
 </dl>
+<h3>Component: Taverna/Server/Users</h3>
+		<p>
+			This is an interface for adding, deleting and otherwise managing user
+			accounts on the server. It does <i>not</i> manage the underlying
+			system accounts, but does allow control over the mapping of users to
+			those accounts. Note that newly-created accounts are disabled by
+			default. More information about the mapping process is in the
+			<a href="security.html">security summary document</a>.
+		</p>
 <hr />
 </div>
 
 <div>
-<p><small>Copyright &copy; 2010. The University of
+<p><small>Copyright &copy; 2010&ndash;2011. The University of
 Manchester.</small></p>
-<p><small>Note that the numbering of this version as Taverna
-2 Server release 2 makes no guarantee that there will be a Taverna 2
-Server release 3 in the future. The myGrid team retains the right to
-alter versioning policy without prior notice.</small></p>
 </div>
 </body>
 </html>

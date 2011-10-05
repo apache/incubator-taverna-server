@@ -9,6 +9,8 @@ import static eu.medsea.util.MimeUtil.getMimeType;
 import static java.lang.Math.min;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static org.apache.commons.logging.LogFactory.getLog;
+import static org.springframework.jmx.support.MetricType.COUNTER;
+import static org.springframework.jmx.support.MetricType.GAUGE;
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 import static org.taverna.server.master.common.Roles.ADMIN;
 
@@ -24,6 +26,7 @@ import javax.xml.bind.JAXBException;
 import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
+import org.springframework.jmx.export.annotation.ManagedMetric;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -89,7 +92,7 @@ public class TavernaServerSupport {
 	/**
 	 * @return Count of the number of external calls into this webapp.
 	 */
-	@ManagedAttribute(description = "Count of the number of external calls into this webapp.")
+	@ManagedMetric(description = "Count of the number of external calls into this webapp.", metricType = COUNTER, category = "throughput")
 	public int getInvocationCount() {
 		return counter.getCount();
 	}
@@ -97,7 +100,7 @@ public class TavernaServerSupport {
 	/**
 	 * @return Current number of runs.
 	 */
-	@ManagedAttribute(description = "Current number of runs.")
+	@ManagedMetric(description = "Current number of runs.", metricType = GAUGE, category = "utilization")
 	public int getCurrentRunCount() {
 		return runStore.listRuns(null, policy).size();
 	}
