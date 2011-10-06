@@ -166,7 +166,17 @@
 					<configuration>
 						<autoVersionSubmodules>true</autoVersionSubmodules>
 						<tagBase>https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/tags</tagBase>
+						<providerImplementations>
+							<svn>javasvn</svn>
+						</providerImplementations>
 					</configuration>
+					<dependencies>
+						<dependency>
+							<groupId>com.google.code.maven-scm-provider-svnjava</groupId>
+							<artifactId>maven-scm-provider-svnjava</artifactId>
+							<version>[1.13,)</version>
+						</dependency>
+					</dependencies>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
