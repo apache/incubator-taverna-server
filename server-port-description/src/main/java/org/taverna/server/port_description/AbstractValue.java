@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name = "value")
+@XmlType(name = "Value")
 @XmlSeeAlso( { ErrorValue.class, LeafValue.class, ListValue.class, AbsentValue.class })
 public abstract class AbstractValue {
 	@XmlAttribute(namespace = XLINK)

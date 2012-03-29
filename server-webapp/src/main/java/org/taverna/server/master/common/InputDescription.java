@@ -22,8 +22,8 @@ import org.taverna.server.master.interfaces.TavernaRun;
  * 
  * @author Donal Fellows
  */
-@XmlRootElement
-@XmlType(name = "InputDescription")
+@XmlRootElement(name = "inputConfiguration")
+@XmlType(name = "InputConfigurationDescription")
 public class InputDescription extends VersionedElement {
 	/**
 	 * The Baclava file handling the description of the elements. May be
@@ -45,6 +45,7 @@ public class InputDescription extends VersionedElement {
 
 	/**
 	 * Make an input description suitable for the given workflow run.
+	 * 
 	 * @param run
 	 */
 	public InputDescription(TavernaRun run) {
@@ -60,17 +61,17 @@ public class InputDescription extends VersionedElement {
 	 * 
 	 * @author Donal Fellows
 	 */
-	@XmlType(name = "PortDescription")
+	@XmlType(name = "PortConfigurationDescription")
 	public static class Port {
 		/**
 		 * The name of this port.
 		 */
-		@XmlAttribute(required = true)
+		@XmlAttribute(name = "portName", required = true)
 		public String name;
 		/**
 		 * The file assigned to this port.
 		 */
-		@XmlAttribute(required = false)
+		@XmlAttribute(name = "portFile", required = false)
 		public String file;
 		/**
 		 * The value assigned to this port.
@@ -86,6 +87,7 @@ public class InputDescription extends VersionedElement {
 
 		/**
 		 * Make a port description suitable for the given input.
+		 * 
 		 * @param input
 		 */
 		public Port(Input input) {

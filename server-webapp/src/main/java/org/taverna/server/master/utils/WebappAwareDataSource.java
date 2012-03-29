@@ -40,7 +40,9 @@ public class WebappAwareDataSource extends BasicDataSource {
 	}
 
 	/**
-	 * A JDBC connection URL to use on shutting down the database. If not set, do nothing special.
+	 * A JDBC connection URL to use on shutting down the database. If not set,
+	 * do nothing special.
+	 * 
 	 * @param url
 	 */
 	public void setShutdownUrl(String url) {

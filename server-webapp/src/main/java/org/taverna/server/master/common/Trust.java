@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 The University of Manchester
+ * Copyright (C) 2011-2012 The University of Manchester
  * 
  * See the file "LICENSE.txt" for license terms.
  */
@@ -10,6 +10,7 @@ import static org.taverna.server.master.common.Namespaces.XLINK;
 import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.Collection;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -52,6 +53,11 @@ public final class Trust implements Serializable {
 	 */
 	@XmlElement
 	public byte[] certificateBytes;
+	/**
+	 * The names of the server(s) identified by this trust.
+	 */
+	@XmlElement
+	public List<String> serverName;
 	/**
 	 * The collection of certificates loaded from the specified file. This is
 	 * always <tt>null</tt> before validation.

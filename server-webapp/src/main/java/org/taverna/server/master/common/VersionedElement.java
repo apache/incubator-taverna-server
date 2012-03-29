@@ -23,7 +23,7 @@ import org.apache.commons.logging.Log;
  * 
  * @author Donal Fellows
  */
-@XmlType(namespace = SERVER)
+@XmlType(name = "VersionedElement", namespace = SERVER)
 public abstract class VersionedElement {
 	/** What version of server produced this element? */
 	@XmlAttribute(namespace = SERVER)

@@ -8,12 +8,12 @@ package org.taverna.server.port_description;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType
+@XmlType(name = "LeafValue")
 public class LeafValue extends AbstractValue {
-	@XmlAttribute
+	@XmlAttribute(name = "contentFile")
 	public String fileName;
-	@XmlAttribute
+	@XmlAttribute(name = "contentType")
 	public String contentType;
-	@XmlAttribute
+	@XmlAttribute(name = "contentByteLength")
 	public Long byteLength;
 }

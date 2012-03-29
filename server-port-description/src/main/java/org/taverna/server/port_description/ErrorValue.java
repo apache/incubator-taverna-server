@@ -8,7 +8,7 @@ package org.taverna.server.port_description;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType
+@XmlType(name = "ErrorValue")
 public class ErrorValue extends AbstractValue {
 	@XmlAttribute
 	public Integer depth;

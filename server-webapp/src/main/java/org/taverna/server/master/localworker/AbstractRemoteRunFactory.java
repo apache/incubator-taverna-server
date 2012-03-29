@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The University of Manchester
+ * Copyright (C) 2010-2012 The University of Manchester
  * 
  * See the file "LICENSE.txt" for license terms.
  */
@@ -8,15 +8,20 @@ package org.taverna.server.master.localworker;
 import static java.lang.System.getSecurityManager;
 import static java.lang.System.setProperty;
 import static java.lang.System.setSecurityManager;
+import static java.net.InetAddress.getLocalHost;
 import static java.rmi.registry.LocateRegistry.createRegistry;
 import static java.rmi.registry.LocateRegistry.getRegistry;
 import static java.rmi.registry.Registry.REGISTRY_PORT;
+import static java.rmi.server.RMISocketFactory.getDefaultSocketFactory;
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,6 +35,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -38,6 +44,7 @@ import org.taverna.server.localworker.server.UsageRecordReceiver;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoListenerException;
+import org.taverna.server.master.factories.ConfigurableRunFactory;
 import org.taverna.server.master.factories.ListenerFactory;
 import org.taverna.server.master.factories.RunFactory;
 import org.taverna.server.master.interfaces.Listener;
@@ -53,7 +60,7 @@ import org.taverna.server.master.utils.UsernamePrincipal;
  */
 @ManagedResource(objectName = JMX_ROOT + "Factory", description = "The factory for runs")
 public abstract class AbstractRemoteRunFactory implements ListenerFactory,
-		RunFactory {
+		RunFactory, ConfigurableRunFactory {
 	Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
 
 	@SuppressWarnings("unused")
@@ -61,6 +68,27 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	@edu.umd.cs.findbugs.annotations.SuppressWarnings("UPM_UNCALLED_PRIVATE_METHOD")
 	private void closeLog() {
 		log = null;
+	}
+
+	@Value("${rmi.localhostOnly}")
+	private boolean rmiLocalhostOnly;
+
+	private Registry makeRegistry(int port) throws RemoteException {
+		if (rmiLocalhostOnly) {
+			setProperty("java.rmi.server.hostname", "127.0.0.1");
+			return createRegistry(port,
+					getDefaultSocketFactory(),
+					new RMIServerSocketFactory() {
+						@Override
+						public ServerSocket createServerSocket(int port)
+								throws IOException {
+							return new ServerSocket(port, 0,
+									getLocalHost());
+						}
+					});
+		} else {
+			return createRegistry(port);
+		}
 	}
 
 	/**
@@ -86,8 +114,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 			log.warn("Will build new registry, "
 					+ "but service restart ability is at risk.");
 			try {
-				setProperty("java.rmi.server.hostname", "127.0.0.1");
-				registry = createRegistry(getRegistryPort());
+				registry = makeRegistry(getRegistryPort());
 				registry.list();
 				return registry;
 			} catch (RemoteException e2) {
@@ -104,8 +131,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		} catch (RemoteException e) {
 			log.warn("Failed to get working RMI registry handle on backup port.");
 			try {
-				setProperty("java.rmi.server.hostname", "127.0.0.1");
-				registry = createRegistry(REGISTRY_PORT);
+				registry = makeRegistry(REGISTRY_PORT);
 				registry.list();
 				return registry;
 			} catch (RemoteException e2) {
@@ -147,11 +173,13 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	}
 
 	@ManagedAttribute(description = "The host holding the RMI registry to communicate via.")
+	@Override
 	public String getRegistryHost() {
 		return state.getRegistryHost();
 	}
 
 	@ManagedAttribute(description = "The host holding the RMI registry to communicate via.")
+	@Override
 	public void setRegistryHost(String host) {
 		boolean rebuild = false;
 		if (host == null || host.isEmpty()) {
@@ -167,11 +195,13 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	}
 
 	@ManagedAttribute(description = "The port number of the RMI registry. Should not normally be set.")
+	@Override
 	public int getRegistryPort() {
 		return state.getRegistryPort();
 	}
 
 	@ManagedAttribute(description = "The port number of the RMI registry. Should not normally be set.")
+	@Override
 	public void setRegistryPort(int port) {
 		if (port != state.getRegistryPort())
 			registry = null;
@@ -277,23 +307,27 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 
 	/** @return The names of the current runs. */
 	@ManagedAttribute(description = "The names of the current runs.", currencyTimeLimit = 5)
+	@Override
 	public String[] getCurrentRunNames() {
 		List<String> names = runDB.listRunNames();
 		return names.toArray(new String[names.size()]);
 	}
 
 	@ManagedAttribute(description = "The maximum number of simultaneous runs supported by the server.", currencyTimeLimit = 300)
+	@Override
 	public int getMaxRuns() {
 		return state.getMaxRuns();
 	}
 
 	@ManagedAttribute(description = "The maximum number of simultaneous runs supported by the server.")
+	@Override
 	public void setMaxRuns(int maxRuns) {
 		state.setMaxRuns(maxRuns);
 	}
 
 	/** @return How many minutes should a workflow live by default? */
 	@ManagedAttribute(description = "How many minutes should a workflow live by default?", currencyTimeLimit = 300)
+	@Override
 	public int getDefaultLifetime() {
 		return state.getDefaultLifetime();
 	}
@@ -305,6 +339,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 *            Default lifetime, in minutes.
 	 */
 	@ManagedAttribute
+	@Override
 	public void setDefaultLifetime(int defaultLifetime) {
 		state.setDefaultLifetime(defaultLifetime);
 	}

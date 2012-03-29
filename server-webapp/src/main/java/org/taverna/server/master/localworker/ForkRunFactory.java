@@ -34,6 +34,7 @@ import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
+import org.taverna.server.master.factories.ConfigurableRunFactory;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -43,8 +44,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * 
  * @author Donal Fellows
  */
-@ManagedResource(objectName = JMX_ROOT + "ForkRunFactory", description = "The factory for simple singleton forked run.")
-public class ForkRunFactory extends AbstractRemoteRunFactory {
+@ManagedResource(objectName = JMX_ROOT + "RunFactory", description = "The factory for simple singleton forked run.")
+public class ForkRunFactory extends AbstractRemoteRunFactory implements ConfigurableRunFactory {
 	private int lastStartupCheckCount;
 	private Integer lastExitCode;
 	private int totalRuns;
@@ -74,6 +75,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory {
 
 	/** @return Which java executable to run. */
 	@ManagedAttribute(description = "Which java executable to run.", currencyTimeLimit = 300)
+	@Override
 	public String getJavaBinary() {
 		return state.getJavaBinary();
 	}
@@ -83,6 +85,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory {
 	 *            Which java executable to run.
 	 */
 	@ManagedAttribute(description = "Which java executable to run.", currencyTimeLimit = 300)
+	@Override
 	public void setJavaBinary(String javaBinary) {
 		state.setJavaBinary(javaBinary);
 		reinitFactory();
@@ -90,6 +93,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory {
 
 	/** @return The list of additional arguments used to make a worker process. */
 	@ManagedAttribute(description = "The list of additional arguments used to make a worker process.", currencyTimeLimit = 300)
+	@Override
 	public String[] getExtraArguments() {
 		return state.getExtraArgs();
 	}
@@ -100,6 +104,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory {
 	 *            process.
 	 */
 	@ManagedAttribute(description = "The list of additional arguments used to make a worker process.", currencyTimeLimit = 300)
+	@Override
 	public void setExtraArguments(String[] firstArguments) {
 		state.setExtraArgs(firstArguments);
 		reinitFactory();
@@ -107,6 +112,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory {
 
 	/** @return The location of the JAR implementing the server worker process. */
 	@ManagedAttribute(description = "The location of the JAR implementing the server worker process.")
+	@Override
 	public String getServerWorkerJar() {
 		return state.getServerWorkerJar();
 	}
@@ -117,6 +123,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory {
 	 *            process.
 	 */
 	@ManagedAttribute(description = "The location of the JAR implementing the server worker process.")
+	@Override
 	public void setServerWorkerJar(String serverWorkerJar) {
 		state.setServerWorkerJar(serverWorkerJar);
 		reinitFactory();
@@ -124,6 +131,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory {
 
 	/** @return The script to run to start running a workflow. */
 	@ManagedAttribute(description = "The script to run to start running a workflow.", currencyTimeLimit = 300)
+	@Override
 	public String getExecuteWorkflowScript() {
 		return state.getExecuteWorkflowScript();
 	}
@@ -133,6 +141,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory {
 	 *            The script to run to start running a workflow.
 	 */
 	@ManagedAttribute(description = "The script to run to start running a workflow.", currencyTimeLimit = 300)
+	@Override
 	public void setExecuteWorkflowScript(String executeWorkflowScript) {
 		state.setExecuteWorkflowScript(executeWorkflowScript);
 		reinitFactory();
@@ -140,6 +149,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory {
 
 	/** @return How many seconds to wait for a worker process to register itself. */
 	@ManagedAttribute(description = "How many seconds to wait for a worker process to register itself.", currencyTimeLimit = 300)
+	@Override
 	public int getWaitSeconds() {
 		return state.getWaitSeconds();
 	}
@@ -150,6 +160,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory {
 	 *            itself.
 	 */
 	@ManagedAttribute(description = "How many seconds to wait for a worker process to register itself.", currencyTimeLimit = 300)
+	@Override
 	public void setWaitSeconds(int seconds) {
 		state.setWaitSeconds(seconds);
 	}
@@ -159,6 +170,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory {
 	 *         process has registered.
 	 */
 	@ManagedAttribute(description = "How many milliseconds to wait between checks to see if a worker process has registered.", currencyTimeLimit = 300)
+	@Override
 	public int getSleepTime() {
 		return state.getSleepMS();
 	}
@@ -169,6 +181,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory {
 	 *            worker process has registered.
 	 */
 	@ManagedAttribute(description = "How many milliseconds to wait between checks to see if a worker process has registered.", currencyTimeLimit = 300)
+	@Override
 	public void setSleepTime(int sleepTime) {
 		state.setSleepMS(sleepTime);
 	}
@@ -178,12 +191,14 @@ public class ForkRunFactory extends AbstractRemoteRunFactory {
 	 *         spawn was tried.
 	 */
 	@ManagedAttribute(description = "How many checks were done for the worker process the last time a spawn was tried.", currencyTimeLimit = 60)
+	@Override
 	public int getLastStartupCheckCount() {
 		return lastStartupCheckCount;
 	}
 
 	/** @return How many times has a workflow run been spawned by this engine. */
 	@ManagedMetric(description = "How many times has a workflow run been spawned by this engine.", currencyTimeLimit = 10, metricType = COUNTER, category = "throughput")
+	@Override
 	public int getTotalRuns() {
 		return totalRuns;
 	}
@@ -193,6 +208,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory {
 	 *         was killed?
 	 */
 	@ManagedAttribute(description = "What was the exit code from the last time the factory subprocess was killed?")
+	@Override
 	public Integer getLastExitCode() {
 		return lastExitCode;
 	}
@@ -202,6 +218,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory {
 	 *         as.
 	 */
 	@ManagedAttribute(description = "What the factory subprocess's main RMI interface is registered as.", currencyTimeLimit = 60)
+	@Override
 	public String getFactoryProcessName() {
 		return factoryProcessName;
 	}
@@ -412,5 +429,30 @@ public class ForkRunFactory extends AbstractRemoteRunFactory {
 		}
 		throw new NoCreateException("total failure to connect to factory "
 				+ factoryProcessName + "despite attempting restart");
+	}
+
+	@Override
+	public String getPasswordFile() {
+		return "";
+	}
+
+	@Override
+	public String getServerForkerJar() {
+		return "<NOT-SUPPORTED>";
+	}
+
+	@Override
+	public void setPasswordFile(String newValue) {
+		// Do nothing
+	}
+
+	@Override
+	public void setServerForkerJar(String newValue) {
+		// Do nothing
+	}
+
+	@Override
+	public String[] getFactoryProcessMapping() {
+		return new String[0];
 	}
 }

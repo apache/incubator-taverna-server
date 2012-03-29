@@ -464,7 +464,7 @@ public interface TavernaServerREST {
 	 * 
 	 * @author Donal Fellows
 	 */
-	@XmlType
+	@XmlType(name = "Events")
 	public static abstract class Events extends VersionedElement {
 		/**
 		 * @return The owner of the events in question.

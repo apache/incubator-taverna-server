@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The University of Manchester
+ * Copyright (C) 2010-2012 The University of Manchester
  * 
  * See the file "LICENSE.txt" for license terms.
  */
@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -46,6 +47,7 @@ import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
+import org.taverna.server.master.factories.ConfigurableRunFactory;
 import org.taverna.server.master.interfaces.LocalIdentityMapper;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
@@ -56,8 +58,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * 
  * @author Donal Fellows
  */
-@ManagedResource(objectName = JMX_ROOT + "IdAwareForkRunFactory", description = "The factory for simple singleton forked run.")
-public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
+@ManagedResource(objectName = JMX_ROOT + "RunFactory", description = "The factory for a user-specific forked run.")
+public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements ConfigurableRunFactory {
 	private int totalRuns;
 	private MetaFactory forker;
 	private Map<String, RemoteRunFactory> factory;
@@ -90,6 +92,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 	}
 
 	/** @return Which java executable to run. */
+	@Override
 	@ManagedAttribute(description = "Which java executable to run.", currencyTimeLimit = 300)
 	public String getJavaBinary() {
 		return state.getJavaBinary();
@@ -99,6 +102,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 	 * @param javaBinary
 	 *            Which java executable to run.
 	 */
+	@Override
 	@ManagedAttribute(description = "Which java executable to run.", currencyTimeLimit = 300)
 	public void setJavaBinary(String javaBinary) {
 		state.setJavaBinary(javaBinary);
@@ -106,6 +110,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 	}
 
 	/** @return The list of additional arguments used to make a worker process. */
+	@Override
 	@ManagedAttribute(description = "The list of additional arguments used to make a worker process.", currencyTimeLimit = 300)
 	public String[] getExtraArguments() {
 		return state.getExtraArgs();
@@ -116,6 +121,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 	 *            The list of additional arguments used to make a worker
 	 *            process.
 	 */
+	@Override
 	@ManagedAttribute(description = "The list of additional arguments used to make a worker process.", currencyTimeLimit = 300)
 	public void setExtraArguments(String[] firstArguments) {
 		state.setExtraArgs(firstArguments);
@@ -123,6 +129,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 	}
 
 	/** @return The location of the JAR implementing the server worker processes. */
+	@Override
 	@ManagedAttribute(description = "The location of the JAR implementing the server worker processes.")
 	public String getServerWorkerJar() {
 		return state.getServerWorkerJar();
@@ -133,6 +140,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 	 *            The location of the JAR implementing the server worker
 	 *            processes.
 	 */
+	@Override
 	@ManagedAttribute(description = "The location of the JAR implementing the server worker processes.")
 	public void setServerWorkerJar(String serverWorkerJar) {
 		state.setServerWorkerJar(serverWorkerJar);
@@ -140,6 +148,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 	}
 
 	/** @return The script to run to start running a workflow. */
+	@Override
 	@ManagedAttribute(description = "The script to run to start running a workflow.", currencyTimeLimit = 300)
 	public String getExecuteWorkflowScript() {
 		return state.getExecuteWorkflowScript();
@@ -149,6 +158,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 	 * @param executeWorkflowScript
 	 *            The script to run to start running a workflow.
 	 */
+	@Override
 	@ManagedAttribute(description = "The script to run to start running a workflow.", currencyTimeLimit = 300)
 	public void setExecuteWorkflowScript(String executeWorkflowScript) {
 		state.setExecuteWorkflowScript(executeWorkflowScript);
@@ -156,6 +166,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 	}
 
 	/** @return How many seconds to wait for a worker process to register itself. */
+	@Override
 	@ManagedAttribute(description = "How many seconds to wait for a worker process to register itself.", currencyTimeLimit = 300)
 	public int getWaitSeconds() {
 		return state.getWaitSeconds();
@@ -166,6 +177,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 	 *            How many seconds to wait for a worker process to register
 	 *            itself.
 	 */
+	@Override
 	@ManagedAttribute(description = "How many seconds to wait for a worker process to register itself.", currencyTimeLimit = 300)
 	public void setWaitSeconds(int seconds) {
 		state.setWaitSeconds(seconds);
@@ -175,6 +187,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 	 * @return How many milliseconds to wait between checks to see if a worker
 	 *         process has registered.
 	 */
+	@Override
 	@ManagedAttribute(description = "How many milliseconds to wait between checks to see if a worker process has registered.", currencyTimeLimit = 300)
 	public int getSleepTime() {
 		return state.getSleepMS();
@@ -185,6 +198,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 	 *            How many milliseconds to wait between checks to see if a
 	 *            worker process has registered.
 	 */
+	@Override
 	@ManagedAttribute(description = "How many milliseconds to wait between checks to see if a worker process has registered.", currencyTimeLimit = 300)
 	public void setSleepTime(int sleepTime) {
 		state.setSleepMS(sleepTime);
@@ -194,6 +208,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 	 * @return A file containing a password to use when running a program as
 	 *         another user (e.g., with sudo).
 	 */
+	@Override
 	@ManagedAttribute(description = "A file containing a password to use when running a program as another user (e.g., with sudo).", currencyTimeLimit = 300)
 	public String getPasswordFile() {
 		return state.getPasswordFile();
@@ -204,6 +219,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 	 *            A file containing a password to use when running a program as
 	 *            another user (e.g., with sudo).
 	 */
+	@Override
 	@ManagedAttribute(description = "A file containing a password to use when running a program as another user (e.g., with sudo).", currencyTimeLimit = 300)
 	public void setPasswordFile(String passwordFile) {
 		state.setPasswordFile(passwordFile);
@@ -212,6 +228,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 	/**
 	 * @return The location of the JAR implementing the secure-fork process.
 	 */
+	@Override
 	@ManagedAttribute(description = "The location of the JAR implementing the secure-fork process.", currencyTimeLimit = 300)
 	public String getServerForkerJar() {
 		return state.getServerForkerJar();
@@ -221,6 +238,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 	 * @param serverForkerJar
 	 *            The location of the JAR implementing the secure-fork process.
 	 */
+	@Override
 	@ManagedAttribute(description = "The location of the JAR implementing the secure-fork process.", currencyTimeLimit = 300)
 	public void setServerForkerJar(String serverForkerJar) {
 		state.setServerForkerJar(serverForkerJar);
@@ -230,12 +248,14 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 	 * @return How many checks were done for the worker process the last time a
 	 *         spawn was tried.
 	 */
+	@Override
 	@ManagedAttribute(description = "How many checks were done for the worker process the last time a spawn was tried.", currencyTimeLimit = 60)
 	public int getLastStartupCheckCount() {
 		return forker == null ? 0 : forker.lastStartupCheckCount();
 	}
 
 	/** @return How many times has a workflow run been spawned by this engine. */
+	@Override
 	@ManagedMetric(description = "How many times has a workflow run been spawned by this engine.", currencyTimeLimit = 10, metricType = COUNTER, category = "throughput")
 	public int getTotalRuns() {
 		return totalRuns;
@@ -245,6 +265,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 	 * @return What was the exit code from the last time the factory subprocess
 	 *         was killed?
 	 */
+	@Override
 	@ManagedAttribute(description = "What was the exit code from the last time the factory subprocess was killed?")
 	public Integer getLastExitCode() {
 		return forker == null ? null : forker.lastExitCode();
@@ -253,6 +274,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 	/**
 	 * @return The mapping of user names to RMI factory IDs.
 	 */
+	@Override
 	@ManagedAttribute(description = "The mapping of user names to RMI factory IDs.", currencyTimeLimit = 60)
 	public String[] getFactoryProcessMapping() {
 		ArrayList<String> result = new ArrayList<String>();
@@ -308,21 +330,32 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 		private int lastStartupCheckCount;
 		private Integer lastExitCode;
 
-		MetaFactoryImpl() throws IOException {
-			ProcessBuilder p = new ProcessBuilder(getJavaBinary());
+		/**
+		 * Construct the command to run the meta-factory process.
+		 * 
+		 * @param args
+		 *            The live list of arguments to pass.
+		 */
+		private void initFactoryArgs(List<String> args) {
+			args.add(getJavaBinary());
 			String pwf = getPasswordFile();
 			if (pwf != null) {
-				p.command().add("-Dpassword.file=" + pwf);
+				args.add("-Dpassword.file=" + pwf);
 			}
-			p.command().add("-jar");
-			p.command().add(getServerForkerJar());
-			p.command().add(getJavaBinary());
-			p.command().addAll(asList(getExtraArguments()));
-			p.command().add("-jar");
-			p.command().add(getServerWorkerJar());
+			args.add("-jar");
+			args.add(getServerForkerJar());
+			args.add(getJavaBinary());
+			args.addAll(asList(getExtraArguments()));
+			args.add("-jar");
+			args.add(getServerWorkerJar());
 			if (getExecuteWorkflowScript() == null)
 				log.fatal("no execute workflow script");
-			p.command().add(getExecuteWorkflowScript());
+			args.add(getExecuteWorkflowScript());
+		}
+
+		MetaFactoryImpl() throws IOException {
+			ProcessBuilder p = new ProcessBuilder();
+			initFactoryArgs(p.command());
 			p.redirectErrorStream(true);
 			p.directory(new File(getProperty("javax.servlet.context.tempdir",
 					getProperty("java.io.tmpdir"))));
@@ -333,11 +366,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 			process = p.start();
 			channel = new PrintWriter(new BufferedWriter(
 					new OutputStreamWriter(process.getOutputStream())), true);
-			Thread logger = new Thread(
-					new OutputLogger("secure-fork", process),
-					"secure-fork.Logger");
-			logger.setDaemon(true);
-			logger.start();
+			new StdOut("secure-fork", process);
 		}
 
 		@Override
@@ -490,42 +519,6 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 		forker.make(username);
 	}
 
-	private static class OutputLogger implements Runnable {
-		private final Log log;
-
-		OutputLogger(String name, Process process) {
-			log = getLog("Taverna.Server.LocalWorker." + name);
-			this.uniqueName = name;
-			this.br = new BufferedReader(new InputStreamReader(
-					process.getInputStream()));
-		}
-
-		private String uniqueName;
-		private BufferedReader br;
-
-		@Override
-		public void run() {
-			try {
-				String line;
-				while (true) {
-					line = br.readLine();
-					if (line == null)
-						break;
-					log.info(uniqueName + " subprocess output: " + line);
-				}
-			} catch (IOException e) {
-				// Do nothing...
-			} catch (Exception e) {
-				log.warn("failure in reading from " + uniqueName, e);
-			} finally {
-				try {
-					br.close();
-				} catch (Throwable e) {
-				}
-			}
-		}
-	}
-
 	/**
 	 * Destroys the subprocess that manufactures runs.
 	 */
@@ -639,5 +632,47 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory {
 		else
 			log.info("configured secureForkPasswordFile from context as "
 					+ state.getPasswordFile());
+	}
+
+	@Override
+	public String getFactoryProcessName() {
+		return "<PROPERTY-NOT-SUPPORTED>";
+	}
+}
+
+class StdOut extends Thread {
+	private final Log log;
+	private final String uniqueName;
+	private final BufferedReader br;
+
+	StdOut(String name, Process process) {
+		super(name + ".StdOutLogger");
+		log = getLog("Taverna.Server.LocalWorker." + name);
+		uniqueName = name;
+		br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+		setDaemon(true);
+		start();
+	}
+
+	private void copyLinesToLog() throws IOException {
+		String line;
+		while ((line = br.readLine()) != null)
+			log.info(uniqueName + ": " + line);
+	}
+
+	@Override
+	public void run() {
+		try {
+			copyLinesToLog();
+		} catch (IOException e) {
+			// Do nothing...
+		} catch (Exception e) {
+			log.warn("failure in reading from " + uniqueName, e);
+		} finally {
+			try {
+				br.close();
+			} catch (Throwable e) {
+			}
+		}
 	}
 }

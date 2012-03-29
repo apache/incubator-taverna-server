@@ -35,7 +35,7 @@ import org.joda.time.DateTime;
 		@Query(name = "eventsForUser", language = "SQL", value = "SELECT id FROM ATOM.EVENTS WHERE owner = ? ORDER BY published DESC", resultClass = String.class),
 		@Query(name = "eventForUserAndId", language = "SQL", value = "SELECT id FROM ATOM.EVENTS WHERE owner = ? AND id = ?", resultClass = String.class),
 		@Query(name = "eventsFromBefore", language = "SQL", value = "SELECT id FROM ATOM.EVENTS where published < ?", resultClass = String.class) })
-@XmlType(propOrder = {})
+@XmlType(name = "AbstractEvent", propOrder = {})
 @XmlSeeAlso(TerminationEvent.class)
 public abstract class AbstractEvent implements Serializable {
 	@Persistent(primaryKey = "true")

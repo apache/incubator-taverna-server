@@ -1,48 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Example doctype for a Tomcat <Context>; not complete or even 
-	correct. -->
-<Context path="/taverna2" xmlns="urn:tomcat6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="urn:tomcat6 tomcatcontext.xsd">
+<!-- Sample context.xml showing how to tweak logging and some parameters. -->
+<!-- See the Install Guide for more information about this file. -->
+<Context path="/taverna-server">
 	<!-- Sample logging configuration. -->
 	<Valve className="org.apache.catalina.valves.AccessLogValve" />
 
-	<!-- Two parameters that may well need tuning; they do not have sensible 
-		defaults. -->
-	<Parameter name="executeWorkflowScript"
-		value="/usr/local/taverna-commandline-2.2.0/executeworkflow.sh"
-		description="The fully-qualified location of the program to run a workflow." />
-	<Parameter name="secureForkPasswordFile" value="/usr/local/tomcat6.0/conf/sudopass.txt"
-		description="The fully-qualified location of a file containing the password to use with sudo. The password is assumed to be the first line of the file." />
 	<!-- Controls whether URs are logged. -->
 	<Parameter name="usage.logFile" value="%{WEBAPPROOT}/usage.log"
 		description="Full path to name of file that usage records for executed workflow runs will be dumped to. To make it relative to the webapp root, prefix with '%{WEBAPPROOT}/'." />
 	<Parameter name="usage.disableDB" value="no"
 		description="Set to yes to disable writing of URs to the database." />
+
 	<!-- For email-dispatched notifications. -->
 	<Parameter name="email.host" value="localhost"
 		description="Where the SMTP server for sending notification emails is located."/>
 	<Parameter name="email.from" value="taverna.server@localhost"
 		description="Who to send notification emails as."/>
-	<!-- The next two are for Twitter-brokered notification; they may be omitted 
-		if support is not wanted. -->
-	<Parameter name="twitter.oauth.accessToken" value=""
-		description="The access token got from Twitter by registering this *installation* of Taverna Server as an application." />
-	<Parameter name="twitter.oauth.accessTokenSecret" value=""
-		description="The cryptographic secret associated with the access token got from Twitter by registering this *installation* of Taverna Server as an application." />
-	<!-- The next three parameters may be omitted if dispatch via Jabber/XMPP 
-		is not wanted. -->
-	<Parameter name="xmpp.service" value="jabber.org"
-		description="Description of an XMPP service that Jabber notifications will be dispatched via." />
-	<Parameter name="xmpp.user" value="tavernaserver"
-		description="User name to use for XMPP notifications." />
-	<Parameter name="xmpp.password" value="CHANGEME!"
-		description="Password to use for XMPP notifications." />
-	<!-- The next three parameters are for dispatch via SMS. -->
-	<Parameter name="sms.service"
-		value="https://www.intellisoftware.co.uk/smsgateway/sendmsg.aspx"
-		description="The SMS gateway. This is the default value." />
-	<Parameter name="sms.user" value="CHANGEME!"
-		description="The account with the SMS gateway to send the messages by. This needs to have funds associated with it!" />
-	<Parameter name="sms.pass" value="CHANGEME!"
-		description="The password for the account." />
 </Context>

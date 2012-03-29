@@ -7,11 +7,13 @@ package org.taverna.server.master.utils;
 
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static org.apache.commons.logging.LogFactory.getLog;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 import javax.annotation.PreDestroy;
+import javax.jdo.JDOException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
@@ -28,8 +30,7 @@ import org.springframework.beans.factory.annotation.Required;
  * 
  * @author Donal Fellows
  * 
- * @param &lt;T&gt;
- *            The context class that the subclass will be working with.
+ * @param &lt;T&gt; The context class that the subclass will be working with.
  */
 public abstract class JDOSupport<T> {
 	private Class<T> contextClass;
@@ -64,6 +65,7 @@ public abstract class JDOSupport<T> {
 	/**
 	 * Has this class actually been configured with a persistence manager by
 	 * Spring?
+	 * 
 	 * @return Whether there is a persistence manager installed.
 	 */
 	protected boolean isPersistent() {
@@ -145,6 +147,7 @@ public abstract class JDOSupport<T> {
 
 	/**
 	 * Manages integration of JDO transactions with Spring.
+	 * 
 	 * @author Donal Fellows
 	 */
 	@Aspect
@@ -167,9 +170,15 @@ public abstract class JDOSupport<T> {
 						tx.commit();
 					tx = null;
 					return result;
-				} finally {
-					if (tx != null)
-						tx.rollback();
+				} catch (Throwable t) {
+					try {
+						if (tx != null)
+							tx.rollback();
+					} catch (JDOException e) {
+						getLog("Taverna.Server.Utils").warn("rollback failed unexpectedly",
+								e);
+					}
+					throw t;
 				}
 			}
 		}

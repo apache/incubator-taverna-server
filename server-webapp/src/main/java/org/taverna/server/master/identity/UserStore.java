@@ -78,19 +78,24 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 			return;
 		for (String username : base.keySet()) {
 			UserDetails ud = base.get(username);
-			if (ud == null || !ud.getAuthorities().contains(USER))
+			if (ud == null)
 				continue;
 			User u = new User();
+			boolean realUser = false;
+			for (GrantedAuthority ga : ud.getAuthorities()) {
+				String a = ga.getAuthority();
+				if (a.startsWith(DEFAULT_PREFIX))
+					u.setLocalUsername(a.substring(DEFAULT_PREFIX.length()));
+				else if (a.equals(USER))
+					realUser = true;
+				else if (a.equals(ADMIN))
+					u.setAdmin(true);
+			}
+			if (!realUser)
+				continue;
 			u.setUsername(username);
 			u.setPassword(ud.getPassword());
-			u.setAdmin(ud.getAuthorities().contains(ADMIN));
 			u.setDisabled(!ud.isEnabled());
-			for (GrantedAuthority ga : ud.getAuthorities())
-				if (ga.getAuthority().startsWith(DEFAULT_PREFIX)) {
-					u.setLocalUsername(ga.getAuthority().substring(
-							DEFAULT_PREFIX.length()));
-					break;
-				}
 			persist(u);
 		}
 		base.clear();

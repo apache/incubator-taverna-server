@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The University of Manchester
+ * Copyright (C) 2010-2012 The University of Manchester
  * 
  * See the file "LICENSE.txt" for license terms.
  */
@@ -19,9 +19,6 @@ import javax.ws.rs.core.UriInfo;
 
 import org.taverna.server.master.TavernaServerImpl.SupportAware;
 import org.taverna.server.master.common.Credential;
-import org.taverna.server.master.common.Credential.CaGridProxy;
-import org.taverna.server.master.common.Credential.KeyPair;
-import org.taverna.server.master.common.Credential.Password;
 import org.taverna.server.master.common.Permission;
 import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.exceptions.BadStateChangeException;
@@ -77,35 +74,37 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 
 	@Override
 	@CallCounted
-	public Credential getParticularCredential(String id)
+	public CredentialHolder getParticularCredential(String id)
 			throws NoCredentialException {
 		for (Credential c : context.getCredentials())
 			if (c.id.equals(id))
-				return c;
+				return new CredentialHolder(c);
 		throw new NoCredentialException();
 	}
 
 	@Override
 	@CallCounted
-	public Credential setParticularCredential(String id, Credential c,
-			UriInfo ui) throws InvalidCredentialException,
-			BadStateChangeException {
+	public CredentialHolder setParticularCredential(String id,
+			CredentialHolder cred, UriInfo ui)
+			throws InvalidCredentialException, BadStateChangeException {
 		if (run.getStatus() != Initialized)
 			throw new BadStateChangeException();
+		Credential c = cred.credential;
 		c.id = id;
 		c.href = ui.getAbsolutePath().toString();
 		context.validateCredential(c);
 		context.deleteCredential(c);
 		context.addCredential(c);
-		return c;
+		return new CredentialHolder(c);
 	}
 
 	@Override
 	@CallCounted
-	public Response addCredential(Credential c, UriInfo ui)
+	public Response addCredential(CredentialHolder cred, UriInfo ui)
 			throws InvalidCredentialException, BadStateChangeException {
 		if (run.getStatus() != Initialized)
 			throw new BadStateChangeException();
+		Credential c = cred.credential;
 		c.id = randomUUID().toString();
 		URI uri = ui.getAbsolutePathBuilder().path("{id}").build(c.id);
 		c.href = uri.toString();
@@ -241,49 +240,6 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 		return created(
 				ui.getAbsolutePathBuilder().path("{user}").build(desc.userName))
 				.build();
-	}
-
-	@Override
-	@CallCounted
-	public Credential setParticularCredential(String id, Password c, UriInfo ui)
-			throws InvalidCredentialException, BadStateChangeException {
-		return setParticularCredential(id, (Credential) c, ui);
-	}
-
-	@Override
-	@CallCounted
-	public Credential setParticularCredential(String id, KeyPair c, UriInfo ui)
-			throws InvalidCredentialException, BadStateChangeException {
-		return setParticularCredential(id, (Credential) c, ui);
-	}
-
-	@Override
-	@CallCounted
-	public Credential setParticularCredential(String id, CaGridProxy c,
-			UriInfo ui) throws InvalidCredentialException,
-			BadStateChangeException {
-		return setParticularCredential(id, (Credential) c, ui);
-	}
-
-	@Override
-	@CallCounted
-	public Response addCredential(Password c, UriInfo ui)
-			throws InvalidCredentialException, BadStateChangeException {
-		return addCredential((Credential) c, ui);
-	}
-
-	@Override
-	@CallCounted
-	public Response addCredential(KeyPair c, UriInfo ui)
-			throws InvalidCredentialException, BadStateChangeException {
-		return addCredential((Credential) c, ui);
-	}
-
-	@Override
-	@CallCounted
-	public Response addCredential(CaGridProxy c, UriInfo ui)
-			throws InvalidCredentialException, BadStateChangeException {
-		return addCredential((Credential) c, ui);
 	}
 }
 

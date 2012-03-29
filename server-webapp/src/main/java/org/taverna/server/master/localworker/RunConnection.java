@@ -26,7 +26,6 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 import javax.jdo.annotations.Queries;
 import javax.jdo.annotations.Query;
-import javax.jdo.annotations.Serialized;
 
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.master.common.Credential;
@@ -66,9 +65,8 @@ public class RunConnection {
 	@Persistent(defaultFetchGroup = "true")
 	private Date creationInstant;
 
-	@Persistent(defaultFetchGroup = "true")
-	@Serialized
-	// @Column(jdbcType = "BLOB")
+	@Persistent(defaultFetchGroup = "true", serialized = "true")
+	@Column(jdbcType = "BLOB", sqlType = "BLOB")
 	private Workflow workflow;
 
 	@Persistent(defaultFetchGroup = "true")
@@ -86,8 +84,8 @@ public class RunConnection {
 	@Join(table = TABLE + "_DESTROYERS", column = "ID")
 	private String[] destroyers;
 
-	@Persistent(defaultFetchGroup = "true")
-	@Serialized
+	@Persistent(defaultFetchGroup = "true", serialized = "true")
+	@Column(jdbcType = "BLOB", sqlType = "BLOB")
 	private MarshalledObject<RemoteSingleRun> run;
 
 	@Persistent(defaultFetchGroup = "true")
@@ -97,14 +95,14 @@ public class RunConnection {
 	@Column(length = 128)
 	String owner;
 
-	@Persistent(defaultFetchGroup = "true")
-	@Serialized
+	@Persistent(defaultFetchGroup = "true", serialized = "true")
+	@Column(jdbcType = "BLOB", sqlType = "BLOB")
 	private SecurityContextFactory securityContextFactory;
-	@Persistent(defaultFetchGroup = "true")
-	@Serialized
+	@Persistent(defaultFetchGroup = "true", serialized = "true")
+	@Column(jdbcType = "BLOB", sqlType = "BLOB")
 	private Credential[] credentials;
-	@Persistent(defaultFetchGroup = "true")
-	@Serialized
+	@Persistent(defaultFetchGroup = "true", serialized = "true")
+	@Column(jdbcType = "BLOB", sqlType = "BLOB")
 	private Trust[] trust;
 
 	private static final String[] STRING_ARY = new String[0];

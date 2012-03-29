@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The University of Manchester
+ * Copyright (C) 2010-2012 The University of Manchester
  * 
  * See the file "LICENSE.txt" for license terms.
  */
@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Arrays;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.SchemaOutputResolver;
@@ -20,7 +21,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.junit.Before;
 import org.junit.Test;
 import org.taverna.server.master.admin.Admin;
-import org.taverna.server.master.common.Credential;
+import org.taverna.server.master.common.Credential.KeyPair;
 import org.taverna.server.master.common.Credential.Password;
 import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
@@ -47,6 +48,8 @@ import org.taverna.server.master.rest.TavernaServerREST.RunList;
 import org.taverna.server.master.rest.TavernaServerREST.ServerDescription;
 import org.taverna.server.master.rest.TavernaServerRunREST.RunDescription;
 import org.taverna.server.master.rest.TavernaServerSecurityREST;
+import org.taverna.server.master.rest.TavernaServerSecurityREST.CredentialHolder;
+import org.taverna.server.master.soap.FileContents;
 import org.taverna.server.master.soap.PermissionList;
 
 /**
@@ -200,7 +203,7 @@ public class JaxbSanityTest {
 
 	@Test
 	public void testJAXBForSecurityCredential() throws Exception {
-		testJAXB(Credential.class);
+		testJAXB(CredentialHolder.class);
 	}
 
 	@Test
@@ -239,13 +242,7 @@ public class JaxbSanityTest {
 	}
 
 	@Test
-	public void testJAXBForPermissionList() throws Exception {
-		testJAXB(PermissionList.class);
-	}
-
-	@Test
-	public void testJAXBForEverythingAtOnce() throws Exception {
-		// printSchema = true;
+	public void testJAXBForEverythingREST() throws Exception {
 		testJAXB(DirEntryReference.class, InputDescription.class,
 				RunReference.class, Workflow.class, Status.class,
 				DirectoryContents.class, InDesc.class,
@@ -255,8 +252,7 @@ public class JaxbSanityTest {
 				PermittedListeners.class, PermittedWorkflows.class,
 				EnabledNotificationFabrics.class, ServerDescription.class,
 				RunDescription.class, Uri.class, RunList.class,
-				PolicyDescription.class, PermissionList.class,
-				Credential.class, Trust.class,
+				PolicyDescription.class, CredentialHolder.class, Trust.class,
 				TavernaServerSecurityREST.CredentialList.class,
 				TavernaServerSecurityREST.TrustList.class, Permission.class,
 				TavernaServerSecurityREST.Descriptor.class,
@@ -265,18 +261,68 @@ public class JaxbSanityTest {
 	}
 
 	@Test
+	public void testJAXBForEverythingSOAP() throws Exception {
+		testJAXB(DirEntryReference.class, FileContents.class,
+				InputDescription.class, Permission.class, PermissionList.class,
+				PermissionList.SinglePermissionMapping.class,
+				RunReference.class, Status.class, Trust.class, Uri.class,
+				Workflow.class);
+	}
+
+	@Test
 	public void testUserPassSerializeDeserialize() throws Exception {
-		JAXBContext c = JAXBContext.newInstance(Credential.class);
-		Password credIn = new Password();
-		credIn.username = "foo";
-		credIn.password = "bar";
+		JAXBContext c = JAXBContext.newInstance(CredentialHolder.class);
+
+		Password password = new Password();
+		password.username = "foo";
+		password.password = "bar";
+
+		// Serialize
 		StringWriter sw = new StringWriter();
+		CredentialHolder credIn = new CredentialHolder(password);
 		c.createMarshaller().marshal(credIn, sw);
+
+		// Deserialize
 		StringReader sr = new StringReader(sw.toString());
-		Object credOut = c.createUnmarshaller().unmarshal(sr);
-		assertEquals(credIn.getClass(), credOut.getClass());
-		assertEquals(credIn.username, ((Password) credOut).username);
-		assertEquals(credIn.password, ((Password) credOut).password);
+		Object credOutObj = c.createUnmarshaller().unmarshal(sr);
+
+		// Test value-equivalence
+		assertEquals(credIn.getClass(), credOutObj.getClass());
+		CredentialHolder credOut = (CredentialHolder) credOutObj;
+		assertEquals(credIn.credential.getClass(),
+				credOut.credential.getClass());
+		assertEquals(credIn.getUserpass().username,
+				credOut.getUserpass().username);
+		assertEquals(credIn.getUserpass().password,
+				credOut.getUserpass().password);
+	}
+
+	@Test
+	public void testKeypairSerializeDeserialize() throws Exception {
+		JAXBContext c = JAXBContext.newInstance(CredentialHolder.class);
+
+		KeyPair keypair = new KeyPair();
+		keypair.credentialName = "foo";
+		keypair.credentialBytes = new byte[] { 1, 2, 3 };
+
+		// Serialize
+		StringWriter sw = new StringWriter();
+		CredentialHolder credIn = new CredentialHolder(keypair);
+		c.createMarshaller().marshal(credIn, sw);
+
+		// Deserialize
+		StringReader sr = new StringReader(sw.toString());
+		Object credOutObj = c.createUnmarshaller().unmarshal(sr);
+
+		// Test value-equivalence
+		assertEquals(credIn.getClass(), credOutObj.getClass());
+		CredentialHolder credOut = (CredentialHolder) credOutObj;
+		assertEquals(credIn.credential.getClass(),
+				credOut.credential.getClass());
+		assertEquals(credIn.getKeypair().credentialName,
+				credOut.getKeypair().credentialName);
+		assertTrue(Arrays.equals(credIn.getKeypair().credentialBytes,
+				credOut.getKeypair().credentialBytes));
 	}
 
 	@Test

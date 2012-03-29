@@ -21,7 +21,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @PersistenceCapable(schema = "USERS", table = "LIST")
 @Query(name = "users", language = "SQL", value = "SELECT id FROM USERS.LIST ORDER BY id", resultClass = String.class)
 @XmlRootElement
-@XmlType(propOrder = {})
+@XmlType(name = "User", propOrder = {})
 public class User implements UserDetails {
 	@XmlElement
 	@Persistent

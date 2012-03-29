@@ -17,6 +17,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.zip.DeflaterOutputStream;
@@ -39,7 +40,7 @@ import org.w3c.dom.Element;
  */
 @XmlRootElement(name = "workflow")
 @XmlType(name = "Workflow")
-public class Workflow implements Externalizable {
+public class Workflow implements Serializable,Externalizable {
 	/**
 	 * Literal document.
 	 */

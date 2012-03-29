@@ -23,7 +23,7 @@ import org.taverna.server.master.utils.UsernamePrincipal;
  * @author Donal Fellows
  */
 @PersistenceCapable
-@XmlType(propOrder = {})
+@XmlType(name = "TerminationEvent", propOrder = {})
 @XmlRootElement
 public class TerminationEvent extends AbstractEvent {
 	/**

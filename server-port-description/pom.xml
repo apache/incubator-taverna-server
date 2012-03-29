@@ -3,11 +3,9 @@
   <parent>
     <artifactId>server</artifactId>
     <groupId>uk.org.taverna.server</groupId>
-    <version>2.3-SNAPSHOT</version>
+    <version>2.3</version>
   </parent>
-  <groupId>uk.org.taverna.server</groupId>
   <artifactId>server-port-description</artifactId>
-  <version>2.3-SNAPSHOT</version>
   <name>Taverna Server Port Descriptor Types</name>
   <description>The structural types used to describe ports on workflows, as exported by Taverna Server.</description>
 	<properties>
@@ -17,7 +15,6 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.9</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

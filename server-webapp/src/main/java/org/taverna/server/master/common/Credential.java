@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 The University of Manchester
+ * Copyright (C) 2011-2012 The University of Manchester
  * 
  * See the file "LICENSE.txt" for license terms.
  */
@@ -29,8 +29,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * @author Donal Fellows
  */
 @XmlType(name = "CredentialDescriptor")
-@XmlSeeAlso({ Credential.KeyPair.class, Credential.Password.class,
-		Credential.CaGridProxy.class })
+@XmlSeeAlso({ Credential.KeyPair.class, Credential.Password.class })
 public abstract class Credential implements Serializable {
 	/** The location of this descriptor in the REST world. */
 	@XmlAttribute(namespace = XLINK)
@@ -64,6 +63,7 @@ public abstract class Credential implements Serializable {
 			return false;
 		return equals((Credential) o);
 	}
+
 	protected boolean equals(@NonNull Credential c) {
 		return id.equals(c.id);
 	}
@@ -103,6 +103,11 @@ public abstract class Credential implements Serializable {
 		 */
 		@XmlElement
 		public byte[] credentialBytes;
+
+		@Override
+		public String toString() {
+			return "keypair(id=" + id + ")";
+		}
 	}
 
 	/**
@@ -117,20 +122,11 @@ public abstract class Credential implements Serializable {
 		public String username;
 		@XmlElement(required = true)
 		public String password;
-	}
 
-	/**
-	 * Special credential type for proxy certificates as understood by CAGrid.
-	 */
-	@XmlRootElement(name = "cagridproxy")
-	@XmlType(name = "CaGridProxyCredential")
-	public static class CaGridProxy extends KeyPair {
-		@XmlElement(required = true)
-		@XmlSchemaType(name = "anyURI")
-		public URI authenticationService;
-		@XmlElement(required = true)
-		@XmlSchemaType(name = "anyURI")
-		public URI dorianService;
+		@Override
+		public String toString() {
+			return "userpass(id=" + id + ")";
+		}
 	}
 
 	/**
@@ -142,6 +138,11 @@ public abstract class Credential implements Serializable {
 	public static class Dummy extends Credential {
 		public Dummy(String id) {
 			this.id = id;
+		}
+
+		@Override
+		public String toString() {
+			return "dummy(id=" + id + ")";
 		}
 	}
 }

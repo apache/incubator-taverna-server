@@ -1,10 +1,12 @@
 /*
- * Copyright (C) 2010-2011 The University of Manchester
+ * Copyright (C) 2010-2012 The University of Manchester
  * 
  * See the file "LICENSE.txt" for license terms.
  */
 package org.taverna.server.master.localworker;
 
+import static java.lang.String.format;
+import static java.util.Arrays.fill;
 import static java.util.UUID.randomUUID;
 
 import java.io.ByteArrayInputStream;
@@ -14,9 +16,9 @@ import java.io.InputStream;
 import java.net.URI;
 import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
+import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.KeyStoreSpi;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -26,12 +28,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import javax.security.auth.x500.X500Principal;
 import javax.ws.rs.core.HttpHeaders;
 import javax.xml.ws.handler.MessageContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.bouncycastle.jce.provider.JDKKeyStore.BouncyCastleStore;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.taverna.server.localworker.remote.ImplementationException;
@@ -51,20 +53,29 @@ import org.taverna.server.master.utils.UsernamePrincipal;
  * @author Donal Fellows
  */
 public abstract class SecurityContextDelegate implements TavernaSecurityContext {
-	private Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
+	/**
+	 * What fields of a certificate we look at when understanding who it is
+	 * talking about, in the order that we look.
+	 */
+	private static final String[] DEFAULT_CERT_FIELD_NAMES = { "CN",
+			"COMMONNAME", "COMMON NAME", "COMMON_NAME", "OU",
+			"ORGANIZATIONALUNITNAME", "ORGANIZATIONAL UNIT NAME", "O",
+			"ORGANIZATIONNAME", "ORGANIZATION NAME" };
+	/** The type of certificates that are processed if we don't say otherwise. */
+	private static final String DEFAULT_CERTIFICATE_TYPE = "X.509";
+	/** Max size of credential file, in kiB. */
+	private static final int FILE_SIZE_LIMIT = 20;
+
+	Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
 	private final UsernamePrincipal owner;
 	private final List<Credential> credentials = new ArrayList<Credential>();
 	private final List<Trust> trusted = new ArrayList<Trust>();
 	private final RemoteRunDelegate run;
 	private final Object lock = new Object();
-	private final SecurityContextFactory factory;
+	final SecurityContextFactory factory;
 
-	private transient KeyStoreSpi keystore;
-	private transient char[] password;
+	private transient Keystore keystore;
 	private transient HashMap<URI, String> uriToAliasMap;
-
-	/** The type of certificates that are processed if we don't say otherwise. */
-	private static final String DEFAULT_CERTIFICATE_TYPE = "X.509";
 
 	/**
 	 * Initialise the context delegate.
@@ -100,6 +111,24 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 		}
 	}
 
+	/**
+	 * Get the human-readable name of a principal.
+	 * 
+	 * @param principal
+	 *            The principal being decoded.
+	 * @return A name.
+	 */
+	protected final String getPrincipalName(X500Principal principal) {
+		return factory.x500Utils.getName(principal, DEFAULT_CERT_FIELD_NAMES);
+	}
+
+	/**
+	 * Cause the current state to be flushed to the database.
+	 */
+	protected final void flushToDB() {
+		factory.db.flushToDisk(run);
+	}
+
 	@Override
 	public void addCredential(Credential toAdd) {
 		synchronized (lock) {
@@ -108,7 +137,7 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 				credentials.set(idx, toAdd);
 			else
 				credentials.add(toAdd);
-			factory.db.flushToDisk(run);
+			flushToDB();
 		}
 	}
 
@@ -116,7 +145,7 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 	public void deleteCredential(Credential toDelete) {
 		synchronized (lock) {
 			credentials.remove(toDelete);
-			factory.db.flushToDisk(run);
+			flushToDB();
 		}
 	}
 
@@ -135,7 +164,7 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 				trusted.set(idx, toAdd);
 			else
 				trusted.add(toAdd);
-			factory.db.flushToDisk(run);
+			flushToDB();
 		}
 	}
 
@@ -143,7 +172,7 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 	public void deleteTrusted(Trust toDelete) {
 		synchronized (lock) {
 			trusted.remove(toDelete);
-			factory.db.flushToDisk(run);
+			flushToDB();
 		}
 	}
 
@@ -158,21 +187,28 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 			contentsAsStream = new ByteArrayInputStream(t.certificateBytes);
 			t.certificateFile = null;
 		} else if (t.certificateFile == null
-				|| t.certificateFile.trim().length() == 0)
+				|| t.certificateFile.trim().isEmpty())
 			throw new InvalidCredentialException(
 					"absent or empty certificateFile");
 		else {
 			contentsAsStream = contents(t.certificateFile);
 			t.certificateBytes = null;
 		}
-		if (t.fileType == null || t.fileType.trim().length() == 0)
+		t.serverName = null;
+		if (t.fileType == null || t.fileType.trim().isEmpty())
 			t.fileType = DEFAULT_CERTIFICATE_TYPE;
 		t.fileType = t.fileType.trim();
 		try {
 			t.loadedCertificates = CertificateFactory.getInstance(t.fileType)
 					.generateCertificates(contentsAsStream);
+			t.serverName = new ArrayList<String>(t.loadedCertificates.size());
+			for (Certificate c : t.loadedCertificates)
+				t.serverName.add(getPrincipalName(((X509Certificate) c)
+						.getSubjectX500Principal()));
 		} catch (CertificateException e) {
 			throw new InvalidCredentialException(e);
+		} catch (ClassCastException e) {
+			// Do nothing; truncates the list of server names
 		}
 	}
 
@@ -195,28 +231,6 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 	@Override
 	public void initializeSecurityFromRESTContext(HttpHeaders context) {
 		// do nothing in this implementation
-	}
-
-	/**
-	 * Get an empty keystore for use with credentials (client certs, passwords,
-	 * etc.)
-	 * 
-	 * @return A keystore <i>back-end</i>, so we circumvent some of the more
-	 *         annoying features of the API.
-	 * @throws GeneralSecurityException
-	 */
-	protected KeyStoreSpi getInitialKeyStore() throws GeneralSecurityException {
-		return new BouncyCastleStore();
-	}
-
-	/**
-	 * Get an empty trust-store for use with trusted certificates.
-	 * 
-	 * @return A trust-store
-	 * @throws GeneralSecurityException
-	 */
-	protected KeyStore getInitialTrustStore() throws GeneralSecurityException {
-		return KeyStore.getInstance("JCEKS");
 	}
 
 	/**
@@ -245,8 +259,8 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 			password = generateNewPassword();
 
 			log.info("constructing merged keystore");
-			KeyStore truststore = getInitialTrustStore();
-			KeyStoreSpi keystore = getInitialKeyStore();
+			Truststore truststore = new Truststore(password);
+			Keystore keystore = new Keystore(password);
 			HashMap<URI, String> uriToAliasMap = new HashMap<URI, String>();
 			int trustedCount = 0, keyCount = 0;
 
@@ -254,11 +268,10 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 				try {
 					for (Trust t : trusted)
 						for (Certificate cert : t.loadedCertificates) {
-							addCertificateToTruststore(truststore, cert);
+							truststore.addCertificate(cert);
 							trustedCount++;
 						}
 
-					this.password = password;
 					this.uriToAliasMap = uriToAliasMap;
 					this.keystore = keystore;
 					for (Credential c : credentials) {
@@ -266,19 +279,18 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 						keyCount++;
 					}
 				} finally {
-					this.password = null;
 					this.uriToAliasMap = null;
 					this.keystore = null;
 					credentials.clear();
 					trusted.clear();
-					factory.db.flushToDisk(run);
+					flushToDB();
 				}
 			}
 
 			byte[] trustbytes = null, keybytes = null;
 			try {
-				trustbytes = serialize(truststore, password);
-				keybytes = serialize(keystore, password);
+				trustbytes = truststore.serialize();
+				keybytes = keystore.serialize();
 
 				// Now we've built the security information, ship it off...
 
@@ -289,78 +301,45 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 				log.info("transfering merged keystore with " + keyCount
 						+ " entries");
 				rc.setKeystore(keybytes);
-				rc.setPassword(password);
-
-				log.info("transfering serviceURL->alias map with "
-						+ uriToAliasMap.size() + " entries");
-				rc.setUriToAliasMap(uriToAliasMap);
 			} finally {
-				blankOut(trustbytes);
-				blankOut(keybytes);
+				if (trustbytes != null)
+					fill(trustbytes, (byte) 0);
+				if (keybytes != null)
+					fill(keybytes, (byte) 0);
 			}
+			rc.setPassword(password);
+
+			log.info("transferring serviceURL->alias map with "
+					+ uriToAliasMap.size() + " entries");
+			rc.setUriToAliasMap(uriToAliasMap);
 		} finally {
-			blankOut(password);
+			if (password != null)
+				fill(password, ' ');
+		}
+
+		synchronized (lock) {
+			conveyExtraSecuritySettings(rc);
 		}
 	}
 
-	private static void blankOut(char[] ary) {
-		if (ary == null)
-			return;
-		for (int i = 0; i < ary.length; i++)
-			ary[i] = ' ';
-	}
-
-	private static void blankOut(byte[] ary) {
-		if (ary == null)
-			return;
-		for (int i = 0; i < ary.length; i++)
-			ary[i] = 0;
-	}
-
-	private static byte[] serialize(KeyStore ks, char[] password)
-			throws GeneralSecurityException, IOException {
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		ks.store(stream, password);
-		stream.close();
-		return stream.toByteArray();
-	}
-
-	private static byte[] serialize(KeyStoreSpi ks, char[] password)
-			throws GeneralSecurityException, IOException {
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		ks.engineStore(stream, password);
-		stream.close();
-		return stream.toByteArray();
+	/**
+	 * Hook that allows additional information to be conveyed to the remote run.
+	 * 
+	 * @param remoteSecurityContext
+	 *            The remote resource that information would be passed to.
+	 * @throws IOException
+	 *             If anything goes wrong with the communication.
+	 */
+	protected void conveyExtraSecuritySettings(
+			RemoteSecurityContext remoteSecurityContext) throws IOException {
+		// Does nothing by default; overrideable
 	}
 
 	/**
 	 * @return A new password with a reasonable level of randomness.
 	 */
-	protected char[] generateNewPassword() {
+	protected final char[] generateNewPassword() {
 		return randomUUID().toString().toCharArray();
-	}
-
-	/**
-	 * Adds a service certificate to the set that are trusted.
-	 * 
-	 * @param ts
-	 *            The trust-store.
-	 * @param cert
-	 *            The certificate to add
-	 * @throws KeyStoreException
-	 */
-	protected void addCertificateToTruststore(KeyStore ts, Certificate cert)
-			throws KeyStoreException {
-		X509Certificate c = (X509Certificate) cert;
-		String owner = factory.x500Utils.getName(c.getSubjectX500Principal(),
-				"CN", "COMMONNAME", "OU", "ORGANIZATIONALUNITNAME", "O",
-				"ORGANIZATIONNAME");
-		String issuer = factory.x500Utils.getName(c.getIssuerX500Principal(),
-				"CN", "COMMONNAME", "OU", "ORGANIZATIONALUNITNAME", "O",
-				"ORGANIZATIONNAME");
-		String alias = "trustedcert#" + owner + "#" + issuer + "#"
-				+ factory.x500Utils.getSerial(c);
-		ts.setCertificateEntry(alias, c);
 	}
 
 	/**
@@ -376,8 +355,7 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 			throws KeyStoreException {
 		if (uriToAliasMap.containsKey(c.serviceURI))
 			log.warn("duplicate URI in alias mapping: " + c.serviceURI);
-		keystore.engineSetKeyEntry(alias, c.loadedKey, password,
-				c.loadedTrustChain);
+		keystore.addKey(alias, c.loadedKey, c.loadedTrustChain);
 		uriToAliasMap.put(c.serviceURI, alias);
 	}
 
@@ -392,7 +370,7 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 			throws KeyStoreException;
 
 	/**
-	 * Read a file up to 20kB in size.
+	 * Read a file up to {@value #FILE_SIZE_LIMIT}kB in size.
 	 * 
 	 * @param name
 	 *            The path name of the file, relative to the context run's
@@ -401,12 +379,13 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 	 * @throws InvalidCredentialException
 	 *             If anything goes wrong.
 	 */
-	InputStream contents(String name) throws InvalidCredentialException {
+	final InputStream contents(String name) throws InvalidCredentialException {
 		try {
 			File f = (File) factory.fileUtils.getDirEntry(run, name);
 			long size = f.getSize();
-			if (size > 20 * 1024)
-				throw new InvalidCredentialException("20kB limit hit");
+			if (size > FILE_SIZE_LIMIT * 1024)
+				throw new InvalidCredentialException(FILE_SIZE_LIMIT
+						+ "kB limit hit");
 			return new ByteArrayInputStream(f.getContents(0, (int) size));
 		} catch (NoDirectoryEntryException e) {
 			throw new InvalidCredentialException(e);
@@ -477,6 +456,166 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 						log.warn("failed to revalidate trust assertion: " + t,
 								e);
 					}
+		}
+	}
+
+	/**
+	 * A trust store that can only be added to or serialized. Only trusted
+	 * certificates can be placed in it.
+	 * 
+	 * @author Donal Fellows
+	 */
+	class Truststore {
+		private KeyStore ks;
+		private char[] password;
+
+		Truststore(char[] password) throws GeneralSecurityException {
+			this.password = password.clone();
+			ks = KeyStore.getInstance("UBER", "BC");
+			try {
+				ks.load(null, this.password);
+			} catch (IOException e) {
+				throw new GeneralSecurityException(
+						"problem initializing blank truststore", e);
+			}
+		}
+
+		/**
+		 * Add a trusted certificate to the truststore. No certificates can be
+		 * added after the truststore is serialized.
+		 * 
+		 * @param cert
+		 *            The certificate (typically belonging to a root CA) to add.
+		 * @throws KeyStoreException
+		 *             If anything goes wrong.
+		 */
+		public void addCertificate(Certificate cert) throws KeyStoreException {
+			if (ks == null)
+				throw new IllegalStateException("truststore already written");
+			X509Certificate c = (X509Certificate) cert;
+			String alias = format("trustedcert#%s#%s#%s",
+					getPrincipalName(c.getSubjectX500Principal()),
+					getPrincipalName(c.getIssuerX500Principal()),
+					factory.x500Utils.getSerial(c));
+			ks.setCertificateEntry(alias, c);
+			if (factory.logSecurityDetails)
+				log.debug("added cert with alias \"" + alias + "\" of type "
+						+ c.getClass().getCanonicalName());
+		}
+
+		/**
+		 * Get the byte serialization of this truststore. This can only be
+		 * fetched exactly once.
+		 * 
+		 * @return The serialization.
+		 * @throws GeneralSecurityException
+		 *             If anything goes wrong.
+		 */
+		public byte[] serialize() throws GeneralSecurityException, IOException {
+			if (ks == null)
+				throw new IllegalStateException("truststore already written");
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			try {
+				ks.store(stream, password);
+				stream.close();
+				if (factory.logSecurityDetails)
+					log.debug("serialized UBER/BC truststore (size: "
+							+ ks.size() + ") with password \""
+							+ new String(password) + "\"");
+			} catch (IOException e) {
+				throw new GeneralSecurityException(
+						"problem serializing truststore", e);
+			}
+			fill(password, ' ');
+			ks = null;
+			return stream.toByteArray();
+		}
+
+		@Override
+		protected void finalize() {
+			fill(password, ' ');
+			ks = null;
+		}
+	}
+
+	/**
+	 * A key store that can only be added to or serialized. Only keys can be
+	 * placed in it.
+	 * 
+	 * @author Donal Fellows
+	 */
+	class Keystore {
+		private KeyStore ks;
+		private char[] password;
+
+		Keystore(char[] password) throws GeneralSecurityException {
+			this.password = password.clone();
+
+			ks = KeyStore.getInstance("UBER", "BC");
+			try {
+				ks.load(null, password);
+			} catch (IOException e) {
+				throw new GeneralSecurityException(
+						"problem initializing blank keystore", e);
+			}
+		}
+
+		/**
+		 * Add a key to the keystore. No keys can be added after the keystore is
+		 * serialized.
+		 * 
+		 * @param alias
+		 *            The alias of the key.
+		 * @param key
+		 *            The secret/private key to add.
+		 * @param trustChain
+		 *            The trusted certificate chain of the key. Should be
+		 *            <tt>null</tt> for secret keys.
+		 * @throws KeyStoreException
+		 *             If anything goes wrong.
+		 */
+		public void addKey(String alias, Key key, Certificate[] trustChain)
+				throws KeyStoreException {
+			if (ks == null)
+				throw new IllegalStateException("keystore already written");
+			ks.setKeyEntry(alias, key, password, trustChain);
+			if (factory.logSecurityDetails)
+				log.debug("added key with alias \"" + alias + "\" of type "
+						+ key.getClass().getCanonicalName());
+		}
+
+		/**
+		 * Get the byte serialization of this keystore. This can only be fetched
+		 * exactly once.
+		 * 
+		 * @return The serialization.
+		 * @throws GeneralSecurityException
+		 *             If anything goes wrong.
+		 */
+		public byte[] serialize() throws GeneralSecurityException {
+			if (ks == null)
+				throw new IllegalStateException("keystore already written");
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			try {
+				ks.store(stream, password);
+				stream.close();
+				if (factory.logSecurityDetails)
+					log.debug("serialized UBER/BC keystore (size: " + ks.size()
+							+ ") with password \"" + new String(password)
+							+ "\"");
+			} catch (IOException e) {
+				throw new GeneralSecurityException(
+						"problem serializing keystore", e);
+			}
+			fill(password, ' ');
+			ks = null;
+			return stream.toByteArray();
+		}
+
+		@Override
+		protected void finalize() {
+			fill(password, ' ');
+			ks = null;
 		}
 	}
 }

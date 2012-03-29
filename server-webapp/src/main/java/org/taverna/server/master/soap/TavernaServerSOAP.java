@@ -202,7 +202,7 @@ public interface TavernaServerSOAP {
 	 */
 	@WSDLDocumentation("Tells the given run to use the given already-uploaded Baclava file for all inputs.")
 	void setRunInputBaclavaFile(@WebParam(name = "runName") String runName,
-			@WebParam(name = "fileName") String fileName)
+			@WebParam(name = "baclavaFileName") String fileName)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, BadStateChangeException;
 
@@ -235,7 +235,7 @@ public interface TavernaServerSOAP {
 	@WSDLDocumentation("Tells the given run to use the given file for input on the given port.")
 	void setRunInputPortFile(@WebParam(name = "runName") String runName,
 			@WebParam(name = "portName") String portName,
-			@WebParam(name = "portFilename") String portFilename)
+			@WebParam(name = "portFileName") String portFilename)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, BadStateChangeException,
 			BadPropertyValueException;
@@ -310,7 +310,7 @@ public interface TavernaServerSOAP {
 	 */
 	@WSDLDocumentation("Set the Baclava file where the output of the run will be written.")
 	void setRunOutputBaclavaFile(@WebParam(name = "runName") String runName,
-			@WebParam(name = "outputFile") String outputFile)
+			@WebParam(name = "baclavaFileName") String outputFile)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, BadStateChangeException;
 
@@ -843,7 +843,7 @@ public interface TavernaServerSOAP {
 	@WSDLDocumentation("Make a new empty file in an existing directory, which may be the run's working directory or any directory beneath it.")
 	DirEntryReference makeRunFile(@WebParam(name = "runName") String runName,
 			@WebParam(name = "parentDirectory") DirEntryReference parent,
-			@WebParam(name = "fileName") String name)
+			@WebParam(name = "fileNameTail") String name)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, NoDirectoryEntryException;
 
@@ -1125,7 +1125,7 @@ public interface TavernaServerSOAP {
 	@WSDLDocumentation("Set the value of a property for an event listener attached to a run.")
 	void setRunListenerProperty(@WebParam(name = "runName") String runName,
 			@WebParam(name = "listenerName") String listenerName,
-			@WebParam(name = "propertName") String propertyName,
-			@WebParam(name = "value") String value) throws UnknownRunException,
+			@WebParam(name = "propertyName") String propertyName,
+			@WebParam(name = "propertyValue") String value) throws UnknownRunException,
 			NoUpdateException, NoListenerException;
 }

@@ -4,7 +4,7 @@
 	<groupId>uk.org.taverna.server</groupId>
 	<artifactId>server</artifactId>
 	<packaging>pom</packaging>
-	<version>2.3-SNAPSHOT</version>
+	<version>2.3</version>
 	<name>Taverna Server</name>
 	<description>Taverna Server is a service that provides execution of Taverna Workflows, provided they do not access the user interface while executing.</description>
 	<url>http://www.taverna.org.uk/</url>
@@ -18,9 +18,9 @@
 
 	<!-- Having to edit anything below here is probably indicative of a bug. -->
 	<parent>
-		<artifactId>parent</artifactId>
 		<groupId>net.sf.taverna</groupId>
-		<version>0.1.2009-02-12</version>
+		<artifactId>parent</artifactId>
+		<version>0.2.2011-02-17</version>
 	</parent>
 	<prerequisites>
 		<maven>2.2</maven>
@@ -44,9 +44,9 @@
 		</developer>
 	</developers>
 	<scm>
-		<connection>scm:svn:http://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/branches/server-2.3-release-branch</connection>
-		<developerConnection>scm:svn:https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/branches/server-2.3-release-branch</developerConnection>
-		<url>http://code.google.com/p/taverna/source/browse/taverna/products/uk.org.taverna.server/branches/server-2.3-release-branch</url>
+		<connection>scm:svn:http://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/tags/server-2.3</connection>
+		<developerConnection>scm:svn:https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/tags/server-2.3</developerConnection>
+		<url>http://code.google.com/p/taverna/source/browse/taverna/products/uk.org.taverna.server/tags/server-2.3</url>
 	</scm>
 	<organization>
 		<name>University of Manchester</name>
@@ -246,29 +246,6 @@
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<tagBase>https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/tags</tagBase>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jarsigner-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>sign</goal>
-						</goals>
-						<id>sign</id>
-						<phase>package</phase>
-						<configuration>
-							<keystore>${signing.keystore}</keystore>
-							<alias>${signing.user}</alias>
-							<storepass>${signing.password}</storepass>
-							<keypass>${signing.password}</keypass>
-							<excludeClassifiers>
-								<param>tests</param>
-								<param>test-sources</param>
-							</excludeClassifiers>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
@@ -480,6 +457,36 @@
 					</plugin>
 				</plugins>
 			</reporting>
+		</profile>
+		<profile>
+			<id>signed</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-jarsigner-plugin</artifactId>
+						<executions>
+							<execution>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+								<id>sign</id>
+								<phase>package</phase>
+								<configuration>
+									<keystore>${signing.keystore}</keystore>
+									<alias>${signing.user}</alias>
+									<storepass>${signing.password}</storepass>
+									<keypass>${signing.password}</keypass>
+									<excludeClassifiers>
+										<param>tests</param>
+										<param>test-sources</param>
+									</excludeClassifiers>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 	</profiles>
 

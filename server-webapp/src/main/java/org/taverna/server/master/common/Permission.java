@@ -16,7 +16,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  * @author Donal Fellows
  */
-@XmlType
+@XmlType(name = "Permission")
 @XmlEnum
 public enum Permission {
 	/** Indicates that a user cannot see the workflow run at all. */

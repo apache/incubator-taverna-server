@@ -26,7 +26,6 @@ import javax.ws.rs.core.UriInfo;
  * @author Donal Fellows
  */
 @Path("/")
-@Produces("text/html")
 public class Facade {
 	private String pattern;
 	private String welcome;
@@ -81,8 +80,10 @@ public class Facade {
 	 * @return The response, containing the HTML.
 	 */
 	@GET
+	@Path("{dummy:.*}")
+	@Produces("text/html")
 	public Response get(@Context UriInfo ui) {
-		String url = ui.getAbsolutePath().toString().replace("%2D", "-");
+		String url = ui.getBaseUri().toString().replace("%2D", "-");
 		if (!url.endsWith("/"))
 			url += "/";
 		return ok(welcome.replaceAll(pattern, url), TEXT_HTML_TYPE).build();

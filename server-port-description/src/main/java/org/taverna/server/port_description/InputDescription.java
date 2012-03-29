@@ -28,7 +28,7 @@ public class InputDescription extends AbstractPortDescription {
 	@XmlElement
 	public List<InputPort> input = new ArrayList<InputPort>();
 
-	@XmlType
+	@XmlType(name = "InputPort")
 	public static class InputPort extends AbstractPort {
 		@XmlAttribute(namespace = XLINK)
 		@XmlSchemaType(name = "anyURI")

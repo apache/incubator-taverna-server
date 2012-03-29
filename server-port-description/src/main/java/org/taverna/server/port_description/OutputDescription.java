@@ -24,7 +24,7 @@ public class OutputDescription extends AbstractPortDescription {
 	@XmlElement(name = "output")
 	public List<OutputPort> ports = new ArrayList<OutputPort>();
 
-	@XmlType
+	@XmlType(name = "OutputPort")
 	public static class OutputPort extends AbstractPort {
 		@XmlElements({
 				@XmlElement(name = "value", type = LeafValue.class, nillable = false, required = true),

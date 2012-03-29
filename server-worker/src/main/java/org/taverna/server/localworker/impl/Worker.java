@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The University of Manchester
+ * Copyright (C) 2010-2012 The University of Manchester
  * 
  * See the file "LICENSE.txt" for license terms.
  */
@@ -44,11 +44,14 @@ public interface Worker {
 	 *            or <tt>null</tt> to have it written into the <tt>out</tt>
 	 *            subdirectory.
 	 * @param contextDirectory
-	 *            The directory containing the keystore and truststore. May be
-	 *            <tt>null</tt> if no security information is provided.
+	 *            The directory containing the keystore and truststore. <i>Must
+	 *            not be <tt>null</tt>.</i>
 	 * @param keystorePassword
-	 *            The password to the keystore and truststore. May be
-	 *            <tt>null</tt> if no security information is provided.
+	 *            The password to the keystore and truststore. <i>Must not be
+	 *            <tt>null</tt>.</i>
+	 * @param environment
+	 *            Any environment variables that need to be added to the
+	 *            invokation.
 	 * @throws Exception
 	 *             If any of quite a large number of things goes wrong.
 	 */
@@ -56,7 +59,8 @@ public interface Worker {
 			File workingDir, File inputBaclavaFile,
 			Map<String, File> inputRealFiles, Map<String, String> inputValues,
 			File outputBaclavaFile, File contextDirectory,
-			char[] keystorePassword) throws Exception;
+			char[] keystorePassword, Map<String, String> environment)
+			throws Exception;
 
 	/**
 	 * Kills off the subprocess if it exists and is alive.

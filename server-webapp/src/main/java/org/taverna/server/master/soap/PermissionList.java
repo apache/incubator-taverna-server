@@ -19,7 +19,7 @@ import org.taverna.server.master.common.Permission;
  * 
  * @author Donal Fellows
  */
-@XmlType
+@XmlType(name = "PermissionList")
 @XmlRootElement(name = "permissionList")
 public class PermissionList {
 	/**

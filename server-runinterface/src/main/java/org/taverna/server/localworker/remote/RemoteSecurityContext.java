@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The University of Manchester
+ * Copyright (C) 2010-2012 The University of Manchester
  * 
  * See the file "LICENSE.txt" for license terms.
  */
@@ -26,4 +26,6 @@ public interface RemoteSecurityContext extends Remote {
 
 	void setUriToAliasMap(@NonNull HashMap<URI, String> uriToAliasMap)
 			throws RemoteException;
+
+	void setHelioToken(@NonNull String helioToken) throws RemoteException;
 }

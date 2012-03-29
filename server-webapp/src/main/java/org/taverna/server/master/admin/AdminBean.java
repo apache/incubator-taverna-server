@@ -17,9 +17,9 @@ import javax.ws.rs.core.UriInfo;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.ManagementModel;
+import org.taverna.server.master.factories.ConfigurableRunFactory;
 import org.taverna.server.master.identity.User;
 import org.taverna.server.master.identity.UserStore;
-import org.taverna.server.master.localworker.IdAwareForkRunFactory;
 import org.taverna.server.master.localworker.RunDBSupport;
 import org.taverna.server.master.usage.UsageRecordRecorder;
 import org.taverna.server.master.utils.InvocationCounter;
@@ -46,7 +46,7 @@ public class AdminBean implements Admin {
 	}
 
 	@Required
-	public void setFactory(IdAwareForkRunFactory factory) {
+	public void setFactory(ConfigurableRunFactory factory) {
 		this.factory = factory;
 	}
 
@@ -63,7 +63,7 @@ public class AdminBean implements Admin {
 	private ManagementModel state;
 	private InvocationCounter counter;
 	private RunDBSupport runDB;
-	private IdAwareForkRunFactory factory;
+	private ConfigurableRunFactory factory;
 	private UsageRecordRecorder usageRecords;
 	private UserStore userStore;
 

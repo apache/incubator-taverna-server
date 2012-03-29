@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name = "portDescription")
+@XmlType(name = "PortDescription")
 public abstract class AbstractPortDescription {
 	@XmlAttribute
 	public String workflowId;

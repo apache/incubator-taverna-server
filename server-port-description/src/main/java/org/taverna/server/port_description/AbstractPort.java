@@ -8,7 +8,7 @@ package org.taverna.server.port_description;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlType(name = "port")
+@XmlType(name = "Port")
 public class AbstractPort {
 	@XmlAttribute(required = true)
 	public String name;

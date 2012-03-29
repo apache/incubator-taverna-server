@@ -23,6 +23,7 @@
 				<include>*.html</include>
 				<include>*.xml</include>
 				<include>*.txt</include>
+				<include>*.pdf</include>
 			</includes>
 			<excludes>
 				<exclude>pom.xml</exclude>
@@ -34,9 +35,9 @@
 		<fileSet>
 			<directory>${project.parent.basedir}</directory>
 			<includes>
-				<include>*.html</include>
 				<include>*.xml</include>
 				<include>*.txt</include>
+				<include>*.pdf</include>
 			</includes>
 			<excludes>
 				<exclude>pom.xml</exclude>

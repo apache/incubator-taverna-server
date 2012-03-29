@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2010-2012 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.localworker.impl;
 
 import static org.junit.Assert.assertEquals;
@@ -86,7 +91,8 @@ public class LocalWorkerTest {
 		public void initWorker(String executeWorkflowCommand, String workflow,
 				File workingDir, File inputBaclava,
 				Map<String, File> inputFiles, Map<String, String> inputValues,
-				File outputBaclava, File cmdir, char[] cmpass) throws Exception {
+				File outputBaclava, File cmdir, char[] cmpass,
+				Map<String, String> env) throws Exception {
 			events.add("init[");
 			events.add(executeWorkflowCommand);
 			events.add(workflow);
@@ -104,6 +110,7 @@ public class LocalWorkerTest {
 			events.add(outputBaclava == null ? "<null>" : outputBaclava
 					.getName());
 			// TODO: check cmdir and cmpass
+			// TODO: log env
 			events.add("]");
 		}
 
@@ -521,7 +528,6 @@ public class LocalWorkerTest {
 		assertEquals(
 				l("init[", "XWC", "WF", "36", "<null>",
 						"{bar=<null>, foo=foofile}",
-						"{bar=barvalue, foo=null}", "boo", "]", "kill"),
-				events);
+						"{bar=barvalue, foo=null}", "boo", "]", "kill"), events);
 	}
 }

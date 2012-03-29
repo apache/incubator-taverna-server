@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The University of Manchester
+ * Copyright (C) 2010-2012 The University of Manchester
  * 
  * See the file "LICENSE.txt" for license terms.
  */
@@ -13,11 +13,14 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
-import static org.apache.commons.io.FileCleaner.track;
 import static org.apache.commons.io.FileUtils.forceDelete;
 import static org.apache.commons.io.FileUtils.forceMkdir;
 import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
 import static org.apache.commons.io.FileUtils.writeLines;
+import static org.taverna.server.localworker.impl.SecurityConstants.HELIO_TOKEN_NAME;
+import static org.taverna.server.localworker.impl.SecurityConstants.KEYSTORE_FILE;
+import static org.taverna.server.localworker.impl.SecurityConstants.SECURITY_DIR_NAME;
+import static org.taverna.server.localworker.impl.SecurityConstants.TRUSTSTORE_FILE;
 import static org.taverna.server.localworker.impl.utils.FilenameVerifier.getValidatedFile;
 import static org.taverna.server.localworker.remote.RemoteStatus.Finished;
 import static org.taverna.server.localworker.remote.RemoteStatus.Initialized;
@@ -61,10 +64,50 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  */
 @SuppressWarnings({ "SE_BAD_FIELD", "SE_NO_SERIALVERSIONID" })
 public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun {
+	// ----------------------- CONSTANTS -----------------------
+
+	/**
+	 * Subdirectories of the working directory to create by default.
+	 */
+	private static final String[] dirstomake = { "conf", "externaltool", "lib",
+			"logs", "plugins", "repository", "t2-database", "var" };
+
+	/** The name of the default encoding for characters on this machine. */
+	public static final String SYSTEM_ENCODING = defaultCharset().name();
+
+	/** Handle to the directory containing the security info. */
+	static final File SECURITY_DIR = new File(
+			new File(getProperty("user.home")), SECURITY_DIR_NAME);
+
+	// ----------------------- VARIABLES -----------------------
+
+	/**
+	 * Magic flag used to turn off problematic code when testing inside CI
+	 * environment.
+	 */
+	static boolean DO_MKDIR = true;
+
+	/** What to use to run a workflow engine. */
 	private final String executeWorkflowCommand;
+	/** What workflow to run. */
 	private final String workflow;
-	private File base;
+	/** The remote access object for the working directory. */
 	private final DirectoryDelegate baseDir;
+	/** What inputs to pass as files. */
+	final Map<String, String> inputFiles;
+	/** What inputs to pass as files (as file refs). */
+	final Map<String, File> inputRealFiles;
+	/** What inputs to pass as direct values. */
+	final Map<String, String> inputValues;
+	/** The interface to the workflow engine subprocess. */
+	private final Worker core;
+	/** Our descriptor token (UUID). */
+	private final String masterToken;
+	/**
+	 * The root working directory for a workflow run, or <tt>null</tt> if it has
+	 * been deleted.
+	 */
+	private File base;
 	/**
 	 * When did this workflow start running, or <tt>null</tt> for
 	 * "never/not yet".
@@ -75,17 +118,42 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	 * "never/not yet".
 	 */
 	private Date finish;
+	/** The cached status of the workflow run. */
 	RemoteStatus status;
+	/**
+	 * The name of the input Baclava document, or <tt>null</tt> to not do it
+	 * that way.
+	 */
 	String inputBaclava;
+	/**
+	 * The name of the output Baclava document, or <tt>null</tt> to not do it
+	 * that way.
+	 */
 	String outputBaclava;
+	/**
+	 * The file containing the input Baclava document, or <tt>null</tt> to not
+	 * do it that way.
+	 */
 	private File inputBaclavaFile;
+	/**
+	 * The file containing the output Baclava document, or <tt>null</tt> to not
+	 * do it that way.
+	 */
 	private File outputBaclavaFile;
-	Map<String, String> inputFiles;
-	Map<String, File> inputRealFiles;
-	Map<String, String> inputValues;
-	private final Worker core;
-	private final String masterToken;
-	private Thread shutdownHook;
+	/**
+	 * Registered shutdown hook so that we clean up when this process is killed
+	 * off, or <tt>null</tt> if that is no longer necessary.
+	 */
+	Thread shutdownHook;
+	/** Location for security information to be written to. */
+	File securityDirectory;
+	/** Password to use to encrypt security information. */
+	char[] keystorePassword = new char[] { 'c', 'h', 'a', 'n', 'g', 'e', 'm',
+			'e' };
+	/** Additional server-specified environment settings. */
+	Map<String, String> environment = new HashMap<String, String>();
+
+	// ----------------------- METHODS -----------------------
 
 	/**
 	 * @param executeWorkflowCommand
@@ -113,6 +181,9 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		out.println("about to create " + base);
 		try {
 			forceMkdir(base);
+			for (String subdir : dirstomake) {
+				new File(base, subdir).mkdir();
+			}
 		} catch (IOException e) {
 			throw new ImplementationException(
 					"problem creating run working directory", e);
@@ -137,6 +208,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			@Override
 			public void run() {
 				try {
+					shutdownHook = null;
 					destroy();
 				} catch (ImplementationException e) {
 				} catch (RemoteException e) {
@@ -180,6 +252,17 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		} finally {
 			base = null;
 		}
+		try {
+			if (securityDirectory != null)
+				forceDelete(securityDirectory);
+		} catch (IOException e) {
+			out.println("problem deleting security directory");
+			e.printStackTrace(out);
+			throw new ImplementationException(
+					"problem deleting security directory", e);
+		} finally {
+			securityDirectory = null;
+		}
 	}
 
 	@Override
@@ -216,53 +299,26 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		return outputBaclava;
 	}
 
-	/** The name of the default encoding for characters on this machine. */
-	public static final String SYSTEM_ENCODING = defaultCharset().name();
-	/**
-	 * The name of the directory (in the home directory) where security settings
-	 * will be written.
-	 */
-	public static final String SECURITY_DIR_NAME = ".taverna-server-security";
-	/** The name of the file that will be the created keystore. */
-	public static final String KEYSTORE_FILE = "t2keystore.jceks";
-	/** The name of the file that will be the created truststore. */
-	public static final String TRUSTSTORE_FILE = "t2truststore.jceks";
-	/**
-	 * The name of the file that contains the password to unlock the keystore
-	 * and truststore.
-	 */
-	public static final String PASSWORD_FILE = "password.txt";
-	// /**
-	// * The name of the file that contains the mapping from URIs to keystore
-	// * aliases.
-	// */
-	// public static final String URI_ALIAS_MAP = "urlmap.txt";
-
-	/** Handle to the directory containing the security info. */
-	static final File SECURITY_DIR = new File(
-			new File(getProperty("user.home")), SECURITY_DIR_NAME);
-	static boolean DO_MKDIR = true;
-
-	File contextDirectory;
-	char[] keystorePassword = new char[0];
-
 	@SuppressWarnings("SE_INNER_CLASS")
 	class SecurityDelegate extends UnicastRemoteObject implements
 			RemoteSecurityContext {
+		private void setPrivatePerms(File dir) {
+			if (!dir.setReadable(false, false) || !dir.setReadable(true, true)
+					|| !dir.setExecutable(false, false)
+					|| !dir.setExecutable(true, true)
+					|| !dir.setWritable(false, false)
+					|| !dir.setWritable(true, true)) {
+				out.println("warning: "
+						+ "failed to set permissions on security context directory");
+			}
+		}
+
 		protected SecurityDelegate(String token) throws IOException {
 			super();
-			contextDirectory = new File(SECURITY_DIR, token);
-			System.out.println("security directory is " + contextDirectory);
 			if (DO_MKDIR) {
-				forceMkdir(contextDirectory);
-				if (!contextDirectory.setReadable(true, true)
-						|| !contextDirectory.setExecutable(true, true)
-						|| !contextDirectory.setWritable(true, true)) {
-					System.err
-							.println("warning: "
-									+ "failed to set permissions on security context directory");
-				}
-				track(contextDirectory, LocalWorker.this);
+				securityDirectory = new File(SECURITY_DIR, token);
+				forceMkdir(securityDirectory);
+				setPrivatePerms(securityDirectory);
 			}
 		}
 
@@ -280,7 +336,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		protected void write(String name, byte[] data) throws RemoteException,
 				ImplementationException {
 			try {
-				writeByteArrayToFile(new File(contextDirectory, name), data);
+				File f = new File(securityDirectory, name);
+				writeByteArrayToFile(f, data);
 			} catch (IOException e) {
 				throw new ImplementationException("problem writing " + name, e);
 			}
@@ -302,8 +359,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		protected void write(String name, Collection<String> data)
 				throws RemoteException, ImplementationException {
 			try {
-				writeLines(new File(contextDirectory, name), SYSTEM_ENCODING,
-						data);
+				File f = new File(securityDirectory, name);
+				writeLines(f, SYSTEM_ENCODING, data);
 			} catch (IOException e) {
 				throw new ImplementationException("problem writing " + name, e);
 			}
@@ -325,8 +382,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		protected void write(String name, char[] data) throws RemoteException,
 				ImplementationException {
 			try {
-				writeLines(new File(contextDirectory, name), SYSTEM_ENCODING,
-						asList(new String(data)));
+				File f = new File(securityDirectory, name);
+				writeLines(f, SYSTEM_ENCODING, asList(new String(data)));
 			} catch (IOException e) {
 				throw new ImplementationException("problem writing " + name, e);
 			}
@@ -337,6 +394,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 				ImplementationException {
 			if (status != Initialized)
 				throw new RemoteException("not initializing");
+			if (keystore == null)
+				throw new IllegalArgumentException("keystore may not be null");
 			write(KEYSTORE_FILE, keystore);
 		}
 
@@ -344,8 +403,9 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		public void setPassword(char[] password) throws RemoteException {
 			if (status != Initialized)
 				throw new RemoteException("not initializing");
+			if (password == null)
+				throw new IllegalArgumentException("password may not be null");
 			keystorePassword = password.clone();
-			// write(PASSWORD_FILE, password); // Written later
 		}
 
 		@Override
@@ -353,6 +413,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 				ImplementationException {
 			if (status != Initialized)
 				throw new RemoteException("not initializing");
+			if (truststore == null)
+				throw new IllegalArgumentException("truststore may not be null");
 			write(TRUSTSTORE_FILE, truststore);
 		}
 
@@ -361,10 +423,20 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 				throws RemoteException {
 			if (status != Initialized)
 				throw new RemoteException("not initializing");
+			if (uriToAliasMap == null)
+				return;
 			ArrayList<String> lines = new ArrayList<String>();
 			for (Entry<URI, String> site : uriToAliasMap.entrySet())
 				lines.add(site.getKey().toASCIIString() + " " + site.getValue());
 			// write(URI_ALIAS_MAP, lines);
+		}
+
+		@Override
+		public void setHelioToken(String helioToken) throws RemoteException {
+			if (status != Initialized)
+				throw new RemoteException("not initializing");
+			out.println("registering HELIO CIS token for export");
+			environment.put(HELIO_TOKEN_NAME, helioToken);
 		}
 	}
 
@@ -515,11 +587,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 					start = new Date();
 					core.initWorker(executeWorkflowCommand, workflow, base,
 							inputBaclavaFile, inputRealFiles, inputValues,
-							outputBaclavaFile, contextDirectory,
-							keystorePassword);
-					for (int i = 0; keystorePassword != null
-							&& i < keystorePassword.length; i++)
-						keystorePassword[i] = ' ';
+							outputBaclavaFile, securityDirectory,
+							keystorePassword, environment);
 					keystorePassword = null;
 				} catch (Exception e) {
 					throw new ImplementationException(

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The University of Manchester
+ * Copyright (C) 2010-2012 The University of Manchester
  * 
  * See the file "LICENSE.txt" for license terms.
  */
@@ -10,8 +10,10 @@ import static java.io.File.pathSeparator;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.System.out;
 import static org.apache.commons.io.IOUtils.copy;
-import static org.taverna.server.localworker.impl.LocalWorker.PASSWORD_FILE;
+//import static org.taverna.server.localworker.impl.LocalWorker.PASSWORD_FILE;
 import static org.taverna.server.localworker.impl.LocalWorker.SYSTEM_ENCODING;
+import static org.taverna.server.localworker.impl.SecurityConstants.CREDENTIAL_MANAGER_DIRECTORY;
+import static org.taverna.server.localworker.impl.SecurityConstants.CREDENTIAL_MANAGER_PASSWORD;
 import static org.taverna.server.localworker.impl.WorkerCore.Status.Aborted;
 import static org.taverna.server.localworker.impl.WorkerCore.Status.Completed;
 import static org.taverna.server.localworker.impl.WorkerCore.Status.Failed;
@@ -22,13 +24,14 @@ import static org.taverna.server.localworker.remote.RemoteStatus.Initialized;
 import static org.taverna.server.localworker.remote.RemoteStatus.Operating;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
@@ -143,6 +146,43 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	}
 
 	/**
+	 * A helper for asynchronously writing a password to a subprocess's stdin.
+	 * 
+	 * @author Donal Fellows
+	 */
+	private static class AsyncPrint extends Thread {
+		private OutputStream to;
+		private char[] chars;
+
+		AsyncPrint(OutputStream to, char[] chars) {
+			this.to = to;
+			assert chars != null;
+			this.chars = chars;
+			setDaemon(true);
+			start();
+		}
+
+		@Override
+		public void run() {
+			PrintWriter pw = null;
+			try {
+				pw = new PrintWriter(
+						new OutputStreamWriter(to, SYSTEM_ENCODING));
+				pw.println(chars);
+			} catch (UnsupportedEncodingException e) {
+				// Not much we can do here
+				e.printStackTrace();
+			} finally {
+				for (int i = 0; i < chars.length; i++)
+					chars[i] = ' ';
+				if (pw != null)
+					pw.close();
+			}
+		}
+
+	}
+
+	/**
 	 * Fire up the workflow. This causes a transition into the operating state.
 	 * 
 	 * @param executeWorkflowCommand
@@ -173,7 +213,8 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	public void initWorker(String executeWorkflowCommand, String workflow,
 			File workingDir, File inputBaclava, Map<String, File> inputFiles,
 			Map<String, String> inputValues, File outputBaclava,
-			File securityDir, char[] password) throws IOException {
+			File securityDir, char[] password, Map<String, String> environment)
+			throws IOException {
 		ProcessBuilder pb = new ProcessBuilder();
 		/*
 		 * WARNING! HERE THERE BE DRAGONS! BE CAREFUL HERE!
@@ -197,21 +238,21 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			pb.command().add("/bin/sh");
 		pb.command().add(executeWorkflowCommand);
 
+		// Enable verbose logging
+		pb.command().add("-logfile");
+		pb.command().add(
+				new File(new File(workingDir, "logs"), "detail.log")
+						.getAbsolutePath());
+
 		if (securityDir != null) {
-			pb.command().add("-cmdir");
+			pb.command().add(CREDENTIAL_MANAGER_DIRECTORY);
 			pb.command().add(securityDir.getAbsolutePath());
-			if (password != null) {
-				PrintWriter pw = null;
-				try {
-					pw = new PrintWriter(new OutputStreamWriter(
-							new FileOutputStream(new File(securityDir,
-									PASSWORD_FILE)), SYSTEM_ENCODING));
-					pw.println(password);
-				} finally {
-					if (pw != null)
-						pw.close();
-				}
-			}
+			out.println("security dir location: " + securityDir);
+		}
+		if (password != null) {
+			pb.command().add(CREDENTIAL_MANAGER_PASSWORD);
+			out.println("password of length " + password.length
+					+ " will be written to subprocess stdin");
 		}
 
 		// Add arguments denoting inputs
@@ -278,12 +319,17 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		pb.directory(workingDir);
 		wd = workingDir;
 
+		// Merge any options we have had imposed on us from outside
+		pb.environment().putAll(environment);
+
 		// Patch the environment to deal with TAVUTILS-17
 		assert pb.environment().get("PATH") != null;
 		pb.environment().put(
 				"PATH",
 				new File(System.getProperty("java.home"), "bin")
 						+ pathSeparator + pb.environment().get("PATH"));
+		// Patch the environment to deal with TAVSERV-189
+		pb.environment().put("RAVEN_APPHOME", workingDir.getCanonicalPath());
 
 		// Start the subprocess
 		out.println("starting " + pb.command() + " in directory " + workingDir);
@@ -295,6 +341,8 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		// Capture its stdout and stderr
 		new AsyncCopy(subprocess.getInputStream(), stdout);
 		new AsyncCopy(subprocess.getErrorStream(), stderr);
+		if (password != null)
+			new AsyncPrint(subprocess.getOutputStream(), password);
 	}
 
 	/**

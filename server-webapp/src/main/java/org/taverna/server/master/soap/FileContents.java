@@ -26,7 +26,7 @@ import org.taverna.server.master.interfaces.File;
  * 
  * @author Donal Fellows
  */
-@XmlType
+@XmlType(name = "FileContents")
 public class FileContents {
 	@XmlElement
 	public String name;

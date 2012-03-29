@@ -1,20 +1,25 @@
 /*
- * Copyright (C) 2011 The University of Manchester
+ * Copyright (C) 2011-2012 The University of Manchester
  * 
  * See the file "LICENSE.txt" for license terms.
  */
 package org.taverna.server.master.localworker;
 
 import static java.security.Security.addProvider;
+import static java.security.Security.getProvider;
+import static java.security.Security.removeProvider;
 import static org.apache.commons.logging.LogFactory.getLog;
+import static org.bouncycastle.jce.provider.BouncyCastleProvider.PROVIDER_NAME;
 
 import java.io.Serializable;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import org.apache.commons.logging.Log;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Value;
 import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.UsernamePrincipal;
 import org.taverna.server.master.utils.X500Utils;
@@ -37,27 +42,60 @@ public class SecurityContextFactory implements
 	transient RunDBSupport db;
 	transient FilenameUtils fileUtils;
 	transient X500Utils x500Utils;
+	private transient BouncyCastleProvider provider;
 
-	@SuppressWarnings({ "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
-			"UPM_UNCALLED_PRIVATE_METHOD" })
+	/**
+	 * Whether to support HELIO CIS tokens.
+	 */
+	@Value("${helio.cis.enableTokenPassing}")
+	boolean supportHelioToken;
+
+	/**
+	 * Whether to log the details of security (passwords, etc).
+	 */
+	@Value("${log.security.details}")
+	boolean logSecurityDetails;
+
+	private Log log() {
+		return getLog("Taverna.Server.LocalWorker.Security");
+	}
+
+	@SuppressWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
+	private void installAsInstance(SecurityContextFactory handle) {
+		instance = handle;
+	}
+
+	@SuppressWarnings("UPM_UNCALLED_PRIVATE_METHOD")
 	@java.lang.SuppressWarnings("unused")
 	@PreDestroy
 	private void closeLog() {
-		instance = null;
+		installAsInstance(null);
+		try {
+			if (provider != null)
+				removeProvider(provider.getName());
+		} catch (SecurityException e) {
+			log().warn(
+					"failed to remove BouncyCastle security provider; "
+							+ "might be OK if configured in environment", e);
+		}
 	}
 
-	@SuppressWarnings({ "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
-			"UPM_UNCALLED_PRIVATE_METHOD" })
+	@SuppressWarnings("UPM_UNCALLED_PRIVATE_METHOD")
 	@java.lang.SuppressWarnings("unused")
 	@PostConstruct
 	private void setAsSingleton() {
-		instance = this;
-		try {
-			addProvider(new BouncyCastleProvider());
-		} catch (SecurityException e) {
-			getLog("Taverna.Server.LocalWorker").warn(
-					"failed to install BouncyCastle security provider; "
-							+ "might be OK if already configured", e);
+		installAsInstance(this);
+		if (getProvider(PROVIDER_NAME) == null) {
+			try {
+				provider = new BouncyCastleProvider();
+				if (addProvider(provider) == -1)
+					provider = null;
+			} catch (SecurityException e) {
+				log().warn(
+						"failed to install BouncyCastle security provider; "
+								+ "might be OK if already configured", e);
+				provider = null;
+			}
 		}
 	}
 
@@ -79,10 +117,13 @@ public class SecurityContextFactory implements
 	@Override
 	public SecurityContextDelegate create(RemoteRunDelegate run,
 			UsernamePrincipal owner) throws Exception {
+		log().debug("constructing security context delegate for " + owner);
 		return new SecurityContextDelegateImpl(run, owner, this);
 	}
 
 	private Object readResolve() {
-		return (instance != null) ? instance : (instance = this);
+		if (instance == null)
+			installAsInstance(this);
+		return instance;
 	}
 }
