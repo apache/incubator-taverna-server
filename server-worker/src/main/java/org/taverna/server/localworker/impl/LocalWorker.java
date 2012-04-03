@@ -29,6 +29,7 @@ import static org.taverna.server.localworker.remote.RemoteStatus.Stopped;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -76,8 +77,16 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	public static final String SYSTEM_ENCODING = defaultCharset().name();
 
 	/** Handle to the directory containing the security info. */
-	static final File SECURITY_DIR = new File(
-			new File(getProperty("user.home")), SECURITY_DIR_NAME);
+	static final File SECURITY_DIR;
+	static {
+		File home = new File(getProperty("user.home"));
+		// If we can't write to $HOME (i.e., we're in an odd deployment) use
+		// the official version of /tmp/$PID as a fallback.
+		if (!home.canWrite())
+			home = new File(getProperty("java.io.tmpdir"), ManagementFactory
+					.getRuntimeMXBean().getName());
+		SECURITY_DIR = new File(home, SECURITY_DIR_NAME);
+	}
 
 	// ----------------------- VARIABLES -----------------------
 
