@@ -1,13 +1,13 @@
-Taverna 2.3 Server Release Notes
+Taverna 2.4 Server Release Notes
 ================================
 
-This is the first release of the new Taverna 2.3 Server. We welcome feedback
+This is the first release of the new Taverna 2.4 Server. We welcome feedback
 on both the things that are there and the things that are not.
 
 Key Features
 ------------
  * Runs arbitrary Taverna 2 workflows
-   * Based on Taverna 2.3
+   * Based on Taverna 2.4
  * REST and SOAP interfaces
    * All functionality available through both interfaces
  * Manages files for workflows
@@ -47,71 +47,4 @@ Specific Issues Addressed in This Release
 -----------------------------------------
 See http://www.mygrid.org.uk/dev/issues/browse/TAVSERV
 
-TAVSERV-8:   User-selectable monitoring of workflows including ability to
-             contact the user
-TAVSERV-9:   Server does not release classloader space when stopped
-TAVSERV-24:  Basic user security support
-TAVSERV-39:  Workflow Isolation
-TAVSERV-45:  Access to files local to the workflow instance
-TAVSERV-53:  Stand-alone back-end
-TAVSERV-54:  Master: stop/start accepting new workflows
-TAVSERV-64:  Worker: provide file access
-TAVSERV-77:  Current directory handling
-TAVSERV-93:  Run information is lost when server restarts
-TAVSERV-104: Persist management information
-TAVSERV-105: The /owner resource is not exposed in the run description
-TAVSERV-106: When deleting a non-existent run should return 404 not 403
-TAVSERV-108: When accessing an output port that does not exist a 404 should
-             be returned.
-TAVSERV-110: Support execution on Windows
-TAVSERV-120: Partial workflow runs
-TAVSERV-128: Allow lists and lists of lists, etc as inputs to taverna server
-TAVSERV-132: Output port description
-TAVSERV-134: Webapp cannot parse ISO 8601 dates properly
-TAVSERV-135: Webapp produces 403 on unparseable date when setting expiry
-TAVSERV-136: Security contexts plan
-TAVSERV-137: Use HTTPS to secure the server communication channel
-TAVSERV-138: Authentication
-TAVSERV-139: Access control
-TAVSERV-140: Control over security context used by command line executor
-TAVSERV-141: Control the credential manager
-TAVSERV-142: Define security context
-TAVSERV-144: Server could supply a version string
-TAVSERV-146: Use of data from previous runs
-TAVSERV-148: server returns 404 not found on incorrect content type
-TAVSERV-151: Server returns baclava files as application/octet-stream when
-             they should be application/xml
-TAVSERV-152: Documentation of security
-TAVSERV-154: Summary of Inputs
-TAVSERV-155: Produce Usage Records
-TAVSERV-156: Change twitter integration because of OAuth
-TAVSERV-158: Be able to set up server without any security
-TAVSERV-160: 500 error returned when trying to set workflow input
-TAVSERV-161: GETing expected inputs in json format causes 500 server error
-TAVSERV-162: GETting an output port that contains just the empty string
-             causes a 500 error
-TAVSERV-164: Unintentional open access to /admin/ ?
-TAVSERV-166: extraArguments resource in admin interface produces 500 error
-TAVSERV-167: Download byterange of files
-TAVSERV-170: Querying output description gives 500 error
-TAVSERV-172: Double slashes in output port description href attributes
-TAVSERV-173: namespaces still appear on some attributes in JSON output
-TAVSERV-174: Depth and length not given for empty list in output port
-             description
-TAVSERV-175: output port errors not flagged as errors in output port
-             description
-TAVSERV-176: input and output port descriptions xml/json not consistent
-TAVSERV-178: Querying extraArguments resource below /admin gives 500 error
-TAVSERV-179: Uploading a credential does not stick and prevents run
-             from starting
-TAVSERV-180: Attempts to set a new permission on a run result in a 500 error
-TAVSERV-181: Attempting to retrieve a permission once it has been set returns
-             a 500 error
-TAVSERV-182: GETting a run's output port description returns a 500 error
-TAVSERV-184: Starting a workflow run where service credentials have been set
-             fails
-TAVSERV-189: Override taverna home location
-TAVSERV-208: Can ONLY run workflows when a credential is set
-TAVSERV-211: WSDL causes stack overflow in Taverna
-TAVSERV-214: Insecure configuration will not start
-TAVSERV-215: mail.jar needs to be added
+(None: Release just contains update to Taverna 2.4.0)
