@@ -21,6 +21,7 @@ import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.TransformerFactory;
@@ -47,7 +48,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @author Donal Fellows
  * @see LocalWorker
  */
-@SuppressWarnings({"SE_BAD_FIELD", "SE_NO_SERIALVERSIONID"})
+@SuppressWarnings({ "SE_BAD_FIELD", "SE_NO_SERIALVERSIONID" })
 public class TavernaRunManager extends UnicastRemoteObject implements
 		RemoteRunFactory {
 	DocumentBuilderFactory dbf;
@@ -55,6 +56,11 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	String command;
 	Constructor<? extends RemoteSingleRun> cons;
 	Class<? extends Worker> workerClass;
+	// Hacks!
+	public static String interactionHost;
+	public static String interactionPort;
+	public static String interactionWebdavPath;
+	public static String interactionFeedPath;
 
 	/**
 	 * How to get the actual workflow document from the XML document that it is
@@ -137,7 +143,7 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 
 	@Override
 	public RemoteSingleRun make(String workflow, String creator,
-			UsageRecordReceiver urReceiver) throws RemoteException {
+			UsageRecordReceiver urReceiver, UUID id) throws RemoteException {
 		if (creator == null)
 			throw new RemoteException("no creator");
 		try {
@@ -145,7 +151,8 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 			workflow = unwrapWorkflow(workflow, wfid);
 			out.println("Creating run from workflow <" + wfid.value + "> for <"
 					+ creator + ">");
-			return cons.newInstance(command, workflow, workerClass, urReceiver);
+			return cons.newInstance(command, workflow, workerClass, urReceiver,
+					id);
 		} catch (RemoteException e) {
 			throw e;
 		} catch (InvocationTargetException e) {
@@ -227,8 +234,8 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 				factoryName,
 				new TavernaRunManager(command, LocalWorker.class
 						.getDeclaredConstructor(String.class, String.class,
-								Class.class, UsageRecordReceiver.class),
-						WorkerCore.class));
+								Class.class, UsageRecordReceiver.class,
+								UUID.class), WorkerCore.class));
 		getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
@@ -236,5 +243,14 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 			}
 		});
 		out.println("registered RemoteRunFactory with ID " + factoryName);
+	}
+
+	@Override
+	public void setInteractionServiceDetails(String host, String port,
+			String webdavPath, String feedPath) throws RemoteException {
+		interactionHost = host;
+		interactionPort = port;
+		interactionWebdavPath = webdavPath;
+		interactionFeedPath = feedPath;
 	}
 }

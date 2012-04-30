@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import org.taverna.server.localworker.remote.IllegalStateTransitionException;
 import org.taverna.server.localworker.remote.ImplementationException;
@@ -174,16 +175,21 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	 *            run.
 	 * @param urReceiver
 	 *            The remote class to report the generated usage record(s) to.
+	 * @param id
+	 *            The UUID to use, or <tt>null</tt> if we are to invent one.
 	 * @throws RemoteException
 	 *             If registration of the worker fails.
 	 * @throws ImplementationException
 	 *             If something goes wrong during local setup.
 	 */
 	protected LocalWorker(String executeWorkflowCommand, String workflow,
-			Class<? extends Worker> workerClass, UsageRecordReceiver urReceiver)
-			throws RemoteException, ImplementationException {
+			Class<? extends Worker> workerClass,
+			UsageRecordReceiver urReceiver, UUID id) throws RemoteException,
+			ImplementationException {
 		super();
-		masterToken = randomUUID().toString();
+		if (id == null)
+			id = randomUUID();
+		masterToken = id.toString();
 		this.workflow = workflow;
 		this.executeWorkflowCommand = executeWorkflowCommand;
 		base = new File(getProperty("java.io.tmpdir"), masterToken);
@@ -597,7 +603,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 					core.initWorker(executeWorkflowCommand, workflow, base,
 							inputBaclavaFile, inputRealFiles, inputValues,
 							outputBaclavaFile, securityDirectory,
-							keystorePassword, environment);
+							keystorePassword, environment, masterToken);
 					keystorePassword = null;
 				} catch (Exception e) {
 					throw new ImplementationException(

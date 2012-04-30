@@ -52,6 +52,8 @@ public interface Worker {
 	 * @param environment
 	 *            Any environment variables that need to be added to the
 	 *            invokation.
+	 * @param masterToken
+	 *            The internal name of the workflow run.
 	 * @throws Exception
 	 *             If any of quite a large number of things goes wrong.
 	 */
@@ -59,8 +61,8 @@ public interface Worker {
 			File workingDir, File inputBaclavaFile,
 			Map<String, File> inputRealFiles, Map<String, String> inputValues,
 			File outputBaclavaFile, File contextDirectory,
-			char[] keystorePassword, Map<String, String> environment)
-			throws Exception;
+			char[] keystorePassword, Map<String, String> environment,
+			String masterToken) throws Exception;
 
 	/**
 	 * Kills off the subprocess if it exists and is alive.

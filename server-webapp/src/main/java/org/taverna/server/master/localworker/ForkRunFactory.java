@@ -23,10 +23,12 @@ import java.rmi.ConnectIOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Calendar;
+import java.util.UUID;
 
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedMetric;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -45,7 +47,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * @author Donal Fellows
  */
 @ManagedResource(objectName = JMX_ROOT + "RunFactory", description = "The factory for simple singleton forked run.")
-public class ForkRunFactory extends AbstractRemoteRunFactory implements ConfigurableRunFactory {
+public class ForkRunFactory extends AbstractRemoteRunFactory implements
+		ConfigurableRunFactory {
 	private int lastStartupCheckCount;
 	private Integer lastExitCode;
 	private int totalRuns;
@@ -264,8 +267,8 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements Configur
 				log.info("about to look up resource called "
 						+ factoryProcessName);
 				try {
-					getTheRegistry().list(); // Validate registry connection
-												// first
+					// Validate registry connection first
+					getTheRegistry().list();
 				} catch (ConnectException ce) {
 					log.warn("connection problems with registry", ce);
 				} catch (ConnectIOException e) {
@@ -275,6 +278,9 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements Configur
 						factoryProcessName);
 				log.info("successfully connected to factory subprocess "
 						+ factoryProcessName);
+				if (interhost != null)
+					factory.setInteractionServiceDetails(interhost, interport,
+							interwebdav, interfeed);
 				return;
 			} catch (InterruptedException ie) {
 				continue;
@@ -401,25 +407,25 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements Configur
 	 *             If anything fails (communications error, etc.)
 	 */
 	private RemoteSingleRun getRealRun(@NonNull UsernamePrincipal creator,
-			@NonNull String wf) throws RemoteException {
+			@NonNull String wf, UUID id) throws RemoteException {
 		String globaluser = "Unknown Person";
 		if (creator != null)
 			globaluser = creator.getName();
 		RemoteSingleRun rsr = factory.make(wf, globaluser,
-				makeURReciver(creator));
+				makeURReciver(creator), id);
 		totalRuns++;
 		return rsr;
 	}
 
 	@Override
 	protected RemoteSingleRun getRealRun(UsernamePrincipal creator,
-			Workflow workflow) throws Exception {
+			Workflow workflow, UUID id) throws Exception {
 		String wf = serializeWorkflow(workflow);
 		for (int i = 0; i < 3; i++) {
 			if (factory == null)
 				initFactory();
 			try {
-				return getRealRun(creator, wf);
+				return getRealRun(creator, wf, id);
 			} catch (ConnectException e) {
 				// factory was lost; try to recreate
 			} catch (ConnectIOException e) {

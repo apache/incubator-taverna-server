@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -59,7 +60,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * @author Donal Fellows
  */
 @ManagedResource(objectName = JMX_ROOT + "RunFactory", description = "The factory for a user-specific forked run.")
-public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements ConfigurableRunFactory {
+public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
+		ConfigurableRunFactory {
 	private int totalRuns;
 	private MetaFactory forker;
 	private Map<String, RemoteRunFactory> factory;
@@ -445,6 +447,9 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements C
 							.lookup(fpn);
 					log.info("successfully connected to factory subprocess "
 							+ fpn);
+					if (interhost != null)
+						f.setInteractionServiceDetails(interhost, interport,
+								interwebdav, interfeed);
 					registerFactory(username, fpn, f);
 					return f;
 				} catch (InterruptedException ie) {
@@ -584,20 +589,20 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements C
 	 *             If anything fails (communications error, etc.)
 	 */
 	private RemoteSingleRun getRealRun(@NonNull UsernamePrincipal creator,
-			@NonNull String username, @NonNull String wf)
+			@NonNull String username, @NonNull String wf, UUID id)
 			throws RemoteException {
 		String globaluser = "Unknown Person";
 		if (creator != null)
 			globaluser = creator.getName();
 		RemoteSingleRun rsr = factory.get(username).make(wf, globaluser,
-				makeURReciver(creator));
+				makeURReciver(creator), id);
 		totalRuns++;
 		return rsr;
 	}
 
 	@Override
 	protected RemoteSingleRun getRealRun(UsernamePrincipal creator,
-			Workflow workflow) throws Exception {
+			Workflow workflow, UUID id) throws Exception {
 		String wf = serializeWorkflow(workflow);
 		String username = mapper == null ? null : mapper
 				.getUsernameForPrincipal(creator);
@@ -608,7 +613,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements C
 			if (!factory.containsKey(username))
 				initFactory(username);
 			try {
-				return getRealRun(creator, username, wf);
+				return getRealRun(creator, username, wf, id);
 			} catch (ConnectException e) {
 				// factory was lost; try to recreate
 			} catch (ConnectIOException e) {

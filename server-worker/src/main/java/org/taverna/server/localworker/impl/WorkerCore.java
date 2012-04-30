@@ -14,6 +14,10 @@ import static org.apache.commons.io.IOUtils.copy;
 import static org.taverna.server.localworker.impl.LocalWorker.SYSTEM_ENCODING;
 import static org.taverna.server.localworker.impl.SecurityConstants.CREDENTIAL_MANAGER_DIRECTORY;
 import static org.taverna.server.localworker.impl.SecurityConstants.CREDENTIAL_MANAGER_PASSWORD;
+import static org.taverna.server.localworker.impl.TavernaRunManager.interactionFeedPath;
+import static org.taverna.server.localworker.impl.TavernaRunManager.interactionHost;
+import static org.taverna.server.localworker.impl.TavernaRunManager.interactionPort;
+import static org.taverna.server.localworker.impl.TavernaRunManager.interactionWebdavPath;
 import static org.taverna.server.localworker.impl.WorkerCore.Status.Aborted;
 import static org.taverna.server.localworker.impl.WorkerCore.Status.Completed;
 import static org.taverna.server.localworker.impl.WorkerCore.Status.Failed;
@@ -206,6 +210,8 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	 *            What baclava file to write the output from the workflow into,
 	 *            or <tt>null</tt> to have it written into the <tt>out</tt>
 	 *            subdirectory.
+	 * @param token
+	 *            The name of the workflow run.
 	 * @throws IOException
 	 *             If any of quite a large number of things goes wrong.
 	 */
@@ -213,8 +219,8 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	public void initWorker(String executeWorkflowCommand, String workflow,
 			File workingDir, File inputBaclava, Map<String, File> inputFiles,
 			Map<String, String> inputValues, File outputBaclava,
-			File securityDir, char[] password, Map<String, String> environment)
-			throws IOException {
+			File securityDir, char[] password, Map<String, String> environment,
+			String token) throws IOException {
 		ProcessBuilder pb = new ProcessBuilder();
 		/*
 		 * WARNING! HERE THERE BE DRAGONS! BE CAREFUL HERE!
@@ -330,6 +336,14 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 						+ pathSeparator + pb.environment().get("PATH"));
 		// Patch the environment to deal with TAVSERV-189
 		pb.environment().put("RAVEN_APPHOME", workingDir.getCanonicalPath());
+		pb.environment().put("TAVERNA_RUN_ID", token);
+		if (interactionHost != null) {
+			Map<String, String> env = pb.environment();
+			env.put("INTERACTION_HOST", interactionHost);
+			env.put("INTERACTION_PORT", interactionPort);
+			env.put("INTERACTION_WEBDAV", interactionWebdavPath);
+			env.put("INTERACTION_FEED", interactionFeedPath);
+		}
 
 		// Start the subprocess
 		out.println("starting " + pb.command() + " in directory " + workingDir);

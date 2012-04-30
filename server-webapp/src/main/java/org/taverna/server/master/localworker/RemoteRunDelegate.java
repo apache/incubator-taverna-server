@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -77,7 +78,7 @@ public class RemoteRunDelegate implements TavernaRun {
 	boolean doneTransitionToFinished;
 
 	RemoteRunDelegate(Date creationInstant, Workflow workflow,
-			RemoteSingleRun rsr, int defaultLifetime, RunDBSupport db) {
+			RemoteSingleRun rsr, int defaultLifetime, RunDBSupport db, UUID id) {
 		if (rsr == null) {
 			throw new IllegalArgumentException("remote run must not be null");
 		}
@@ -88,6 +89,8 @@ public class RemoteRunDelegate implements TavernaRun {
 		this.expiry = c.getTime();
 		this.run = rsr;
 		this.db = db;
+		if (id != null)
+			this.id = id.toString();
 	}
 
 	RemoteRunDelegate() {
@@ -494,6 +497,7 @@ abstract class DEDelegate implements DirectoryEntry {
 		return o != null && o instanceof DEDelegate
 				&& getFullName().equals(((DEDelegate) o).getFullName());
 	}
+
 	@Override
 	public int hashCode() {
 		return getFullName().hashCode();

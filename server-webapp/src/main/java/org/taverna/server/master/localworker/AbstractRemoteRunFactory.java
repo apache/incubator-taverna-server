@@ -13,6 +13,7 @@ import static java.rmi.registry.LocateRegistry.createRegistry;
 import static java.rmi.registry.LocateRegistry.getRegistry;
 import static java.rmi.registry.Registry.REGISTRY_PORT;
 import static java.rmi.server.RMISocketFactory.getDefaultSocketFactory;
+import static java.util.UUID.randomUUID;
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 
 import java.io.IOException;
@@ -26,6 +27,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
@@ -72,18 +74,44 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 
 	@Value("${rmi.localhostOnly}")
 	private boolean rmiLocalhostOnly;
+	@Value("${taverna.interaction.host}")
+	void setInteractionHost(String host) {
+		if (host != null && host.equals("none"))
+			host = null;
+		interhost = host;
+	}
+	String interhost;
+	@Value("${taverna.interaction.port}")
+	void setInteractionPort(String port) {
+		if (port != null && port.equals("none"))
+			port = null;
+		interport = port;
+	}
+	String interport;
+	@Value("${taverna.interaction.webdav_path}")
+	void setInteractionWebdav(String webdav) {
+		if (webdav != null && webdav.equals("none"))
+			webdav = null;
+		interwebdav = webdav;
+	}
+	String interwebdav;
+	@Value("${taverna.interaction.feed_path}")
+	void setInteractionFeed(String feed) {
+		if (feed != null && feed.equals("none"))
+			feed = null;
+		interfeed = feed;
+	}
+	String interfeed;
 
 	private Registry makeRegistry(int port) throws RemoteException {
 		if (rmiLocalhostOnly) {
 			setProperty("java.rmi.server.hostname", "127.0.0.1");
-			return createRegistry(port,
-					getDefaultSocketFactory(),
+			return createRegistry(port, getDefaultSocketFactory(),
 					new RMIServerSocketFactory() {
 						@Override
 						public ServerSocket createServerSocket(int port)
 								throws IOException {
-							return new ServerSocket(port, 0,
-									getLocalHost());
+							return new ServerSocket(port, 0, getLocalHost());
 						}
 					});
 		} else {
@@ -277,9 +305,10 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 			throws NoCreateException {
 		try {
 			Date now = new Date();
-			RemoteSingleRun rsr = getRealRun(creator, workflow);
+			UUID id = randomUUID();
+			RemoteSingleRun rsr = getRealRun(creator, workflow, id);
 			RemoteRunDelegate run = new RemoteRunDelegate(now, workflow, rsr,
-					state.getDefaultLifetime(), runDB);
+					state.getDefaultLifetime(), runDB, id);
 			run.setSecurityContext(securityFactory.create(run, creator));
 			return run;
 		} catch (NoCreateException e) {
@@ -298,12 +327,14 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 *            Who is creating the workflow run.
 	 * @param workflow
 	 *            What workflow are they instantiating.
+	 * @param id
+	 *            The identity token for the run, newly minted.
 	 * @return The remote interface to the run.
 	 * @throws Exception
 	 *             Just about anything can go wrong...
 	 */
 	protected abstract RemoteSingleRun getRealRun(UsernamePrincipal creator,
-			Workflow workflow) throws Exception;
+			Workflow workflow, UUID id) throws Exception;
 
 	/** @return The names of the current runs. */
 	@ManagedAttribute(description = "The names of the current runs.", currencyTimeLimit = 5)
