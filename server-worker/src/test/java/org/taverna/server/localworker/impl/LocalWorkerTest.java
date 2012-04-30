@@ -5,6 +5,7 @@
  */
 package org.taverna.server.localworker.impl;
 
+import static java.util.UUID.randomUUID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -92,7 +93,7 @@ public class LocalWorkerTest {
 				File workingDir, File inputBaclava,
 				Map<String, File> inputFiles, Map<String, String> inputValues,
 				File outputBaclava, File cmdir, char[] cmpass,
-				Map<String, String> env) throws Exception {
+				Map<String, String> env, String id) throws Exception {
 			events.add("init[");
 			events.add(executeWorkflowCommand);
 			events.add(workflow);
@@ -137,7 +138,7 @@ public class LocalWorkerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		lw = new LocalWorker("XWC", "WF", DummyWorker.class, null);
+		lw = new LocalWorker("XWC", "WF", DummyWorker.class, null, randomUUID());
 		events = new ArrayList<String>();
 		returnThisStatus = RemoteStatus.Operating;
 	}
