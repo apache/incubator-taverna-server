@@ -5,6 +5,7 @@
  */
 package org.taverna.server.master.common;
 
+import static javax.xml.bind.Marshaller.JAXB_ENCODING;
 import static javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT;
 import static org.apache.commons.logging.LogFactory.getLog;
 
@@ -49,11 +50,13 @@ public class Workflow implements Serializable,Externalizable {
 
 	private static Marshaller marshaller;
 	private static Unmarshaller unmarshaller;
+	private final static String ENCODING = "UTF-8"; 
 	static {
 		try {
 			JAXBContext context = JAXBContext.newInstance(Workflow.class);
 			marshaller = context.createMarshaller();
 			unmarshaller = context.createUnmarshaller();
+			marshaller.setProperty(JAXB_ENCODING, ENCODING);
 			marshaller.setProperty(JAXB_FORMATTED_OUTPUT, false);
 		} catch (JAXBException e) {
 			getLog("Taverna.Server.Webapp").fatal(
@@ -82,7 +85,7 @@ public class Workflow implements Serializable,Externalizable {
 			byte[] bytes = new byte[len];
 			in.readFully(bytes);
 			Reader r = new InputStreamReader(new InflaterInputStream(
-					new ByteArrayInputStream(bytes)), "UTF-8");
+					new ByteArrayInputStream(bytes)), ENCODING);
 			Workflow w = (Workflow) unmarshaller.unmarshal(r);
 			r.close();
 			this.content = w.content;
@@ -99,7 +102,7 @@ public class Workflow implements Serializable,Externalizable {
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			OutputStreamWriter w = new OutputStreamWriter(
-					new DeflaterOutputStream(baos), "UTF-8");
+					new DeflaterOutputStream(baos), ENCODING);
 			marshaller.marshal(this, w);
 			w.close();
 			byte[] bytes = baos.toByteArray();

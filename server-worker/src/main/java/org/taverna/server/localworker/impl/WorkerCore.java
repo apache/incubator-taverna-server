@@ -28,7 +28,7 @@ import static org.taverna.server.localworker.remote.RemoteStatus.Initialized;
 import static org.taverna.server.localworker.remote.RemoteStatus.Operating;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -312,7 +312,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 
 		// Add an argument holding the workflow
 		File tmp = createTempFile("taverna", ".t2flow");
-		FileWriter w = new FileWriter(tmp);
+		Writer w = new OutputStreamWriter(new FileOutputStream(tmp), "UTF-8");
 		try {
 			w.write(workflow);
 		} finally {
@@ -325,20 +325,20 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		pb.directory(workingDir);
 		wd = workingDir;
 
+		Map<String, String> env = pb.environment();
+
 		// Merge any options we have had imposed on us from outside
-		pb.environment().putAll(environment);
+		env.putAll(environment);
 
 		// Patch the environment to deal with TAVUTILS-17
-		assert pb.environment().get("PATH") != null;
-		pb.environment().put(
-				"PATH",
-				new File(System.getProperty("java.home"), "bin")
-						+ pathSeparator + pb.environment().get("PATH"));
+		assert env.get("PATH") != null;
+		env.put("PATH", new File(System.getProperty("java.home"), "bin")
+				+ pathSeparator + env.get("PATH"));
 		// Patch the environment to deal with TAVSERV-189
-		pb.environment().put("RAVEN_APPHOME", workingDir.getCanonicalPath());
-		pb.environment().put("TAVERNA_RUN_ID", token);
+		env.put("RAVEN_APPHOME", workingDir.getCanonicalPath());
+		// Patch the environment to deal with TAVSERV-224
+		env.put("TAVERNA_RUN_ID", token);
 		if (interactionHost != null) {
-			Map<String, String> env = pb.environment();
 			env.put("INTERACTION_HOST", interactionHost);
 			env.put("INTERACTION_PORT", interactionPort);
 			env.put("INTERACTION_WEBDAV", interactionWebdavPath);

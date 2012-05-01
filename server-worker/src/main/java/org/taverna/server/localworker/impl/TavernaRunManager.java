@@ -248,6 +248,9 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	@Override
 	public void setInteractionServiceDetails(String host, String port,
 			String webdavPath, String feedPath) throws RemoteException {
+		if (host == null || port == null || webdavPath == null
+				|| feedPath == null)
+			throw new IllegalArgumentException("all params must be non-null");
 		interactionHost = host;
 		interactionPort = port;
 		interactionWebdavPath = webdavPath;
