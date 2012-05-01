@@ -6,6 +6,7 @@ import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.identity.AuthorityDerivedIDMapper.DEFAULT_PREFIX;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedOperationParameter;
 import org.springframework.jmx.export.annotation.ManagedOperationParameters;
 import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.security.authentication.encoding.PasswordEncoder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -37,6 +39,18 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 
 	private Map<String, UserDetails> base = new HashMap<String, UserDetails>();
 	private String defLocalUser;
+	private PasswordEncoder encoder;
+
+	/**
+	 * Install the encoder that will be used to turn a plaintext password into
+	 * something that it is safe to store in the database.
+	 * 
+	 * @param encoder
+	 *            The password encoder bean to install.
+	 */
+	public void setEncoder(PasswordEncoder encoder) {
+		this.encoder = encoder;
+	}
 
 	public void setBaselineUserProperties(Properties props) {
 		UserAttributeEditor configAttribEd = new UserAttributeEditor();
@@ -60,6 +74,10 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 								true, attr.getAuthorities()));
 			}
 		}
+	}
+
+	private void installPassword(User u, String password) {
+		u.setEncodedPassword(encoder.encodePassword(password, u.getUsername()));
 	}
 
 	public void setDefaultLocalUser(String defLocalUser) {
@@ -94,7 +112,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 			if (!realUser)
 				continue;
 			u.setUsername(username);
-			u.setPassword(ud.getPassword());
+			installPassword(u, ud.getPassword());
 			u.setDisabled(!ud.isEnabled());
 			persist(u);
 		}
@@ -138,7 +156,6 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		User u = getById(userName);
 		Map<String, String> info = new HashMap<String, String>();
 		info.put("name", u.getUsername());
-		info.put("pass", u.getPassword());
 		info.put("admin", u.isAdmin() ? "yes" : "no");
 		info.put("enabled", u.isEnabled() ? "yes" : "no");
 		info.put("localID", u.getLocalUsername());
@@ -185,7 +202,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		u.setDisabled(true);
 		u.setAdmin(false);
 		u.setUsername(username);
-		u.setPassword(password);
+		installPassword(u, password);
 		if (coupleLocalUsername)
 			u.setLocalUsername(username);
 		else
@@ -209,7 +226,8 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 			@ManagedOperationParameter(name = "enabled", description = "Whether to enable the account.") })
 	public void setUserEnabled(String username, boolean enabled) {
 		User u = getById(username);
-		u.setDisabled(!enabled);
+		if (u != null)
+			u.setDisabled(!enabled);
 	}
 
 	/**
@@ -228,7 +246,8 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 			@ManagedOperationParameter(name = "admin", description = "Whether the account has admin privileges.") })
 	public void setUserAdmin(String username, boolean admin) {
 		User u = getById(username);
-		u.setAdmin(admin);
+		if (u != null)
+			u.setAdmin(admin);
 	}
 
 	/**
@@ -246,7 +265,8 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 			@ManagedOperationParameter(name = "password", description = "The new password to use.") })
 	public void setUserPassword(String username, String password) {
 		User u = getById(username);
-		u.setPassword(password);
+		if (u != null)
+			installPassword(u, password);
 	}
 
 	/**
@@ -264,7 +284,8 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 			@ManagedOperationParameter(name = "password", description = "The new local user account use.") })
 	public void setUserLocalUser(String username, String localUsername) {
 		User u = getById(username);
-		u.setLocalUsername(localUsername);
+		if (u != null)
+			u.setLocalUsername(localUsername);
 	}
 
 	/**
@@ -286,10 +307,15 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 			throws UsernameNotFoundException, DataAccessException {
 		UserDetails ud = base.get(username);
 		if (ud != null)
-			return ud;
+			// Copy, because of TAVSERV-226
+			return new org.springframework.security.core.userdetails.User(
+					ud.getUsername(), ud.getPassword(), true, true, true, true,
+					ud.getAuthorities());
 		User u;
 		try {
 			u = detach(getById(username));
+		} catch (NullPointerException npe) {
+			throw new UsernameNotFoundException("who are you?");
 		} catch (Exception ex) {
 			throw new UsernameNotFoundException("who are you?", ex);
 		}
@@ -297,5 +323,4 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 			return u;
 		throw new UsernameNotFoundException("who are you?");
 	}
-
 }

@@ -614,6 +614,7 @@ public interface Admin {
 		public Uri lastExitCode;
 		public Uri factoryProcessMapping;
 		public Uri usageRecords;
+		public Uri users;
 
 		public AdminDescription() {
 		}
@@ -642,6 +643,7 @@ public interface Admin {
 			lastExitCode = new Uri(ui, "lastExitCode");
 			factoryProcessMapping = new Uri(ui, "factoryProcessMapping");
 			usageRecords = new Uri(ui, "usageRecords");
+			users = new Uri(ui, "users");
 		}
 	}
 

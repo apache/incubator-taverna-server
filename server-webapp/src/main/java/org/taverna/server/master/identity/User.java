@@ -29,9 +29,9 @@ public class User implements UserDetails {
 	@XmlElement(name = "username", required = true)
 	@Persistent(primaryKey = "true")
 	private String id;
-	@XmlElement(required = true)
-	@Persistent
-	private String password;
+	@XmlElement(name = "password", required = true)
+	@Persistent(column = "password")
+	private String encodedPassword;
 	@XmlElement
 	@Persistent
 	private boolean admin;
@@ -53,7 +53,7 @@ public class User implements UserDetails {
 
 	@Override
 	public String getPassword() {
-		return password;
+		return encodedPassword;
 	}
 
 	@Override
@@ -89,8 +89,8 @@ public class User implements UserDetails {
 		this.id = username;
 	}
 
-	void setPassword(String password) {
-		this.password = password;
+	void setEncodedPassword(String password) {
+		this.encodedPassword = password;
 	}
 
 	void setAdmin(boolean admin) {

@@ -351,7 +351,6 @@ public class AdminBean implements Admin {
 		UserDesc desc = new UserDesc();
 		User u = userStore.getUser(username);
 		desc.username = u.getUsername();
-		desc.password = u.getPassword();
 		desc.localUserId = u.getLocalUsername();
 		desc.admin = u.isAdmin();
 		desc.enabled = u.isEnabled();
@@ -393,7 +392,6 @@ public class AdminBean implements Admin {
 		UserDesc desc = new UserDesc();
 		User u = userStore.getUser(username);
 		desc.username = u.getUsername();
-		desc.password = u.getPassword();
 		desc.localUserId = u.getLocalUsername();
 		desc.admin = u.isAdmin();
 		desc.enabled = u.isEnabled();
