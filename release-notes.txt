@@ -47,4 +47,8 @@ Specific Issues Addressed in This Release
 -----------------------------------------
 See http://www.mygrid.org.uk/dev/issues/browse/TAVSERV
 
-(None: Release just contains update to Taverna 2.4.0)
+TAVSERV-224	Ability to pass configuration parameters to the command line
+		executor
+TAVSERV-226	Odd webapp authentication behaviour!
+TAVSERV-228	Wrong title and missing documentation link on index page
+TAVSERV-229	Update to Taverna 2.4 core
