@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2011-2012 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.identity;
 
 import static org.taverna.server.master.common.Roles.ADMIN;
@@ -18,6 +23,11 @@ import javax.xml.bind.annotation.XmlType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+/**
+ * The rrepresentation of a user in the database.
+ * 
+ * @author Donal Fellows
+ */
 @PersistenceCapable(schema = "USERS", table = "LIST")
 @Query(name = "users", language = "SQL", value = "SELECT id FROM USERS.LIST ORDER BY id", resultClass = String.class)
 @XmlRootElement
