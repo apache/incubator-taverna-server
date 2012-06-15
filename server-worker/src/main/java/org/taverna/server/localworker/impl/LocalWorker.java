@@ -34,6 +34,7 @@ import java.net.URI;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -604,6 +605,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 							inputBaclavaFile, inputRealFiles, inputValues,
 							outputBaclavaFile, securityDirectory,
 							keystorePassword, environment, masterToken);
+					Arrays.fill(keystorePassword, '\00');
 					keystorePassword = null;
 				} catch (Exception e) {
 					throw new ImplementationException(
