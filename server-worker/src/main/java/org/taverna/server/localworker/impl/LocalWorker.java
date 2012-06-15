@@ -158,9 +158,9 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	Thread shutdownHook;
 	/** Location for security information to be written to. */
 	File securityDirectory;
-	/** Password to use to encrypt security information. */
-	char[] keystorePassword = new char[] { 'c', 'h', 'a', 'n', 'g', 'e', 'm',
-			'e' };
+	/** Password to use to encrypt security information. This default is 
+	 * <7 chars to work even without Unlimited Strength JCE (*/
+	char[] keystorePassword = new char[] { 'c', 'h', 'a', 'n', 'g', 'e' };
 	/** Additional server-specified environment settings. */
 	Map<String, String> environment = new HashMap<String, String>();
 
