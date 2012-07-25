@@ -6,11 +6,9 @@
 package org.taverna.server.master;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
-import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
+/*import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;*/
 import static javax.ws.rs.core.Response.created;
 import static javax.ws.rs.core.Response.noContent;
-import static javax.ws.rs.core.Response.notAcceptable;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.seeOther;
 import static org.taverna.server.master.ContentTypes.APPLICATION_ZIP_TYPE;
@@ -26,7 +24,7 @@ import java.util.List;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.PathSegment;
-import javax.ws.rs.core.Request;
+/*import javax.ws.rs.core.Request;*/
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
@@ -94,36 +92,42 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 				.getContents());
 	}
 
-	// Nasty! This can have several different responses...
-	// @Override
-	@CallCounted
-	public Response getDirectoryOrFileContents(List<PathSegment> path,
-			UriInfo ui, Request req) throws FilesystemAccessException,
-			NoDirectoryEntryException {
-		DirectoryEntry de = fileUtils.getDirEntry(run, path);
-
-		// How did the user want the result?
-		List<Variant> variants = getVariants(de);
-		Variant v = req.selectVariant(variants);
-		if (v == null)
-			return notAcceptable(variants).type(TEXT_PLAIN)
-					.entity("Do not know what type of response to produce.")
-					.build();
-
-		// Produce the content to deliver up
-		Object result;
-		if (v.getMediaType().equals(APPLICATION_OCTET_STREAM_TYPE))
-			// Only for files...
-			result = de;
-		else if (v.getMediaType().equals(APPLICATION_ZIP_TYPE))
-			// Only for directories...
-			result = ((Directory) de).getContentsAsZip();
-		else
-			// Only for directories...
-			// XML or JSON; let CXF pick what to do
-			result = new DirectoryContents(ui, ((Directory) de).getContents());
-		return ok(result).type(v.getMediaType()).build();
-	}
+	/*
+	 * // Nasty! This can have several different responses...
+	 * 
+	 * @Override @CallCounted private Response
+	 * getDirectoryOrFileContents(List<PathSegment> path, UriInfo ui, Request
+	 * req) throws FilesystemAccessException, NoDirectoryEntryException {
+	 * 
+	 * DirectoryEntry de = fileUtils.getDirEntry(run, path);
+	 * 
+	 * // How did the user want the result?
+	 * 
+	 * List<Variant> variants = getVariants(de); Variant v =
+	 * req.selectVariant(variants); if (v == null) return
+	 * notAcceptable(variants).type(TEXT_PLAIN)
+	 * .entity("Do not know what type of response to produce.") .build();
+	 * 
+	 * // Produce the content to deliver up
+	 * 
+	 * Object result; if
+	 * (v.getMediaType().equals(APPLICATION_OCTET_STREAM_TYPE))
+	 * 
+	 * // Only for files...
+	 * 
+	 * result = de; else if (v.getMediaType().equals(APPLICATION_ZIP_TYPE))
+	 * 
+	 * // Only for directories...
+	 * 
+	 * result = ((Directory) de).getContentsAsZip(); else
+	 * 
+	 * // Only for directories... // XML or JSON; let CXF pick what to do
+	 * 
+	 * result = new DirectoryContents(ui, ((Directory) de).getContents());
+	 * return ok(result).type(v.getMediaType()).build();
+	 * 
+	 * }
+	 */
 
 	private boolean matchType(MediaType a, MediaType b) {
 		log.debug("comparing " + a.getType() + "/" + a.getSubtype() + " and "
@@ -161,29 +165,28 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 		return variants;
 	}
 
+	/** How did the user want the result? */
+	private MediaType pickType(HttpHeaders headers, DirectoryEntry de)
+			throws FilesystemAccessException, NegotiationFailedException {
+		List<Variant> variants = getVariants(de);
+		// Manual content negotiation!!! Ugh!
+		for (MediaType mt : headers.getAcceptableMediaTypes())
+			for (Variant v : variants)
+				if (matchType(mt, v.getMediaType()))
+					return v.getMediaType();
+		throw new NegotiationFailedException(
+				"Do not know what type of response to produce.", variants);
+	}
+
 	@Override
 	@CallCounted
 	public Response getDirectoryOrFileContents(List<PathSegment> path,
 			UriInfo ui, HttpHeaders headers) throws FilesystemAccessException,
-			NoDirectoryEntryException {
+			NoDirectoryEntryException, NegotiationFailedException {
 		DirectoryEntry de = fileUtils.getDirEntry(run, path);
 
 		// How did the user want the result?
-		List<Variant> variants = getVariants(de);
-		MediaType wanted = null;
-		// Manual content negotiation!!! Ugh!
-		outer: for (MediaType mt : headers.getAcceptableMediaTypes()) {
-			for (Variant v : variants) {
-				if (matchType(mt, v.getMediaType())) {
-					wanted = v.getMediaType();
-					break outer;
-				}
-			}
-		}
-		if (wanted == null)
-			return notAcceptable(variants).type(TEXT_PLAIN)
-					.entity("Do not know what type of response to produce.")
-					.build();
+		MediaType wanted = pickType(headers, de);
 
 		log.info("producing content of type " + wanted);
 		// Produce the content to deliver up
@@ -193,7 +196,8 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 			result = de;
 			List<String> range = headers.getRequestHeader("Range");
 			if (range != null && range.size() == 1) {
-				return new FileSegment((File) de, range.get(0)).toResponse(wanted);
+				return new FileSegment((File) de, range.get(0))
+						.toResponse(wanted);
 			}
 		} else {
 			// Only for directories...
@@ -256,21 +260,24 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 
 	@Override
 	@CallCounted
-	public Response setFileContents(List<PathSegment> filePath, String name,
+	public Response setFileContents(List<PathSegment> filePath,
 			InputStream contents, UriInfo ui) throws NoDirectoryEntryException,
 			NoUpdateException, FilesystemAccessException {
 		support.permitUpdate(run);
 		Directory d;
-		if (filePath != null && filePath.size() > 0) {
-			DirectoryEntry e = fileUtils.getDirEntry(run, filePath);
-			if (!(e instanceof Directory)) {
-				throw new FilesystemAccessException(
-						"Cannot create a file that is not in a directory.");
-			}
-			d = (Directory) e;
-		} else {
-			d = run.getWorkingDirectory();
+		String name;
+		if (filePath == null || filePath.size() == 0)
+			throw new FilesystemAccessException(
+					"Cannot create a file that is not in a directory.");
+
+		List<PathSegment> dirPath = new ArrayList<PathSegment>(filePath);
+		name = dirPath.remove(dirPath.size() - 1).getPath();
+		DirectoryEntry de = fileUtils.getDirEntry(run, dirPath);
+		if (!(de instanceof Directory)) {
+			throw new FilesystemAccessException(
+					"Cannot create a file that is not in a directory.");
 		}
+		d = (Directory) de;
 
 		File f = null;
 		for (DirectoryEntry e : d.getContents()) {

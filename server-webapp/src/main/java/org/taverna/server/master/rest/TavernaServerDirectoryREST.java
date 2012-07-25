@@ -5,6 +5,7 @@
  */
 package org.taverna.server.master.rest;
 
+import static java.util.Collections.unmodifiableList;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static org.taverna.server.master.common.Roles.USER;
 
@@ -25,6 +26,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.Variant;
 
 import org.apache.cxf.jaxrs.model.wadl.Description;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
@@ -76,6 +78,9 @@ public interface TavernaServerDirectoryREST {
 	 *             If the name of the file or directory can't be looked up.
 	 * @throws FilesystemAccessException
 	 *             If something went wrong during the filesystem operation.
+	 * @throws NegotiationFailedException
+	 *             If the content type being downloaded isn't one that this
+	 *             method can support.
 	 */
 	@GET
 	@Path("{path:.+}")
@@ -86,7 +91,8 @@ public interface TavernaServerDirectoryREST {
 	Response getDirectoryOrFileContents(
 			@NonNull @PathParam("path") List<PathSegment> path,
 			@NonNull @Context UriInfo ui, @NonNull @Context HttpHeaders headers)
-			throws NoDirectoryEntryException, FilesystemAccessException;
+			throws NoDirectoryEntryException, FilesystemAccessException,
+			NegotiationFailedException;
 
 	/**
 	 * Creates a directory in the filesystem beneath the working directory of
@@ -123,9 +129,7 @@ public interface TavernaServerDirectoryREST {
 	 * directory of the workflow run.
 	 * 
 	 * @param file
-	 *            Which directory contains the file to create or update.
-	 * @param name
-	 *            The name of the file to create or update.
+	 *            The path to the file to create or update.
 	 * @param contents
 	 *            Stream of bytes to set the file's contents to.
 	 * @param ui
@@ -139,14 +143,14 @@ public interface TavernaServerDirectoryREST {
 	 *             If something went wrong during the filesystem operation.
 	 */
 	@PUT
-	@Path("{path:(.+/)?}{name}")
+	@Path("{path:(.*)}")
 	@Consumes(APPLICATION_OCTET_STREAM)
 	@Description("Creates or updates a file in a particular location beneath the working directory of the workflow run.")
 	@NonNull
 	Response setFileContents(@PathParam("path") List<PathSegment> file,
-			@PathParam("name") String name, InputStream contents,
-			@Context UriInfo ui) throws NoDirectoryEntryException,
-			NoUpdateException, FilesystemAccessException;
+			InputStream contents, @Context UriInfo ui)
+			throws NoDirectoryEntryException, NoUpdateException,
+			FilesystemAccessException;
 
 	/**
 	 * Deletes a file or directory that is in or below the working directory of
@@ -169,4 +173,19 @@ public interface TavernaServerDirectoryREST {
 	Response destroyDirectoryEntry(@PathParam("path") List<PathSegment> path)
 			throws NoUpdateException, FilesystemAccessException,
 			NoDirectoryEntryException;
+
+	/**
+	 * Exception thrown to indicate a failure by the client to provide an
+	 * acceptable content type.
+	 * 
+	 * @author Donal Fellows
+	 */
+	public static class NegotiationFailedException extends Exception {
+		public List<Variant> accepted;
+
+		public NegotiationFailedException(String msg, List<Variant> accepted) {
+			super(msg);
+			this.accepted = unmodifiableList(accepted);
+		}
+	}
 }
