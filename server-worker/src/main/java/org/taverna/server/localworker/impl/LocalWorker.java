@@ -34,7 +34,6 @@ import java.net.URI;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -158,8 +157,10 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	Thread shutdownHook;
 	/** Location for security information to be written to. */
 	File securityDirectory;
-	/** Password to use to encrypt security information. This default is 
-	 * <7 chars to work even without Unlimited Strength JCE (*/
+	/**
+	 * Password to use to encrypt security information. This default is <7 chars
+	 * to work even without Unlimited Strength JCE.
+	 */
 	char[] keystorePassword = new char[] { 'c', 'h', 'a', 'n', 'g', 'e' };
 	/** Additional server-specified environment settings. */
 	Map<String, String> environment = new HashMap<String, String>();
@@ -605,7 +606,11 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 							inputBaclavaFile, inputRealFiles, inputValues,
 							outputBaclavaFile, securityDirectory,
 							keystorePassword, environment, masterToken);
-					Arrays.fill(keystorePassword, '\00');
+					/*
+					 * Do not clear the keystorePassword array here; its
+					 * ownership is *transferred* to the worker core which
+					 * doesn't copy it but *does* clear it after use.
+					 */
 					keystorePassword = null;
 				} catch (Exception e) {
 					throw new ImplementationException(
