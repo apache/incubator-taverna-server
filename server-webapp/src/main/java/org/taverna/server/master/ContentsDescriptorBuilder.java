@@ -217,6 +217,23 @@ public class ContentsDescriptorBuilder {
 	}
 
 	/**
+	 * Build a description of an error value.
+	 * 
+	 * @param file
+	 *            The file representing the error.
+	 * @return A value descriptor.
+	 * @throws FilesystemAccessException
+	 *             If anything goes wrong.
+	 */
+	private ErrorValue constructErrorValue(File file)
+			throws FilesystemAccessException {
+		ErrorValue v = new ErrorValue();
+		v.fileName = file.getFullName();
+		v.byteLength = file.getSize();
+		return v;
+	}
+
+	/**
 	 * Build a description of a list value.
 	 * 
 	 * @param dir
@@ -275,8 +292,8 @@ public class ContentsDescriptorBuilder {
 		String prefix = name + ".";
 		for (DirectoryEntry entry : parentContents) {
 			AbstractValue av;
-			if (entry.getName().equals(error)) {
-				av = new ErrorValue();
+			if (entry.getName().equals(error) && entry instanceof File) {
+				av = constructErrorValue((File) entry);
 			} else if (!entry.getName().equals(name)
 					&& !entry.getName().startsWith(prefix))
 				continue;
