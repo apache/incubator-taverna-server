@@ -431,9 +431,9 @@ public interface TavernaServerSecurityREST {
 			super(true);
 			this.owner = owner;
 			this.permissions = new Uri(ub, "permissions");
-			this.credentials = new Credentials(ub.build("credentials"),
+			this.credentials = new Credentials(new Uri(ub, "credentials").ref,
 					credential);
-			this.trusts = new Trusts(ub.build("trusts"), trust);
+			this.trusts = new Trusts(new Uri(ub, "trusts").ref, trust);
 		}
 
 		/**
@@ -645,7 +645,7 @@ public interface TavernaServerSecurityREST {
 			public LinkedPermissionDescription(@NonNull UriBuilder ub,
 					@NonNull String userName, @NonNull Permission permission,
 					String... strings) {
-				super(ub, strings);
+				super(secure(ub), strings);
 				this.userName = userName;
 				this.permission = permission;
 			}

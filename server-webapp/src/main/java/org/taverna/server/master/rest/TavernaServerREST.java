@@ -6,6 +6,7 @@
 package org.taverna.server.master.rest;
 
 import static org.taverna.server.master.common.Roles.USER;
+import static org.taverna.server.master.common.Uri.secure;
 import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 
 import java.util.ArrayList;
@@ -168,10 +169,10 @@ public interface TavernaServerREST {
 		 */
 		public ServerDescription(UriInfo ui) {
 			super(true);
-			runs = new Uri(ui, true, "runs");
-			policy = new Uri(ui, "policy");
-			feed = new Uri(ui, true, "../feed");
-			// database = new Uri(ui, true, "database");
+			runs = new Uri(ui, "runs");
+			policy = new Uri(ui, false, "policy");
+			feed = new Uri(ui, "../feed");
+			// database = new Uri(ui, "database");
 			// TODO TAVSERV-69: Make the database point to something real
 		}
 	}
@@ -293,11 +294,11 @@ public interface TavernaServerREST {
 			 */
 			public PolicyDescription(UriInfo ui) {
 				super(true);
-				runLimit = new Uri(ui, true, "runLimit");
-				permittedWorkflows = new Uri(ui, true, "permittedWorkflows");
-				permittedListenerTypes = new Uri(ui, true,
+				runLimit = new Uri(ui, false, "runLimit");
+				permittedWorkflows = new Uri(ui, false, "permittedWorkflows");
+				permittedListenerTypes = new Uri(ui, false,
 						"permittedListenerTypes");
-				this.enabledNotificationFabrics = new Uri(ui, true,
+				this.enabledNotificationFabrics = new Uri(ui, false,
 						"enabledNotificationFabrics");
 			}
 		}
@@ -392,6 +393,7 @@ public interface TavernaServerREST {
 		 *            How to construct URIs to the runs.
 		 */
 		public RunList(Map<String, TavernaRun> runs, UriBuilder ub) {
+			ub = secure(ub);
 			run = new ArrayList<RunReference>(runs.size());
 			for (String name : runs.keySet())
 				run.add(new RunReference(name, ub));

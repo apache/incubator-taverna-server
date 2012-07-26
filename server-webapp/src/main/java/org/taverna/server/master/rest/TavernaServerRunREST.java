@@ -5,8 +5,10 @@
  */
 package org.taverna.server.master.rest;
 
+import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.joda.time.format.ISODateTimeFormat.basicDateTime;
 import static org.taverna.server.master.common.Roles.USER;
+import static org.taverna.server.master.common.Uri.secure;
 import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 
 import java.net.URI;
@@ -367,8 +369,8 @@ public interface TavernaServerRunREST {
 
 			private static DateTimeFormatter dtf;
 
-			Expiry(TavernaRun r, UriBuilder ub) {
-				ref = ub.build();
+			Expiry(TavernaRun r, UriInfo ui, String path, String... parts) {
+				ref = fromUri(new Uri(ui, true, path, parts).ref).build();
 				if (dtf == null)
 					dtf = basicDateTime();
 				timeOfDeath = dtf.print(r.getExpiry().getTime());
@@ -395,11 +397,15 @@ public interface TavernaServerRunREST {
 			}
 
 			ListenerList(TavernaRun r, UriBuilder ub) {
-				super(ub);
+				super(secure(ub));
 				listener = new ArrayList<Uri>(r.getListeners().size());
 				for (Listener l : r.getListeners()) {
 					listener.add(new Uri(ub.path("{name}"), l.getName()));
 				}
+			}
+
+			ListenerList(TavernaRun r, UriInfo ui, String path, String... parts) {
+				this(r, fromUri(new Uri(ui, path, parts).ref));
 			}
 		}
 
@@ -420,11 +426,10 @@ public interface TavernaServerRunREST {
 		public RunDescription(TavernaRun run, UriInfo ui) {
 			super(true);
 			creationWorkflow = new Uri(ui, "workflow");
-			expiry = new Expiry(run, ui.getAbsolutePathBuilder().path("expiry"));
+			expiry = new Expiry(run, ui, "expiry");
 			status = new Uri(ui, "status");
 			workingDirectory = new Uri(ui, "wd");
-			listeners = new ListenerList(run, ui.getAbsolutePathBuilder().path(
-					"listeners"));
+			listeners = new ListenerList(run, ui, "listeners");
 			securityContext = new Uri(ui, "security");
 			inputs = new Uri(ui, "input");
 			output = new Uri(ui, "output");
