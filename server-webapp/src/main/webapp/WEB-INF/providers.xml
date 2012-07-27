@@ -63,7 +63,7 @@
 	<bean id="ExceptionProvider.AccessDenied" class="org.taverna.server.master.rest.handler.AccessDeniedHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
-    <bean id="ExceptionProvider.NegotiationProvider" class="org.taverna.server.master.rest.handler.NegotiationProviderHandler">
+    <bean id="ExceptionProvider.NegotiationFailed" class="org.taverna.server.master.rest.handler.NegotiationFailedHandler">
     </bean>
 	<bean id="MessagingProvider.File" class="org.taverna.server.master.rest.handler.FileMessageHandler">
 		<property name="maxChunkSize" value="${default.messageSize}" />
