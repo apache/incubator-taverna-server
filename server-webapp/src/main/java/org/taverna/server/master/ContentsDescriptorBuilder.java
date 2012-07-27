@@ -11,6 +11,7 @@ import static javax.ws.rs.core.UriBuilder.fromUri;
 import static javax.xml.xpath.XPathConstants.NODE;
 import static javax.xml.xpath.XPathConstants.NODESET;
 import static org.taverna.server.master.TavernaServerSupport.log;
+import static org.taverna.server.master.common.Uri.secure;
 
 import java.io.ByteArrayInputStream;
 import java.net.URI;
@@ -29,7 +30,6 @@ import javax.xml.xpath.XPathFactory;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.util.xml.SimpleNamespaceContext;
-import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.interfaces.Directory;
@@ -324,7 +324,7 @@ public class ContentsDescriptorBuilder {
 			throws FilesystemAccessException, NoDirectoryEntryException {
 		OutputDescription descriptor = new OutputDescription();
 		try {
-			UriBuilder ub = Uri.secure(getRunUriBuilder(run, ui));
+			UriBuilder ub = getRunUriBuilder(run, ui);
 			Element dataflow = fillInFromWorkflow(run, ub, descriptor);
 			if (dataflow == null || run.getOutputBaclavaFile() != null)
 				return descriptor;
@@ -337,10 +337,10 @@ public class ContentsDescriptorBuilder {
 
 	private UriBuilder getRunUriBuilder(TavernaRun run, UriInfo ui) {
 		if (ui == null)
-			return uriBuilderFactory.getRunUriBuilder(run);
+			return secure(uriBuilderFactory.getRunUriBuilder(run));
 		else
-			return fromUri(ui.getAbsolutePath().toString()
-					.replaceAll("/(out|in)put/?$", ""));
+			return secure(fromUri(ui.getAbsolutePath().toString()
+					.replaceAll("/(out|in)put/?$", "")));
 	}
 
 	/**

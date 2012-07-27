@@ -5,6 +5,8 @@
  */
 package org.taverna.server.master.rest;
 
+import static org.taverna.server.master.common.Uri.secure;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -52,7 +54,7 @@ public class DirectoryContents {
 	 */
 	public DirectoryContents(UriInfo ui, Collection<DirectoryEntry> collection) {
 		contents = new ArrayList<DirEntryReference>();
-		UriBuilder ub = ui.getAbsolutePathBuilder().path("{path}");
+		UriBuilder ub = secure(ui).path("{path}");
 		for (DirectoryEntry e : collection) {
 			contents.add(DirEntryReference.newInstance(ub, e));
 		}

@@ -17,6 +17,7 @@ import static org.taverna.server.master.common.Namespaces.SERVER_SOAP;
 import static org.taverna.server.master.common.Roles.ADMIN;
 import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.common.Status.Initialized;
+import static org.taverna.server.master.common.Uri.secure;
 
 import java.io.IOException;
 import java.net.URI;
@@ -48,6 +49,7 @@ import org.taverna.server.master.common.Permission;
 import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Trust;
+import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
@@ -194,7 +196,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	@Override
 	@CallCounted
 	public RunList listUsersRuns(UriInfo ui) {
-		return new RunList(runs(), ui.getAbsolutePathBuilder().path("{name}"));
+		return new RunList(runs(), secure(ui).path("{name}"));
 	}
 
 	@Override
@@ -202,8 +204,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	public Response submitWorkflow(Workflow workflow, UriInfo ui)
 			throws NoUpdateException {
 		String name = support.buildWorkflow(workflow);
-		return created(ui.getAbsolutePathBuilder().path("{uuid}").build(name))
-				.build();
+		return created(secure(ui).path("{uuid}").build(name)).build();
 	}
 
 	@Override
@@ -835,11 +836,11 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	public UriBuilder getBaseUriBuilder() {
 		if (jaxws == null || jaxws.getMessageContext() == null)
 			// Hack to make the test suite work
-			return fromUri("/taverna-server/rest/");
+			return secure(fromUri("/taverna-server/rest/"));
 		String pathInfo = (String) jaxws.getMessageContext().get(PATH_INFO);
 		pathInfo = pathInfo.replaceFirst("/soap$", "/rest/");
 		pathInfo = pathInfo.replaceFirst("/rest/.+$", "/rest/");
-		return fromUri(pathInfo);
+		return secure(fromUri(pathInfo));
 	}
 
 	private Map<String, TavernaRun> runs() {

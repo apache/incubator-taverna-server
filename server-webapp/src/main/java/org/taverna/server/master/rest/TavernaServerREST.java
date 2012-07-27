@@ -390,10 +390,10 @@ public interface TavernaServerREST {
 		 * @param runs
 		 *            The mapping of runs to describe.
 		 * @param ub
-		 *            How to construct URIs to the runs.
+		 *            How to construct URIs to the runs. Must have already been
+		 *            secured as it needs to have its pattern applied.
 		 */
 		public RunList(Map<String, TavernaRun> runs, UriBuilder ub) {
-			ub = secure(ub);
 			run = new ArrayList<RunReference>(runs.size());
 			for (String name : runs.keySet())
 				run.add(new RunReference(name, ub));

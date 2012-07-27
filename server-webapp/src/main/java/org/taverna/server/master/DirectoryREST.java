@@ -15,6 +15,7 @@ import static org.taverna.server.master.ContentTypes.APPLICATION_ZIP_TYPE;
 import static org.taverna.server.master.ContentTypes.DIRECTORY_VARIANTS;
 import static org.taverna.server.master.ContentTypes.INITIAL_FILE_VARIANTS;
 import static org.taverna.server.master.TavernaServerImpl.log;
+import static org.taverna.server.master.common.Uri.secure;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +33,7 @@ import javax.ws.rs.core.Variant;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.TavernaServerImpl.SupportAware;
+import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoUpdateException;
@@ -227,7 +229,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 		if (op.name == null || op.name.length() == 0)
 			throw new FilesystemAccessException("missing name attribute");
 		Directory d = (Directory) container;
-		UriBuilder ub = ui.getAbsolutePathBuilder().path("{name}");
+		UriBuilder ub = secure(ui).path("{name}");
 
 		// Make a directory in the context directory
 

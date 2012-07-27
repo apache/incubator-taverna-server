@@ -395,16 +395,31 @@ public interface TavernaServerRunREST {
 				listener = new ArrayList<Uri>();
 			}
 
-			ListenerList(TavernaRun r, UriBuilder ub) {
-				super(secure(ub));
+			/**
+			 * @param r
+			 *            The run whose listeners we're talking about.
+			 * @param ub
+			 *            Uri factory; must've been secured
+			 */
+			private ListenerList(TavernaRun r, UriBuilder ub) {
+				super(ub);
 				listener = new ArrayList<Uri>(r.getListeners().size());
-				for (Listener l : r.getListeners()) {
-					listener.add(new Uri(ub.path("{name}"), l.getName()));
-				}
+				for (Listener l : r.getListeners())
+					listener.add(new Uri(ub.path("{name}").build(l.getName())));
 			}
 
-			ListenerList(TavernaRun r, UriInfo ui, String path, String... parts) {
-				this(r, fromUri(new Uri(ui, path, parts).ref));
+			/**
+			 * @param run
+			 *            The run whose listeners we're talking about.
+			 * @param ui
+			 *            The source of information about URIs.
+			 * @param path
+			 *            Where we are relative to the URI source.
+			 * @param parts
+			 *            Anything required to fill out the path.
+			 */
+			ListenerList(TavernaRun run, UriInfo ui, String path, String... parts) {
+				this(run, secure(fromUri(new Uri(ui, path, parts).ref)));
 			}
 		}
 

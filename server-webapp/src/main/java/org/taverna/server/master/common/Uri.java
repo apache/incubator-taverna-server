@@ -5,6 +5,7 @@
  */
 package org.taverna.server.master.common;
 
+import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.common.Namespaces.XLINK;
 
 import java.net.URI;
@@ -16,6 +17,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.security.web.PortMapper;
@@ -31,6 +33,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  */
 @XmlType(name = "Location")
 public class Uri {
+	static final Log log = getLog("Taverna.Server.UriRewriter");
 	private static final String SECURE_SCHEME = "https";
 	/**
 	 * This type is characterised by an attribute that is the reference to some
@@ -105,6 +108,10 @@ public class Uri {
 		return Rewriter.getSecuredUriBuilder(ub);
 	}
 
+	public static UriBuilder secure(UriInfo ui) {
+		return Rewriter.getSecuredUriBuilder(ui.getAbsolutePathBuilder());
+	}
+
 	/**
 	 * A bean that allows configuration of how to rewrite generated URIs to be
 	 * secure.
@@ -150,8 +157,12 @@ public class Uri {
 			Integer secPort = null;
 			ub = ub.clone();
 			if (instance != null && instance.portMapper != null)
-				secPort = instance.portMapper.lookupHttpsPort(ub.build()
-						.getPort());
+				try {
+					secPort = instance.portMapper.lookupHttpsPort(ub.build()
+							.getPort());
+				} catch (Exception e) {
+					log.warn("failed to extract current URI port", e);
+				}
 			if (secPort == null || secPort == -1)
 				return ub.scheme(SECURE_SCHEME);
 			return ub.scheme(SECURE_SCHEME).port(secPort);

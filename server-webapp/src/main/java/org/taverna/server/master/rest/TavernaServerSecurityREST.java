@@ -634,7 +634,7 @@ public interface TavernaServerSecurityREST {
 			 * Initialise a description of one user's permissions.
 			 * 
 			 * @param ub
-			 *            How to build the URI to this permission.
+			 *            How to build the URI to this permission. Already secured.
 			 * @param userName
 			 *            Who this relates to.
 			 * @param permission
@@ -642,10 +642,10 @@ public interface TavernaServerSecurityREST {
 			 * @param strings
 			 *            Parameters to the URI builder.
 			 */
-			public LinkedPermissionDescription(@NonNull UriBuilder ub,
+			LinkedPermissionDescription(@NonNull UriBuilder ub,
 					@NonNull String userName, @NonNull Permission permission,
 					String... strings) {
-				super(secure(ub), strings);
+				super(ub, strings);
 				this.userName = userName;
 				this.permission = permission;
 			}
@@ -663,7 +663,8 @@ public interface TavernaServerSecurityREST {
 		 * Initialise the description of a collection of permissions.
 		 * 
 		 * @param ub
-		 *            How to build URIs to this collection.
+		 *            How to build URIs to this collection. Must have already
+		 *            been secured.
 		 * @param permissionMap
 		 *            The permissions to describe.
 		 */

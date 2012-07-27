@@ -9,6 +9,7 @@ import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.created;
 import static javax.ws.rs.core.Response.noContent;
 import static org.taverna.server.master.common.Status.Initialized;
+import static org.taverna.server.master.common.Uri.secure;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -55,8 +56,8 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 	@Override
 	@CallCounted
 	public Descriptor describe(UriInfo ui) {
-		return new Descriptor(ui.getAbsolutePathBuilder().path("{element}"),
-				context.getOwner().getName(), context.getCredentials(),
+		return new Descriptor(secure(ui).path("{element}"), context
+				.getOwner().getName(), context.getCredentials(),
 				context.getTrusted());
 	}
 
@@ -106,7 +107,7 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 			throw new BadStateChangeException();
 		Credential c = cred.credential;
 		c.id = randomUUID().toString();
-		URI uri = ui.getAbsolutePathBuilder().path("{id}").build(c.id);
+		URI uri = secure(ui).path("{id}").build(c.id);
 		c.href = uri.toString();
 		context.validateCredential(c);
 		context.addCredential(c);
@@ -170,7 +171,7 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 		if (run.getStatus() != Initialized)
 			throw new BadStateChangeException();
 		t.id = randomUUID().toString();
-		URI uri = ui.getAbsolutePathBuilder().path("{id}").build(t.id);
+		URI uri = secure(ui).path("{id}").build(t.id);
 		t.href = uri.toString();
 		context.validateTrusted(t);
 		context.addTrusted(t);
@@ -209,8 +210,7 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 			perm.put(u, Permission.Update);
 		for (String u : context.getPermittedDestroyers())
 			perm.put(u, Permission.Destroy);
-		return new PermissionsDescription(ui.getAbsolutePathBuilder().path(
-				"{id}"), perm);
+		return new PermissionsDescription(secure(ui).path("{id}"), perm);
 	}
 
 	@Override
@@ -237,8 +237,7 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 	@CallCounted
 	public Response makePermission(PermissionDescription desc, UriInfo ui) {
 		support.setPermission(context, desc.userName, desc.permission);
-		return created(
-				ui.getAbsolutePathBuilder().path("{user}").build(desc.userName))
+		return created(secure(ui).path("{user}").build(desc.userName))
 				.build();
 	}
 }

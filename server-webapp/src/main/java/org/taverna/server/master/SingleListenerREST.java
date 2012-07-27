@@ -6,6 +6,7 @@
 package org.taverna.server.master;
 
 import static java.util.Arrays.asList;
+import static org.taverna.server.master.common.Uri.secure;
 
 import java.util.List;
 
@@ -45,15 +46,14 @@ abstract class SingleListenerREST implements TavernaServerListenerREST,
 	@Override
 	@CallCounted
 	public ListenerDescription getDescription(UriInfo ui) {
-		return new ListenerDescription(listen, ui.getAbsolutePathBuilder());
+		return new ListenerDescription(listen, secure(ui));
 	}
 
 	@Override
 	@CallCounted
 	public TavernaServerListenersREST.Properties getProperties(UriInfo ui) {
-		return new TavernaServerListenersREST.Properties(ui
-				.getAbsolutePathBuilder().path("{prop}"),
-				listen.listProperties());
+		return new TavernaServerListenersREST.Properties(secure(ui).path(
+				"{prop}"), listen.listProperties());
 	}
 
 	@Override

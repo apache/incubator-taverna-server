@@ -7,7 +7,6 @@ package org.taverna.server.master.rest;
 
 import static org.taverna.server.master.common.Namespaces.XLINK;
 import static org.taverna.server.master.common.Roles.USER;
-import static org.taverna.server.master.common.Uri.secure;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -258,14 +257,14 @@ public interface TavernaServerListenersREST {
 		 * @param listener
 		 *            The listener to describe.
 		 * @param ub
-		 *            The factor for URIs.
+		 *            The factory for URIs. Must have already been secured.
 		 */
 		public ListenerDescription(Listener listener, UriBuilder ub) {
 			super(true);
 			name = listener.getName();
 			type = listener.getType();
-			configuration = new Uri(secure(ub.clone()).path("configuration"));
-			UriBuilder ub2 = secure(ub.clone()).path("properties/{prop}");
+			configuration = new Uri(ub.path("configuration"));
+			UriBuilder ub2 = ub.path("properties/{prop}");
 			properties = new ArrayList<PropertyDescription>(
 					listener.listProperties().length);
 			for (String propName : listener.listProperties())
@@ -300,10 +299,10 @@ public interface TavernaServerListenersREST {
 		 * @param propName
 		 *            The name of the property.
 		 * @param ub
-		 *            The factory for URIs.
+		 *            The factory for URIs. Must have already been secured.
 		 */
 		PropertyDescription(String propName, UriBuilder ub) {
-			super(secure(ub), propName);
+			super(ub, propName);
 			this.name = propName;
 		}
 	}
@@ -333,13 +332,15 @@ public interface TavernaServerListenersREST {
 		 * Make a description of the whole group out of the given list of
 		 * listener descriptions.
 		 * 
-		 * @param listeners The collection of (partial) listener descriptions.
-		 * @param ub How to build the location of the listeners.
+		 * @param listeners
+		 *            The collection of (partial) listener descriptions.
+		 * @param ub
+		 *            How to build the location of the listeners. Must have
+		 *            already been secured.
 		 */
 		public Listeners(List<ListenerDescription> listeners, UriBuilder ub) {
 			super(true);
 			listener = listeners;
-			ub = secure(ub);
 			for (ListenerDescription ld : listeners)
 				ld.location = ub.build(ld.name);
 		}
@@ -369,14 +370,14 @@ public interface TavernaServerListenersREST {
 		 * Make the description of the properties of a listener.
 		 * 
 		 * @param ub
-		 *            The factory for URIs, configured.
+		 *            The factory for URIs, configured. Must have already been
+		 *            secured.
 		 * @param properties
 		 *            The names of the properties.
 		 */
 		public Properties(UriBuilder ub, String[] properties) {
 			super(true);
 			property = new ArrayList<PropertyDescription>(properties.length);
-			ub = secure(ub);
 			for (String propName : properties)
 				property.add(new PropertyDescription(propName, ub));
 		}
