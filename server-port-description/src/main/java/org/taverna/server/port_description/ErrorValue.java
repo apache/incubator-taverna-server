@@ -12,4 +12,8 @@ import javax.xml.bind.annotation.XmlType;
 public class ErrorValue extends AbstractValue {
 	@XmlAttribute
 	public Integer depth;
+	@XmlAttribute(name = "errorFile")
+	public String fileName;
+	@XmlAttribute(name = "errorByteLength")
+	public Long byteLength;
 }

@@ -7,6 +7,7 @@ package org.taverna.server.master.rest;
 
 import static org.taverna.server.master.common.Namespaces.XLINK;
 import static org.taverna.server.master.common.Roles.USER;
+import static org.taverna.server.master.common.Uri.secure;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -263,8 +264,8 @@ public interface TavernaServerListenersREST {
 			super(true);
 			name = listener.getName();
 			type = listener.getType();
-			configuration = new Uri(ub.clone().path("configuration"));
-			UriBuilder ub2 = ub.clone().path("properties/{prop}");
+			configuration = new Uri(secure(ub.clone()).path("configuration"));
+			UriBuilder ub2 = secure(ub.clone()).path("properties/{prop}");
 			properties = new ArrayList<PropertyDescription>(
 					listener.listProperties().length);
 			for (String propName : listener.listProperties())
@@ -302,7 +303,7 @@ public interface TavernaServerListenersREST {
 		 *            The factory for URIs.
 		 */
 		PropertyDescription(String propName, UriBuilder ub) {
-			super(ub, propName);
+			super(secure(ub), propName);
 			this.name = propName;
 		}
 	}
@@ -338,6 +339,7 @@ public interface TavernaServerListenersREST {
 		public Listeners(List<ListenerDescription> listeners, UriBuilder ub) {
 			super(true);
 			listener = listeners;
+			ub = secure(ub);
 			for (ListenerDescription ld : listeners)
 				ld.location = ub.build(ld.name);
 		}
@@ -374,6 +376,7 @@ public interface TavernaServerListenersREST {
 		public Properties(UriBuilder ub, String[] properties) {
 			super(true);
 			property = new ArrayList<PropertyDescription>(properties.length);
+			ub = secure(ub);
 			for (String propName : properties)
 				property.add(new PropertyDescription(propName, ub));
 		}

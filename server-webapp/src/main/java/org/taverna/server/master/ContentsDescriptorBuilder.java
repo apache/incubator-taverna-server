@@ -29,6 +29,7 @@ import javax.xml.xpath.XPathFactory;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.util.xml.SimpleNamespaceContext;
+import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.interfaces.Directory;
@@ -197,17 +198,14 @@ public class ContentsDescriptorBuilder {
 	 * 
 	 * @param file
 	 *            The file representing the value.
-	 * @param ub
-	 *            The factory for URIs.
 	 * @return A value descriptor.
 	 * @throws FilesystemAccessException
 	 *             If anything goes wrong.
 	 */
-	private LeafValue constructLeafValue(File file, UriBuilder ub)
+	private LeafValue constructLeafValue(File file)
 			throws FilesystemAccessException {
 		LeafValue v = new LeafValue();
 		v.fileName = file.getFullName();
-		v.href = ub.build(file.getFullName().replaceFirst("^/", ""));
 		v.byteLength = file.getSize();
 		try {
 			byte[] head = file.getContents(0, 1024);
@@ -215,6 +213,23 @@ public class ContentsDescriptorBuilder {
 		} catch (Exception e) {
 			v.contentType = APPLICATION_OCTET_STREAM_TYPE.toString();
 		}
+		return v;
+	}
+
+	/**
+	 * Build a description of an error value.
+	 * 
+	 * @param file
+	 *            The file representing the error.
+	 * @return A value descriptor.
+	 * @throws FilesystemAccessException
+	 *             If anything goes wrong.
+	 */
+	private ErrorValue constructErrorValue(File file)
+			throws FilesystemAccessException {
+		ErrorValue v = new ErrorValue();
+		v.fileName = file.getFullName();
+		v.byteLength = file.getSize();
 		return v;
 	}
 
@@ -276,19 +291,18 @@ public class ContentsDescriptorBuilder {
 		String error = name + ".error";
 		String prefix = name + ".";
 		for (DirectoryEntry entry : parentContents) {
-			if (entry.getName().equals(error)) {
-				ErrorValue v = new ErrorValue();
-				v.href = ub.build(entry.getFullName().replaceFirst("^/", ""));
-				return v;
-			}
-			if (!entry.getName().equals(name)
+			AbstractValue av;
+			if (entry.getName().equals(error) && entry instanceof File) {
+				av = constructErrorValue((File) entry);
+			} else if (!entry.getName().equals(name)
 					&& !entry.getName().startsWith(prefix))
 				continue;
-			if (entry instanceof File) {
-				return constructLeafValue((File) entry, ub);
-			} else {
-				return constructListValue((Directory) entry, ub);
-			}
+			else if (entry instanceof File)
+				av = constructLeafValue((File) entry);
+			else
+				av = constructListValue((Directory) entry, ub);
+			av.href = ub.build(entry.getFullName().replaceFirst("^/", ""));
+			return av;
 		}
 		return new AbsentValue();
 	}
@@ -310,7 +324,7 @@ public class ContentsDescriptorBuilder {
 			throws FilesystemAccessException, NoDirectoryEntryException {
 		OutputDescription descriptor = new OutputDescription();
 		try {
-			UriBuilder ub = getRunUriBuilder(run, ui);
+			UriBuilder ub = Uri.secure(getRunUriBuilder(run, ui));
 			Element dataflow = fillInFromWorkflow(run, ub, descriptor);
 			if (dataflow == null || run.getOutputBaclavaFile() != null)
 				return descriptor;

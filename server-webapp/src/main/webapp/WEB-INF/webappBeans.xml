@@ -77,6 +77,7 @@
 			<ref bean="ExceptionProvider.ImplementationProblem" />
 			<ref bean="ExceptionProvider.InvalidCredential" />
 			<ref bean="ExceptionProvider.JAXBException" />
+			<ref bean="ExceptionProvider.NegotiationProvider" />
 			<ref bean="ExceptionProvider.NoCreate" />
 			<ref bean="ExceptionProvider.NoCredential" />
 			<ref bean="ExceptionProvider.NoDestroy" />
@@ -91,7 +92,6 @@
 			<ref bean="MessagingProvider.T2flow" />
 			<ref bean="MessagingProvider.Permission" />
 			<ref bean="jsonProvider" />
-			<ref bean="jaxbProvider" />
 		</jaxrs:providers>
  	</jaxrs:server>
 
@@ -114,7 +114,6 @@
 		</jaxrs:serviceBeans>
 		<jaxrs:providers>
 			<ref bean="jsonProvider" />
-			<ref bean="jaxbProvider" />
 		</jaxrs:providers>
 	</jaxrs:server>
 
@@ -134,21 +133,6 @@
 		<entry key="http://ns.taverna.org.uk/2010/xml/server/admin/" value="" />
 		<entry key="http://ns.taverna.org.uk/2010/port/" value="" />
 		<entry key="http://ns.taverna.org.uk/2010/run/" value="" />
-	</util:map>
-
-	<!-- How to supply a stylesheet with the results so that browsers can
-	     show things properly; requires selecting a stylesheet to use. -->
-	<bean id="jaxbProvider" class="org.apache.cxf.jaxrs.provider.JAXBElementProvider">
-		<property name="marshallerProperties" ref="jaxbProps" />
-	</bean>
-	<util:map id="jaxbProps" key-type="java.lang.String"
-		value-type="java.lang.String">
-		<entry key="com.sun.xml.bind.xmlHeaders">
-			<!-- Newlines matter in literal value; be careful! -->
-			<value type="java.lang.String"><![CDATA[
-<?xml-stylesheet type="text/xml" href="${xml.stylesheet.url}"?>
-]]></value>
-		</entry>
 	</util:map>
 
 	<bean id="root_facade" class="org.taverna.server.master.facade.Facade">

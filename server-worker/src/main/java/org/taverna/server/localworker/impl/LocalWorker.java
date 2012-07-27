@@ -157,9 +157,11 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	Thread shutdownHook;
 	/** Location for security information to be written to. */
 	File securityDirectory;
-	/** Password to use to encrypt security information. */
-	char[] keystorePassword = new char[] { 'c', 'h', 'a', 'n', 'g', 'e', 'm',
-			'e' };
+	/**
+	 * Password to use to encrypt security information. This default is <7 chars
+	 * to work even without Unlimited Strength JCE.
+	 */
+	char[] keystorePassword = new char[] { 'c', 'h', 'a', 'n', 'g', 'e' };
 	/** Additional server-specified environment settings. */
 	Map<String, String> environment = new HashMap<String, String>();
 
@@ -604,6 +606,11 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 							inputBaclavaFile, inputRealFiles, inputValues,
 							outputBaclavaFile, securityDirectory,
 							keystorePassword, environment, masterToken);
+					/*
+					 * Do not clear the keystorePassword array here; its
+					 * ownership is *transferred* to the worker core which
+					 * doesn't copy it but *does* clear it after use.
+					 */
 					keystorePassword = null;
 				} catch (Exception e) {
 					throw new ImplementationException(

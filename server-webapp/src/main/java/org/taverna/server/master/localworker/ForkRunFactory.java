@@ -28,7 +28,6 @@ import java.util.UUID;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedMetric;
 import org.springframework.jmx.export.annotation.ManagedResource;

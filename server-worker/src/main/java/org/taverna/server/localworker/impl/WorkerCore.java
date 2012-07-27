@@ -40,6 +40,7 @@ import java.io.Writer;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -177,8 +178,8 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 				// Not much we can do here
 				e.printStackTrace();
 			} finally {
-				for (int i = 0; i < chars.length; i++)
-					chars[i] = ' ';
+				// We don't trust GC to clear password from memory
+				Arrays.fill(chars, '\00');				
 				if (pw != null)
 					pw.close();
 			}

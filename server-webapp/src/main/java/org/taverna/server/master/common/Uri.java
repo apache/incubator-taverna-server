@@ -63,7 +63,7 @@ public class Uri {
 	 *            The parameters to the factory.
 	 */
 	public Uri(@NonNull UriBuilder ub, String... strings) {
-		ref = ub.build((Object[]) strings);
+		ref = Rewriter.getSecuredUriBuilder(ub).build((Object[]) strings);
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class Uri {
 	 *            The parameters to the factory.
 	 */
 	public Uri(@NonNull UriInfo ui, @NonNull String path, String... strings) {
-		this(ui.getAbsolutePathBuilder().path(path), strings);
+		this(ui, true, path, strings);
 	}
 
 	/**
@@ -99,6 +99,10 @@ public class Uri {
 			ub = Rewriter.getSecuredUriBuilder(ub);
 		}
 		ref = ub.path(path).build((Object[]) strings);
+	}
+
+	public static UriBuilder secure(UriBuilder ub) {
+		return Rewriter.getSecuredUriBuilder(ub);
 	}
 
 	/**
@@ -144,6 +148,7 @@ public class Uri {
 			if (instance != null && instance.suppress)
 				return ub;
 			Integer secPort = null;
+			ub = ub.clone();
 			if (instance != null && instance.portMapper != null)
 				secPort = instance.portMapper.lookupHttpsPort(ub.build()
 						.getPort());
