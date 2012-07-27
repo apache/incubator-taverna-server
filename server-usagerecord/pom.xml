@@ -3,15 +3,15 @@
 	<parent>
 		<artifactId>server</artifactId>
 		<groupId>uk.org.taverna.server</groupId>
-		<version>2.4</version>
+		<version>2.4.1-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<artifactId>server-usagerecord</artifactId>
 	<name>Usage Record Support</name>
 	<scm>
-		<connection>scm:svn:http://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/trunk/server-usagerecord</connection>
-		<developerConnection>scm:svn:https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/trunk/server-usagerecord</developerConnection>
-		<url>http://code.google.com/p/taverna/source/browse/taverna/products/uk.org.taverna.server/trunk/server-usagerecord</url>
+		<connection>scm:svn:http://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/branches/2.4-release/server-usagerecord</connection>
+		<developerConnection>scm:svn:https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/branches/2.4-release/server-usagerecord</developerConnection>
+		<url>http://code.google.com/p/taverna/source/browse/taverna/products/uk.org.taverna.server/branches/2.4-release/server-usagerecord</url>
 	</scm>
 	<dependencies>
 		<dependency>

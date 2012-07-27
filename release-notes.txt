@@ -1,7 +1,7 @@
-Taverna 2.4 Server Release Notes
-================================
+Taverna 2.4.1 Server Release Notes
+==================================
 
-This is the first release of the new Taverna 2.4 Server. We welcome feedback
+This is the second release of the new Taverna 2.4 Server. We welcome feedback
 on both the things that are there and the things that are not.
 
 Key Features
@@ -42,6 +42,7 @@ Planned Future Features
 -----------------------
  * Support for Cluster Deployment
  * Access to Provenance
+ * Support for Interacting with Workflows
 
 Specific Issues Addressed in This Release
 -----------------------------------------
@@ -52,3 +53,15 @@ TAVSERV-224	Ability to pass configuration parameters to the command line
 TAVSERV-226	Odd webapp authentication behaviour!
 TAVSERV-228	Wrong title and missing documentation link on index page
 TAVSERV-229	Update to Taverna 2.4 core
+   ---- 2.4 release ----
+TAVSERV-230 Intermittent problem with Xerces configuration
+TAVSERV-231 Fails to run any workflow without Unlimited Strength JCE
+TAVSERV-235 XML-stylesheet causing problems
+TAVSERV-236 Incorrect URIs in server responses
+TAVSERV-258 Cannot create (or update) a remote file in a run's working
+        directory with PUT
+TAVSERV-260 Lists should have xlink attributes in the output port description
+        XML document
+TAVSERV-261 Errors should have data size attributes in the output port
+        description XML document
+   ---- 2.4.1 release ----
