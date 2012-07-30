@@ -64,4 +64,5 @@ TAVSERV-260 Lists should have xlink attributes in the output port description
         XML document
 TAVSERV-261 Errors should have data size attributes in the output port
         description XML document
+TAVSERV-268 Select HTTP login domain
    ---- 2.4.1 release ----
