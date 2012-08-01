@@ -26,14 +26,18 @@
 	<security:http realm="${http.realmName}" create-session="never">
 		<security:http-basic />
 		<security:intercept-url pattern="/" requires-channel="https" />
-        <security:intercept-url pattern="/rest" requires-channel="https" />
-        <security:intercept-url pattern="/rest/policy" requires-channel="https" />
+		<security:intercept-url pattern="/rest" requires-channel="https" />
+		<security:intercept-url pattern="/rest/policy" requires-channel="https" />
 		<security:intercept-url pattern="/services/**" requires-channel="https" />
 		<security:intercept-url pattern="/soap/**" requires-channel="https"
 			method="GET" />
 		<security:intercept-url pattern="/admin/**" requires-channel="https"
 			access="ROLE_tavernasuperuser" />
-		<security:intercept-url pattern="/**" requires-channel="https"
+		<security:intercept-url pattern="/soap/**" requires-channel="https"
+			method="POST" access="ROLE_tavernauser" />
+		<security:intercept-url pattern="/rest/**" requires-channel="https"
+			access="ROLE_tavernauser" />
+		<security:intercept-url pattern="/feed/**" requires-channel="https"
 			access="ROLE_tavernauser" />
 	</security:http>
 	<bean class="org.taverna.server.master.common.Uri.Rewriter"
