@@ -33,9 +33,9 @@
 			access="ROLE_tavernauser" />
         <security:intercept-url pattern="/rest/runs" requires-channel="https"
             access="ROLE_tavernauser" />
+        <security:intercept-url pattern="/rest/policy" requires-channel="https" />
 		<security:intercept-url pattern="/rest/policy/**" requires-channel="https"
 			access="ROLE_tavernauser" />
-        <security:intercept-url pattern="/rest/policy" requires-channel="https" />
         <security:intercept-url pattern="/rest" requires-channel="https" />
 		<security:intercept-url pattern="/feed/**" requires-channel="https"
 			access="ROLE_tavernauser" />
