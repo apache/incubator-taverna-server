@@ -37,17 +37,17 @@
 		<security:intercept-url pattern="/soap/**"
 			requires-channel="https" method="GET" access="permitAll" />
 		<security:intercept-url pattern="/soap/**"
-			requires-channel="https" method="POST" access="hasRole(ROLE_tavernauser)" />
-        <security:intercept-url pattern="/admin"
-            requires-channel="https" access="hasRole(ROLE_tavernasuperuser)" />
+			requires-channel="https" method="POST" access="hasRole('ROLE_tavernauser')" />
+<!--		<security:intercept-url pattern="/admin"
+			requires-channel="https" access="hasRole('ROLE_tavernasuperuser')" />-->
 		<security:intercept-url pattern="/admin/**"
-			requires-channel="https" access="hasRole(ROLE_tavernasuperuser)" />
+			requires-channel="https" access="hasRole('ROLE_tavernasuperuser')" />
 		<security:intercept-url pattern="/rest/**"
-			requires-channel="https" access="hasRole(ROLE_tavernauser)" />
-        <security:intercept-url pattern="/feed"
-            requires-channel="https" access="hasRole(ROLE_tavernauser)" />
+			requires-channel="https" access="hasRole('ROLE_tavernauser')" />
+<!--		<security:intercept-url pattern="/feed"
+			requires-channel="https" access="hasRole('ROLE_tavernauser')" />-->
 		<security:intercept-url pattern="/feed/**"
-			requires-channel="https" access="hasRole(ROLE_tavernauser)" />
+			requires-channel="https" access="hasRole('ROLE_tavernauser')" />
 	</security:http>
 	<bean class="org.taverna.server.master.common.Uri.Rewriter"
 		autowire="byType" id="URI-Rewriter-Thunk" />
