@@ -27,7 +27,7 @@
 	</prerequisites>
 	<issueManagement>
 		<system>JIRA</system>
-		<url>http://www.mygrid.org.uk/dev/issues/browse/TAVSERV</url>
+		<url>http://dev.mygrid.org.uk/issues/browse/TAVSERV</url>
 	</issueManagement>
 	<developers>
 		<developer>
@@ -341,7 +341,7 @@
 				<artifactId>maven-changelog-plugin</artifactId>
 				<version>2.2</version>
 				<configuration>
-					<issueLinkUrl>http://www.mygrid.org.uk/dev/issues/browse/%ISSUE%</issueLinkUrl>
+					<issueLinkUrl>http://dev.mygrid.org.uk/issues/browse/%ISSUE%</issueLinkUrl>
 				</configuration>
 			</plugin>
 			<plugin>
