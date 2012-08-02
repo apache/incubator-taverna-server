@@ -169,7 +169,7 @@ public interface TavernaServerREST {
 			super(true);
 			runs = new Uri(ui, "runs");
 			policy = new Uri(ui, false, "policy");
-			feed = new Uri(ui, "../feed");
+			feed = new Uri(java.net.URI.create(ui.getBaseUri().toString().replaceFirst("/rest$", "/feed")));
 			// database = new Uri(ui, "database");
 			// TODO TAVSERV-69: Make the database point to something real
 		}
