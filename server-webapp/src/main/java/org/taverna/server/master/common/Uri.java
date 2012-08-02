@@ -152,10 +152,10 @@ public class Uri {
 
 		@NonNull
 		static UriBuilder getSecuredUriBuilder(@NonNull UriBuilder ub) {
+			ub = ub.clone();
 			if (instance != null && instance.suppress)
 				return ub;
 			Integer secPort = null;
-			ub = ub.clone();
 			if (instance != null && instance.portMapper != null)
 				try {
 					secPort = instance.portMapper.lookupHttpsPort(ub.build()
@@ -163,7 +163,7 @@ public class Uri {
 				} catch (Exception e) {
 					log.warn("failed to extract current URI port", e);
 				}
-			if (secPort == null || secPort == -1)
+			if (secPort == null || secPort.intValue() == -1)
 				return ub.scheme(SECURE_SCHEME);
 			return ub.scheme(SECURE_SCHEME).port(secPort);
 		}

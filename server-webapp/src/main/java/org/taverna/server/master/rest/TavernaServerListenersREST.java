@@ -263,8 +263,8 @@ public interface TavernaServerListenersREST {
 			super(true);
 			name = listener.getName();
 			type = listener.getType();
-			configuration = new Uri(ub.path("configuration"));
-			UriBuilder ub2 = ub.path("properties/{prop}");
+			configuration = new Uri(ub.clone().path("configuration"));
+			UriBuilder ub2 = ub.clone().path("properties/{prop}");
 			properties = new ArrayList<PropertyDescription>(
 					listener.listProperties().length);
 			for (String propName : listener.listProperties())

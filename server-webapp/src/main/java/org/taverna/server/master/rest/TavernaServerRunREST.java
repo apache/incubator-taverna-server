@@ -404,8 +404,9 @@ public interface TavernaServerRunREST {
 			private ListenerList(TavernaRun r, UriBuilder ub) {
 				super(ub);
 				listener = new ArrayList<Uri>(r.getListeners().size());
+				UriBuilder pathUB = ub.clone().path("{name}");
 				for (Listener l : r.getListeners())
-					listener.add(new Uri(ub.path("{name}").build(l.getName())));
+					listener.add(new Uri(pathUB.build(l.getName())));
 			}
 
 			/**
