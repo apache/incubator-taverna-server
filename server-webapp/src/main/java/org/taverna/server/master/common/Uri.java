@@ -161,7 +161,7 @@ public class Uri {
 					secPort = instance.portMapper.lookupHttpsPort(ub.build()
 							.getPort());
 				} catch (Exception e) {
-					log.warn("failed to extract current URI port", e);
+					log.debug("failed to extract current URI port", e);
 				}
 			if (secPort == null || secPort.intValue() == -1)
 				return ub.scheme(SECURE_SCHEME);
