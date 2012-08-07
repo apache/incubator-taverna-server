@@ -65,4 +65,6 @@ TAVSERV-260 Lists should have xlink attributes in the output port description
 TAVSERV-261 Errors should have data size attributes in the output port
         description XML document
 TAVSERV-268 Select HTTP login domain
+TAVSERV-274 Server should return 201 in response to a PUT that creates a new
+        resource
    ---- 2.4.1 release ----

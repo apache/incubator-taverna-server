@@ -33,7 +33,6 @@ import javax.ws.rs.core.Variant;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.TavernaServerImpl.SupportAware;
-import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoUpdateException;
@@ -282,6 +281,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 		d = (Directory) de;
 
 		File f = null;
+		boolean isNew = false;
 		for (DirectoryEntry e : d.getContents()) {
 			if (e.getName().equals(name)) {
 				if (e instanceof File) {
@@ -292,8 +292,10 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 						"Cannot create a file that is not in a directory.");
 			}
 		}
-		if (f == null)
+		if (f == null) {
 			f = d.makeEmptyFile(support.getPrincipal(), name);
+			isNew = true;
+		}
 
 		try {
 			byte[] buffer = new byte[65536];
@@ -320,7 +322,11 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 		} catch (IOException exn) {
 			throw new FilesystemAccessException("failed to transfer bytes", exn);
 		}
-		return seeOther(ui.getAbsolutePath()).build();
+
+		if (isNew)
+			return created(ui.getAbsolutePath()).build();
+		else
+			return noContent().build();
 	}
 }
 
