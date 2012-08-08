@@ -19,7 +19,6 @@ import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.common.Status.Initialized;
 import static org.taverna.server.master.common.Uri.secure;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
@@ -49,7 +48,6 @@ import org.taverna.server.master.common.Permission;
 import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Trust;
-import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
@@ -635,14 +633,11 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	public void setRunFileContentsMTOM(String runName, FileContents newContents)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, NoDirectoryEntryException {
-		TavernaRun w = support.getRun(runName);
-		support.permitUpdate(w);
-		try {
-			newContents.writeToFile(fileUtils.getFile(w, newContents.name));
-		} catch (IOException e) {
-			throw new FilesystemAccessException(
-					"problem reading from data source", e);
-		}
+		TavernaRun run = support.getRun(runName);
+		support.permitUpdate(run);
+		File f = fileUtils.getFile(run, newContents.name);
+		f.setContents(new byte[0]);
+		support.copyDataToFile(newContents.fileData, f);
 	}
 
 	@Override

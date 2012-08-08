@@ -15,12 +15,15 @@ import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 import static org.taverna.server.master.common.Roles.ADMIN;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.activation.DataHandler;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
@@ -88,6 +91,10 @@ public class TavernaServerSupport {
 	 */
 	private boolean logGetPrincipalFailures = true;
 	private Map<String, String> contentTypeMap;
+	/** Number of bytes to read when guessing the MIME type. */
+	private static final int SAMPLE_SIZE = 1024;
+	/** Number of bytes to ask for when copying a stream to a file. */
+	private static final int TRANSFER_SIZE = 32768;
 
 	/**
 	 * @return Count of the number of external calls into this webapp.
@@ -649,10 +656,47 @@ public class TavernaServerSupport {
 				return mt;
 		}
 		try {
-			return getMimeType(new ByteArrayInputStream(f.getContents(0, 1024)));
+			return getMimeType(new ByteArrayInputStream(f.getContents(0,
+					SAMPLE_SIZE)));
 		} catch (FilesystemAccessException e) {
 			// Ignore; fall back to just serving as bytes
 			return APPLICATION_OCTET_STREAM;
+		}
+	}
+
+	public void copyDataToFile(DataHandler handler, File file)
+			throws FilesystemAccessException {
+		try {
+			copyStreamToFile(handler.getInputStream(), file);
+		} catch (IOException e) {
+			throw new FilesystemAccessException(
+					"problem constructing stream from data source", e);
+		}
+	}
+
+	public void copyStreamToFile(InputStream stream, File file)
+			throws FilesystemAccessException {
+		String name = file.getFullName();
+		long total = 0;
+		try {
+			byte[] buffer = new byte[TRANSFER_SIZE];
+			while (true) {
+				int len = stream.read(buffer);
+				if (len < 0)
+					break;
+				total += len;
+				log.debug("read " + len + " bytes from source stream (total: "
+						+ total + ") bound for " + name);
+				if (len == buffer.length)
+					file.appendContents(buffer);
+				else {
+					byte[] newBuf = new byte[len];
+					System.arraycopy(buffer, 0, newBuf, 0, len);
+					file.appendContents(newBuf);
+				}
+			}
+		} catch (IOException exn) {
+			throw new FilesystemAccessException("failed to transfer bytes", exn);
 		}
 	}
 }

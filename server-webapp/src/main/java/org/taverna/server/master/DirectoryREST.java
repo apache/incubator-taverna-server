@@ -295,33 +295,9 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 		if (f == null) {
 			f = d.makeEmptyFile(support.getPrincipal(), name);
 			isNew = true;
-		}
-
-		try {
-			byte[] buffer = new byte[65536];
-			int len = contents.read(buffer);
-			if (len >= 0) {
-				if (len < buffer.length) {
-					byte[] newBuf = new byte[len];
-					System.arraycopy(buffer, 0, newBuf, 0, len);
-					buffer = newBuf;
-				}
-				f.setContents(buffer);
-				while (len == 65536) {
-					len = contents.read(buffer);
-					if (len < 1)
-						break;
-					if (len < buffer.length) {
-						byte[] newBuf = new byte[len];
-						System.arraycopy(buffer, 0, newBuf, 0, len);
-						buffer = newBuf;
-					}
-					f.appendContents(buffer);
-				}
-			}
-		} catch (IOException exn) {
-			throw new FilesystemAccessException("failed to transfer bytes", exn);
-		}
+		} else
+			f.setContents(new byte[0]);
+		support.copyStreamToFile(contents, f);
 
 		if (isNew)
 			return created(ui.getAbsolutePath()).build();

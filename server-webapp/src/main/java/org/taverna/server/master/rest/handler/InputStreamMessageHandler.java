@@ -53,20 +53,21 @@ public class InputStreamMessageHandler implements
 
 /**
  * The actual transfer thunk.
- *
+ * 
  * @author Donal Fellows
  */
 class TransferStream extends InputStream {
 	private static final Log log = getLog("Taverna.Server.Handlers");
 
-	public TransferStream(InputStream entityStream, List<String> limit) {
+	public TransferStream(InputStream entityStream, List<String> contentLength) {
 		this.entityStream = new BufferedInputStream(entityStream);
-		this.limit = (limit != null && limit.size() > 0) ? parseLong(limit
-				.get(0)) : -1;
-		if (this.limit == -1)
-			log.debug("will attempt to transfer until EOF");
-		else
+		if (contentLength != null && contentLength.size() > 0) {
+			this.limit = parseLong(contentLength.get(0));
 			log.debug("will attempt to transfer " + this.limit + " bytes");
+		} else {
+			this.limit = -1;
+			log.debug("will attempt to transfer until EOF");
+		}
 	}
 
 	InputStream entityStream;
@@ -78,17 +79,13 @@ class TransferStream extends InputStream {
 		if (limit >= 0 && doneBytes >= limit)
 			return -1;
 		int result = entityStream.read();
-		if (result >= 0) {
+		if (result >= 0)
 			doneBytes++;
-			log.debug("transferred single byte (" + doneBytes + " total)");
-		} else
-			log.debug("failed to transfer a single byte; EOF?");
 		return result;
 	}
 
 	@Override
 	public int read(byte[] ary, int off, int len) throws IOException {
-		int realLen = len;
 		if (limit >= 0) {
 			if (doneBytes >= limit)
 				return -1;
@@ -96,12 +93,8 @@ class TransferStream extends InputStream {
 				len = (int) (limit - doneBytes);
 		}
 		int readBytes = entityStream.read(ary, off, len);
-		if (readBytes >= 0) {
+		if (readBytes >= 0)
 			doneBytes += readBytes;
-			log.debug("transferred " + readBytes + " bytes (" + doneBytes
-					+ " total, " + realLen + " requested)");
-		} else
-			log.debug("failed to transfer " + realLen + " bytes; EOF?");
 		return readBytes;
 	}
 
