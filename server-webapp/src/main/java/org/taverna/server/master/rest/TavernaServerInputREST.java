@@ -159,7 +159,7 @@ public interface TavernaServerInputREST {
 	 * @author Donal Fellows
 	 */
 	@XmlRootElement(name = "runInputs")
-	@XmlType(name = "TavernaRunInputs", propOrder = {})
+	@XmlType(name = "TavernaRunInputs")
 	public static class InputsDescriptor extends VersionedElement {
 		/**
 		 * Where to find a description of the expected inputs to this workflow

@@ -10,9 +10,9 @@
 		<relativePath>..</relativePath>
 	</parent>
 	<scm>
-		<connection>scm:svn:http://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/trunk/server-runinterface</connection>
-		<developerConnection>scm:svn:https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/trunk/server-runinterface</developerConnection>
-		<url>http://code.google.com/p/taverna/source/browse/taverna/products/uk.org.taverna.server/trunk/server-runinterface</url>
+		<connection>scm:svn:http://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/branches/2.4-release/server-runinterface</connection>
+		<developerConnection>scm:svn:https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/branches/2.4-release/server-runinterface</developerConnection>
+		<url>http://code.google.com/p/taverna/source/browse/taverna/products/uk.org.taverna.server/branches/2.4-release/server-runinterface</url>
 	</scm>
 	<build>
 		<pluginManagement>

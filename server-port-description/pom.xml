@@ -9,9 +9,9 @@
 	<name>Taverna Server Port Descriptor Types</name>
 	<description>The structural types used to describe ports on workflows, as exported by Taverna Server.</description>
 	<scm>
-		<connection>scm:svn:http://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/trunk/server-port-description</connection>
-		<developerConnection>scm:svn:https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/trunk/server-port-description</developerConnection>
-		<url>http://code.google.com/p/taverna/source/browse/taverna/products/uk.org.taverna.server/trunk/server-port-description</url>
+		<connection>scm:svn:http://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/branches/2.4-release/server-port-description</connection>
+		<developerConnection>scm:svn:https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/branches/2.4-release/server-port-description</developerConnection>
+		<url>http://code.google.com/p/taverna/source/browse/taverna/products/uk.org.taverna.server/branches/2.4-release/server-port-description</url>
 	</scm>
 
 	<properties>

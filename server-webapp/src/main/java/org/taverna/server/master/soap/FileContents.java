@@ -55,33 +55,24 @@ public class FileContents {
 	 */
 	public void writeToFile(File file) throws IOException,
 			FilesystemAccessException {
-		InputStream is = null;
+		InputStream is = fileData.getInputStream();
 		try {
-			boolean first = true;
 			byte[] buf = new byte[65536];
-			is = fileData.getInputStream();
+			file.setContents(new byte[0]);
 			while (true) {
 				int len = is.read(buf);
 				if (len <= 0)
 					return;
 				if (len == buf.length)
-					if (first)
-						file.setContents(buf);
-					else
-						file.appendContents(buf);
+					file.appendContents(buf);
 				else {
 					byte[] shortbuf = new byte[len];
 					arraycopy(buf, 0, shortbuf, 0, len);
-					if (first)
-						file.setContents(buf);
-					else
-						file.appendContents(shortbuf);
+					file.appendContents(shortbuf);
 				}
-				first = false;
 			}
 		} finally {
-			if (is != null)
-				is.close();
+			is.close();
 		}
 	}
 }
@@ -152,7 +143,7 @@ class TavernaFileSource implements DataSource {
 	public OutputStream getOutputStream() throws IOException {
 		final File f = this.f;
 		return new OutputStream() {
-			private boolean append;
+			private boolean append = false;
 
 			@Override
 			public void write(int b) throws IOException {
@@ -164,10 +155,9 @@ class TavernaFileSource implements DataSource {
 				try {
 					if (append)
 						f.appendContents(b);
-					else {
+					else
 						f.setContents(b);
-						append = true;
-					}
+					append = true;
 				} catch (FilesystemAccessException e) {
 					throw new IOException(e);
 				}

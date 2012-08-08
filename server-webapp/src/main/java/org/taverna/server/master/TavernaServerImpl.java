@@ -17,8 +17,8 @@ import static org.taverna.server.master.common.Namespaces.SERVER_SOAP;
 import static org.taverna.server.master.common.Roles.ADMIN;
 import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.common.Status.Initialized;
+import static org.taverna.server.master.common.Uri.secure;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
@@ -93,7 +93,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 @Path("/")
 @DeclareRoles({ USER, ADMIN })
 @WebService(endpointInterface = "org.taverna.server.master.soap.TavernaServerSOAP", serviceName = "TavernaServer", targetNamespace = SERVER_SOAP)
-@WSDLDocumentation("An instance of Taverna 2.4 Server Release 1.")
+@WSDLDocumentation("An instance of Taverna 2.4 Server Release 2.")
 public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		TavernaServerREST, TavernaServer {
 	/**
@@ -194,7 +194,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	@Override
 	@CallCounted
 	public RunList listUsersRuns(UriInfo ui) {
-		return new RunList(runs(), ui.getAbsolutePathBuilder().path("{name}"));
+		return new RunList(runs(), secure(ui).path("{name}"));
 	}
 
 	@Override
@@ -202,8 +202,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	public Response submitWorkflow(Workflow workflow, UriInfo ui)
 			throws NoUpdateException {
 		String name = support.buildWorkflow(workflow);
-		return created(ui.getAbsolutePathBuilder().path("{uuid}").build(name))
-				.build();
+		return created(secure(ui).path("{uuid}").build(name)).build();
 	}
 
 	@Override
@@ -634,14 +633,11 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	public void setRunFileContentsMTOM(String runName, FileContents newContents)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, NoDirectoryEntryException {
-		TavernaRun w = support.getRun(runName);
-		support.permitUpdate(w);
-		try {
-			newContents.writeToFile(fileUtils.getFile(w, newContents.name));
-		} catch (IOException e) {
-			throw new FilesystemAccessException(
-					"problem reading from data source", e);
-		}
+		TavernaRun run = support.getRun(runName);
+		support.permitUpdate(run);
+		File f = fileUtils.getFile(run, newContents.name);
+		f.setContents(new byte[0]);
+		support.copyDataToFile(newContents.fileData, f);
 	}
 
 	@Override
@@ -835,11 +831,11 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	public UriBuilder getBaseUriBuilder() {
 		if (jaxws == null || jaxws.getMessageContext() == null)
 			// Hack to make the test suite work
-			return fromUri("/taverna-server/rest/");
+			return secure(fromUri("/taverna-server/rest/"));
 		String pathInfo = (String) jaxws.getMessageContext().get(PATH_INFO);
 		pathInfo = pathInfo.replaceFirst("/soap$", "/rest/");
 		pathInfo = pathInfo.replaceFirst("/rest/.+$", "/rest/");
-		return fromUri(pathInfo);
+		return secure(fromUri(pathInfo));
 	}
 
 	private Map<String, TavernaRun> runs() {

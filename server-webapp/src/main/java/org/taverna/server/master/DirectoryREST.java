@@ -15,6 +15,7 @@ import static org.taverna.server.master.ContentTypes.APPLICATION_ZIP_TYPE;
 import static org.taverna.server.master.ContentTypes.DIRECTORY_VARIANTS;
 import static org.taverna.server.master.ContentTypes.INITIAL_FILE_VARIANTS;
 import static org.taverna.server.master.TavernaServerImpl.log;
+import static org.taverna.server.master.common.Uri.secure;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -227,7 +228,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 		if (op.name == null || op.name.length() == 0)
 			throw new FilesystemAccessException("missing name attribute");
 		Directory d = (Directory) container;
-		UriBuilder ub = ui.getAbsolutePathBuilder().path("{name}");
+		UriBuilder ub = secure(ui).path("{name}");
 
 		// Make a directory in the context directory
 
@@ -280,6 +281,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 		d = (Directory) de;
 
 		File f = null;
+		boolean isNew = false;
 		for (DirectoryEntry e : d.getContents()) {
 			if (e.getName().equals(name)) {
 				if (e instanceof File) {
@@ -290,35 +292,17 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 						"Cannot create a file that is not in a directory.");
 			}
 		}
-		if (f == null)
+		if (f == null) {
 			f = d.makeEmptyFile(support.getPrincipal(), name);
+			isNew = true;
+		} else
+			f.setContents(new byte[0]);
+		support.copyStreamToFile(contents, f);
 
-		try {
-			byte[] buffer = new byte[65536];
-			int len = contents.read(buffer);
-			if (len >= 0) {
-				if (len < buffer.length) {
-					byte[] newBuf = new byte[len];
-					System.arraycopy(buffer, 0, newBuf, 0, len);
-					buffer = newBuf;
-				}
-				f.setContents(buffer);
-				while (len == 65536) {
-					len = contents.read(buffer);
-					if (len < 1)
-						break;
-					if (len < buffer.length) {
-						byte[] newBuf = new byte[len];
-						System.arraycopy(buffer, 0, newBuf, 0, len);
-						buffer = newBuf;
-					}
-					f.appendContents(buffer);
-				}
-			}
-		} catch (IOException exn) {
-			throw new FilesystemAccessException("failed to transfer bytes", exn);
-		}
-		return seeOther(ui.getAbsolutePath()).build();
+		if (isNew)
+			return created(ui.getAbsolutePath()).build();
+		else
+			return noContent().build();
 	}
 }
 

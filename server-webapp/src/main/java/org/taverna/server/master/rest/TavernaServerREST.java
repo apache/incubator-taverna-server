@@ -44,16 +44,14 @@ import org.taverna.server.master.soap.TavernaServerSOAP;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
- * The REST service interface to Taverna 2.4 Server Release 1.
+ * The REST service interface to Taverna 2.4 Server Release 2.
  * 
  * @author Donal Fellows
  * @see TavernaServerSOAP
  */
 @RolesAllowed(USER)
-@Description("This is REST service interface to Taverna 2.4 Server Release 1.")
+@Description("This is REST service interface to Taverna 2.4 Server Release 2.")
 public interface TavernaServerREST {
-	// MASTER API
-
 	/**
 	 * Produces the description of the service.
 	 * 
@@ -171,7 +169,7 @@ public interface TavernaServerREST {
 			super(true);
 			runs = new Uri(ui, "runs");
 			policy = new Uri(ui, false, "policy");
-			feed = new Uri(ui, "../feed");
+			feed = new Uri(java.net.URI.create(ui.getBaseUri().toString().replaceFirst("/rest$", "/feed")));
 			// database = new Uri(ui, "database");
 			// TODO TAVSERV-69: Make the database point to something real
 		}
@@ -390,7 +388,8 @@ public interface TavernaServerREST {
 		 * @param runs
 		 *            The mapping of runs to describe.
 		 * @param ub
-		 *            How to construct URIs to the runs.
+		 *            How to construct URIs to the runs. Must have already been
+		 *            secured as it needs to have its pattern applied.
 		 */
 		public RunList(Map<String, TavernaRun> runs, UriBuilder ub) {
 			ub = secure(ub);

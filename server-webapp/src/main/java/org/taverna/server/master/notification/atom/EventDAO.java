@@ -76,8 +76,11 @@ public class EventDAO extends JDOSupport<AbstractEvent> implements
 
 	/**
 	 * Get a particular event.
-	 * @param user The identity of the user to get the event for.
-	 * @param id The handle of the event to look up.
+	 * 
+	 * @param user
+	 *            The identity of the user to get the event for.
+	 * @param id
+	 *            The handle of the event to look up.
 	 * @return A copy of the event.
 	 */
 	@NonNull
@@ -97,7 +100,9 @@ public class EventDAO extends JDOSupport<AbstractEvent> implements
 
 	/**
 	 * Delete a particular event.
-	 * @param id The identifier of the event to delete.
+	 * 
+	 * @param id
+	 *            The identifier of the event to delete.
 	 */
 	@WithinSingleTransaction
 	public void deleteEventById(@NonNull String id) {
@@ -115,8 +120,9 @@ public class EventDAO extends JDOSupport<AbstractEvent> implements
 		@SuppressWarnings("unchecked")
 		List<String> ids = (List<String>) namedQuery("eventsFromBefore")
 				.execute(death);
-		log.debug("found " + ids.size()
-				+ " events to be squelched (older than " + death + ")");
+		if (!ids.isEmpty())
+			log.debug("found " + ids.size()
+					+ " events to be squelched (older than " + death + ")");
 
 		for (String id : ids)
 			delete(getById(id));

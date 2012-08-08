@@ -258,7 +258,7 @@ public interface TavernaServerListenersREST {
 		 * @param listener
 		 *            The listener to describe.
 		 * @param ub
-		 *            The factor for URIs.
+		 *            The factory for URIs. Must have already been secured.
 		 */
 		public ListenerDescription(Listener listener, UriBuilder ub) {
 			super(true);
@@ -300,7 +300,7 @@ public interface TavernaServerListenersREST {
 		 * @param propName
 		 *            The name of the property.
 		 * @param ub
-		 *            The factory for URIs.
+		 *            The factory for URIs. Must have already been secured.
 		 */
 		PropertyDescription(String propName, UriBuilder ub) {
 			super(secure(ub), propName);
@@ -333,8 +333,11 @@ public interface TavernaServerListenersREST {
 		 * Make a description of the whole group out of the given list of
 		 * listener descriptions.
 		 * 
-		 * @param listeners The collection of (partial) listener descriptions.
-		 * @param ub How to build the location of the listeners.
+		 * @param listeners
+		 *            The collection of (partial) listener descriptions.
+		 * @param ub
+		 *            How to build the location of the listeners. Must have
+		 *            already been secured.
 		 */
 		public Listeners(List<ListenerDescription> listeners, UriBuilder ub) {
 			super(true);
@@ -369,7 +372,8 @@ public interface TavernaServerListenersREST {
 		 * Make the description of the properties of a listener.
 		 * 
 		 * @param ub
-		 *            The factory for URIs, configured.
+		 *            The factory for URIs, configured. Must have already been
+		 *            secured.
 		 * @param properties
 		 *            The names of the properties.
 		 */

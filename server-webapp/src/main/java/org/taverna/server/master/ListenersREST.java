@@ -7,6 +7,7 @@ package org.taverna.server.master;
 
 import static javax.ws.rs.core.Response.created;
 import static javax.ws.rs.core.UriBuilder.fromUri;
+import static org.taverna.server.master.common.Uri.secure;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -32,7 +33,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * 
  * @author Donal Fellows
  */
-abstract class ListenersREST implements TavernaServerListenersREST, ListenersBean {
+abstract class ListenersREST implements TavernaServerListenersREST,
+		ListenersBean {
 	private TavernaRun run;
 	private TavernaServerSupport support;
 
@@ -53,9 +55,7 @@ abstract class ListenersREST implements TavernaServerListenersREST, ListenersBea
 			UriInfo ui) throws NoUpdateException, NoListenerException {
 		String name = support.makeListener(run, typeAndConfiguration.type,
 				typeAndConfiguration.configuration).getName();
-		return created(
-				ui.getAbsolutePathBuilder().path("{listenerName}").build(name))
-				.build();
+		return created(secure(ui).path("{listenerName}").build(name)).build();
 	}
 
 	@Override
@@ -75,17 +75,17 @@ abstract class ListenersREST implements TavernaServerListenersREST, ListenersBea
 	@CallCounted
 	public Listeners getDescription(UriInfo ui) {
 		List<ListenerDescription> result = new ArrayList<ListenerDescription>();
-		UriBuilder ub = ui.getAbsolutePathBuilder().path("{name}");
-		for (Listener l : run.getListeners()) {
-			URI base = ub.build(l.getName());
-			result.add(new ListenerDescription(l, fromUri(base)));
-		}
+		UriBuilder ub = secure(ui).path("{name}");
+		for (Listener l : run.getListeners())
+			result.add(new ListenerDescription(l,
+					fromUri(ub.build(l.getName()))));
 		return new Listeners(result, ub);
 	}
 }
 
 /**
  * Description of properties supported by {@link ListenersREST}.
+ * 
  * @author Donal Fellows
  */
 interface ListenersBean extends SupportAware {

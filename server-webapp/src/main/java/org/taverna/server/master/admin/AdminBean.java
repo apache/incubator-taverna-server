@@ -5,10 +5,12 @@
  */
 package org.taverna.server.master.admin;
 
+import static java.util.Arrays.asList;
+import static java.util.UUID.randomUUID;
+import static javax.ws.rs.core.Response.created;
+import static javax.ws.rs.core.Response.noContent;
 import static org.taverna.server.master.common.Roles.ADMIN;
-
-import java.util.Arrays;
-import java.util.UUID;
+import static org.taverna.server.master.common.Uri.secure;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.core.Response;
@@ -215,7 +217,7 @@ public class AdminBean implements Admin {
 	public StringList getExtraArguments() {
 		String[] xargs = factory.getExtraArguments();
 		StringList result = new StringList();
-		result.string = Arrays.asList(xargs == null ? new String[0] : xargs);
+		result.string = asList(xargs == null ? new String[0] : xargs);
 		return result;
 	}
 
@@ -225,7 +227,7 @@ public class AdminBean implements Admin {
 		factory.setExtraArguments(newValue.string
 				.toArray(new String[newValue.string.size()]));
 		StringList result = new StringList();
-		result.string = Arrays.asList(factory.getExtraArguments());
+		result.string = asList(factory.getExtraArguments());
 		return result;
 	}
 
@@ -323,7 +325,7 @@ public class AdminBean implements Admin {
 	@Override
 	public StringList factoryProcessMapping() {
 		StringList result = new StringList();
-		result.string = Arrays.asList(factory.getFactoryProcessMapping());
+		result.string = asList(factory.getFactoryProcessMapping());
 		return result;
 	}
 
@@ -339,7 +341,7 @@ public class AdminBean implements Admin {
 	@Override
 	public UserList users(UriInfo ui) {
 		UserList ul = new UserList();
-		UriBuilder ub = ui.getAbsolutePathBuilder().path("{id}");
+		UriBuilder ub = secure(ui).path("{id}");
 		for (String user : userStore.getUserNames())
 			ul.user.add(ub.build(user));
 		return ul;
@@ -363,7 +365,7 @@ public class AdminBean implements Admin {
 		if (userdesc.username == null)
 			throw new IllegalArgumentException("no user name supplied");
 		if (userdesc.password == null)
-			userdesc.password = UUID.randomUUID().toString();
+			userdesc.password = randomUUID().toString();
 		userStore.addUser(userdesc.username, userdesc.password, false);
 		if (userdesc.localUserId != null)
 			userStore.setUserLocalUser(userdesc.username, userdesc.localUserId);
@@ -371,9 +373,8 @@ public class AdminBean implements Admin {
 			userStore.setUserAdmin(userdesc.username, true);
 		if (userdesc.enabled != null && userdesc.enabled)
 			userStore.setUserEnabled(userdesc.username, true);
-		return Response.created(
-				ui.getAbsolutePathBuilder().path("{id}")
-						.build(userdesc.username)).build();
+		return created(secure(ui).path("{id}").build(userdesc.username))
+				.build();
 	}
 
 	@RolesAllowed(ADMIN)
@@ -402,6 +403,6 @@ public class AdminBean implements Admin {
 	@Override
 	public Response userdel(String username) {
 		userStore.deleteUser(username);
-		return Response.noContent().build();
+		return noContent().build();
 	}
 }
