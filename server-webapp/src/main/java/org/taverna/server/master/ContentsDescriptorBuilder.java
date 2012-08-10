@@ -187,7 +187,7 @@ public class ContentsDescriptorBuilder {
 					mv = d + 1;
 			}
 			return mv;
-		} else if (value instanceof LeafValue)
+		} else if (value instanceof LeafValue || value instanceof ErrorValue)
 			return 0;
 		else
 			return null;
