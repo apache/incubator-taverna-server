@@ -79,6 +79,7 @@ import org.taverna.server.master.rest.TavernaServerRunREST;
 import org.taverna.server.master.soap.FileContents;
 import org.taverna.server.master.soap.PermissionList;
 import org.taverna.server.master.soap.TavernaServerSOAP;
+import org.taverna.server.master.soap.ZippedDirectory;
 import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 import org.taverna.server.port_description.OutputDescription;
@@ -555,11 +556,11 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	@Override
 	@CallCounted
-	public byte[] getRunDirectoryAsZip(String runName, DirEntryReference d)
-			throws UnknownRunException, FilesystemAccessException,
-			NoDirectoryEntryException {
-		return fileUtils.getDirectory(support.getRun(runName), d)
-				.getContentsAsZip();
+	public ZippedDirectory getRunDirectoryAsZip(String runName,
+			DirEntryReference d) throws UnknownRunException,
+			FilesystemAccessException, NoDirectoryEntryException {
+		return new ZippedDirectory(fileUtils.getDirectory(
+				support.getRun(runName), d));
 	}
 
 	@Override
@@ -784,6 +785,12 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	public org.taverna.server.port_description.InputDescription getRunInputDescriptor(
 			String runName) throws UnknownRunException {
 		return cdBuilder.makeInputDescriptor(support.getRun(runName), null);
+	}
+
+	@Override
+	@CallCounted
+	public String getStatus() {
+		return support.getAllowNewWorkflowRuns() ? "operational" : "suspended";
 	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

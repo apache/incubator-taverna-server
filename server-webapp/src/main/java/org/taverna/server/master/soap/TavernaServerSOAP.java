@@ -752,15 +752,15 @@ public interface TavernaServerSOAP {
 
 	/**
 	 * Get the contents of any directory (and its subdirectories) at/under the
-	 * run's working directory, returning it as a compressed ZIP file. Runs do
-	 * not share working directories.
+	 * run's working directory, returning it as a compressed ZIP file that is
+	 * streamed via MTOM. Runs do not share working directories.
 	 * 
 	 * @param runName
 	 *            The handle of the run.
 	 * @param directory
 	 *            The name of the directory to fetch; the main working directory
 	 *            is <tt>/</tt> and <tt>..</tt> is always disallowed.
-	 * @return A serialized ZIP file.
+	 * @return An MTOM-streamable ZIP file reference.
 	 * @throws UnknownRunException
 	 *             If the server doesn't know about the run or if the user is
 	 *             not permitted to see it.
@@ -771,8 +771,9 @@ public interface TavernaServerSOAP {
 	 *             If the name of the directory can't be looked up.
 	 */
 	@WebResult(name = "ZipFile")
-	@WSDLDocumentation("Get the contents of any directory (and its subdirectories) at/under the run's working directory, returning it as a compressed ZIP file.")
-	byte[] getRunDirectoryAsZip(@WebParam(name = "runName") String runName,
+	@WSDLDocumentation("Get the contents of any directory (and its subdirectories) at/under the run's working directory, returning it as a compressed ZIP file that is streamed by MTOM.")
+	ZippedDirectory getRunDirectoryAsZip(
+			@WebParam(name = "runName") String runName,
 			@WebParam(name = "directory") DirEntryReference directory)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException;
@@ -1126,6 +1127,16 @@ public interface TavernaServerSOAP {
 	void setRunListenerProperty(@WebParam(name = "runName") String runName,
 			@WebParam(name = "listenerName") String listenerName,
 			@WebParam(name = "propertyName") String propertyName,
-			@WebParam(name = "propertyValue") String value) throws UnknownRunException,
-			NoUpdateException, NoListenerException;
+			@WebParam(name = "propertyValue") String value)
+			throws UnknownRunException, NoUpdateException, NoListenerException;
+
+	/**
+	 * Gets the status of the server. Follows the HELIO Monitoring Service
+	 * protocol.
+	 * 
+	 * @return A status string.
+	 */
+	@WSDLDocumentation("A simple way to get the status of the overall server.")
+	@WebResult(name = "ServerStatus")
+	String getStatus();
 }
