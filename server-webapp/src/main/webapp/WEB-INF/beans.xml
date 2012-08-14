@@ -393,4 +393,6 @@
 	<bean id="fileUtils" class="org.taverna.server.master.utils.FilenameUtils" />
 	<bean id="x500Utils" class="org.taverna.server.master.utils.X500Utils" />
 	<task:scheduler id="taskScheduler" pool-size="${pool.size}" />
+
+	<bean class="org.taverna.server.master.utils.JCECheck" id="JCECheck" />
 </beans>
