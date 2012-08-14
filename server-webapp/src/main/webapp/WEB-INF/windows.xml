@@ -31,31 +31,35 @@
 	<context:mbean-export server="MBeanServer"
 		default-domain="${my.domain}" registration="ignoreExisting" />
 
-	<security:http realm="tavernaserver" create-session="never">
+	<security:http realm="${http.realmName}" create-session="never"
+		use-expressions="true">
 		<security:http-basic />
-		<security:intercept-url pattern="/" filters="none" />
-		<security:intercept-url pattern="/services"
-			filters="none" />
-		<security:intercept-url pattern="/soap/**"
-			access="ROLE_tavernauser" requires-channel="https" method="POST" />
+		<security:intercept-url pattern="/"
+			requires-channel="any" access="permitAll" />
 		<security:intercept-url pattern="/rest"
-			filters="none" />
-		<security:intercept-url pattern="/rest/runs"
-			access="ROLE_tavernauser" requires-channel="https" />
-		<security:intercept-url pattern="/rest/runs/**"
-			access="ROLE_tavernauser" requires-channel="https" />
+			requires-channel="https" access="permitAll" />
+		<security:intercept-url pattern="/rest/"
+			requires-channel="https" access="permitAll" />
 		<security:intercept-url pattern="/rest/policy"
-			filters="none" />
-		<security:intercept-url pattern="/rest/policy/**"
-			access="ROLE_tavernauser" requires-channel="https" />
-		<security:intercept-url pattern="/feed"
-			access="ROLE_tavernauser" requires-channel="https" />
-		<security:intercept-url pattern="/feed/**"
-			access="ROLE_tavernauser" requires-channel="https" />
+			requires-channel="https" access="permitAll" />
+		<security:intercept-url pattern="/rest/policy/"
+			requires-channel="https" access="permitAll" />
+		<security:intercept-url pattern="/services/**"
+			requires-channel="https" access="permitAll" />
+		<security:intercept-url pattern="/soap/**"
+			requires-channel="https" method="GET" access="permitAll" />
+		<security:intercept-url pattern="/soap/**"
+			requires-channel="https" method="POST" access="hasRole('ROLE_tavernauser')" />
 		<security:intercept-url pattern="/admin"
-			access="ROLE_tavernasuperuser" requires-channel="https" />
+			requires-channel="https" access="hasRole('ROLE_tavernasuperuser')" />
 		<security:intercept-url pattern="/admin/**"
-			access="ROLE_tavernasuperuser" requires-channel="https" />
+			requires-channel="https" access="hasRole('ROLE_tavernasuperuser')" />
+		<security:intercept-url pattern="/rest/**"
+			requires-channel="https" access="hasRole('ROLE_tavernauser')" />
+		<security:intercept-url pattern="/feed"
+			requires-channel="https" access="hasRole('ROLE_tavernauser')" />
+		<security:intercept-url pattern="/feed/**"
+			requires-channel="https" access="hasRole('ROLE_tavernauser')" />
 	</security:http>
 	<bean class="org.taverna.server.master.common.Uri.Rewriter"
 		autowire="byType" id="URI-Rewriter-Thunk" />
