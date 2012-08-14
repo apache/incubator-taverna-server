@@ -5,6 +5,7 @@
  */
 package org.taverna.server.master.interfaces;
 
+import java.io.PipedInputStream;
 import java.security.Principal;
 import java.util.Collection;
 
@@ -31,7 +32,7 @@ public interface Directory extends DirectoryEntry {
 	 * @throws FilesystemAccessException
 	 *             If things go wrong.
 	 */
-	public byte[] getContentsAsZip() throws FilesystemAccessException;
+	public ZipStream getContentsAsZip() throws FilesystemAccessException;
 
 	/**
 	 * Creates a sub-directory of this directory.
@@ -62,4 +63,12 @@ public interface Directory extends DirectoryEntry {
 	 */
 	public File makeEmptyFile(Principal actor, String name)
 			throws FilesystemAccessException;
+
+	/**
+	 * A simple pipe that produces the zipped contents of a directory.
+	 * 
+	 * @author Donal Fellows
+	 */
+	public static class ZipStream extends PipedInputStream {
+	}
 }

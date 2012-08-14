@@ -1,12 +1,11 @@
 /*
- * Copyright (C) 2010-2011 The University of Manchester
+ * Copyright (C) 2010-2012 The University of Manchester
  * 
  * See the file "LICENSE.txt" for license terms.
  */
 package org.taverna.server.master;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
-/*import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;*/
 import static javax.ws.rs.core.Response.created;
 import static javax.ws.rs.core.Response.noContent;
 import static javax.ws.rs.core.Response.ok;
@@ -17,7 +16,6 @@ import static org.taverna.server.master.ContentTypes.INITIAL_FILE_VARIANTS;
 import static org.taverna.server.master.TavernaServerImpl.log;
 import static org.taverna.server.master.common.Uri.secure;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +23,6 @@ import java.util.List;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.PathSegment;
-/*import javax.ws.rs.core.Request;*/
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;

@@ -91,6 +91,7 @@
 			<ref bean="MessagingProvider.InputStream" />
 			<ref bean="MessagingProvider.T2flow" />
 			<ref bean="MessagingProvider.Permission" />
+			<ref bean="MessagingProvider.ZipStream"/>
 			<ref bean="jsonProvider" />
 		</jaxrs:providers>
  	</jaxrs:server>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The University of Manchester
+ * Copyright (C) 2010-2012 The University of Manchester
  * 
  * See the file "LICENSE.txt" for license terms.
  */
@@ -8,13 +8,14 @@ package org.taverna.server.master.localworker;
 import static java.util.Calendar.MINUTE;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.UUID.randomUUID;
+import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.localworker.RemoteRunDelegate.checkBadFilename;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PipedOutputStream;
 import java.rmi.MarshalledObject;
 import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
@@ -31,6 +32,7 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.taverna.server.localworker.remote.IllegalStateTransitionException;
 import org.taverna.server.localworker.remote.ImplementationException;
@@ -437,7 +439,7 @@ public class RemoteRunDelegate implements TavernaRun {
 }
 
 abstract class DEDelegate implements DirectoryEntry {
-	private Log log = getLog("Taverna.Server.LocalWorker");
+	Log log = getLog("Taverna.Server.LocalWorker");
 	private RemoteDirectoryEntry entry;
 	private String name;
 	private String full;
@@ -505,7 +507,7 @@ abstract class DEDelegate implements DirectoryEntry {
 }
 
 class DirectoryDelegate extends DEDelegate implements Directory {
-	private RemoteDirectory rd;
+	RemoteDirectory rd;
 
 	DirectoryDelegate(RemoteDirectory dir) {
 		super(dir);
@@ -552,24 +554,30 @@ class DirectoryDelegate extends DEDelegate implements Directory {
 	}
 
 	@Override
-	public byte[] getContentsAsZip() throws FilesystemAccessException {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ZipOutputStream zos = new ZipOutputStream(baos);
+	public ZipStream getContentsAsZip() throws FilesystemAccessException {
+		ZipStream zs = new ZipStream();
+
+		final ZipOutputStream zos;
 		try {
-			zipDirectory(this.rd, null, zos);
-			zos.close();
-			zos = null;
-			return baos.toByteArray();
-		} catch (Exception e) {
-			throw new FilesystemAccessException("failed to zip up directory", e);
-		} finally {
-			try {
-				if (zos != null)
-					zos.close();
-			} catch (IOException e) {
-				// Ignore this; it should be impossible.
-			}
+			zos = new ZipOutputStream(new PipedOutputStream(zs));
+		} catch (IOException e) {
+			throw new FilesystemAccessException("problem building zip stream", e);
 		}
+		Thread t = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					zipDirectory(rd, null, zos);
+				} catch (IOException e) {
+					log.warn("problem when zipping directory", e);
+				} finally {
+					closeQuietly(zos);
+				}
+			}
+		});
+		t.setDaemon(true);
+		t.start();
+		return zs;
 	}
 
 	/**
@@ -587,7 +595,7 @@ class DirectoryDelegate extends DEDelegate implements Directory {
 	 * @throws IOException
 	 *             If we run into problems with reading or writing data.
 	 */
-	private void zipDirectory(RemoteDirectory dir, String base,
+	void zipDirectory(RemoteDirectory dir, String base,
 			ZipOutputStream zos) throws RemoteException, IOException {
 		for (RemoteDirectoryEntry rde : dir.getContents()) {
 			String name = rde.getName();
