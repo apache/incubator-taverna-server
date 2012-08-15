@@ -323,7 +323,7 @@ public interface Admin {
 	 */
 	@GET
 	@Path("extraArguments")
-	@Produces("text/plain")
+	@Produces({ "application/xml", "application/json" })
 	@Description("What extra arguments should be supplied to Java subprocesses?")
 	@NonNull
 	StringList getExtraArguments();
@@ -337,8 +337,8 @@ public interface Admin {
 	 */
 	@PUT
 	@Path("extraArguments")
-	@Consumes("text/plain")
-	@Produces("text/plain")
+	@Consumes({ "application/xml", "application/json" })
+	@Produces({ "application/xml", "application/json" })
 	@Description("What extra arguments should be supplied to Java subprocesses?")
 	@NonNull
 	StringList setExtraArguments(@NonNull StringList extraArguments);
