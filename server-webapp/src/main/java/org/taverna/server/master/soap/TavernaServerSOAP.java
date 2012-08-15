@@ -752,6 +752,33 @@ public interface TavernaServerSOAP {
 
 	/**
 	 * Get the contents of any directory (and its subdirectories) at/under the
+	 * run's working directory, returning it as a compressed ZIP file. Runs do
+	 * not share working directories.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @param directory
+	 *            The name of the directory to fetch; the main working directory
+	 *            is <tt>/</tt> and <tt>..</tt> is always disallowed.
+	 * @return A serialized ZIP file.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 * @throws FilesystemAccessException
+	 *             If some assumption is violated (e.g., reading the contents of
+	 *             a file).
+	 * @throws NoDirectoryEntryException
+	 *             If the name of the directory can't be looked up.
+	 */
+	@WebResult(name = "ZipFile")
+	@WSDLDocumentation("Get the contents of any directory (and its subdirectories) at/under the run's working directory, returning it as a compressed ZIP file.")
+	byte[] getRunDirectoryAsZip(@WebParam(name = "runName") String runName,
+			@WebParam(name = "directory") DirEntryReference directory)
+			throws UnknownRunException, FilesystemAccessException,
+			NoDirectoryEntryException;
+
+	/**
+	 * Get the contents of any directory (and its subdirectories) at/under the
 	 * run's working directory, returning it as a compressed ZIP file that is
 	 * streamed via MTOM. Runs do not share working directories.
 	 * 
@@ -770,9 +797,9 @@ public interface TavernaServerSOAP {
 	 * @throws NoDirectoryEntryException
 	 *             If the name of the directory can't be looked up.
 	 */
-	@WebResult(name = "ZipFile")
+	@WebResult(name = "ZipStream")
 	@WSDLDocumentation("Get the contents of any directory (and its subdirectories) at/under the run's working directory, returning it as a compressed ZIP file that is streamed by MTOM.")
-	ZippedDirectory getRunDirectoryAsZip(
+	ZippedDirectory getRunDirectoryAsZipMTOM(
 			@WebParam(name = "runName") String runName,
 			@WebParam(name = "directory") DirEntryReference directory)
 			throws UnknownRunException, FilesystemAccessException,

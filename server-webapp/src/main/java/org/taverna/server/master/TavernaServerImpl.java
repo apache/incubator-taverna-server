@@ -11,6 +11,7 @@ import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.created;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static javax.xml.ws.handler.MessageContext.PATH_INFO;
+import static org.apache.commons.io.IOUtils.toByteArray;
 import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.common.DirEntryReference.newInstance;
 import static org.taverna.server.master.common.Namespaces.SERVER_SOAP;
@@ -19,6 +20,9 @@ import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.common.Status.Initialized;
 import static org.taverna.server.master.common.Uri.secure;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
@@ -37,6 +41,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.ws.WebServiceContext;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.cxf.annotations.WSDLDocumentation;
 import org.springframework.beans.factory.annotation.Required;
@@ -556,7 +561,21 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	@Override
 	@CallCounted
-	public ZippedDirectory getRunDirectoryAsZip(String runName,
+	public byte[] getRunDirectoryAsZip(String runName, DirEntryReference d)
+			throws UnknownRunException, FilesystemAccessException,
+			NoDirectoryEntryException {
+		try {
+			return toByteArray(fileUtils.getDirectory(support.getRun(runName),
+					d).getContentsAsZip());
+		} catch (IOException e) {
+			throw new FilesystemAccessException("problem serializing ZIP data",
+					e);
+		}
+	}
+
+	@Override
+	@CallCounted
+	public ZippedDirectory getRunDirectoryAsZipMTOM(String runName,
 			DirEntryReference d) throws UnknownRunException,
 			FilesystemAccessException, NoDirectoryEntryException {
 		return new ZippedDirectory(fileUtils.getDirectory(
