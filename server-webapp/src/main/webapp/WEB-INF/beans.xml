@@ -122,6 +122,7 @@
 		<property name="factory" ref="localworker.factory" />
 		<property name="usageRecords" ref="usageRecordSink" />
 		<property name="userStore" ref="userStore" />
+		<property name="adminHtmlFile" value="admin.html" />
 	</bean>
 
 	<bean id="IdentityMapper" class="org.taverna.server.master.identity.CompositeIDMapper">

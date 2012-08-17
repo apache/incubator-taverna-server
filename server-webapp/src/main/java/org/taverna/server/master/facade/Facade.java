@@ -8,9 +8,7 @@ package org.taverna.server.master.facade;
 import static javax.ws.rs.core.MediaType.TEXT_HTML_TYPE;
 import static javax.ws.rs.core.Response.ok;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -18,6 +16,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+
+import org.apache.commons.io.IOUtils;
 
 /**
  * This is a simple class that is used to serve up a file (with a simple
@@ -51,25 +51,7 @@ public class Facade {
 	 *             If the file doesn't exist.
 	 */
 	public void setFile(String file) throws IOException {
-		StringBuffer welcome = new StringBuffer();
-		try {
-			BufferedReader sr = new BufferedReader(new InputStreamReader(
-					Facade.class.getClassLoader().getResourceAsStream(file)));
-			try {
-				char[] cbuf = new char[4096];
-				while (true) {
-					int len = sr.read(cbuf);
-					if (len == -1)
-						break;
-					welcome.append(cbuf, 0, len);
-				}
-			} finally {
-				sr.close();
-			}
-		} finally {
-			this.welcome = welcome.toString();
-		}
-
+		this.welcome = IOUtils.toString(Facade.class.getResource(file));
 	}
 
 	/**

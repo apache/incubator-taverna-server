@@ -5,6 +5,7 @@
  */
 package org.taverna.server.master.admin;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,18 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  */
 @Description("Administration interface for Taverna Server.")
 public interface Admin {
+	/**
+	 * Get a simple administration user interface.
+	 * 
+	 * @return The description document in a response.
+	 * @throws IOException 
+	 */
+	@GET
+	@Path("/")
+	@Produces("text/html")
+	@NonNull
+	Response getUserInterface() throws IOException;
+
 	/**
 	 * Get a description of the adminstration interface.
 	 * 

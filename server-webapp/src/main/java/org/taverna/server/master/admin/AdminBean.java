@@ -12,11 +12,14 @@ import static javax.ws.rs.core.Response.noContent;
 import static org.taverna.server.master.common.Roles.ADMIN;
 import static org.taverna.server.master.common.Uri.secure;
 
+import java.io.IOException;
+
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.ManagementModel;
 import org.taverna.server.master.factories.ConfigurableRunFactory;
@@ -62,12 +65,25 @@ public class AdminBean implements Admin {
 		this.userStore = userStore;
 	}
 
+	public void setAdminHtmlFile(String filename) {
+		this.adminHtmlFile = filename;
+	}
+
 	private ManagementModel state;
 	private InvocationCounter counter;
 	private RunDBSupport runDB;
 	private ConfigurableRunFactory factory;
 	private UsageRecordRecorder usageRecords;
 	private UserStore userStore;
+	private String adminHtmlFile = "admin.html";
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response getUserInterface() throws IOException {
+		return Response.ok(
+				IOUtils.toString(AdminBean.class.getResource(adminHtmlFile)),
+				"text/html").build();
+	}
 
 	@RolesAllowed(ADMIN)
 	@Override
