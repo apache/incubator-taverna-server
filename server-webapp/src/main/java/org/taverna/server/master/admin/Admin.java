@@ -337,7 +337,7 @@ public interface Admin {
 	 */
 	@PUT
 	@Path("extraArguments")
-	@Consumes({ "application/xml", "application/json" })
+	@Consumes("application/xml")
 	@Produces({ "application/xml", "application/json" })
 	@Description("What extra arguments should be supplied to Java subprocesses?")
 	@NonNull
@@ -563,14 +563,14 @@ public interface Admin {
 
 	@POST
 	@Path("users")
-	@Consumes({ "application/xml", "application/json" })
+	@Consumes("application/xml")
 	@Description("Create a user.")
 	Response useradd(UserDesc userdesc, @NonNull @Context UriInfo ui);
 
 	@PUT
 	@Path("users/{id}")
 	@Produces({ "application/xml", "application/json" })
-	@Consumes({ "application/xml", "application/json" })
+	@Consumes("application/xml")
 	@Description("Update a user.")
 	UserDesc userset(@PathParam("id") String username, UserDesc userdesc);
 
