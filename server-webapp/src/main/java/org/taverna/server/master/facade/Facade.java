@@ -9,6 +9,7 @@ import static javax.ws.rs.core.MediaType.TEXT_HTML_TYPE;
 import static javax.ws.rs.core.Response.ok;
 
 import java.io.IOException;
+import java.net.URL;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -18,6 +19,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * This is a simple class that is used to serve up a file (with a simple
@@ -27,6 +30,7 @@ import org.apache.commons.io.IOUtils;
  */
 @Path("/")
 public class Facade {
+	private Log log = LogFactory.getLog("Taverna.Server.Utils");
 	private String pattern;
 	private String welcome;
 
@@ -51,7 +55,9 @@ public class Facade {
 	 *             If the file doesn't exist.
 	 */
 	public void setFile(String file) throws IOException {
-		this.welcome = IOUtils.toString(Facade.class.getResource(file));
+		URL full = Facade.class.getResource(file);
+		log.info("setting " + full + " as source of root page");
+		this.welcome = IOUtils.toString(full);
 	}
 
 	/**

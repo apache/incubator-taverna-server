@@ -75,7 +75,7 @@ public class AdminBean implements Admin {
 	private ConfigurableRunFactory factory;
 	private UsageRecordRecorder usageRecords;
 	private UserStore userStore;
-	private String adminHtmlFile = "admin.html";
+	private String adminHtmlFile = "/admin.html";
 
 	@RolesAllowed(ADMIN)
 	@Override

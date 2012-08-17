@@ -137,7 +137,7 @@
 	</util:map>
 
 	<bean id="root_facade" class="org.taverna.server.master.facade.Facade">
-		<property name="file" value="welcome.html" />
+		<property name="file" value="/welcome.html" />
 		<property name="pattern" value="SERVICE_URI/" />
 	</bean>
 
