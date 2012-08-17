@@ -54,6 +54,7 @@ TAVSERV-226	Odd webapp authentication behaviour!
 TAVSERV-228	Wrong title and missing documentation link on index page
 TAVSERV-229	Update to Taverna 2.4 core
    ---- 2.4 release ----
+TAVSERV-25  A web based Admin interface for the server
 TAVSERV-230 Intermittent problem with Xerces configuration
 TAVSERV-231 Fails to run any workflow without Unlimited Strength JCE
 TAVSERV-233 Getting folder as ZIP consumes loads of memory
