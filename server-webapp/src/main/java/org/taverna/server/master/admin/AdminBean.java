@@ -9,13 +9,16 @@ import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.created;
 import static javax.ws.rs.core.Response.noContent;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.taverna.server.master.common.Roles.ADMIN;
 import static org.taverna.server.master.common.Uri.secure;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
@@ -69,6 +72,16 @@ public class AdminBean implements Admin {
 		this.adminHtmlFile = filename;
 	}
 
+	public void setResourceRoot(String root) {
+		this.resourceRoot = root;
+	}
+
+	protected String getResource(String name) throws IOException {
+		if (AdminBean.class.getResource(name) == null)
+			throw new FileNotFoundException(name);
+		return IOUtils.toString(AdminBean.class.getResource(name));
+	}
+
 	private ManagementModel state;
 	private InvocationCounter counter;
 	private RunDBSupport runDB;
@@ -76,13 +89,40 @@ public class AdminBean implements Admin {
 	private UsageRecordRecorder usageRecords;
 	private UserStore userStore;
 	private String adminHtmlFile = "/admin.html";
+	private String resourceRoot = "/static/";
 
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response getUserInterface() throws IOException {
-		return Response.ok(
-				IOUtils.toString(AdminBean.class.getResource(adminHtmlFile)),
-				"text/html").build();
+		return Response.ok(getResource(adminHtmlFile), "text/html").build();
+	}
+
+	@RolesAllowed(ADMIN)
+	public Response getStaticResource(String file) throws IOException {
+		if (file.matches("^[-_.a-zA-Z0-9]+$")) {
+			String type = "application/octet-stream";
+			if (file.endsWith(".html"))
+				type = "text/html";
+			else if (file.endsWith(".js"))
+				type = "text/javascript";
+			else if (file.endsWith(".jpg"))
+				type = "image/jpeg";
+			else if (file.endsWith(".gif"))
+				type = "image/gif";
+			else if (file.endsWith(".png"))
+				type = "image/png";
+			else if (file.endsWith(".svg"))
+				type = "image/svg+xml";
+			else if (file.endsWith(".css"))
+				type = "text/css";
+			try {
+				return Response.ok(getResource(resourceRoot + file), type)
+						.build();
+			} catch (IOException e) {
+				// ignore; we just treat as 404
+			}
+		}
+		return Response.status(NOT_FOUND).entity("no such resource").build();
 	}
 
 	@RolesAllowed(ADMIN)

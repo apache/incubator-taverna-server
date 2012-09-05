@@ -43,13 +43,27 @@ public interface Admin {
 	 * Get a simple administration user interface.
 	 * 
 	 * @return The description document in a response.
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	@GET
 	@Path("/")
 	@Produces("text/html")
 	@NonNull
 	Response getUserInterface() throws IOException;
+
+	/**
+	 * Gets support resources for the administration user interface.
+	 * 
+	 * @param file
+	 *            The name of the static resource to provide.
+	 * @return The requested document in a response.
+	 * @throws IOException
+	 */
+	@GET
+	@Path("static/{file}")
+	@Produces("*/*")
+	Response getStaticResource(@PathParam("file") String file)
+			throws IOException;
 
 	/**
 	 * Get a description of the adminstration interface.
