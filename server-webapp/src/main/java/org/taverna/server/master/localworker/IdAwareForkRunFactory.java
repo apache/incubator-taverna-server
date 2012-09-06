@@ -347,9 +347,9 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 			args.add("-jar");
 			args.add(getServerForkerJar());
 			args.add(getJavaBinary());
-			args.addAll(asList(getExtraArguments()));
 			args.add("-jar");
 			args.add(getServerWorkerJar());
+			args.addAll(asList(getExtraArguments()));
 			if (getExecuteWorkflowScript() == null)
 				log.fatal("no execute workflow script");
 			args.add(getExecuteWorkflowScript());

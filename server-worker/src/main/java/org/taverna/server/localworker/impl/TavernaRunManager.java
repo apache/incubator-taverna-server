@@ -21,6 +21,10 @@ import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -61,6 +65,8 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	public static String interactionPort;
 	public static String interactionWebdavPath;
 	public static String interactionFeedPath;
+	Map<String, String> seedEnvironment = new HashMap<String, String>();
+	List<String> javaInitParams = new ArrayList<String>();
 
 	/**
 	 * How to get the actual workflow document from the XML document that it is
@@ -75,7 +81,7 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 		return (Element) containerDocument.getDocumentElement().getFirstChild();
 	}
 
-	private static final String usage = "java -jar server.worker.jar workflowExecScript UUID";
+	private static final String usage = "java -jar server.worker.jar workflowExecScript ?-Ekey=val...? ?-Jconfig? UUID";
 
 	/**
 	 * An RMI-enabled factory for runs.
@@ -152,7 +158,7 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 			out.println("Creating run from workflow <" + wfid.value + "> for <"
 					+ creator + ">");
 			return cons.newInstance(command, workflow, workerClass, urReceiver,
-					id);
+					id, seedEnvironment, javaInitParams);
 		} catch (RemoteException e) {
 			throw e;
 		} catch (InvocationTargetException e) {
@@ -192,7 +198,7 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 		@SuppressWarnings("DM_EXIT")
 		public void run() {
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(500);
 			} catch (InterruptedException e) {
 			} finally {
 				exit(0);
@@ -219,7 +225,7 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	 *             register it. Also if the arguments are wrong.
 	 */
 	public static void main(String[] args) throws Exception {
-		if (args.length != 2)
+		if (args.length < 2)
 			throw new Exception("wrong # args: must be \"" + usage + "\"");
 		if (!getProperty(UNSECURE_PROP, "no").equals("yes")) {
 			setProperty(SEC_POLICY_PROP, LocalWorker.class.getClassLoader()
@@ -228,14 +234,29 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 		}
 		setSecurityManager(new RMISecurityManager());
 		String command = args[0];
-		factoryName = args[1];
+		factoryName = args[args.length - 1];
 		registry = getRegistry();
-		registry.bind(
-				factoryName,
-				new TavernaRunManager(command, LocalWorker.class
-						.getDeclaredConstructor(String.class, String.class,
-								Class.class, UsageRecordReceiver.class,
-								UUID.class), WorkerCore.class));
+		TavernaRunManager man = new TavernaRunManager(command,
+				LocalWorker.class.getDeclaredConstructor(String.class,
+						String.class, Class.class, UsageRecordReceiver.class,
+						UUID.class, Map.class, List.class), WorkerCore.class);
+		for (int i = 1; i < args.length - 1; i++) {
+			if (args[i].startsWith("-E")) {
+				String arg = args[i].substring(2);
+				int idx = arg.indexOf('=');
+				if (idx > 0) {
+					man.addEnvironmentDefinition(arg.substring(0, idx),
+							arg.substring(idx + 1));
+					continue;
+				}
+			} else if (args[i].startsWith("-J")) {
+				man.addJavaParameter(args[i].substring(2));
+				continue;
+			}
+			throw new IllegalArgumentException("argument \"" + args[i]
+					+ "\" must start with -E or -J; -E must contain a \"=\"");
+		}
+		registry.bind(factoryName, man);
 		getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
@@ -243,6 +264,14 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 			}
 		});
 		out.println("registered RemoteRunFactory with ID " + factoryName);
+	}
+
+	private void addJavaParameter(String string) {
+		this.javaInitParams.add(string);
+	}
+
+	private void addEnvironmentDefinition(String key, String value) {
+		this.seedEnvironment.put(key, value);
 	}
 
 	@Override

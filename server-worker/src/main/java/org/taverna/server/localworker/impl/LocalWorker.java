@@ -164,6 +164,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	char[] keystorePassword = new char[] { 'c', 'h', 'a', 'n', 'g', 'e' };
 	/** Additional server-specified environment settings. */
 	Map<String, String> environment = new HashMap<String, String>();
+	/** Additional server-specified java runtime settings. */
+	List<String> runtimeSettings = new ArrayList<String>();
 
 	// ----------------------- METHODS -----------------------
 
@@ -179,6 +181,12 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	 *            The remote class to report the generated usage record(s) to.
 	 * @param id
 	 *            The UUID to use, or <tt>null</tt> if we are to invent one.
+	 * @param seedEnvironment
+	 *            The key/value pairs to seed the worker subprocess environment
+	 *            with.
+	 * @param javaParams
+	 *            Parameters to pass to the worker subprocess java runtime
+	 *            itself.
 	 * @throws RemoteException
 	 *             If registration of the worker fails.
 	 * @throws ImplementationException
@@ -186,8 +194,9 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	 */
 	protected LocalWorker(String executeWorkflowCommand, String workflow,
 			Class<? extends Worker> workerClass,
-			UsageRecordReceiver urReceiver, UUID id) throws RemoteException,
-			ImplementationException {
+			UsageRecordReceiver urReceiver, UUID id,
+			Map<String, String> seedEnvironment, List<String> javaParams)
+			throws RemoteException, ImplementationException {
 		super();
 		if (id == null)
 			id = randomUUID();
@@ -209,6 +218,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		inputFiles = new HashMap<String, String>();
 		inputRealFiles = new HashMap<String, File>();
 		inputValues = new HashMap<String, String>();
+		environment.putAll(seedEnvironment);
+		runtimeSettings.addAll(javaParams);
 		try {
 			core = workerClass.newInstance();
 		} catch (Exception e) {
@@ -605,7 +616,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 					core.initWorker(executeWorkflowCommand, workflow, base,
 							inputBaclavaFile, inputRealFiles, inputValues,
 							outputBaclavaFile, securityDirectory,
-							keystorePassword, environment, masterToken);
+							keystorePassword, environment, masterToken,
+							runtimeSettings);
 					/*
 					 * Do not clear the keystorePassword array here; its
 					 * ownership is *transferred* to the worker core which

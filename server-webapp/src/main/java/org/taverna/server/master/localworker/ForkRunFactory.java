@@ -237,10 +237,10 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		// Generate the arguments to use when spawning the subprocess
 		factoryProcessName = state.getFactoryProcessNamePrefix() + randomUUID();
 		ProcessBuilder p = new ProcessBuilder(getJavaBinary());
-		p.command().addAll(asList(getExtraArguments()));
 		p.command().add("-jar");
 		p.command().add(getServerWorkerJar());
 		p.command().add(getExecuteWorkflowScript());
+		p.command().addAll(asList(getExtraArguments()));
 		p.command().add(factoryProcessName);
 		p.redirectErrorStream(true);
 		p.directory(new File(getProperty("javax.servlet.context.tempdir",

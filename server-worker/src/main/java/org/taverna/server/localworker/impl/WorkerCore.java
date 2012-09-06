@@ -43,6 +43,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -179,7 +180,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 				e.printStackTrace();
 			} finally {
 				// We don't trust GC to clear password from memory
-				Arrays.fill(chars, '\00');				
+				Arrays.fill(chars, '\00');
 				if (pw != null)
 					pw.close();
 			}
@@ -221,7 +222,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			File workingDir, File inputBaclava, Map<String, File> inputFiles,
 			Map<String, String> inputValues, File outputBaclava,
 			File securityDir, char[] password, Map<String, String> environment,
-			String token) throws IOException {
+			String token, List<String> runtime) throws IOException {
 		ProcessBuilder pb = new ProcessBuilder();
 		/*
 		 * WARNING! HERE THERE BE DRAGONS! BE CAREFUL HERE!
@@ -244,6 +245,9 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		if (File.separatorChar == '/')
 			pb.command().add("/bin/sh");
 		pb.command().add(executeWorkflowCommand);
+		if (runtime != null)
+			for (String param : runtime)
+				pb.command().add("-J" + param);
 
 		// Enable verbose logging
 		pb.command().add("-logfile");

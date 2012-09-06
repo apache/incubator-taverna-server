@@ -6,6 +6,7 @@
 package org.taverna.server.localworker.impl;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 import org.taverna.server.localworker.remote.RemoteListener;
@@ -54,6 +55,8 @@ public interface Worker {
 	 *            invokation.
 	 * @param masterToken
 	 *            The internal name of the workflow run.
+	 * @param runtimeSettings
+	 *            List of configuration details for the forked runtime.
 	 * @throws Exception
 	 *             If any of quite a large number of things goes wrong.
 	 */
@@ -62,7 +65,7 @@ public interface Worker {
 			Map<String, File> inputRealFiles, Map<String, String> inputValues,
 			File outputBaclavaFile, File contextDirectory,
 			char[] keystorePassword, Map<String, String> environment,
-			String masterToken) throws Exception;
+			String masterToken, List<String> runtimeSettings) throws Exception;
 
 	/**
 	 * Kills off the subprocess if it exists and is alive.

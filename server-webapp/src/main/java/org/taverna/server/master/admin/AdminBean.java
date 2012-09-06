@@ -18,7 +18,6 @@ import java.io.IOException;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 

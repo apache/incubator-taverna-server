@@ -18,6 +18,7 @@ import java.io.File;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -93,7 +94,8 @@ public class LocalWorkerTest {
 				File workingDir, File inputBaclava,
 				Map<String, File> inputFiles, Map<String, String> inputValues,
 				File outputBaclava, File cmdir, char[] cmpass,
-				Map<String, String> env, String id) throws Exception {
+				Map<String, String> env, String id, List<String> conf)
+				throws Exception {
 			events.add("init[");
 			events.add(executeWorkflowCommand);
 			events.add(workflow);
@@ -138,7 +140,9 @@ public class LocalWorkerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		lw = new LocalWorker("XWC", "WF", DummyWorker.class, null, randomUUID());
+		lw = new LocalWorker("XWC", "WF", DummyWorker.class, null,
+				randomUUID(), new HashMap<String, String>(),
+				new ArrayList<String>());
 		events = new ArrayList<String>();
 		returnThisStatus = RemoteStatus.Operating;
 	}
