@@ -75,10 +75,10 @@ public class AdminBean implements Admin {
 		this.resourceRoot = root;
 	}
 
-	protected String getResource(String name) throws IOException {
+	protected byte[] getResource(String name) throws IOException {
 		if (AdminBean.class.getResource(name) == null)
 			throw new FileNotFoundException(name);
-		return IOUtils.toString(AdminBean.class.getResource(name));
+		return IOUtils.toByteArray(AdminBean.class.getResourceAsStream(name));
 	}
 
 	private ManagementModel state;
