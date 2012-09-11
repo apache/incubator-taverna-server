@@ -235,6 +235,7 @@ function deleteUser(idx) {
 // How to update a user's password by index (with dialog)
 function updatePasswordUser(idx) {
 	$("#change-password").val("");
+	$("#change-password2").val("");
 	$("#dialog-password").dialog({
 		modal : true,
 		autoOpen : false,
@@ -242,8 +243,11 @@ function updatePasswordUser(idx) {
 			"OK" : function() {
 				$(this).dialog("close");
 				var pass = $("#change-password").val();
+				var pass2 = $("#change-password2").val();
 				$("#change-password").val("");
-				updateUser(idx, "password", pass);
+				$("#change-password2").val("");
+				if (pass.equals(pass2))
+					updateUser(idx, "password", pass);
 			},
 			"Cancel" : function() {
 				$(this).dialog("close");
@@ -380,7 +384,7 @@ function addExtraArg(dialogId, prefix, part1id, part2id) {
 				$(this).dialog("close");
 				var str = prefix + $(part1id).val();
 				if (part2id != undefined)
-					str += $(part2id).val();
+					str += "=" + $(part2id).val();
 				extraAry.push(str);
 				var xml = NodeAll("stringList", "string", extraAry);
 				putXML(where("extraArguments"), xml, function(data) {
