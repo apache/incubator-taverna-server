@@ -279,8 +279,11 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public StringList setExtraArguments(StringList newValue) {
-		factory.setExtraArguments(newValue.string
-				.toArray(new String[newValue.string.size()]));
+		if (newValue == null || newValue.string == null)
+			factory.setExtraArguments(new String[0]);
+		else
+			factory.setExtraArguments(newValue.string
+					.toArray(new String[newValue.string.size()]));
 		StringList result = new StringList();
 		result.string = asList(factory.getExtraArguments());
 		return result;

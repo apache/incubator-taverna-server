@@ -683,7 +683,7 @@ public interface Admin {
 	@XmlType(name = "StringList")
 	public static class StringList {
 		@XmlElement
-		public List<String> string;
+		public List<String> string = new ArrayList<String>();
 	}
 
 	/**
