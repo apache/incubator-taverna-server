@@ -383,13 +383,12 @@ function loadExtraArgs() {
 												+ "<td><button id='extradel"
 												+ row
 												+ "' title='Delete this property assignment.'>Del</button></td>"
-												+ "<td><tt><i>-D</i> "
+												+ "<td><tt><i>-D</i>"
 												+ str.substring(0, idx)
-												+ "</tt></td>"
-												+ "<td><tt><i>=</i> "
+												+ "<i>=</i>"
 												+ str.substring(idx + 1)
 												+ "</tt></td>" + "</tr>");
-					} else if (rows[i].match("-E")) {
+					} else if (rows[row].match("-E")) {
 						var idx = str.indexOf("=");
 						$("#extraArguments-env")
 								.append(
@@ -397,10 +396,9 @@ function loadExtraArgs() {
 												+ "<td><button id='extradel"
 												+ row
 												+ "' title='Delete this environment assignment.'>Del</button></td>"
-												+ "<td><tt><i>-E</i> "
+												+ "<td><tt><i>-E</i>"
 												+ str.substring(0, idx)
-												+ "</tt></td>"
-												+ "<td><tt><i>=</i> "
+												+ "<i>=</i>"
 												+ str.substring(idx + 1)
 												+ "</tt></td>" + "</tr>");
 					} else
@@ -489,7 +487,7 @@ $(function() {
 		addExtraArg("#dialog-environment", "-E", "#env-key", "#env-value");
 	});
 	$("#extra-run-add").button().click(function() {
-		addExtraArg("#dialog-runtime", "-J", "#run-value");
+		addExtraArg("#dialog-runtime", "-J", "#runtime-value");
 	});
 	loadExtraArgs();
 });
