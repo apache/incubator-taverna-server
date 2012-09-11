@@ -1,6 +1,6 @@
 // Wrappers round AJAX calls to simplify *most* of this stuff
 
-// How to retrieve text
+/** How to retrieve text asynchronously. */
 function getText(u, done) {
 	$.ajax({
 		type : "GET",
@@ -12,7 +12,7 @@ function getText(u, done) {
 		success : done
 	});
 }
-// How to retrieve JSON
+/** How to retrieve JSON asynchronously. */
 function getJSON(u, done) {
 	$.ajax({
 		type : "GET",
@@ -24,7 +24,7 @@ function getJSON(u, done) {
 		success : done
 	});
 }
-// How to send a PUT of text
+/** How to send a PUT of text asynchronously. */
 function putText(u, val, done) {
 	$.ajax({
 		type : "PUT",
@@ -41,7 +41,7 @@ function putText(u, val, done) {
 		}
 	});
 }
-// How to send a PUT of XML
+/** How to send a PUT of XML asynchronously. */
 function putXML(u, xml, done) {
 	$.ajax({
 		type : "PUT",
@@ -56,7 +56,7 @@ function putXML(u, xml, done) {
 		}
 	});
 }
-// How to send a POST of XML
+/** How to send a POST of XML asynchronously. */
 function postXML(u, xml, done) {
 	$.ajax({
 		type : "POST",
@@ -71,7 +71,7 @@ function postXML(u, xml, done) {
 		}
 	});
 }
-// How to send a DELETE
+/** How to send a DELETE asynchronously. */
 function deleteUrl(u, done) {
 	$.ajax({
 		type : "DELETE",
@@ -85,14 +85,17 @@ function deleteUrl(u, done) {
 	});
 }
 
-//Locates a URL with respect to the administrative REST interface
+/** Locates a URL with respect to the administrative REST interface. */
 function where(tail) {
 	return $("#admin")[0].href + "/" + tail;
 }
 
 // Make an XML element structure
 // Derived from hack on Stack Overflow, but with extra tinkering
-var Node, NodeAll;
+/** Function called to create a node in an XML structure. */
+var Node;
+/** Function called to create nodes in an XML structure from an array. */
+var NodeAll;
 (function() {
 	var doc = document.implementation.createDocument(null, null, null);
 	var adminNS = "http://ns.taverna.org.uk/2010/xml/server/admin/";
@@ -120,16 +123,18 @@ var Node, NodeAll;
 	}
 })();
 
-var userinfo = [];
 var buttonlist = [ "allowNew", "logFaults", "logWorkflows" ];
 var readonlies = [ "invokationCount", "lastExitCode", "runCount", "startupTime" ];
 var entries = [ "defaultLifetime", "executeWorkflowScript", "javaBinary",
 		"registrationPollMillis", "registrationWaitSeconds", "registryHost",
 		"registryPort", "runLimit", "runasPasswordFile", "serverForkerJar",
 		"serverWorkerJar", "usageRecordDumpFile" ];
+/** Cached information about users. */
+var userinfo = [];
+/** Extra arguments to pass to the runtime. */
 var extraAry = [];
 
-// How to update the read-only fields; will be called periodically
+/** How to update the read-only fields; will be called periodically */
 function updateRO() {
 	$.each(readonlies, function(idx, val) {
 		var widget = $("#" + val);
@@ -149,26 +154,48 @@ function updateRO() {
 			});
 }
 
-// How to update the table of users; called on demand
+/**
+ * Generate a user row with suitable indices, but no content (it will be pushed
+ * into the row later).
+ */
+function userRowHTML(idx) {
+	// USER NAME
+	var content = "<td><span id='username" + idx
+			+ "' title='The login name of the user.'></span></td>";
+	// SYSTEM ID MAPPING
+	content += "<td><input id='userlocal"
+			+ idx
+			+ "' title='The system username to run workflows as, or blank for default.' /></td>";
+	// ENABLED
+	content += "<td><label title='Is this user allowed to log in?' for='useron"
+			+ idx + "'>Enabled</label>" + "<input type='checkbox' id='useron"
+			+ idx + "' /></td>";
+	// ADMIN
+	content += "<td><label title='Is this user an admin (allowed to access this page)?' for='useradmin"
+			+ idx
+			+ "'>Admin</label>"
+			+ "<input type='checkbox' id='useradmin"
+			+ idx + "' /></td>";
+	// SET PASSWORD
+	content += "<td><button title='Set the password for this user.' id='userpass"
+			+ idx + "'>Set Password</button></td>";
+	// DELETE
+	content += "<td><button title='Delete this user. Take care to not delete yourself!' id='userdel"
+			+ idx + "'>Delete</button></td>";
+
+	return "<tr id='usersep" + idx + "' class='userrows'>"
+			+ "<td colspan=6><hr></td></tr>" + "<tr id='userrow" + idx
+			+ "' class='userrows'>" + content + "</tr>";
+}
+
+/** How to update the table of users; called on demand */
 function refreshUsers() {
 	var usertable = $("#userList");
 	getJSON(where("users"), function(data) {
 		$(".userrows").remove();
 		userinfo = [];
 		$.each(data.userList.user, function(idx, url) {
-			usertable.append("<tr id='usersep" + idx + "' class='userrows'>"
-					+ "<td colspan=6><hr></td></tr>" + "<tr id='userrow" + idx
-					+ "' class='userrows'>" + "<td><span id='username" + idx
-					+ "'></span></td>" + "<td><input id='userlocal" + idx
-					+ "' /></td>" + "<td><label for='useron" + idx
-					+ "'>Enabled</label>" + "<input type='checkbox' id='useron"
-					+ idx + "' /></td>" + "<td><label for='useradmin" + idx
-					+ "'>Admin</label>"
-					+ "<input type='checkbox' id='useradmin" + idx
-					+ "' /></td>" + "<td><button id='userpass" + idx
-					+ "'>Set Password</button></td>"
-					+ "<td><button id='userdel" + idx
-					+ "'>Delete</button></td>" + "</tr>");
+			usertable.append(userRowHTML(idx));
 			var i = idx;
 			userinfo[i] = {
 				url : url
@@ -212,7 +239,7 @@ function refreshUsers() {
 	});
 }
 
-// How to delete a user by index (with dialog)
+/** How to delete a user by index (with dialog) */
 function deleteUser(idx) {
 	$("#dialog-confirm").dialog({
 		modal : true,
@@ -232,7 +259,7 @@ function deleteUser(idx) {
 	$("#dialog-confirm").dialog("open");
 }
 
-// How to update a user's password by index (with dialog)
+/** How to update a user's password by index (with dialog) */
 function updatePasswordUser(idx) {
 	$("#change-password").val("");
 	$("#change-password2").val("");
@@ -258,7 +285,7 @@ function updatePasswordUser(idx) {
 	$("#dialog-password").dialog("open");
 }
 
-// How to set a specific field of a user record
+/** How to set a specific field of a user record */
 function updateUser(idx, field, value) {
 	var model = userinfo[idx].model;
 	var xml = Node("userDesc", Node("username", model.username),
@@ -273,7 +300,7 @@ function updateUser(idx, field, value) {
 	});
 }
 
-// How to configure all the buttons and entries
+/** How to configure all the buttons and entries */
 function connectButtonsAndEntries() {
 	$.each(buttonlist, function(idx, val) {
 		var widget = $("#" + val);
@@ -306,7 +333,7 @@ function connectButtonsAndEntries() {
 	});
 }
 
-// What happens when the user tries to make a new user
+/** What happens when the user tries to make a new user */
 function makeNewUser() {
 	var sysid = $("#newSysID").val();
 	var newuserinfo = {
@@ -334,47 +361,72 @@ function makeNewUser() {
 	});
 }
 
-// Handle the extra arguments
-function buildExtraTables(rows) {
-	$(".extraargrow").remove();
-	var prop = "", env = "", run = "";
-	extraAry = rows || [];
-	for ( var i = 0; i < extraAry.length; i++) {
-		var row = i;
-		var str = extraAry[row].substring(2);
-		if (extraAry[row].startsWith("-D")) {
-			var idx = str.indexOf("=");
-			$("#extraArguments-prop").append(
-					"<tr class='extraargrow'>" + "<td><button id='extradel"
-							+ row + "'>Del</button></td>" + "<td><i>-D</i> "
-							+ str.substring(0, idx) + "</td>" + "<td><i>=</i> "
-							+ str.substring(idx + 1) + "</td>" + "</tr>");
-		} else if (extraAry[i].startsWith("-E")) {
-			var idx = str.indexOf("=");
-			$("#extraArguments-prop").append(
-					"<tr class='extraargrow'>" + "<td><button id='extradel"
-							+ row + "'>Del</button></td>" + "<td><i>-E</i> "
-							+ str.substring(0, idx) + "</td>" + "<td><i>=</i> "
-							+ str.substring(idx + 1) + "</td>" + "</tr>");
-		} else
-			$("#extraArguments-runtime").append(
-					"<tr class='extraargrow'>" + "<td><button id='extradel"
-							+ row + "'>Del</button></td>" + "<td><i>-J</i> "
-							+ str + "</td>" + "</tr>");
-		$("#extradel" + row).button({
-			icons : {
-				primary : "ui-icon-trash"
-			},
-			text : false
-		}).click(function() {
-			extraAry.splice(row, 1);
-			var xml = NodeAll("stringList", "string", extraAry);
-			putXML(where("extraArguments"), xml, function(data) {
-				buildExtraTables(data.stringList.string);
+/** Handle the extra arguments */
+function loadExtraArgs() {
+	getJSON(
+			where("extraArguments"),
+			function(data) {
+				var rows = data.stringList.string;
+				$(".extraargrow").remove();
+				var prop = "", env = "", run = "";
+				extraAry = rows || [];
+				for ( var i = 0; i < extraAry.length; i++) {
+					var row = i;
+					var str = extraAry[row].substring(2);
+					if (extraAry[row].startsWith("-D")) {
+						var idx = str.indexOf("=");
+						$("#extraArguments-prop")
+								.append(
+										"<tr class='extraargrow'>"
+												+ "<td><button id='extradel"
+												+ row
+												+ "' title='Delete this property assignment.'>Del</button></td>"
+												+ "<td><tt><i>-D</i> "
+												+ str.substring(0, idx)
+												+ "</tt></td>"
+												+ "<td><tt><i>=</i> "
+												+ str.substring(idx + 1)
+												+ "</tt></td>" + "</tr>");
+					} else if (extraAry[i].startsWith("-E")) {
+						var idx = str.indexOf("=");
+						$("#extraArguments-env")
+								.append(
+										"<tr class='extraargrow'>"
+												+ "<td><button id='extradel"
+												+ row
+												+ "' title='Delete this environment assignment.'>Del</button></td>"
+												+ "<td><tt><i>-E</i> "
+												+ str.substring(0, idx)
+												+ "</tt></td>"
+												+ "<td><tt><i>=</i> "
+												+ str.substring(idx + 1)
+												+ "</tt></td>" + "</tr>");
+					} else
+						$("#extraArguments-runtime")
+								.append(
+										"<tr class='extraargrow'>"
+												+ "<td><button id='extradel"
+												+ row
+												+ "' title='Delete this runtime parameter.'>Del</button></td>"
+												+ "<td><tt><i>-J</i> " + str
+												+ "</tt></td>" + "</tr>");
+					$("#extradel" + row).button({
+						icons : {
+							primary : "ui-icon-trash"
+						},
+						text : false
+					}).click(function() {
+						extraAry.splice(row, 1);
+						var xml = NodeAll("stringList", "string", extraAry);
+						putXML(where("extraArguments"), xml, function() {
+							loadExtraArgs();
+						});
+					});
+				}
 			});
-		});
-	}
 }
+
+/** Run a dialog for creating an extra argument. */
 function addExtraArg(dialogId, prefix, part1id, part2id) {
 	$(dialogId).dialog({
 		modal : true,
@@ -387,8 +439,8 @@ function addExtraArg(dialogId, prefix, part1id, part2id) {
 					str += "=" + $(part2id).val();
 				extraAry.push(str);
 				var xml = NodeAll("stringList", "string", extraAry);
-				putXML(where("extraArguments"), xml, function(data) {
-					buildExtraTables(data.stringList.string);
+				putXML(where("extraArguments"), xml, function() {
+					loadExtraArgs();
 				});
 			},
 			"Cancel" : function() {
@@ -399,7 +451,7 @@ function addExtraArg(dialogId, prefix, part1id, part2id) {
 	$(dialogId).dialog("open");
 }
 
-// Start everything going on page load
+/** Start everything going on page load */
 $(function() {
 	// Must be done in this order because the accordion is inside a tab
 	$("#a-worker").accordion({
@@ -437,7 +489,5 @@ $(function() {
 	$("#extra-run-add").button().click(function() {
 		addExtraArg("#dialog-runtime", "-J", "#run-value");
 	});
-	getJSON(where("extraArguments"), function(data) {
-		buildExtraTables(data.stringList.string);
-	});
+	loadExtraArgs();
 });
