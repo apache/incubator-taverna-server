@@ -2,6 +2,27 @@
 
 set -e
 
+## Parse the command line to extract the pieces to move around to before or
+## after the JAR filename...
+memlimit=-Xmx300m
+permsize=-XX:MaxPermSize=140m
+pre=
+post=
+for arg
+do
+    case $arg in
+	-JXmx*) memlimit=`echo $arg | sed 's/-JX/-X/'` ;;
+	-JXX:MaxPermSize=*) permsize=`echo $arg | sed 's/-JXX/-XX/'` ;;
+	-J*) pre="$pre \"`echo $arg | sed 's/-J/-/'`\"" ;;
+	-D*) pre="$pre \"$arg\"" ;;
+	*) post="$post \"$arg\"" ;;
+    esac
+done
+if test "xx" == "x${post}x"; then
+    echo "Missing arguments! Bug in argument processing?" >&2
+    exit 1
+fi
+
 ## resolve links - $0 may be a symlink
 prog="$0"
 
@@ -32,13 +53,13 @@ if test x != "x$INTERACTION_HOST"; then
 fi
 
 # 300 MB memory, 140 MB for classes
-exec "$javabin" -Xmx300m -XX:MaxPermSize=140m \
+exec "$javabin" $memlimit $permsize \
   "-Draven.profile=file://$taverna_home/conf/current-profile.xml" \
   "-Dtaverna.startup=$taverna_home" $RAVEN_APPHOME_PROP $RUNID_PROP \
-  $INTERACTION_PROPS \
+  $INTERACTION_PROPS $pre \
   -Djava.system.class.loader=net.sf.taverna.raven.prelauncher.BootstrapClassLoader \
   -Draven.launcher.app.main=net.sf.taverna.t2.commandline.CommandLineLauncher \
   -Draven.launcher.show_splashscreen=false \
   -Djava.awt.headless=true \
   -jar "$taverna_home/lib/"prelauncher-*.jar \
-  ${1+"$@"}
+  $post

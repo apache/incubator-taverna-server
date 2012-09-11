@@ -249,12 +249,12 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 							arg.substring(idx + 1));
 					continue;
 				}
-			} else if (args[i].startsWith("-J")) {
+			} else if (args[i].startsWith("-J") || args[i].startsWith("-D")) {
 				man.addJavaParameter(args[i].substring(2));
 				continue;
 			}
 			throw new IllegalArgumentException("argument \"" + args[i]
-					+ "\" must start with -E or -J; -E must contain a \"=\"");
+					+ "\" must start with -E, -D or -J; -E must contain a \"=\"");
 		}
 		registry.bind(factoryName, man);
 		getRuntime().addShutdownHook(new Thread() {

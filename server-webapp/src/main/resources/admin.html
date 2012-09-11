@@ -136,10 +136,20 @@ Download <a href="#" id="ur">usage records</a> (warning: may be slow!)
       </table>
     </div>
 
-   	<h3><a href="#">Extra Arguments</a></h3>
+   	<h3><a href="#">Extra Workflow Engine Configuration</a></h3>
    	<div>
-   		<pre id="extraArguments">
-   		</pre>
+   		<h4>System Properties</h4>
+   		<table id="extraArguments-prop">
+   		<tr><td></td><td colspan="2"><button id="extra-prop-add">Add System Property</button></td></tr>
+   		</table>
+   		<h4>Environment Variables</h4>
+   		<table id="extraArguments-env">
+   		<tr><td></td><td colspan="2"><button id="extra-env-add">Add Environment Variable</button></td></tr>
+   		</table>
+   		<h4>Java Runtime Configuration</h4>
+   		<table id="extraArguments-runtime">
+   		<tr><td></td><td><button id="extra-run-add">Add Runtime Configuration</button></td></tr>
+   		</table>
    	</div>
 
   </div><!-- a-worker -->
@@ -166,6 +176,38 @@ Download <a href="#" id="ur">usage records</a> (warning: may be slow!)
   </p>
   <p>
   <input id="change-password" type="password" size="12" />
+  </p>
+</div>
+
+<div id="dialog-environment" title="Set environment variable?" style="display: none">
+  <p>
+  <span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>
+  Set an environment variable to be passed to the workflow engine.
+  </p>
+  <p>
+  <input id="env-key" size="20" /> =
+  <input id="env-value" size="30" />
+  </p>
+</div>
+
+<div id="dialog-runtime" title="Set runtime configuration?" style="display: none">
+  <p>
+  <span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>
+  Set a runtime parameter (e.g., -Xmx400m for a 400MB memory limit) for the Java runtime.
+  </p>
+  <p>
+  <input id="runtime-value" size="30" />
+  </p>
+</div>
+
+<div id="dialog-property" title="Set runtime property?" style="display: none">
+  <p>
+  <span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>
+  Set a configuration property for the Java runtime.
+  </p>
+  <p>
+  <input id="prop-key" size="20" /> =
+  <input id="prop-value" size="30" />
   </p>
 </div>
 

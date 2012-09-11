@@ -85,9 +85,14 @@ function deleteUrl(u, done) {
 	});
 }
 
+//Locates a URL with respect to the administrative REST interface
+function where(tail) {
+	return $("#admin")[0].href + "/" + tail;
+}
+
 // Make an XML element structure
 // Derived from hack on Stack Overflow, but with extra tinkering
-var Node;
+var Node, NodeAll;
 (function() {
 	var doc = document.implementation.createDocument(null, null, null);
 	var adminNS = "http://ns.taverna.org.uk/2010/xml/server/admin/";
@@ -103,20 +108,26 @@ var Node;
 		}
 		return node;
 	}
+	NodeAll = function(wrapperElem, wrappedElem, elements) {
+		var node = doc.createElementNS(adminNS, wrapperElem);
+		for ( var i = 0; i < elements.length; i++) {
+			var child = doc.createElementNS(adminNS, wrappedElem);
+			var text = doc.createTextNode(elements[i]);
+			child.appendChild(text);
+			node.appendChild(child);
+		}
+		return node;
+	}
 })();
 
-// Locates a URL with respect to the administrative REST interface
-function where(tail) {
-	return $("#admin")[0].href + "/" + tail;
-}
-
-var userinfo = {};
+var userinfo = [];
 var buttonlist = [ "allowNew", "logFaults", "logWorkflows" ];
 var readonlies = [ "invokationCount", "lastExitCode", "runCount", "startupTime" ];
 var entries = [ "defaultLifetime", "executeWorkflowScript", "javaBinary",
 		"registrationPollMillis", "registrationWaitSeconds", "registryHost",
 		"registryPort", "runLimit", "runasPasswordFile", "serverForkerJar",
 		"serverWorkerJar", "usageRecordDumpFile" ];
+var extraAry = [];
 
 // How to update the read-only fields; will be called periodically
 function updateRO() {
@@ -143,7 +154,7 @@ function refreshUsers() {
 	var usertable = $("#userList");
 	getJSON(where("users"), function(data) {
 		$(".userrows").remove();
-		userinfo = {};
+		userinfo = [];
 		$.each(data.userList.user, function(idx, url) {
 			usertable.append("<tr id='usersep" + idx + "' class='userrows'>"
 					+ "<td colspan=6><hr></td></tr>" + "<tr id='userrow" + idx
@@ -319,6 +330,72 @@ function makeNewUser() {
 	});
 }
 
+// Handle the extra arguments
+function buildExtraTables(rows) {
+	$(".extraargrow").remove();
+	var prop = "", env = "", run = "";
+	extraAry = rows || [];
+	for ( var i = 0; i < extraAry.length; i++) {
+		var row = i;
+		var str = extraAry[row].substring(2);
+		if (extraAry[row].startsWith("-D")) {
+			var idx = str.indexOf("=");
+			$("#extraArguments-prop").append(
+					"<tr class='extraargrow'>" + "<td><button id='extradel"
+							+ row + "'>Del</button></td>" + "<td><i>-D</i> "
+							+ str.substring(0, idx) + "</td>" + "<td><i>=</i> "
+							+ str.substring(idx + 1) + "</td>" + "</tr>");
+		} else if (extraAry[i].startsWith("-E")) {
+			var idx = str.indexOf("=");
+			$("#extraArguments-prop").append(
+					"<tr class='extraargrow'>" + "<td><button id='extradel"
+							+ row + "'>Del</button></td>" + "<td><i>-E</i> "
+							+ str.substring(0, idx) + "</td>" + "<td><i>=</i> "
+							+ str.substring(idx + 1) + "</td>" + "</tr>");
+		} else
+			$("#extraArguments-runtime").append(
+					"<tr class='extraargrow'>" + "<td><button id='extradel"
+							+ row + "'>Del</button></td>" + "<td><i>-J</i> "
+							+ str + "</td>" + "</tr>");
+		$("#extradel" + row).button({
+			icons : {
+				primary : "ui-icon-trash"
+			},
+			text : false
+		}).click(function() {
+			extraAry.splice(row, 1);
+			var xml = NodeAll("stringList", "string", extraAry);
+			putXML(where("extraArguments"), xml, function(data) {
+				buildExtraTables(data.stringList.string);
+			});
+		});
+	}
+}
+function addExtraArg(dialogId, prefix, part1id, part2id) {
+	$(dialogId).dialog({
+		modal : true,
+		autoOpen : false,
+		buttons : {
+			"OK" : function() {
+				$(this).dialog("close");
+				var str = prefix + $(part1id).val();
+				if (part2id != undefined)
+					str += $(part2id).val();
+				extraAry.push(str);
+				var xml = NodeAll("stringList", "string", extraAry);
+				putXML(where("extraArguments"), xml, function(data) {
+					buildExtraTables(data.stringList.string);
+				});
+			},
+			"Cancel" : function() {
+				$(this).dialog("close");
+			}
+		}
+	});
+	$(dialogId).dialog("open");
+}
+
+// Start everything going on page load
 $(function() {
 	// Must be done in this order because the accordion is inside a tab
 	$("#a-worker").accordion({
@@ -347,12 +424,16 @@ $(function() {
 	$("#makeNewUser").button().click(function() {
 		makeNewUser()
 	});
+	$("#extra-prop-add").button().click(function() {
+		addExtraArg("#dialog-property", "-D", "#prop-key", "#prop-value");
+	});
+	$("#extra-env-add").button().click(function() {
+		addExtraArg("#dialog-environment", "-E", "#env-key", "#env-value");
+	});
+	$("#extra-run-add").button().click(function() {
+		addExtraArg("#dialog-runtime", "-J", "#run-value");
+	});
 	getJSON(where("extraArguments"), function(data) {
-		var ary = data.stringList.string;
-		var s = "";
-		if (ary != undefined)
-			for ( var i = 0; i < ary.length; i++)
-				s += ary[i] + "\n";
-		$("#extraArguments").text(s);
+		buildExtraTables(data.stringList.string);
 	});
 });
