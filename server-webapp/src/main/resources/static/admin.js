@@ -366,14 +366,16 @@ function loadExtraArgs() {
 	getJSON(
 			where("extraArguments"),
 			function(data) {
-				var rows = data.stringList.string;
+				var rows = data.stringList.string || [];
+				if ((typeof rows) == "string")
+					rows = [rows];
 				$(".extraargrow").remove();
 				var prop = "", env = "", run = "";
-				extraAry = rows || [];
+				extraAry = rows;
 				for ( var i = 0; i < extraAry.length; i++) {
 					var row = i;
-					var str = extraAry[row].substring(2);
-					if (extraAry[row].startsWith("-D")) {
+					var str = rows[row].substring(2);
+					if (rows[row].match("^-D")) {
 						var idx = str.indexOf("=");
 						$("#extraArguments-prop")
 								.append(
@@ -387,7 +389,7 @@ function loadExtraArgs() {
 												+ "<td><tt><i>=</i> "
 												+ str.substring(idx + 1)
 												+ "</tt></td>" + "</tr>");
-					} else if (extraAry[i].startsWith("-E")) {
+					} else if (rows[i].match("-E")) {
 						var idx = str.indexOf("=");
 						$("#extraArguments-env")
 								.append(
