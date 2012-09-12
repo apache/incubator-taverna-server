@@ -363,65 +363,60 @@ function makeNewUser() {
 
 /** Handle the extra arguments */
 function loadExtraArgs() {
-	getJSON(
-			where("extraArguments"),
+	getJSON(where("extraArguments"),
 			function(data) {
 				var rows = data.stringList.string || [];
 				if ((typeof rows) == "string")
-					rows = [rows];
+					rows = [ rows ];
 				$(".extraargrow").remove();
 				var prop = "", env = "", run = "";
 				extraAry = rows;
-				for ( var i = 0; i < extraAry.length; i++) {
-					var row = i;
-					var str = rows[row].substring(2);
-					if (rows[row].match("^-D")) {
-						var idx = str.indexOf("=");
-						$("#extraArguments-prop")
-								.append(
-										"<tr class='extraargrow'>"
-												+ "<td><button id='extradel"
-												+ row
-												+ "' title='Delete this property assignment.'>Del</button></td>"
-												+ "<td><tt><i>-D</i>"
-												+ str.substring(0, idx)
-												+ "<i>=</i>"
-												+ str.substring(idx + 1)
-												+ "</tt></td>" + "</tr>");
-					} else if (rows[row].match("-E")) {
-						var idx = str.indexOf("=");
-						$("#extraArguments-env")
-								.append(
-										"<tr class='extraargrow'>"
-												+ "<td><button id='extradel"
-												+ row
-												+ "' title='Delete this environment assignment.'>Del</button></td>"
-												+ "<td><tt><i>-E</i>"
-												+ str.substring(0, idx)
-												+ "<i>=</i>"
-												+ str.substring(idx + 1)
-												+ "</tt></td>" + "</tr>");
-					} else
-						$("#extraArguments-runtime")
-								.append(
-										"<tr class='extraargrow'>"
-												+ "<td><button id='extradel"
-												+ row
-												+ "' title='Delete this runtime parameter.'>Del</button></td>"
-												+ "<td><tt><i>-J</i> " + str
-												+ "</tt></td>" + "</tr>");
-					$("#extradel" + row).button({
+				var i;
+				function row() {
+					var buf = "<tr class='extraargrow'>";
+					for ( var i = 1; i < arguments.length; i++)
+						buf += "<td>" + arguments[i] + "</td>";
+					return $(arguments[0]).append(buf + "</tr>");
+				}
+				function delbutn(id, what) {
+					return "<button id='" + id + "' title='Delete this " + what
+							+ ".'>Del</button>";
+				}
+				for (i = 0; i < extraAry.length; i++) {
+					var rowid = "extradel" + i;
+					if (rows[i].match("^-D")) {
+						var m = rows[i].match("^-D([^=]*)=(.*)$");
+						row("#extraArguments-prop", delbutn(rowid,
+								"property assignment"), "<tt><b>-D</b>" + m[1]
+								+ "<b>=</b>" + m[2] + "</tt>");
+					} else if (rows[i].match("-E")) {
+						var m = rows[i].match("^-E([^=]*)=(.*)$");
+						row("#extraArguments-env", delbutn(rowid,
+								"environment assignment"), "<tt><b>-E</b>"
+								+ m[1] + "<b>=</b>" + m[2] + "</tt>");
+					} else {
+						var m = rows[i].match("^-J(.*)$");
+						row("#extraArguments-runtime", delbutn(rowid,
+								"runtime parameter"), "<tt><b>-J</b>" + m[1]
+								+ "</tt>");
+					}
+					$("#" + rowid).button({
 						icons : {
 							primary : "ui-icon-trash"
 						},
 						text : false
-					}).click(function() {
-						extraAry.splice(row, 1);
-						var xml = NodeAll("stringList", "string", extraAry);
-						putXML(where("extraArguments"), xml, function() {
-							loadExtraArgs();
-						});
-					});
+					}).click(
+							(function(row) {
+								return function() {
+									extraAry.splice(row, 1);
+									var xml = NodeAll("stringList", "string",
+											extraAry);
+									putXML(where("extraArguments"), xml,
+											function() {
+												loadExtraArgs();
+											});
+								}
+							})(i));
 				}
 			});
 }
