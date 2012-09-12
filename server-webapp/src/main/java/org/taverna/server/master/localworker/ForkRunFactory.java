@@ -239,6 +239,8 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		ProcessBuilder p = new ProcessBuilder(getJavaBinary());
 		p.command().add("-jar");
 		p.command().add(getServerWorkerJar());
+		if (getExecuteWorkflowScript() == null)
+			log.fatal("no execute workflow script");
 		p.command().add(getExecuteWorkflowScript());
 		p.command().addAll(asList(getExtraArguments()));
 		p.command().add(factoryProcessName);
@@ -253,6 +255,10 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 				factoryProcess), factoryProcessName + ".Logger");
 		logger.setDaemon(true);
 		logger.start();
+		Thread logger2 = new Thread(new ErrorLogger(factoryProcessName,
+				factoryProcess), factoryProcessName + ".Logger");
+		logger2.setDaemon(true);
+		logger2.start();
 
 		// Wait for the subprocess to register itself in the RMI registry
 		Calendar deadline = Calendar.getInstance();
@@ -326,6 +332,42 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 					if (line == null)
 						break;
 					log.info(uniqueName + " subprocess output: " + line);
+				}
+			} catch (IOException e) {
+				// Do nothing...
+			} catch (Exception e) {
+				log.warn("failure in reading from " + uniqueName, e);
+			} finally {
+				try {
+					br.close();
+				} catch (Throwable e) {
+				}
+			}
+		}
+	}
+
+	private static class ErrorLogger implements Runnable {
+		private final Log log;
+
+		ErrorLogger(String name, Process process) {
+			log = getLog("Taverna.Server.LocalWorker." + name);
+			this.uniqueName = name;
+			this.br = new BufferedReader(new InputStreamReader(
+					process.getErrorStream()));
+		}
+
+		private String uniqueName;
+		private BufferedReader br;
+
+		@Override
+		public void run() {
+			try {
+				String line;
+				while (true) {
+					line = br.readLine();
+					if (line == null)
+						break;
+					log.info(uniqueName + " subprocess error: " + line);
 				}
 			} catch (IOException e) {
 				// Do nothing...

@@ -487,52 +487,67 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	}
 }
 
-abstract class StreamLogger extends Thread {
-	private final Log log;
-	private final String uniqueName;
-	private final BufferedReader br;
+abstract class StreamLogger {
+	protected final Log log;
 
-	StreamLogger(String name, InputStream is) {
-		super(name + ".StreamLogger");
+	protected StreamLogger(String name, InputStream is) {
 		log = getLog("Taverna.Server.LocalWorker." + name);
-		uniqueName = name;
-		br = new BufferedReader(new InputStreamReader(is));
-		setDaemon(true);
-		start();
-	}
-
-	private void copyLinesToLog() throws IOException {
-		String line;
-		while ((line = br.readLine()) != null)
-			log.info(line);
-	}
-
-	@Override
-	public void run() {
-		try {
-			copyLinesToLog();
-		} catch (IOException e) {
-			// Do nothing...
-		} catch (Exception e) {
-			log.warn("failure in reading from " + uniqueName, e);
-		} finally {
-			try {
-				br.close();
-			} catch (Throwable e) {
+		final String uniqueName = name;
+		final BufferedReader br = new BufferedReader(new InputStreamReader(is));
+		Thread t = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				String line;
+				try {
+					while ((line = br.readLine()) != null)
+						if (!line.isEmpty())
+							write(line);
+				} catch (IOException e) {
+					// Do nothing...
+				} catch (Exception e) {
+					log.warn("failure in reading from " + uniqueName, e);
+				} finally {
+					try {
+						br.close();
+					} catch (Throwable e) {
+					}
+				}
 			}
-		}
+		}, name + ".StreamLogger");
+		t.setDaemon(true);
+		t.start();
 	}
+
+	/**
+	 * Write a line read from the subproces to the log.
+	 * <p>
+	 * This needs to be implemented by subclasses in order for the log to be
+	 * correctly written with the class name.
+	 * 
+	 * @param msg
+	 *            The message to write. Guaranteed to have no newline characters
+	 *            in it and to be non-empty.
+	 */
+	protected abstract void write(String msg);
 }
 
 class StdOut extends StreamLogger {
 	StdOut(Process process) {
-		super("secure-fork", process.getInputStream());
+		super("forker", process.getInputStream());
+	}
+
+	protected void write(String msg) {
+		log.info(msg);
 	}
 }
 
 class StdErr extends StreamLogger {
 	StdErr(Process process) {
-		super("secure-fork", process.getErrorStream());
+		super("forker", process.getErrorStream());
+	}
+
+	protected void write(String msg) {
+		log.info(msg);
 	}
 }
 
@@ -567,10 +582,10 @@ class SecureFork implements IdAwareForkRunFactory.MetaFactory {
 		args.add(main.getJavaBinary());
 		args.add("-jar");
 		args.add(main.getServerWorkerJar());
-		args.addAll(asList(main.getExtraArguments()));
 		if (main.getExecuteWorkflowScript() == null)
 			log.fatal("no execute workflow script");
 		args.add(main.getExecuteWorkflowScript());
+		args.addAll(asList(main.getExtraArguments()));
 	}
 
 	SecureFork(IdAwareForkRunFactory main) throws IOException {
