@@ -246,8 +246,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			pb.command().add("/bin/sh");
 		pb.command().add(executeWorkflowCommand);
 		if (runtime != null)
-			for (String param : runtime)
-				pb.command().add("-J" + param);
+			pb.command().addAll(runtime);
 
 		// Enable verbose logging
 		pb.command().add("-logfile");
