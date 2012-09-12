@@ -70,4 +70,5 @@ TAVSERV-268 Select HTTP login domain
 TAVSERV-274 Server should return 201 in response to a PUT that creates a new
         resource
 TAVSERV-280 Output port XML description sometimes missing depth attribute
+TAVSERV-281 Extra arguments missing from admin interface
    ---- 2.4.1 release ----
