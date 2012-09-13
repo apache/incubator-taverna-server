@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>server</artifactId>
 		<groupId>uk.org.taverna.server</groupId>
-		<version>2.4.1</version>
+		<version>2.4.1i-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<artifactId>server-usagerecord</artifactId>
