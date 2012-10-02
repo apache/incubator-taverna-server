@@ -74,33 +74,41 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 
 	@Value("${rmi.localhostOnly}")
 	private boolean rmiLocalhostOnly;
+
 	@Value("${taverna.interaction.host}")
 	void setInteractionHost(String host) {
 		if (host != null && host.equals("none"))
 			host = null;
 		interhost = host;
 	}
+
 	String interhost;
+
 	@Value("${taverna.interaction.port}")
 	void setInteractionPort(String port) {
 		if (port != null && port.equals("none"))
 			port = null;
 		interport = port;
 	}
+
 	String interport;
+
 	@Value("${taverna.interaction.webdav_path}")
 	void setInteractionWebdav(String webdav) {
 		if (webdav != null && webdav.equals("none"))
 			webdav = null;
 		interwebdav = webdav;
 	}
+
 	String interwebdav;
+
 	@Value("${taverna.interaction.feed_path}")
 	void setInteractionFeed(String feed) {
 		if (feed != null && feed.equals("none"))
 			feed = null;
 		interfeed = feed;
 	}
+
 	String interfeed;
 
 	private Registry makeRegistry(int port) throws RemoteException {
@@ -385,7 +393,22 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 *             If serialization fails.
 	 */
 	protected String serializeWorkflow(Workflow workflow) throws JAXBException {
-		return workflow.marshal();
+		switch (workflow.getPreferredContentType()) {
+		case SCUFL2:
+			try {
+				// Wrap it up as t2flow
+				// TODO Convert to using scufl2 natively 
+				workflow = new Workflow(workflow.getT2flowWorkflow());
+			} catch (IOException e) {
+				throw new JAXBException("problem converting to wrapped t2flow",
+						e);
+			}
+		case T2FLOW:
+			return workflow.marshal();
+		default:
+			// Should be unreachable
+			throw new RuntimeException("unexpected content type of workflow");
+		}
 	}
 
 	/**

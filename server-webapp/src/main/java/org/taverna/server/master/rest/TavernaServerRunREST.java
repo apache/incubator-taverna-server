@@ -8,6 +8,7 @@ package org.taverna.server.master.rest;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.joda.time.format.ISODateTimeFormat.basicDateTime;
 import static org.taverna.server.master.common.Roles.USER;
+import static org.taverna.server.master.rest.handler.Scufl2DocumentHandler.SCUFL2;
 import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 
 import java.net.URI;
@@ -91,7 +92,7 @@ public interface TavernaServerRunREST {
 	 */
 	@GET
 	@Path("workflow")
-	@Produces({ T2FLOW, "application/xml", "application/json" })
+	@Produces({ T2FLOW, SCUFL2, "application/xml", "application/json" })
 	@Description("Gives the workflow document used to create the workflow run.")
 	@NonNull
 	public Workflow getWorkflow();

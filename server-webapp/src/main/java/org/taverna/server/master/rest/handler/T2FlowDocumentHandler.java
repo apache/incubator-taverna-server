@@ -30,7 +30,6 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.taverna.server.master.common.Workflow;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 /**
@@ -45,8 +44,8 @@ public class T2FlowDocumentHandler implements MessageBodyReader<Workflow>,
 	private static final MediaType T2FLOW_TYPE = new MediaType("application",
 			"vnd.taverna.t2flow+xml");
 	public static final String T2FLOW = "application/vnd.taverna.t2flow+xml";
-	private static final String T2FLOW_ROOTNAME = "workflow";
-	private static final String T2FLOW_NS = "http://taverna.sf.net/2008/xml/t2flow";
+	public static final String T2FLOW_ROOTNAME = "workflow";
+	public static final String T2FLOW_NS = "http://taverna.sf.net/2008/xml/t2flow";
 	private DocumentBuilder db;
 	private Transformer transformer;
 
@@ -78,8 +77,7 @@ public class T2FlowDocumentHandler implements MessageBodyReader<Workflow>,
 		} catch (SAXException e) {
 			throw new WebApplicationException(e, 403);
 		}
-		Workflow workflow = new Workflow();
-		workflow.content = new Element[] { doc.getDocumentElement() };
+		Workflow workflow = new Workflow(doc.getDocumentElement());
 		if (doc.getDocumentElement().getNamespaceURI().equals(T2FLOW_NS)
 				&& doc.getDocumentElement().getNodeName()
 						.equals(T2FLOW_ROOTNAME))
@@ -110,7 +108,7 @@ public class T2FlowDocumentHandler implements MessageBodyReader<Workflow>,
 			OutputStream entityStream) throws IOException,
 			WebApplicationException {
 		try {
-			transformer.transform(new DOMSource(workflow.content[0]),
+			transformer.transform(new DOMSource(workflow.getT2flowWorkflow()),
 					new StreamResult(entityStream));
 		} catch (TransformerException e) {
 			throw new WebApplicationException(e);

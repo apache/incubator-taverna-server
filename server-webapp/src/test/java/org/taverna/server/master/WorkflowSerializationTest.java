@@ -21,15 +21,14 @@ public class WorkflowSerializationTest {
 	public void testWorkflowSerialization()
 			throws ParserConfigurationException, IOException,
 			ClassNotFoundException {
-		Workflow w = new Workflow();
-		w.content = new Element[1];
 		DocumentBuilder db = DocumentBuilderFactory.newInstance()
 				.newDocumentBuilder();
 		Document doc = db.getDOMImplementation().createDocument(null, null,
 				null);
-		w.content[0] = doc.createElement("foo");
-		w.content[0].setTextContent("bar");
-		w.content[0].setAttribute("xyz", "abc");
+		Element dummy = doc.createElement("foo");
+		dummy.setTextContent("bar");
+		dummy.setAttribute("xyz", "abc");
+		Workflow w = new Workflow(dummy);
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -44,9 +43,8 @@ public class WorkflowSerializationTest {
 		Assert.assertNotNull(o);
 		Assert.assertEquals(w.getClass(), o.getClass());
 		Workflow w2 = (Workflow) o;
-		Assert.assertNotNull(w2.content);
-		Assert.assertEquals(1, w2.content.length);
-		Element e = w2.content[0];
+		Assert.assertNotNull(w2.getT2flowWorkflow());
+		Element e = w2.getT2flowWorkflow();
 		Assert.assertEquals("foo", e.getTagName());
 		Assert.assertEquals("bar", e.getTextContent());
 		Assert.assertEquals(1, e.getChildNodes().getLength());

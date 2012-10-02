@@ -14,6 +14,7 @@ import static org.taverna.server.master.TavernaServerSupport.log;
 import static org.taverna.server.master.common.Uri.secure;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -132,8 +133,8 @@ public class ContentsDescriptorBuilder {
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 	private Element fillInFromWorkflow(TavernaRun run, UriBuilder ub,
-			AbstractPortDescription portDesc) throws XPathExpressionException {
-		Element elem = run.getWorkflow().content[0];
+			AbstractPortDescription portDesc) throws XPathExpressionException, IOException {
+		Element elem = run.getWorkflow().getT2flowWorkflow();
 		portDesc.fillInBaseData(elem.getAttribute("id"), run.getId(),
 				ub.build());
 		return dataflow(elem);
@@ -331,6 +332,8 @@ public class ContentsDescriptorBuilder {
 			constructPorts(run, dataflow, ub.path("wd/{path}"), descriptor);
 		} catch (XPathExpressionException e) {
 			log.info("failure in XPath evaluation", e);
+		} catch (IOException e) {
+			log.info("failure in conversion to .t2flow", e);
 		}
 		return descriptor;
 	}
@@ -369,6 +372,8 @@ public class ContentsDescriptorBuilder {
 			}
 		} catch (XPathExpressionException e) {
 			log.info("failure in XPath evaluation", e);
+		} catch (IOException e) {
+			log.info("failure in conversion to .t2flow", e);
 		}
 		return desc;
 	}
