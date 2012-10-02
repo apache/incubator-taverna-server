@@ -38,7 +38,7 @@ public interface RemoteRunFactory extends Remote {
 	 *             If anything goes wrong with the communication.
 	 */
 	@NonNull
-	RemoteSingleRun make(@NonNull String workflow, @NonNull String creator,
+	RemoteSingleRun make(@NonNull byte[] workflow, @NonNull String creator,
 			@Nullable UsageRecordReceiver usageRecordReceiver,
 			@Nullable UUID masterID) throws RemoteException;
 

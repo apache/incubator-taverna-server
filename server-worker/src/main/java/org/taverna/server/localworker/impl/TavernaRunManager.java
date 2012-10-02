@@ -13,10 +13,11 @@ import static java.lang.System.setProperty;
 import static java.lang.System.setSecurityManager;
 import static java.rmi.registry.LocateRegistry.getRegistry;
 
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
@@ -33,6 +34,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.ws.Holder;
 
+import org.taverna.server.localworker.remote.ImplementationException;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.localworker.server.UsageRecordReceiver;
@@ -58,7 +60,7 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	DocumentBuilderFactory dbf;
 	TransformerFactory tf;
 	String command;
-	Constructor<? extends RemoteSingleRun> cons;
+	RunFactory cons;
 	Class<? extends Worker> workerClass;
 	// Hacks!
 	public static String interactionHost;
@@ -100,8 +102,7 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	 * @throws RemoteException
 	 *             If anything goes wrong during creation of the instance.
 	 */
-	public TavernaRunManager(String command,
-			Constructor<? extends RemoteSingleRun> constructor,
+	public TavernaRunManager(String command, RunFactory constructor,
 			Class<? extends Worker> workerClass) throws RemoteException {
 		this.command = command;
 		this.dbf = DocumentBuilderFactory.newInstance();
@@ -125,12 +126,13 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	 *             If anything goes wrong.
 	 */
 	@SuppressWarnings("REC_CATCH_EXCEPTION")
-	private String unwrapWorkflow(String workflow, Holder<String> wfid)
+	private byte[] unwrapWorkflow(byte[] workflow, Holder<String> wfid)
 			throws RemoteException {
-		StringReader sr = new StringReader(workflow);
-		StringWriter sw = new StringWriter();
 		try {
-			Document doc = dbf.newDocumentBuilder().parse(new InputSource(sr));
+			Reader r = new InputStreamReader(
+					new ByteArrayInputStream(workflow), "UTF-8");
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			Document doc = dbf.newDocumentBuilder().parse(new InputSource(r));
 			// Try to extract the t2flow's ID.
 			NodeList nl = doc.getElementsByTagNameNS(
 					"http://taverna.sf.net/2008/xml/t2flow", "dataflow");
@@ -140,15 +142,15 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 					wfid.value = n.getTextContent();
 			}
 			tf.newTransformer().transform(new DOMSource(unwrapWorkflow(doc)),
-					new StreamResult(sw));
-			return sw.toString();
+					new StreamResult(new OutputStreamWriter(baos, "UTF-8")));
+			return baos.toByteArray();
 		} catch (Exception e) {
 			throw new RemoteException("failed to extract contained workflow", e);
 		}
 	}
 
 	@Override
-	public RemoteSingleRun make(String workflow, String creator,
+	public RemoteSingleRun make(byte[] workflow, String creator,
 			UsageRecordReceiver urReceiver, UUID id) throws RemoteException {
 		if (creator == null)
 			throw new RemoteException("no creator");
@@ -157,15 +159,10 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 			workflow = unwrapWorkflow(workflow, wfid);
 			out.println("Creating run from workflow <" + wfid.value + "> for <"
 					+ creator + ">");
-			return cons.newInstance(command, workflow, workerClass, urReceiver,
+			return cons.construct(command, workflow, workerClass, urReceiver,
 					id, seedEnvironment, javaInitParams);
 		} catch (RemoteException e) {
 			throw e;
-		} catch (InvocationTargetException e) {
-			if (e.getTargetException() instanceof RemoteException)
-				throw (RemoteException) e.getTargetException();
-			throw new RemoteException("unexpected exception",
-					e.getTargetException());
 		} catch (Exception e) {
 			throw new RemoteException("bad instance construction", e);
 		}
@@ -237,9 +234,7 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 		factoryName = args[args.length - 1];
 		registry = getRegistry();
 		TavernaRunManager man = new TavernaRunManager(command,
-				LocalWorker.class.getDeclaredConstructor(String.class,
-						String.class, Class.class, UsageRecordReceiver.class,
-						UUID.class, Map.class, List.class), WorkerCore.class);
+				new LocalWorker.Instantiate(), WorkerCore.class);
 		for (int i = 1; i < args.length - 1; i++) {
 			if (args[i].startsWith("-E")) {
 				String arg = args[i].substring(2);
@@ -259,7 +254,8 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 				continue;
 			}
 			throw new IllegalArgumentException("argument \"" + args[i]
-					+ "\" must start with -D, -E or -J; -D and -E must contain a \"=\"");
+					+ "\" must start with -D, -E or -J; "
+					+ "-D and -E must contain a \"=\"");
 		}
 		registry.bind(factoryName, man);
 		getRuntime().addShutdownHook(new Thread() {
@@ -289,5 +285,45 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 		interactionPort = port;
 		interactionWebdavPath = webdavPath;
 		interactionFeedPath = feedPath;
+	}
+
+	/**
+	 * How to actually make an instance of the local worker class.
+	 * 
+	 * @author Donal Fellows
+	 */
+	public interface RunFactory {
+		/**
+		 * Construct an instance of the workflow run access code.
+		 * 
+		 * @param executeWorkflowCommand
+		 *            The script used to execute workflows.
+		 * @param workflow
+		 *            The workflow to execute.
+		 * @param workerClass
+		 *            The class to instantiate as our local representative of
+		 *            the run.
+		 * @param urReceiver
+		 *            The remote class to report the generated usage record(s)
+		 *            to.
+		 * @param id
+		 *            The UUID to use, or <tt>null</tt> if we are to invent one.
+		 * @param seedEnvironment
+		 *            The key/value pairs to seed the worker subprocess
+		 *            environment with.
+		 * @param javaParams
+		 *            Parameters to pass to the worker subprocess java runtime
+		 *            itself.
+		 * @return The local worker class.
+		 * @throws RemoteException
+		 *             If registration of the worker fails.
+		 * @throws ImplementationException
+		 *             If something goes wrong during local setup.
+		 */
+		RemoteSingleRun construct(String executeWorkflowCommand,
+				byte[] workflow, Class<? extends Worker> workerClass,
+				UsageRecordReceiver urReceiver, UUID id,
+				Map<String, String> seedEnvironment, List<String> javaParams)
+				throws RemoteException, ImplementationException;
 	}
 }

@@ -32,7 +32,6 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.taverna.server.localworker.remote.IllegalStateTransitionException;
 import org.taverna.server.localworker.remote.ImplementationException;

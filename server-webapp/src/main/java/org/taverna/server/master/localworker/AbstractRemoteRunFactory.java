@@ -17,6 +17,7 @@ import static java.util.UUID.randomUUID;
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
@@ -392,19 +393,24 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 * @throws JAXBException
 	 *             If serialization fails.
 	 */
-	protected String serializeWorkflow(Workflow workflow) throws JAXBException {
+	protected byte[] serializeWorkflow(Workflow workflow) throws JAXBException {
 		switch (workflow.getPreferredContentType()) {
 		case SCUFL2:
 			try {
 				// Wrap it up as t2flow
-				// TODO Convert to using scufl2 natively 
+				// FIXME Convert to using scufl2 natively along with the v3 workflow executor 
 				workflow = new Workflow(workflow.getT2flowWorkflow());
 			} catch (IOException e) {
 				throw new JAXBException("problem converting to wrapped t2flow",
 						e);
 			}
 		case T2FLOW:
-			return workflow.marshal();
+			try {
+				return workflow.marshal().getBytes("UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				// Should be unreachable
+				throw new RuntimeException("unexpected encoding problem", e);
+			}
 		default:
 			// Should be unreachable
 			throw new RuntimeException("unexpected content type of workflow");

@@ -90,7 +90,7 @@ public class LocalWorkerTest {
 		}
 
 		@Override
-		public void initWorker(String executeWorkflowCommand, String workflow,
+		public void initWorker(String executeWorkflowCommand, byte[] workflow,
 				File workingDir, File inputBaclava,
 				Map<String, File> inputFiles, Map<String, String> inputValues,
 				File outputBaclava, File cmdir, char[] cmpass,
@@ -98,7 +98,7 @@ public class LocalWorkerTest {
 				throws Exception {
 			events.add("init[");
 			events.add(executeWorkflowCommand);
-			events.add(workflow);
+			events.add(new String(workflow, "UTF-8"));
 			int dirLen = workingDir.getName().length();
 			events.add(Integer.toString(dirLen));
 			events.add(inputBaclava == null ? "<null>" : inputBaclava
@@ -140,8 +140,8 @@ public class LocalWorkerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		lw = new LocalWorker("XWC", "WF", DummyWorker.class, null,
-				randomUUID(), new HashMap<String, String>(),
+		lw = new LocalWorker("XWC", "WF".getBytes("UTF-8"), DummyWorker.class,
+				null, randomUUID(), new HashMap<String, String>(),
 				new ArrayList<String>());
 		events = new ArrayList<String>();
 		returnThisStatus = RemoteStatus.Operating;

@@ -55,11 +55,10 @@ import uk.org.taverna.scufl2.api.io.WriterException;
 @XmlRootElement(name = "workflow")
 @XmlType(name = "Workflow")
 public class Workflow implements Serializable, Externalizable {
-	/**
-	 * Literal document.
-	 */
+	/** Literal document, if present. */
 	@XmlAnyElement(lax = true)
 	private Element[] content;
+	/** SCUFL2 bundle, if present. */
 	@XmlTransient
 	private WorkflowBundle bundle;
 
@@ -126,9 +125,9 @@ public class Workflow implements Serializable, Externalizable {
 	 *             If anything goes wrong.
 	 */
 	public WorkflowBundle getScufl2Workflow() throws IOException {
-		if (bundle != null)
-			return bundle;
 		try {
+			if (bundle != null)
+				return bundle;
 			return io.readBundle(new ByteArrayInputStream(getAsT2Flow()),
 					T2FLOW);
 		} catch (IOException e) {
@@ -146,9 +145,9 @@ public class Workflow implements Serializable, Externalizable {
 	 *             If anything goes wrong.
 	 */
 	public Element getT2flowWorkflow() throws IOException {
-		if (content != null)
-			return content[0];
 		try {
+			if (content != null)
+				return content[0];
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			io.writeBundle(bundle, baos, T2FLOW);
 			Document doc;
@@ -175,6 +174,12 @@ public class Workflow implements Serializable, Externalizable {
 		}
 	}
 
+	/**
+	 * Convert from marshalled form.
+	 * 
+	 * @throws JAXBException
+	 *             If the conversion fails.
+	 */
 	public static Workflow unmarshal(String representation)
 			throws JAXBException {
 		StringReader sr = new StringReader(representation);

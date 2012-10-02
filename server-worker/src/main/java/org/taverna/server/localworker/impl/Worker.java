@@ -60,7 +60,7 @@ public interface Worker {
 	 * @throws Exception
 	 *             If any of quite a large number of things goes wrong.
 	 */
-	void initWorker(String executeWorkflowCommand, String workflow,
+	void initWorker(String executeWorkflowCommand, byte[] workflow,
 			File workingDir, File inputBaclavaFile,
 			Map<String, File> inputRealFiles, Map<String, String> inputValues,
 			File outputBaclavaFile, File contextDirectory,

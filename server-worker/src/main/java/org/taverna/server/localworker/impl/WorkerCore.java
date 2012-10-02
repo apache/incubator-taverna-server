@@ -218,7 +218,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	 *             If any of quite a large number of things goes wrong.
 	 */
 	@Override
-	public void initWorker(String executeWorkflowCommand, String workflow,
+	public void initWorker(String executeWorkflowCommand, byte[] workflow,
 			File workingDir, File inputBaclava, Map<String, File> inputFiles,
 			Map<String, String> inputValues, File outputBaclava,
 			File securityDir, char[] password, Map<String, String> environment,
@@ -316,11 +316,11 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 
 		// Add an argument holding the workflow
 		File tmp = createTempFile("taverna", ".t2flow");
-		Writer w = new OutputStreamWriter(new FileOutputStream(tmp), "UTF-8");
+		OutputStream os = new FileOutputStream(tmp);
 		try {
-			w.write(workflow);
+			os.write(workflow);
 		} finally {
-			w.close();
+			os.close();
 		}
 		tmp.deleteOnExit();
 		pb.command().add(tmp.getAbsolutePath());

@@ -431,7 +431,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	 *             If anything fails (communications error, etc.)
 	 */
 	private RemoteSingleRun getRealRun(@NonNull UsernamePrincipal creator,
-			@NonNull String username, @NonNull String wf, UUID id)
+			@NonNull String username, @NonNull byte[] wf, UUID id)
 			throws RemoteException {
 		String globaluser = "Unknown Person";
 		if (creator != null)
@@ -445,7 +445,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	@Override
 	protected RemoteSingleRun getRealRun(UsernamePrincipal creator,
 			Workflow workflow, UUID id) throws Exception {
-		String wf = serializeWorkflow(workflow);
+		byte[] wf = serializeWorkflow(workflow);
 		String username = mapper == null ? null : mapper
 				.getUsernameForPrincipal(creator);
 		if (username == null)

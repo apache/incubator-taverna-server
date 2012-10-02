@@ -20,9 +20,7 @@ import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.common.Status.Initialized;
 import static org.taverna.server.master.common.Uri.secure;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,7 +39,6 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.ws.WebServiceContext;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.cxf.annotations.WSDLDocumentation;
 import org.springframework.beans.factory.annotation.Required;

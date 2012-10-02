@@ -100,7 +100,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	/** What to use to run a workflow engine. */
 	private final String executeWorkflowCommand;
 	/** What workflow to run. */
-	private final String workflow;
+	private final byte[] workflow;
 	/** The remote access object for the working directory. */
 	private final DirectoryDelegate baseDir;
 	/** What inputs to pass as files. */
@@ -169,6 +169,18 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 
 	// ----------------------- METHODS -----------------------
 
+	static final class Instantiate implements TavernaRunManager.RunFactory {
+		@Override
+		public LocalWorker construct(String executeWorkflowCommand,
+				byte[] workflow, Class<? extends Worker> workerClass,
+				UsageRecordReceiver urReceiver, UUID id,
+				Map<String, String> seedEnvironment, List<String> javaParams)
+				throws RemoteException, ImplementationException {
+			return new LocalWorker(executeWorkflowCommand, workflow,
+					workerClass, urReceiver, id, seedEnvironment, javaParams);
+		}
+	}
+
 	/**
 	 * @param executeWorkflowCommand
 	 *            The script used to execute workflows.
@@ -192,7 +204,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	 * @throws ImplementationException
 	 *             If something goes wrong during local setup.
 	 */
-	protected LocalWorker(String executeWorkflowCommand, String workflow,
+	protected LocalWorker(String executeWorkflowCommand, byte[] workflow,
 			Class<? extends Worker> workerClass,
 			UsageRecordReceiver urReceiver, UUID id,
 			Map<String, String> seedEnvironment, List<String> javaParams)
