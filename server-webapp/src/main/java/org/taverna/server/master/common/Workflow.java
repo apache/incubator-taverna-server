@@ -7,6 +7,7 @@ package org.taverna.server.master.common;
 
 import static javax.xml.bind.Marshaller.JAXB_ENCODING;
 import static javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT;
+import static javax.xml.bind.annotation.XmlAccessType.NONE;
 import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.rest.handler.Scufl2DocumentHandler.SCUFL2;
 import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
@@ -30,6 +31,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -54,6 +56,7 @@ import uk.org.taverna.scufl2.api.io.WriterException;
  */
 @XmlRootElement(name = "workflow")
 @XmlType(name = "Workflow")
+@XmlAccessorType(NONE)
 public class Workflow implements Serializable, Externalizable {
 	/** Literal document, if present. */
 	@XmlAnyElement(lax = true)
@@ -135,6 +138,12 @@ public class Workflow implements Serializable, Externalizable {
 		} catch (Exception e) {
 			throw new IOException("problem when converting to SCUFL2", e);
 		}
+	}
+
+	public byte[] getScufl2Bytes() throws IOException, WriterException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		io.writeBundle(getScufl2Workflow(), baos, SCUFL2);
+		return baos.toByteArray();
 	}
 
 	/**

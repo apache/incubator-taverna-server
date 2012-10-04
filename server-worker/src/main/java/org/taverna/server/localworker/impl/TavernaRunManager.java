@@ -14,10 +14,7 @@ import static java.lang.System.setSecurityManager;
 import static java.rmi.registry.LocateRegistry.getRegistry;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
+import java.net.URI;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
@@ -28,21 +25,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.ws.Holder;
-
 import org.taverna.server.localworker.remote.ImplementationException;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.localworker.server.UsageRecordReceiver;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
+
+import uk.org.taverna.scufl2.api.io.WorkflowBundleIO;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -57,31 +45,17 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 @SuppressWarnings({ "SE_BAD_FIELD", "SE_NO_SERIALVERSIONID" })
 public class TavernaRunManager extends UnicastRemoteObject implements
 		RemoteRunFactory {
-	DocumentBuilderFactory dbf;
-	TransformerFactory tf;
 	String command;
 	RunFactory cons;
 	Class<? extends Worker> workerClass;
+	Map<String, String> seedEnvironment = new HashMap<String, String>();
+	List<String> javaInitParams = new ArrayList<String>();
+	private WorkflowBundleIO io;
 	// Hacks!
 	public static String interactionHost;
 	public static String interactionPort;
 	public static String interactionWebdavPath;
 	public static String interactionFeedPath;
-	Map<String, String> seedEnvironment = new HashMap<String, String>();
-	List<String> javaInitParams = new ArrayList<String>();
-
-	/**
-	 * How to get the actual workflow document from the XML document that it is
-	 * contained in.
-	 * 
-	 * @param containerDocument
-	 *            The document sent from the web interface.
-	 * @return The element describing the workflow, as expected by the Taverna
-	 *         command line executor.
-	 */
-	protected Element unwrapWorkflow(Document containerDocument) {
-		return (Element) containerDocument.getDocumentElement().getFirstChild();
-	}
 
 	private static final String usage = "java -jar server.worker.jar workflowExecScript ?-Ekey=val...? ?-Jconfig? UUID";
 
@@ -105,48 +79,9 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	public TavernaRunManager(String command, RunFactory constructor,
 			Class<? extends Worker> workerClass) throws RemoteException {
 		this.command = command;
-		this.dbf = DocumentBuilderFactory.newInstance();
-		this.dbf.setNamespaceAware(true);
-		this.dbf.setCoalescing(true);
-		this.tf = TransformerFactory.newInstance();
 		this.cons = constructor;
 		this.workerClass = workerClass;
-	}
-
-	/**
-	 * Do the unwrapping of a workflow to extract the contents of the file to
-	 * feed into the Taverna core.
-	 * 
-	 * @param workflow
-	 *            The string containing the workflow to extract.
-	 * @param wfid
-	 *            A place to store the extracted workflow ID.
-	 * @return The extracted workflow description.
-	 * @throws RemoteException
-	 *             If anything goes wrong.
-	 */
-	@SuppressWarnings("REC_CATCH_EXCEPTION")
-	private byte[] unwrapWorkflow(byte[] workflow, Holder<String> wfid)
-			throws RemoteException {
-		try {
-			Reader r = new InputStreamReader(
-					new ByteArrayInputStream(workflow), "UTF-8");
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			Document doc = dbf.newDocumentBuilder().parse(new InputSource(r));
-			// Try to extract the t2flow's ID.
-			NodeList nl = doc.getElementsByTagNameNS(
-					"http://taverna.sf.net/2008/xml/t2flow", "dataflow");
-			if (nl.getLength() > 0) {
-				Node n = nl.item(0).getAttributes().getNamedItem("id");
-				if (n != null)
-					wfid.value = n.getTextContent();
-			}
-			tf.newTransformer().transform(new DOMSource(unwrapWorkflow(doc)),
-					new StreamResult(new OutputStreamWriter(baos, "UTF-8")));
-			return baos.toByteArray();
-		} catch (Exception e) {
-			throw new RemoteException("failed to extract contained workflow", e);
-		}
+		this.io = new WorkflowBundleIO();
 	}
 
 	@Override
@@ -155,9 +90,9 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 		if (creator == null)
 			throw new RemoteException("no creator");
 		try {
-			Holder<String> wfid = new Holder<String>("???");
-			workflow = unwrapWorkflow(workflow, wfid);
-			out.println("Creating run from workflow <" + wfid.value + "> for <"
+			URI wfid = io.readBundle(new ByteArrayInputStream(workflow), null)
+					.getMainWorkflow().getWorkflowIdentifier();
+			out.println("Creating run from workflow <" + wfid + "> for <"
 					+ creator + ">");
 			return cons.construct(command, workflow, workerClass, urReceiver,
 					id, seedEnvironment, javaInitParams);

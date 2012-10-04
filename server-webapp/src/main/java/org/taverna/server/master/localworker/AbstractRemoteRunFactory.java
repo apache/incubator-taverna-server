@@ -17,7 +17,6 @@ import static java.util.UUID.randomUUID;
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
@@ -55,6 +54,8 @@ import org.taverna.server.master.interfaces.SecurityContextFactory;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.usage.UsageRecordRecorder;
 import org.taverna.server.master.utils.UsernamePrincipal;
+
+import uk.org.taverna.scufl2.api.io.WriterException;
 
 /**
  * Bridge to remote runs via RMI.
@@ -394,26 +395,12 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 *             If serialization fails.
 	 */
 	protected byte[] serializeWorkflow(Workflow workflow) throws JAXBException {
-		switch (workflow.getPreferredContentType()) {
-		case SCUFL2:
-			try {
-				// Wrap it up as t2flow
-				// FIXME Convert to using scufl2 natively along with the v3 workflow executor 
-				workflow = new Workflow(workflow.getT2flowWorkflow());
-			} catch (IOException e) {
-				throw new JAXBException("problem converting to wrapped t2flow",
-						e);
-			}
-		case T2FLOW:
-			try {
-				return workflow.marshal().getBytes("UTF-8");
-			} catch (UnsupportedEncodingException e) {
-				// Should be unreachable
-				throw new RuntimeException("unexpected encoding problem", e);
-			}
-		default:
-			// Should be unreachable
-			throw new RuntimeException("unexpected content type of workflow");
+		try {
+			return workflow.getScufl2Bytes();
+		} catch (IOException e) {
+			throw new JAXBException("problem converting to scufl2", e);
+		} catch (WriterException e) {
+			throw new JAXBException("problem converting to scufl2", e);
 		}
 	}
 
