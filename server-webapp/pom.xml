@@ -22,7 +22,7 @@
 		<version.spring-security>3.0.7.RELEASE</version.spring-security>
 		<version.asm>3.3.1</version.asm>
 		<version.smack>3.2.1</version.smack>
-		<version.commandline>3.0.0-SNAPSHOT</version.commandline>
+		<version.commandline>3.0.0</version.commandline>
 		<version.jdoapi>3.0.1</version.jdoapi>
 		<forker.module>server-unix-forker</forker.module>
 		<util.dir>${project.build.directory}/${project.build.finalName}/WEB-INF/classes/util</util.dir>
@@ -546,6 +546,7 @@
 									<groupId>net.sf.taverna.t2</groupId>
 									<artifactId>taverna-commandline</artifactId>
 									<version>${version.commandline}</version>
+									<classifier>bin</classifier>
 									<type>zip</type>
 									<outputDirectory>${util.dir}</outputDirectory>
 								</artifactItem>

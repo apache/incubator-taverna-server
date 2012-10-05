@@ -40,10 +40,12 @@ javabin=java
 if test -x "$JAVA_HOME/bin/java"; then
     javabin="$JAVA_HOME/bin/java"
 fi
-RAVEN_APPHOME_PROP= 
+######### FIXME RAVEN_APPHOME
+APPHOME_PROP= 
 if test x != "x$RAVEN_APPHOME"; then
-    RAVEN_APPHOME_PROP="-Draven.launcher.app.home=$RAVEN_APPHOME"
+    APPHOME_PROP="-Draven.launcher.app.home=$RAVEN_APPHOME"
 fi
+######### FIXME RAVEN_APPHOME
 RUNID_PROP= 
 if test x != "x$TAVERNA_RUN_ID"; then
     RUNID_PROP="-Dtaverna.runid=$TAVERNA_RUN_ID"
@@ -57,12 +59,9 @@ if test x != "x$INTERACTION_HOST"; then
 fi
 
 exec "$javabin" $memlimit $permsize \
-  "-Draven.profile=file://$taverna_home/conf/current-profile.xml" \
-  "-Dtaverna.startup=$taverna_home" $RAVEN_APPHOME_PROP $RUNID_PROP \
-  $INTERACTION_PROPS $pre \
-  -Djava.system.class.loader=net.sf.taverna.raven.prelauncher.BootstrapClassLoader \
-  -Draven.launcher.app.main=net.sf.taverna.t2.commandline.CommandLineLauncher \
-  -Draven.launcher.show_splashscreen=false \
-  -Djava.awt.headless=true \
-  -jar "$taverna_home/lib/"prelauncher-*.jar \
-  "$@"
+  "-Dlog4j.configuration=file://$taverna_home/conf/log4j.properties " \
+  "-Djava.util.logging.config.file=$taverna_home/conf/logging.properties " \
+  "-Dtaverna.app.startup=$taverna_home" \
+  $APPHOME_PROP $RUNID_PROP $INTERACTION_PROPS $pre \
+  -jar "$taverna_home/lib/taverna-command-line-0.1.1.jar" \
+  ${1+"$@"}

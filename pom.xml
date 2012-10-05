@@ -146,6 +146,15 @@
 			<releases />
 		</repository>
 		<repository>
+			<id>mygrid-build-repo</id>
+			<name>myGrid Build Repository</name>
+			<url>http://build.mygrid.org.uk/maven/repository</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases />
+		</repository>
+		<repository>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
