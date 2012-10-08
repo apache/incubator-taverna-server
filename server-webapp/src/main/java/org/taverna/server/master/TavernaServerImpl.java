@@ -81,6 +81,7 @@ import org.taverna.server.master.rest.TavernaServerRunREST;
 import org.taverna.server.master.soap.FileContents;
 import org.taverna.server.master.soap.PermissionList;
 import org.taverna.server.master.soap.TavernaServerSOAP;
+import org.taverna.server.master.soap.WrappedWorkflow;
 import org.taverna.server.master.soap.ZippedDirectory;
 import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
@@ -275,6 +276,20 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	@Override
 	@CallCounted
+	public RunReference submitWorkflowMTOM(WrappedWorkflow wrapper)
+			throws NoUpdateException {
+		Workflow wf;
+		try {
+			wf = wrapper.getWorkflow();
+		} catch (IOException e) {
+			throw new NoUpdateException(e.getMessage(), e);
+		}
+		String name = support.buildWorkflow(wf);
+		return new RunReference(name, getRunUriBuilder());
+	}
+
+	@Override
+	@CallCounted
 	public Workflow[] getAllowedWorkflows() {
 		List<Workflow> workflows = support.getPermittedWorkflows();
 		return workflows.toArray(new Workflow[workflows.size()]);
@@ -306,6 +321,14 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	@CallCounted
 	public Workflow getRunWorkflow(String runName) throws UnknownRunException {
 		return support.getRun(runName).getWorkflow();
+	}
+
+	@Override
+	@CallCounted
+	public WrappedWorkflow getRunWorkflowMTOM(String runName) throws UnknownRunException {
+		WrappedWorkflow ww = new WrappedWorkflow();
+		ww.setWorkflow(support.getRun(runName).getWorkflow());
+		return ww;
 	}
 
 	@Override

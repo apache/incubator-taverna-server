@@ -64,6 +64,20 @@ public interface TavernaServerSOAP {
 			throws NoUpdateException, NoCreateException;
 
 	/**
+	 * Make a run for a particular workflow.
+	 * 
+	 * @param workflow
+	 *            The workflow to instantiate.
+	 * @return Annotated handle for created run.
+	 * @throws NoUpdateException
+	 * @throws NoCreateException
+	 */
+	@WebResult(name = "Run")
+	@WSDLDocumentation("Make a run for a particular workflow.")
+	RunReference submitWorkflowMTOM(@WebParam(name = "workflow") WrappedWorkflow workflow)
+			throws NoUpdateException;
+
+	/**
 	 * Get the list of existing runs owned by the user.
 	 * 
 	 * @return Annotated handle list.
@@ -147,6 +161,21 @@ public interface TavernaServerSOAP {
 	@WebResult(name = "CreationWorkflow")
 	@WSDLDocumentation("Get the workflow document used to create the given run.")
 	Workflow getRunWorkflow(@WebParam(name = "runName") String runName)
+			throws UnknownRunException;
+
+	/**
+	 * Get the workflow document used to create the given run.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @return The workflow document.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 */
+	@WebResult(name = "CreationWorkflow")
+	@WSDLDocumentation("Get the workflow document used to create the given run.")
+	WrappedWorkflow getRunWorkflowMTOM(@WebParam(name = "runName") String runName)
 			throws UnknownRunException;
 
 	/**
