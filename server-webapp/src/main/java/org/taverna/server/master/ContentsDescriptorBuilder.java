@@ -8,29 +8,20 @@ package org.taverna.server.master;
 import static eu.medsea.util.MimeUtil.getMimeType;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static javax.ws.rs.core.UriBuilder.fromUri;
-import static javax.xml.xpath.XPathConstants.NODE;
-import static javax.xml.xpath.XPathConstants.NODESET;
 import static org.taverna.server.master.TavernaServerSupport.log;
 import static org.taverna.server.master.common.Uri.secure;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.util.xml.SimpleNamespaceContext;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.interfaces.Directory;
@@ -48,8 +39,11 @@ import org.taverna.server.port_description.LeafValue;
 import org.taverna.server.port_description.ListValue;
 import org.taverna.server.port_description.OutputDescription;
 import org.taverna.server.port_description.OutputDescription.OutputPort;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+
+import uk.org.taverna.scufl2.api.container.WorkflowBundle;
+import uk.org.taverna.scufl2.api.core.Workflow;
+import uk.org.taverna.scufl2.api.port.InputWorkflowPort;
+import uk.org.taverna.scufl2.api.port.OutputWorkflowPort;
 
 /**
  * A class that is used to build descriptions of the contents of a workflow
@@ -58,67 +52,8 @@ import org.w3c.dom.NodeList;
  * @author Donal Fellows
  */
 public class ContentsDescriptorBuilder {
-	/** Namespace for use when pulling apart a .t2flow document. */
-	private static final String T2FLOW_NS = "http://taverna.sf.net/2008/xml/t2flow";
-	/** Prefix for t2flow namespace. */
-	private static final String T2FLOW_PFX = "t2";
-
 	private FilenameUtils fileUtils;
 	private UriBuilderFactory uriBuilderFactory;
-	private XPathExpression inputPorts;
-	private XPathExpression outputPorts;
-	private XPathExpression portName;
-	private XPathExpression portDepth;
-	private XPathExpression dataflow;
-
-	public ContentsDescriptorBuilder() throws XPathExpressionException {
-		XPath xp = XPathFactory.newInstance().newXPath();
-		SimpleNamespaceContext ctxt = new SimpleNamespaceContext();
-		ctxt.bindNamespaceUri(T2FLOW_PFX, T2FLOW_NS);
-		xp.setNamespaceContext(ctxt);
-
-		dataflow = xp.compile("//t2:dataflow[1]");
-		inputPorts = xp.compile("./t2:inputPorts/t2:port");
-		outputPorts = xp.compile("./t2:outputPorts/t2:port");
-		portName = xp.compile("./t2:name/text()");
-		portDepth = xp.compile("./t2:depth/text()");
-	}
-
-	private Element dataflow(Element root) throws XPathExpressionException {
-		return (Element) dataflow.evaluate(root, NODE);
-	}
-
-	private List<Element> inputPorts(Element dataflow)
-			throws XPathExpressionException {
-		List<Element> result = new ArrayList<Element>();
-		if (dataflow == null)
-			return result;
-		NodeList nl = (NodeList) inputPorts.evaluate(dataflow, NODESET);
-		// Wrap as a list so we can iterate over it <sigh>
-		for (int i = 0; i < nl.getLength(); i++)
-			result.add((Element) nl.item(i));
-		return result;
-	}
-
-	private List<Element> outputPorts(Element dataflow)
-			throws XPathExpressionException {
-		List<Element> result = new ArrayList<Element>();
-		if (dataflow == null)
-			return result;
-		NodeList nl = (NodeList) outputPorts.evaluate(dataflow, NODESET);
-		// Wrap as a list so we can iterate over it <sigh>
-		for (int i = 0; i < nl.getLength(); i++)
-			result.add((Element) nl.item(i));
-		return result;
-	}
-
-	private String portName(Element port) throws XPathExpressionException {
-		return portName.evaluate(port);
-	}
-
-	private String portDepth(Element port) throws XPathExpressionException {
-		return portDepth.evaluate(port);
-	}
 
 	@Required
 	public void setUriBuilderFactory(UriBuilderFactory uriBuilderFactory) {
@@ -132,43 +67,13 @@ public class ContentsDescriptorBuilder {
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-	private Element fillInFromWorkflow(TavernaRun run, UriBuilder ub,
-			AbstractPortDescription portDesc) throws XPathExpressionException, IOException {
-		Element elem = run.getWorkflow().getT2flowWorkflow();
-		portDesc.fillInBaseData(elem.getAttribute("id"), run.getId(),
-				ub.build());
-		return dataflow(elem);
-	}
-
-	/**
-	 * Build the contents description.
-	 * 
-	 * @param run
-	 *            The workflow run this is talking about.
-	 * @param dataflow
-	 *            The dataflow element of the T2flow document.
-	 * @param ub
-	 *            How to build URIs.
-	 * @param descriptor
-	 *            The descriptor to modify.
-	 * @param expected
-	 *            The list of outputs that are <i>expected</i> to be produced;
-	 *            they might not actually produce anything though.
-	 * @throws NoDirectoryEntryException
-	 * @throws FilesystemAccessException
-	 * @throws XPathExpressionException
-	 */
-	private void constructPorts(TavernaRun run, Element dataflow,
-			UriBuilder ub, OutputDescription descriptor)
-			throws FilesystemAccessException, NoDirectoryEntryException,
-			XPathExpressionException {
-		Collection<DirectoryEntry> outs = fileUtils.getDirectory(run, "out")
-				.getContents();
-		for (Element output : outputPorts(dataflow)) {
-			OutputPort p = descriptor.addPort(portName(output));
-			p.output = constructValue(outs, ub, p.name);
-			p.depth = computeDepth(p.output);
-		}
+	private Workflow fillInFromWorkflow(TavernaRun run, UriBuilder ub,
+			AbstractPortDescription portDesc) throws IOException {
+		WorkflowBundle bundle = run.getWorkflow().getScufl2Workflow();
+		bundle.getMainWorkflow().getInputPorts();
+		portDesc.fillInBaseData(bundle.getMainWorkflow()
+				.getWorkflowIdentifier().toString(), run.getId(), ub.build());
+		return bundle.getMainWorkflow();
 	}
 
 	/**
@@ -326,14 +231,20 @@ public class ContentsDescriptorBuilder {
 		OutputDescription descriptor = new OutputDescription();
 		try {
 			UriBuilder ub = getRunUriBuilder(run, ui);
-			Element dataflow = fillInFromWorkflow(run, ub, descriptor);
-			if (dataflow == null || run.getOutputBaclavaFile() != null)
-				return descriptor;
-			constructPorts(run, dataflow, ub.path("wd/{path}"), descriptor);
-		} catch (XPathExpressionException e) {
-			log.info("failure in XPath evaluation", e);
+			Workflow dataflow = fillInFromWorkflow(run, ub, descriptor);
+			Collection<DirectoryEntry> outs = null;
+			ub = ub.path("wd/{path}");
+			for (OutputWorkflowPort output : dataflow.getOutputPorts()) {
+				OutputPort p = descriptor.addPort(output.getName());
+				if (run.getOutputBaclavaFile() == null) {
+					if (outs == null)
+						outs = fileUtils.getDirectory(run, "out").getContents();
+					p.output = constructValue(outs, ub, p.name);
+					p.depth = computeDepth(p.output);
+				}
+			}
 		} catch (IOException e) {
-			log.info("failure in conversion to .t2flow", e);
+			log.info("failure in conversion to .scufl2", e);
 		}
 		return descriptor;
 	}
@@ -359,21 +270,19 @@ public class ContentsDescriptorBuilder {
 		InputDescription desc = new InputDescription();
 		try {
 			UriBuilder ub = getRunUriBuilder(run, ui);
-			Element dataflow = fillInFromWorkflow(run, ub, desc);
+			Workflow workflow = fillInFromWorkflow(run, ub, desc);
 			ub = ub.path("input/{name}");
-			for (Element port : inputPorts(dataflow)) {
-				InputPort in = desc.addPort(portName(port));
+			for (InputWorkflowPort port : workflow.getInputPorts()) {
+				InputPort in = desc.addPort(port.getName());
 				in.href = ub.build(in.name);
 				try {
-					in.depth = Integer.valueOf(portDepth(port));
+					in.depth = port.getDepth();
 				} catch (NumberFormatException ex) {
 					in.depth = null;
 				}
 			}
-		} catch (XPathExpressionException e) {
-			log.info("failure in XPath evaluation", e);
 		} catch (IOException e) {
-			log.info("failure in conversion to .t2flow", e);
+			log.info("failure in conversion to .scufl2", e);
 		}
 		return desc;
 	}

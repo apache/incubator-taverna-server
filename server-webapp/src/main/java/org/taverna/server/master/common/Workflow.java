@@ -60,10 +60,13 @@ import uk.org.taverna.scufl2.api.io.WriterException;
 public class Workflow implements Serializable, Externalizable {
 	/** Literal document, if present. */
 	@XmlAnyElement(lax = true)
-	private Element[] content;
+	private Element content;
 	/** SCUFL2 bundle, if present. */
 	@XmlTransient
 	private WorkflowBundle bundle;
+	/** Which came first, the bundle or the t2flow document. */
+	@XmlTransient
+	private boolean isBundleFirst;
 
 	private static Marshaller marshaller;
 	private static Unmarshaller unmarshaller;
@@ -102,19 +105,20 @@ public class Workflow implements Serializable, Externalizable {
 	}
 
 	public Workflow(Element element) {
-		content = new Element[1];
-		content[0] = element;
+		this.content = element;
+		this.isBundleFirst = false;
 	}
 
 	public Workflow(WorkflowBundle bundle) {
 		this.bundle = bundle;
+		this.isBundleFirst = true;
 	}
 
 	/**
 	 * What content type would this workflow "prefer" to be?
 	 */
 	public ContentType getPreferredContentType() {
-		if (bundle != null)
+		if (isBundleFirst)
 			return ContentType.SCUFL2;
 		else
 			return ContentType.T2FLOW;
@@ -129,10 +133,10 @@ public class Workflow implements Serializable, Externalizable {
 	 */
 	public WorkflowBundle getScufl2Workflow() throws IOException {
 		try {
-			if (bundle != null)
-				return bundle;
-			return io.readBundle(new ByteArrayInputStream(getAsT2Flow()),
-					T2FLOW);
+			if (bundle == null)
+				bundle = io.readBundle(new ByteArrayInputStream(getAsT2Flow()),
+						T2FLOW);
+			return bundle;
 		} catch (IOException e) {
 			throw e;
 		} catch (Exception e) {
@@ -156,7 +160,7 @@ public class Workflow implements Serializable, Externalizable {
 	public Element getT2flowWorkflow() throws IOException {
 		try {
 			if (content != null)
-				return content[0];
+				return content;
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			io.writeBundle(bundle, baos, T2FLOW);
 			Document doc;
@@ -208,24 +212,18 @@ public class Workflow implements Serializable, Externalizable {
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
 		try {
-			byte[] bytes;
-			int len = in.readInt();
-			if (len > 0) {
-				bytes = new byte[len];
-				in.readFully(bytes);
-				Reader r = new InputStreamReader(
-						new ByteArrayInputStream(bytes), ENCODING);
+			ByteArrayInputStream bytes = readbytes(in);
+			if (bytes != null) {
+				Reader r = new InputStreamReader(bytes, ENCODING);
 				Workflow w = (Workflow) unmarshaller.unmarshal(r);
 				r.close();
 				this.content = w.content;
 			}
-			len = in.readInt();
-			if (len > 0) {
-				bytes = new byte[len];
-				in.readFully(bytes);
-				this.bundle = io.readBundle(new ByteArrayInputStream(bytes),
-						SCUFL2);
+			bytes = readbytes(in);
+			if (bytes != null) {
+				this.bundle = io.readBundle(bytes, SCUFL2);
 			}
+			this.isBundleFirst = in.readBoolean();
 			return;
 		} catch (JAXBException e) {
 			throw new IOException("failed to unmarshal", e);
@@ -253,26 +251,38 @@ public class Workflow implements Serializable, Externalizable {
 
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
-		try {
-			byte[] data;
-			if (content != null)
-				data = getAsT2Flow();
-			else
-				data = new byte[0];
-			out.writeInt(data.length);
-			if (data.length > 0)
-				out.write(data);
-			if (bundle != null)
-				data = getAsScufl2();
-			else
-				data = new byte[0];
-			out.writeInt(data.length);
-			if (data.length > 0)
-				out.write(data);
-		} catch (JAXBException e) {
-			throw new IOException("failed to marshal", e);
-		} catch (WriterException e) {
-			throw new IOException("failed to marshal", e);
+		if (content != null)
+			try {
+				writebytes(out, getAsT2Flow());
+			} catch (JAXBException e) {
+				throw new IOException("failed to marshal t2flow", e);
+			}
+		else
+			writebytes(out, null);
+		if (bundle != null)
+			try {
+				writebytes(out, getAsScufl2());
+			} catch (WriterException e) {
+				throw new IOException("failed to marshal scufl2", e);
+			}
+		else
+			writebytes(out, null);
+		out.writeBoolean(isBundleFirst);
+	}
+
+	private ByteArrayInputStream readbytes(ObjectInput in) throws IOException {
+		int len = in.readInt();
+		if (len > 0) {
+			byte[] bytes = new byte[len];
+			in.readFully(bytes);
+			return new ByteArrayInputStream(bytes);
 		}
+		return null;
+	}
+
+	private void writebytes(ObjectOutput out, byte[] data) throws IOException {
+		out.writeInt(data == null ? 0 : data.length);
+		if (data != null && data.length > 0)
+			out.write(data);
 	}
 }
