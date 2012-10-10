@@ -19,8 +19,8 @@
 	<!-- Having to edit anything below here is probably indicative of a bug. -->
 	<parent>
 		<groupId>net.sf.taverna</groupId>
-		<artifactId>parent</artifactId>
-		<version>0.2.2011-02-17</version>
+		<artifactId>taverna-parent</artifactId>
+		<version>3.0.1-SNAPSHOT</version>
 	</parent>
 	<prerequisites>
 		<maven>2.2</maven>
@@ -139,18 +139,18 @@
 		<repository>
 			<id>mygrid-repository</id>
 			<name>myGrid Respository</name>
-			<url>http://www.mygrid.org.uk/maven/repository</url>
+			<url>http://build.mygrid.org.uk/maven/repository</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
 			<releases />
 		</repository>
 		<repository>
-			<id>mygrid-build-repo</id>
-			<name>myGrid Build Repository</name>
-			<url>http://build.mygrid.org.uk/maven/repository</url>
+			<id>mygrid-snapshot-repository</id>
+			<name>myGrid Snapshot Repository</name>
+			<url>http://build.mygrid.org.uk/maven/snapshot-repository</url>
 			<snapshots>
-				<enabled>false</enabled>
+				<enabled>true</enabled>
 			</snapshots>
 			<releases />
 		</repository>

@@ -40,12 +40,10 @@ javabin=java
 if test -x "$JAVA_HOME/bin/java"; then
     javabin="$JAVA_HOME/bin/java"
 fi
-######### FIXME RAVEN_APPHOME
 APPHOME_PROP= 
-if test x != "x$RAVEN_APPHOME"; then
-    APPHOME_PROP="-Draven.launcher.app.home=$RAVEN_APPHOME"
+if test x != "x$TAVERNA_APPHOME"; then
+    APPHOME_PROP="-Dtaverna.app.home=$TAVERNA_APPHOME"
 fi
-######### FIXME RAVEN_APPHOME
 RUNID_PROP= 
 if test x != "x$TAVERNA_RUN_ID"; then
     RUNID_PROP="-Dtaverna.runid=$TAVERNA_RUN_ID"

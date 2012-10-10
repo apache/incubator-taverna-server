@@ -339,7 +339,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		env.put("PATH", new File(System.getProperty("java.home"), "bin")
 				+ pathSeparator + env.get("PATH"));
 		// Patch the environment to deal with TAVSERV-189
-		env.put("RAVEN_APPHOME", workingDir.getCanonicalPath());
+		env.put("TAVERNA_APPHOME", workingDir.getCanonicalPath());
 		// Patch the environment to deal with TAVSERV-224
 		env.put("TAVERNA_RUN_ID", token);
 		if (interactionHost != null) {

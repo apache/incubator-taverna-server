@@ -415,9 +415,6 @@
 					<groupId>org.datanucleus</groupId>
 					<artifactId>maven-datanucleus-plugin</artifactId>
 					<version>3.0.1</version>
-					<configuration>
-						<jdkLogConfiguration>file:${project.basedir}/src/build/resources/datanucleus-log.properties</jdkLogConfiguration>
-					</configuration>
 					<dependencies>
 						<!-- Sucks that I have to say these explicitly -->
 						<dependency>
