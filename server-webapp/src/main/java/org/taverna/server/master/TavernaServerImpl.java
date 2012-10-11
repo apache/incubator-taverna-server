@@ -30,6 +30,7 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
+import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
@@ -47,6 +48,7 @@ import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
 import org.taverna.server.master.common.Permission;
+import org.taverna.server.master.common.ProfileList;
 import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Trust;
@@ -325,10 +327,20 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	@Override
 	@CallCounted
-	public WrappedWorkflow getRunWorkflowMTOM(String runName) throws UnknownRunException {
+	public WrappedWorkflow getRunWorkflowMTOM(String runName)
+			throws UnknownRunException {
 		WrappedWorkflow ww = new WrappedWorkflow();
 		ww.setWorkflow(support.getRun(runName).getWorkflow());
 		return ww;
+	}
+
+	@Override
+	@CallCounted
+	public ProfileList getRunWorkflowProfiles(
+			@WebParam(name = "runName") String runName)
+			throws UnknownRunException {
+		return support.getProfileDescriptor(support.getRun(runName)
+				.getWorkflow());
 	}
 
 	@Override

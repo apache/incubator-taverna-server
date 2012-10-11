@@ -35,6 +35,7 @@ import javax.xml.bind.annotation.XmlValue;
 import org.apache.cxf.jaxrs.model.wadl.Description;
 import org.joda.time.format.DateTimeFormatter;
 import org.taverna.server.master.common.Namespaces;
+import org.taverna.server.master.common.ProfileList;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.common.VersionedElement;
@@ -96,6 +97,32 @@ public interface TavernaServerRunREST {
 	@Description("Gives the workflow document used to create the workflow run.")
 	@NonNull
 	public Workflow getWorkflow();
+
+	/**
+	 * Produces the name of the workflow's main profile.
+	 * 
+	 * @return The main profile name, or the empty string if there is no such
+	 *         profile.
+	 */
+	@GET
+	@Path("profile")
+	@Produces("text/plain")
+	@Description("Gives the name of the workflow's main profile, or the empty string if none is defined.")
+	@NonNull
+	String getMainProfileName();
+
+	/**
+	 * Get a description of the profiles supported by the workflow document used
+	 * to create this run.
+	 * 
+	 * @return A description of the supported profiles.
+	 */
+	@GET
+	@Path("profile")
+	@Produces({ "application/xml", "application/json" })
+	@Description("Describes what profiles exist on the workflow.")
+	@NonNull
+	ProfileList getProfiles();
 
 	/**
 	 * Returns a resource that represents the workflow run's security
@@ -420,7 +447,8 @@ public interface TavernaServerRunREST {
 			 * @param parts
 			 *            Anything required to fill out the path.
 			 */
-			ListenerList(TavernaRun run, UriInfo ui, String path, String... parts) {
+			ListenerList(TavernaRun run, UriInfo ui, String path,
+					String... parts) {
 				this(run, secure(fromUri(new Uri(ui, path, parts).ref)));
 			}
 		}

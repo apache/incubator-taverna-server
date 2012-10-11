@@ -21,6 +21,7 @@ import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
 import org.taverna.server.master.common.Permission;
+import org.taverna.server.master.common.ProfileList;
 import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Trust;
@@ -74,7 +75,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "Run")
 	@WSDLDocumentation("Make a run for a particular workflow.")
-	RunReference submitWorkflowMTOM(@WebParam(name = "workflow") WrappedWorkflow workflow)
+	RunReference submitWorkflowMTOM(
+			@WebParam(name = "workflow") WrappedWorkflow workflow)
 			throws NoUpdateException;
 
 	/**
@@ -175,7 +177,25 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "CreationWorkflow")
 	@WSDLDocumentation("Get the workflow document used to create the given run.")
-	WrappedWorkflow getRunWorkflowMTOM(@WebParam(name = "runName") String runName)
+	WrappedWorkflow getRunWorkflowMTOM(
+			@WebParam(name = "runName") String runName)
+			throws UnknownRunException;
+
+	/**
+	 * Get a description of the profiles supported by the workflow document used
+	 * to create the given run.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @return A description of the supported profiles.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 */
+	@WebResult(name = "Profiles")
+	@WSDLDocumentation("Get a description of the profiles supported by the workflow document used to create the given run.")
+	ProfileList getRunWorkflowProfiles(
+			@WebParam(name = "runName") String runName)
 			throws UnknownRunException;
 
 	/**

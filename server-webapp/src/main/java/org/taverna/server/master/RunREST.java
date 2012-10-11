@@ -19,6 +19,7 @@ import javax.ws.rs.core.UriInfo;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.TavernaServerImpl.SupportAware;
+import org.taverna.server.master.common.ProfileList;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadStateChangeException;
@@ -138,6 +139,19 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	@CallCounted
 	public Workflow getWorkflow() {
 		return run.getWorkflow();
+	}
+
+	@Override
+	@CallCounted
+	public String getMainProfileName() {
+		String name = run.getWorkflow().getMainProfileName();
+		return (name == null ? "" : name);
+	}
+
+	@Override
+	@CallCounted
+	public ProfileList getProfiles() {
+		return support.getProfileDescriptor(run.getWorkflow());
 	}
 
 	@Override

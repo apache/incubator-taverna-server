@@ -26,6 +26,7 @@ import org.taverna.server.master.common.Credential.Password;
 import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
 import org.taverna.server.master.common.Permission;
+import org.taverna.server.master.common.ProfileList;
 import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Trust;
@@ -242,6 +243,11 @@ public class JaxbSanityTest {
 	}
 
 	@Test
+	public void testJAXBForProfileList() throws Exception {
+		testJAXB(ProfileList.class);
+	}
+
+	@Test
 	public void testJAXBForEverythingREST() throws Exception {
 		testJAXB(DirEntryReference.class, InputDescription.class,
 				RunReference.class, Workflow.class, Status.class,
@@ -257,7 +263,8 @@ public class JaxbSanityTest {
 				TavernaServerSecurityREST.TrustList.class, Permission.class,
 				TavernaServerSecurityREST.Descriptor.class,
 				TavernaServerSecurityREST.PermissionDescription.class,
-				TavernaServerSecurityREST.PermissionsDescription.class);
+				TavernaServerSecurityREST.PermissionsDescription.class,
+				ProfileList.class);
 	}
 
 	@Test

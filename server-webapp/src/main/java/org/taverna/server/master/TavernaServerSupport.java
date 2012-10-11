@@ -35,6 +35,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.taverna.server.master.common.Permission;
+import org.taverna.server.master.common.ProfileList;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoCreateException;
@@ -54,6 +55,8 @@ import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
 import org.taverna.server.master.utils.InvocationCounter;
 import org.taverna.server.master.utils.UsernamePrincipal;
+
+import uk.org.taverna.scufl2.api.profiles.Profile;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -698,5 +701,26 @@ public class TavernaServerSupport {
 		} catch (IOException exn) {
 			throw new FilesystemAccessException("failed to transfer bytes", exn);
 		}
+	}
+
+	/**
+	 * Build a description of the profiles supported by a workflow. Note that we
+	 * expect the set of profiles to be fairly small.
+	 * 
+	 * @param workflow
+	 *            The workflow to describe the profiles of.
+	 * @return The descriptor (which might be empty).
+	 */
+	public ProfileList getProfileDescriptor(Workflow workflow) {
+		ProfileList result = new ProfileList();
+		String main = workflow.getMainProfileName();
+		for (Profile p : workflow.getProfiles()) {
+			ProfileList.Info i = new ProfileList.Info();
+			i.name = p.getName();
+			if (main != null && main.equals(i.name))
+				i.main = true;
+			result.profile.add(i);
+		}
+		return result;
 	}
 }

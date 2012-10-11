@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The University of Manchester
+ * Copyright (C) 2010-2012 The University of Manchester
  * 
  * See the file "LICENSE.txt" for license terms.
  */
@@ -44,15 +44,17 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import uk.org.taverna.scufl2.api.common.NamedSet;
 import uk.org.taverna.scufl2.api.container.WorkflowBundle;
 import uk.org.taverna.scufl2.api.io.ReaderException;
 import uk.org.taverna.scufl2.api.io.WorkflowBundleIO;
 import uk.org.taverna.scufl2.api.io.WriterException;
+import uk.org.taverna.scufl2.api.profiles.Profile;
 
 /**
- * Encapsulation of a T2flow document.
+ * Encapsulation of a T2flow or Scufl2 document.
  * 
- * @author dkf
+ * @author Donal K. Fellows
  */
 @XmlRootElement(name = "workflow")
 @XmlType(name = "Workflow")
@@ -144,6 +146,15 @@ public class Workflow implements Serializable, Externalizable {
 		}
 	}
 
+	/**
+	 * Get the bytes of the serialized SCUFL2 workflow.
+	 * 
+	 * @return Array of bytes.
+	 * @throws IOException
+	 *             If serialization fails.
+	 * @throws WriterException
+	 *             If conversion fails.
+	 */
 	public byte[] getScufl2Bytes() throws IOException, WriterException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		io.writeBundle(getScufl2Workflow(), baos, SCUFL2);
@@ -176,7 +187,7 @@ public class Workflow implements Serializable, Externalizable {
 			Element e = doc.getDocumentElement();
 			if (e.getNamespaceURI().equals(T2FLOW_NS)
 					&& e.getNodeName().equals(T2FLOW_ROOTNAME))
-				return e;
+				return content = e;
 			throw new IOException(
 					"unexpected element when converting to T2Flow: {"
 							+ e.getNamespaceURI() + "}" + e.getNodeName());
@@ -184,6 +195,29 @@ public class Workflow implements Serializable, Externalizable {
 			throw e;
 		} catch (Exception e) {
 			throw new IOException("problem when converting to SCUFL2", e);
+		}
+	}
+
+	/**
+	 * @return The name of the main workflow profile, or <tt>null</tt> if there
+	 *         is none.
+	 */
+	public String getMainProfileName() {
+		try {
+			return getScufl2Workflow().getMainProfile().getName();
+		} catch (IOException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * @return The set of profiles supported over this workflow.
+	 */
+	public NamedSet<Profile> getProfiles() {
+		try {
+			return getScufl2Workflow().getProfiles();
+		} catch (IOException e) {
+			return new NamedSet<Profile>();
 		}
 	}
 
