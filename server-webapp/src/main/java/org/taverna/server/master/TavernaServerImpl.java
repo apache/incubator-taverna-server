@@ -21,7 +21,9 @@ import static org.taverna.server.master.common.Status.Initialized;
 import static org.taverna.server.master.common.Uri.secure;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -56,6 +58,7 @@ import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.InvalidCredentialException;
+import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoCredentialException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoListenerException;
@@ -88,6 +91,8 @@ import org.taverna.server.master.soap.ZippedDirectory;
 import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 import org.taverna.server.port_description.OutputDescription;
+
+import uk.org.taverna.scufl2.api.io.ReaderException;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -206,9 +211,27 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	@Override
 	@CallCounted
 	public Response submitWorkflow(Workflow workflow, UriInfo ui)
-			throws NoUpdateException {
+			throws NoCreateException {
 		String name = support.buildWorkflow(workflow);
 		return created(secure(ui).path("{uuid}").build(name)).build();
+	}
+
+	@Override
+	@CallCounted
+	public Response submitWorkflowByURL(WorkflowReference ref, UriInfo ui)
+			throws NoCreateException {
+		try {
+			Workflow workflow = new Workflow(ref.url.toURL());
+			String name = support.buildWorkflow(workflow);
+			return created(secure(ui).path("{uuid}").build(name)).build();
+		} catch (MalformedURLException e) {
+			throw new NoCreateException("bad workflow reference", e);
+		} catch (ReaderException e) {
+			throw new NoCreateException("could not parse workflow", e);
+		} catch (IOException e) {
+			throw new NoCreateException(
+					"problem reading workflow from reference", e);
+		}
 	}
 
 	@Override
@@ -271,7 +294,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	@Override
 	@CallCounted
 	public RunReference submitWorkflow(Workflow workflow)
-			throws NoUpdateException {
+			throws NoCreateException {
 		String name = support.buildWorkflow(workflow);
 		return new RunReference(name, getRunUriBuilder());
 	}
@@ -279,15 +302,31 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	@Override
 	@CallCounted
 	public RunReference submitWorkflowMTOM(WrappedWorkflow wrapper)
-			throws NoUpdateException {
+			throws NoCreateException {
 		Workflow wf;
 		try {
 			wf = wrapper.getWorkflow();
 		} catch (IOException e) {
-			throw new NoUpdateException(e.getMessage(), e);
+			throw new NoCreateException(e.getMessage(), e);
 		}
 		String name = support.buildWorkflow(wf);
 		return new RunReference(name, getRunUriBuilder());
+	}
+
+	@Override
+	@CallCounted
+	public RunReference submitWorkflowReference(URL workflowURL)
+			throws NoCreateException {
+		try {
+			Workflow wf = new Workflow(workflowURL);
+			String name = support.buildWorkflow(wf);
+			return new RunReference(name, getRunUriBuilder());
+		} catch (ReaderException e) {
+			throw new NoCreateException("could not parse workflow", e);
+		} catch (IOException e) {
+			throw new NoCreateException(
+					"problem reading workflow from reference", e);
+		}
 	}
 
 	@Override

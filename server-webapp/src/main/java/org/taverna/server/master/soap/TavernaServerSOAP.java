@@ -8,6 +8,7 @@ package org.taverna.server.master.soap;
 import static org.taverna.server.master.common.Namespaces.SERVER_SOAP;
 import static org.taverna.server.master.common.Roles.USER;
 
+import java.net.URL;
 import java.util.Date;
 
 import javax.annotation.security.RolesAllowed;
@@ -78,6 +79,20 @@ public interface TavernaServerSOAP {
 	RunReference submitWorkflowMTOM(
 			@WebParam(name = "workflow") WrappedWorkflow workflow)
 			throws NoUpdateException;
+
+	/**
+	 * Make a run for a workflow at a particular URL.
+	 * 
+	 * @param workflowURL
+	 *            The public URL of the workflow to instantiate.
+	 * @return Annotated handle for created run.
+	 * @throws NoUpdateException
+	 * @throws NoCreateException
+	 */
+	@WebResult(name = "Run")
+	@WSDLDocumentation("Make a run for a workflow at a particular public URL.")
+	RunReference submitWorkflowReference(@WebParam(name = "reference") URL workflowURL)
+			throws NoUpdateException, NoCreateException;
 
 	/**
 	 * Get the list of existing runs owned by the user.

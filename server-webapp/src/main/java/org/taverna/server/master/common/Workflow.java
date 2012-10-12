@@ -26,6 +26,7 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.URL;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -114,6 +115,10 @@ public class Workflow implements Serializable, Externalizable {
 	public Workflow(WorkflowBundle bundle) {
 		this.bundle = bundle;
 		this.isBundleFirst = true;
+	}
+
+	public Workflow(URL url) throws ReaderException, IOException {
+		this(io.readBundle(url, null));
 	}
 
 	/**

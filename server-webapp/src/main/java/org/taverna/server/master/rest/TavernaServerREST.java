@@ -9,6 +9,7 @@ import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.rest.handler.Scufl2DocumentHandler.SCUFL2;
 import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,8 +28,10 @@ import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlValue;
 
 import org.apache.cxf.jaxrs.model.wadl.Description;
 import org.taverna.server.master.common.RunReference;
@@ -102,6 +105,29 @@ public interface TavernaServerREST {
 			@NonNull @Context UriInfo ui) throws NoUpdateException;
 
 	/**
+	 * Accepts (or not) a request to create a new run executing the workflow at
+	 * the given location.
+	 * 
+	 * @param workflowReference
+	 *            The wrapped URI to workflow document to execute.
+	 * @param ui
+	 *            About the URI being POSTed to.
+	 * @return A response to the POST describing what was created.
+	 * @throws NoUpdateException
+	 *             If the POST failed.
+	 * @throw NoCreateException If the workflow couldn't be read into the server
+	 *        or the engine rejects it.
+	 */
+	@POST
+	@Path("runs")
+	@Consumes("application/xml")
+	@RolesAllowed(USER)
+	@Description("Accepts a wrapped URL to a workflow to download and run. The URL must be hosted on a publicly-accessible service.")
+	@NonNull
+	Response submitWorkflowByURL(@NonNull WorkflowReference workflowReference,
+			@NonNull @Context UriInfo ui) throws NoUpdateException;
+
+	/**
 	 * @return A description of the policies supported by this server.
 	 */
 	@Path("policy")
@@ -169,7 +195,8 @@ public interface TavernaServerREST {
 			super(true);
 			runs = new Uri(ui, "runs");
 			policy = new Uri(ui, false, "policy");
-			feed = new Uri(java.net.URI.create(ui.getBaseUri().toString().replaceFirst("/rest$", "/feed")));
+			feed = new Uri(java.net.URI.create(ui.getBaseUri().toString()
+					.replaceFirst("/rest$", "/feed")));
 			// database = new Uri(ui, "database");
 			// TODO TAVSERV-69: Make the database point to something real
 		}
@@ -484,5 +511,18 @@ public interface TavernaServerREST {
 		 * @return The details about that event.
 		 */
 		public abstract AbstractEvent getEvent(String id);
+	}
+
+	/**
+	 * A reference to a workflow hosted on some public HTTP server.
+	 * 
+	 * @author Donal Fellows
+	 */
+	@XmlRootElement(name = "workflowurl")
+	@XmlType(name = "WorkflowReference")
+	public static class WorkflowReference {
+		@XmlValue
+		@XmlSchemaType(name = "anyURI")
+		public URI url;
 	}
 }
