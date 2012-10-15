@@ -10,6 +10,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static org.taverna.server.master.common.Roles.USER;
 
 import java.io.InputStream;
+import java.net.URI;
 import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
@@ -149,6 +150,35 @@ public interface TavernaServerDirectoryREST {
 	@NonNull
 	Response setFileContents(@PathParam("path") List<PathSegment> file,
 			InputStream contents, @Context UriInfo ui)
+			throws NoDirectoryEntryException, NoUpdateException,
+			FilesystemAccessException;
+
+	/**
+	 * Creates or updates a file in a particular location beneath the working
+	 * directory of the workflow run.
+	 * 
+	 * @param file
+	 *            The path to the file to create or update.
+	 * @param referenceList
+	 *            Location to get the file's contents from. Must be <i>publicly</i>
+	 *            readable.
+	 * @param ui
+	 *            About how this method was called.
+	 * @return An HTTP response indicating what file was created/updated.
+	 * @throws NoDirectoryEntryException
+	 *             If the name of the containing directory can't be looked up.
+	 * @throws NoUpdateException
+	 *             If the user is not permitted to update the run.
+	 * @throws FilesystemAccessException
+	 *             If something went wrong during the filesystem operation.
+	 */
+	@POST
+	@Path("{path:(.*)}")
+	@Consumes("text/uri-list")
+	@Description("Creates or updates a file in a particular location beneath the working directory of the workflow run with the contents of a publicly readable URL.")
+	@NonNull
+	Response setFileContentsFromURL(@PathParam("path") List<PathSegment> file,
+			List<URI> referenceList, @Context UriInfo ui)
 			throws NoDirectoryEntryException, NoUpdateException,
 			FilesystemAccessException;
 

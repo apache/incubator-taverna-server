@@ -8,6 +8,7 @@ package org.taverna.server.master.soap;
 import static org.taverna.server.master.common.Namespaces.SERVER_SOAP;
 import static org.taverna.server.master.common.Roles.USER;
 
+import java.net.URI;
 import java.net.URL;
 import java.util.Date;
 
@@ -91,7 +92,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "Run")
 	@WSDLDocumentation("Make a run for a workflow at a particular public URL.")
-	RunReference submitWorkflowReference(@WebParam(name = "reference") URL workflowURL)
+	RunReference submitWorkflowReference(
+			@WebParam(name = "reference") URL workflowURL)
 			throws NoUpdateException, NoCreateException;
 
 	/**
@@ -1071,6 +1073,37 @@ public interface TavernaServerSOAP {
 	@WSDLDocumentation("Set the contents of a file under the run's working directory.")
 	void setRunFileContentsMTOM(@WebParam(name = "runName") String runName,
 			@WebParam(name = "contents") FileContents newContents)
+			throws UnknownRunException, NoUpdateException,
+			FilesystemAccessException, NoDirectoryEntryException;
+
+	/**
+	 * Set the contents of a file under the run's working directory to the
+	 * contents of a publicly readable URI. Runs do not share working
+	 * directories.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @param file
+	 *            The name of the file to update; the main working directory is
+	 *            <tt>/</tt> and <tt>..</tt> is always disallowed.
+	 * @param reference
+	 *            The publicly readable URI whose contents are to become the
+	 *            literal bytes of the file's contents.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 * @throws NoUpdateException
+	 *             If the user is not allowed to make modifications to the run.
+	 * @throws FilesystemAccessException
+	 *             If some assumption is violated (e.g., writing the contents of
+	 *             a directory).
+	 * @throws NoDirectoryEntryException
+	 *             If the file doesn't exist.
+	 */
+	@WSDLDocumentation("Set the contents of a file under the run's working directory from the contents of a publicly readable URI.")
+	void setRunFileContentsFromURI(@WebParam(name = "runName") String runName,
+			@WebParam(name = "fileName") DirEntryReference file,
+			@WebParam(name = "contents") URI reference)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, NoDirectoryEntryException;
 

@@ -731,6 +731,20 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		support.copyDataToFile(newContents.fileData, f);
 	}
 
+	public void setRunFileContentsFromURI(String runName, DirEntryReference d,
+			URI reference) throws UnknownRunException, NoUpdateException,
+			FilesystemAccessException, NoDirectoryEntryException {
+		TavernaRun run = support.getRun(runName);
+		support.permitUpdate(run);
+		File f = fileUtils.getFile(run, d);
+		try {
+			support.copyDataToFile(reference, f);
+		} catch (IOException e) {
+			throw new FilesystemAccessException(
+					"problem transferring data from URI", e);
+		}
+	}
+
 	@Override
 	@CallCounted
 	public String getRunFileType(String runName, DirEntryReference d)

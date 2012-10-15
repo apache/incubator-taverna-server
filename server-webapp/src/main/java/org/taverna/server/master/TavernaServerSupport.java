@@ -17,6 +17,8 @@ import static org.taverna.server.master.common.Roles.ADMIN;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -677,12 +679,19 @@ public class TavernaServerSupport {
 		}
 	}
 
+	public void copyDataToFile(URI uri, File file)
+			throws MalformedURLException, FilesystemAccessException,
+			IOException {
+		copyStreamToFile(uri.toURL().openStream(), file);
+	}
+
 	public void copyStreamToFile(InputStream stream, File file)
 			throws FilesystemAccessException {
 		String name = file.getFullName();
 		long total = 0;
 		try {
 			byte[] buffer = new byte[TRANSFER_SIZE];
+			boolean first = true;
 			while (true) {
 				int len = stream.read(buffer);
 				if (len < 0)
@@ -690,13 +699,20 @@ public class TavernaServerSupport {
 				total += len;
 				log.debug("read " + len + " bytes from source stream (total: "
 						+ total + ") bound for " + name);
-				if (len == buffer.length)
-					file.appendContents(buffer);
-				else {
+				if (len == buffer.length) {
+					if (first)
+						file.setContents(buffer);
+					else
+						file.appendContents(buffer);
+				} else {
 					byte[] newBuf = new byte[len];
 					System.arraycopy(buffer, 0, newBuf, 0, len);
-					file.appendContents(newBuf);
+					if (first)
+						file.setContents(newBuf);
+					else
+						file.appendContents(newBuf);
 				}
+				first = false;
 			}
 		} catch (IOException exn) {
 			throw new FilesystemAccessException("failed to transfer bytes", exn);

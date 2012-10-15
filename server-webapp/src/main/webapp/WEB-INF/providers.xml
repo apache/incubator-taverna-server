@@ -99,4 +99,5 @@
 
 	<bean id="Provider.RuntimeExceptionRemapping" class="org.taverna.server.master.utils.RuntimeExceptionWrapper" />
 	<bean id="MessagingProvider.ZipStream" class="org.taverna.server.master.rest.handler.ZipStreamHandler" />
+	<bean id="MessagingProvider.URIList" class="org.taverna.server.master.rest.handler.URIListHandler" />
 </beans>

@@ -10,13 +10,17 @@ import static javax.ws.rs.core.Response.created;
 import static javax.ws.rs.core.Response.noContent;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.seeOther;
+import static javax.ws.rs.core.Response.status;
 import static org.taverna.server.master.ContentTypes.APPLICATION_ZIP_TYPE;
 import static org.taverna.server.master.ContentTypes.DIRECTORY_VARIANTS;
 import static org.taverna.server.master.ContentTypes.INITIAL_FILE_VARIANTS;
 import static org.taverna.server.master.TavernaServerImpl.log;
 import static org.taverna.server.master.common.Uri.secure;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -295,6 +299,64 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 		} else
 			f.setContents(new byte[0]);
 		support.copyStreamToFile(contents, f);
+
+		if (isNew)
+			return created(ui.getAbsolutePath()).build();
+		else
+			return noContent().build();
+	}
+
+	@Override
+	@CallCounted
+	public Response setFileContentsFromURL(List<PathSegment> filePath,
+			List<URI> referenceList, UriInfo ui)
+			throws NoDirectoryEntryException, NoUpdateException,
+			FilesystemAccessException {
+		support.permitUpdate(run);
+		Directory d;
+		String name;
+		if (filePath == null || filePath.size() == 0)
+			throw new FilesystemAccessException(
+					"Cannot create a file that is not in a directory.");
+
+		List<PathSegment> dirPath = new ArrayList<PathSegment>(filePath);
+		name = dirPath.remove(dirPath.size() - 1).getPath();
+		DirectoryEntry de = fileUtils.getDirEntry(run, dirPath);
+		if (!(de instanceof Directory)) {
+			throw new FilesystemAccessException(
+					"Cannot create a file that is not in a directory.");
+		}
+		d = (Directory) de;
+
+		File f = null;
+		boolean isNew = false;
+		for (DirectoryEntry e : d.getContents()) {
+			if (e.getName().equals(name)) {
+				if (e instanceof File) {
+					f = (File) e;
+					break;
+				}
+				throw new FilesystemAccessException(
+						"Cannot create a file that is not in a directory.");
+			}
+		}
+
+		if (referenceList.isEmpty() || referenceList.size() > 1)
+			return status(422).entity("URI list must have single URI in it")
+					.build();
+		;
+
+		if (f == null) {
+			f = d.makeEmptyFile(support.getPrincipal(), name);
+			isNew = true;
+		}
+		try {
+			support.copyDataToFile(referenceList.get(0), f);
+		} catch (MalformedURLException ex) {
+			throw new NoUpdateException("failed to parse URI", ex);
+		} catch (IOException ex) {
+			throw new FilesystemAccessException("failed to transfer data from URI", ex);
+		}
 
 		if (isNew)
 			return created(ui.getAbsolutePath()).build();
