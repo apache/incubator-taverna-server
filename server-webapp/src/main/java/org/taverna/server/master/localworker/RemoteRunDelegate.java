@@ -8,6 +8,7 @@ package org.taverna.server.master.localworker;
 import static java.util.Calendar.MINUTE;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.UUID.randomUUID;
+import static org.apache.commons.compress.archivers.zip.Zip64Mode.Always;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.localworker.RemoteRunDelegate.checkBadFilename;
@@ -29,9 +30,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.logging.Log;
 import org.taverna.server.localworker.remote.IllegalStateTransitionException;
 import org.taverna.server.localworker.remote.ImplementationException;
@@ -556,11 +557,13 @@ class DirectoryDelegate extends DEDelegate implements Directory {
 	public ZipStream getContentsAsZip() throws FilesystemAccessException {
 		ZipStream zs = new ZipStream();
 
-		final ZipOutputStream zos;
+		final ZipArchiveOutputStream zos;
 		try {
-			zos = new ZipOutputStream(new PipedOutputStream(zs));
+			zos = new ZipArchiveOutputStream(new PipedOutputStream(zs));
+			zos.setUseZip64(Always);
 		} catch (IOException e) {
-			throw new FilesystemAccessException("problem building zip stream", e);
+			throw new FilesystemAccessException("problem building zip stream",
+					e);
 		}
 		Thread t = new Thread(new Runnable() {
 			@Override
@@ -595,17 +598,28 @@ class DirectoryDelegate extends DEDelegate implements Directory {
 	 *             If we run into problems with reading or writing data.
 	 */
 	void zipDirectory(RemoteDirectory dir, String base,
-			ZipOutputStream zos) throws RemoteException, IOException {
+			ZipArchiveOutputStream zos) throws RemoteException, IOException {
 		for (RemoteDirectoryEntry rde : dir.getContents()) {
 			String name = rde.getName();
 			if (base != null)
 				name = base + "/" + name;
 			if (rde instanceof RemoteDirectory) {
-				RemoteDirectory rd = (RemoteDirectory) rde;
-				zipDirectory(rd, name, zos);
+				// This is how you encode a directory. Yes, with a "/" at the
+				// end. There's a whole chunk of stuff for handling flags of
+				// various kinds, but this critical part is done with a filename
+				// convention. Yeesh!
+				ZipArchiveEntry entry = new ZipArchiveEntry(name + "/");
+				entry.setSize(0);
+				zos.putArchiveEntry(entry);
+				zos.closeArchiveEntry();
+
+				// Do the children.
+				zipDirectory((RemoteDirectory) rde, name, zos);
 			} else {
 				RemoteFile rf = (RemoteFile) rde;
-				zos.putNextEntry(new ZipEntry(name));
+				ZipArchiveEntry entry = new ZipArchiveEntry(name);
+				entry.setSize(rf.getSize());
+				zos.putArchiveEntry(entry);
 				try {
 					int off = 0;
 					while (true) {
@@ -616,7 +630,7 @@ class DirectoryDelegate extends DEDelegate implements Directory {
 						off += c.length;
 					}
 				} finally {
-					zos.closeEntry();
+					zos.closeArchiveEntry();
 				}
 			}
 		}
