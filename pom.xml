@@ -507,5 +507,6 @@
 		<module>server-unix-forker</module>
 		<module>server-usagerecord</module>
 		<module>server-port-description</module>
+		<module>server-execution-delegate</module>
 	</modules>
 </project>
