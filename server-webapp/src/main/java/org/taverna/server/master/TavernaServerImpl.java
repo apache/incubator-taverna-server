@@ -104,13 +104,13 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 @Path("/")
 @DeclareRoles({ USER, ADMIN })
 @WebService(endpointInterface = "org.taverna.server.master.soap.TavernaServerSOAP", serviceName = "TavernaServer", targetNamespace = SERVER_SOAP)
-@WSDLDocumentation("An instance of Taverna 2.4 Server Release 2.")
+@WSDLDocumentation("An instance of Taverna 3 Server.")
 public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		TavernaServerREST, TavernaServer {
 	/**
 	 * The root of descriptions of the server in JMX.
 	 */
-	public static final String JMX_ROOT = "Taverna:group=Server-v2,name=";
+	public static final String JMX_ROOT = "Taverna:group=Server-v3,name=";
 
 	/** The logger for the server framework. */
 	public static final Log log = getLog("Taverna.Server.Webapp");

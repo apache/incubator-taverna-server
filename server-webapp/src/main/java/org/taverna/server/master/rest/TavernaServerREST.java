@@ -47,13 +47,13 @@ import org.taverna.server.master.soap.TavernaServerSOAP;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
- * The REST service interface to Taverna 2.4 Server Release 2.
+ * The REST service interface to Taverna 3 Server.
  * 
  * @author Donal Fellows
  * @see TavernaServerSOAP
  */
 @RolesAllowed(USER)
-@Description("This is REST service interface to Taverna 2.4 Server Release 2.")
+@Description("This is REST service interface to Taverna 3 Server.")
 public interface TavernaServerREST {
 	/**
 	 * Produces the description of the service.

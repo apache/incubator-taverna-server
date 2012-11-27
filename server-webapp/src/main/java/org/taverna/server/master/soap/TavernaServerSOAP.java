@@ -43,14 +43,14 @@ import org.taverna.server.master.rest.TavernaServerREST;
 import org.taverna.server.port_description.OutputDescription;
 
 /**
- * The SOAP service interface to Taverna 2.4 Server Release 2.
+ * The SOAP service interface to Taverna 3 Server.
  * 
  * @author Donal Fellows
  * @see TavernaServerREST
  */
 @RolesAllowed(USER)
 @WebService(name = "tavernaService", targetNamespace = SERVER_SOAP)
-@WSDLDocumentation("The SOAP service interface to Taverna 2.4 Server Release 2.")
+@WSDLDocumentation("The SOAP service interface to Taverna 3 Server.")
 public interface TavernaServerSOAP {
 	/**
 	 * Make a run for a particular workflow.
