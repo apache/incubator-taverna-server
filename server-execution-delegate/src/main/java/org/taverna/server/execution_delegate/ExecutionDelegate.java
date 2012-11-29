@@ -15,6 +15,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.taverna.server.execution_delegate.RemoteExecution.ProcessorReportDocument.Property;
 
 import uk.org.taverna.platform.data.api.Data;
+import uk.org.taverna.platform.data.api.DataLocation;
 import uk.org.taverna.platform.execution.api.Execution;
 import uk.org.taverna.platform.report.ActivityReport;
 import uk.org.taverna.platform.report.ProcessorReport;
@@ -98,20 +99,34 @@ public class ExecutionDelegate extends UnicastRemoteObject implements
 		return snapshot;
 	}
 
-	private void initMap(ArrayList<PortMapping> snapshot,
-			Map<String, Data> report) {
+	private void initMap(ArrayList<PortMapping> snapshot, Map<String, ?> report) {
 		for (String port : report.keySet())
 			snapshot.add(data(port, report.get(port)));
 	}
 
 	private static final String DEFAULT_PROPERTY_STRING = "";
 
-	private PortMapping data(String name, Data d) {
-		URI ref = d.getReference();
-		if (ref == null)
-			ref = URI.create("taverna:" + delegated.getID() + ":" + d.getID());
-		return new PortMapping(name, ref);
-		// FIXME Get a proper URI
+	private PortMapping data(String name, Object o) {
+		String loc;
+		if (o instanceof DataLocation) {
+			DataLocation d = (DataLocation) o;
+			loc = d.getDataServiceURI() + "#" + d.getDataID();
+		} else {
+			Data d = (Data) o;
+			loc = null;
+			if (d.hasReferences()) {
+				try {
+					loc = d.getReferences().iterator().next().getURI()
+							.toString();
+				} catch (Exception e) {
+				}
+			}
+			if (loc == null) {
+				DataLocation dl = d.getDataService().getDataLocation(d);
+				loc = dl.getDataServiceURI() + "#" + dl.getDataID();
+			}
+		}
+		return new PortMapping(name, URI.create(loc));
 	}
 
 	private ProcessorReportDocument getReport(ProcessorReport report) {
@@ -149,3 +164,9 @@ public class ExecutionDelegate extends UnicastRemoteObject implements
 		return getReport(delegated.getWorkflowReport());
 	}
 }
+
+// ExecutionDelegate.java:[96,2]
+// initMap(java.util.ArrayList<org.taverna.server.execution_delegate.RemoteExecution.PortMapping>,java.util.Map<java.lang.String,uk.org.taverna.platform.data.api.Data>)
+// in org.taverna.server.execution_delegate.ExecutionDelegate cannot be applied
+// to
+// (java.util.ArrayList<org.taverna.server.execution_delegate.RemoteExecution.PortMapping>,java.util.Map<java.lang.String,uk.org.taverna.platform.data.api.DataLocation>)
