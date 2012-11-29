@@ -44,4 +44,6 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<name>Reporting Probe</name>
+	<inceptionYear>2012</inceptionYear>
 </project>
