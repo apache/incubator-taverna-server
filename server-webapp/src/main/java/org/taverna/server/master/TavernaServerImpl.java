@@ -20,9 +20,7 @@ import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.common.Status.Initialized;
 import static org.taverna.server.master.common.Uri.secure;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,10 +39,10 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.ws.WebServiceContext;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.cxf.annotations.WSDLDocumentation;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Value;
 import org.taverna.server.master.TavernaServerImpl.SupportAware;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.DirEntryReference;
@@ -191,10 +189,14 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	// REST INTERFACE
 
+	
+	@Value("${taverna.interaction.feed_path}")
+	private String interactionFeed;
+
 	@Override
 	@CallCounted
 	public ServerDescription describeService(UriInfo ui) {
-		return new ServerDescription(ui);
+		return new ServerDescription(ui, interactionFeed);
 	}
 
 	@Override
