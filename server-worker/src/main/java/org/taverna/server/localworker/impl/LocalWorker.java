@@ -239,7 +239,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 					shutdownHook = null;
 					destroy();
 				} catch (ImplementationException e) {
-				} catch (RemoteException e) {
+					// Absolutely nothing we can do here
 				}
 			}
 		});
@@ -249,7 +249,15 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	}
 
 	@Override
-	public void destroy() throws RemoteException, ImplementationException {
+	public void destroy() throws ImplementationException {
+		killWorkflowSubprocess();
+		removeFromShutdownHooks();
+		// Is this it?
+		deleteWorkingDirectory();
+		deleteSecurityManagerDirectory();
+	}
+
+	private void killWorkflowSubprocess() {
 		if (status != Finished && status != Initialized)
 			try {
 				core.killWorker();
@@ -259,6 +267,9 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 				out.println("problem when killing worker");
 				e.printStackTrace(out);
 			}
+	}
+
+	private void removeFromShutdownHooks() throws ImplementationException {
 		try {
 			if (shutdownHook != null)
 				getRuntime().removeShutdownHook(shutdownHook);
@@ -268,7 +279,9 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		} finally {
 			shutdownHook = null;
 		}
-		// Is this it?
+	}
+
+	private void deleteWorkingDirectory() throws ImplementationException {
 		try {
 			if (base != null)
 				forceDelete(base);
@@ -280,6 +293,10 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		} finally {
 			base = null;
 		}
+	}
+
+	private void deleteSecurityManagerDirectory()
+			throws ImplementationException {
 		try {
 			if (securityDirectory != null)
 				forceDelete(securityDirectory);
@@ -292,7 +309,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			securityDirectory = null;
 		}
 	}
-
+	
 	@Override
 	public void addListener(RemoteListener listener) throws RemoteException,
 			ImplementationException {
