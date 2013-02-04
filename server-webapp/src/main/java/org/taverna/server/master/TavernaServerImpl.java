@@ -196,7 +196,10 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	@Override
 	@CallCounted
 	public ServerDescription describeService(UriInfo ui) {
-		return new ServerDescription(ui, interactionFeed);
+		String feed = interactionFeed;
+		if ("none".equals(feed))
+			feed = null;
+		return new ServerDescription(ui, feed);
 	}
 
 	@Override
