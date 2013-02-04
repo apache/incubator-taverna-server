@@ -9,6 +9,7 @@ import static java.io.File.createTempFile;
 import static java.io.File.pathSeparator;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.System.out;
+import static org.apache.commons.io.FileUtils.forceDelete;
 import static org.apache.commons.io.IOUtils.copy;
 //import static org.taverna.server.localworker.impl.LocalWorker.PASSWORD_FILE;
 import static org.taverna.server.localworker.impl.LocalWorker.SYSTEM_ENCODING;
@@ -48,6 +49,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.ogf.usage.JobUsageRecord;
+import org.taverna.server.localworker.remote.ImplementationException;
 import org.taverna.server.localworker.remote.RemoteListener;
 import org.taverna.server.localworker.remote.RemoteStatus;
 import org.taverna.server.localworker.server.UsageRecordReceiver;
@@ -115,6 +117,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	private JobUsageRecord ur;
 	private File wd;
 	private UsageRecordReceiver urreceiver;
+	private File workflowFile;
 
 	/**
 	 * @throws RemoteException
@@ -315,15 +318,14 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		}
 
 		// Add an argument holding the workflow
-		File tmp = createTempFile("taverna", ".t2flow");
-		Writer w = new OutputStreamWriter(new FileOutputStream(tmp), "UTF-8");
+		workflowFile = createTempFile("taverna", ".t2flow");
+		Writer w = new OutputStreamWriter(new FileOutputStream(workflowFile), "UTF-8");
 		try {
 			w.write(workflow);
 		} finally {
 			w.close();
 		}
-		tmp.deleteOnExit();
-		pb.command().add(tmp.getAbsolutePath());
+		pb.command().add(workflowFile.getAbsolutePath());
 
 		// Indicate what working directory to use
 		pb.directory(workingDir);
@@ -546,5 +548,15 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	@Override
 	public void setURReceiver(UsageRecordReceiver receiver) {
 		urreceiver = receiver;
+	}
+
+	@Override
+	public void deleteLocalResources() throws ImplementationException {
+		if (workflowFile != null)
+			try {
+				forceDelete(workflowFile);
+			} catch (IOException e) {
+				throw new ImplementationException("problem deleting workflow file", e);
+			}
 	}
 }

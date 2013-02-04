@@ -255,6 +255,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		// Is this it?
 		deleteWorkingDirectory();
 		deleteSecurityManagerDirectory();
+		core.deleteLocalResources();
 	}
 
 	private void killWorkflowSubprocess() {
