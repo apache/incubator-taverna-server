@@ -136,6 +136,11 @@ public class LocalWorkerTest {
 		public void setURReceiver(UsageRecordReceiver receiver) {
 			// We just ignore this
 		}
+
+		@Override
+		public void deleteLocalResources() throws ImplementationException {
+			// Nothing to do here
+		}
 	}
 
 	@Before
