@@ -684,9 +684,7 @@ class SecureFork implements IdAwareForkRunFactory.MetaFactory {
 				RemoteRunFactory f = (RemoteRunFactory) main.getTheRegistry()
 						.lookup(fpn);
 				log.info("successfully connected to factory subprocess " + fpn);
-				if (main.interhost != null)
-					f.setInteractionServiceDetails(main.interhost,
-							main.interport, main.interwebdav, main.interfeed);
+				main.initInteractionDetails(f);
 				main.registerFactory(username, fpn, f);
 				return f;
 			} catch (InterruptedException ie) {

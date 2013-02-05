@@ -6,7 +6,6 @@
 package org.taverna.server.master.rest;
 
 import static org.taverna.server.master.common.Roles.USER;
-import static org.taverna.server.master.common.Uri.secure;
 import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 
 import java.util.ArrayList;
@@ -177,8 +176,8 @@ public interface TavernaServerREST {
 			feed = new Uri(java.net.URI.create(base.replaceFirst("/rest$",
 					"/feed")));
 			if (interactionFeed != null && !interactionFeed.isEmpty())
-				this.interactionFeed = new Uri(java.net.URI.create(base)
-						.resolve(java.net.URI.create(interactionFeed)));
+				this.interactionFeed = new Uri(
+						java.net.URI.create(interactionFeed));
 			// database = new Uri(ui, "database");
 			// TODO TAVSERV-69: Make the database point to something real
 		}

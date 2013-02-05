@@ -283,9 +283,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 						factoryProcessName);
 				log.info("successfully connected to factory subprocess "
 						+ factoryProcessName);
-				if (interhost != null)
-					factory.setInteractionServiceDetails(interhost, interport,
-							interwebdav, interfeed);
+				initInteractionDetails(factory);
 				return;
 			} catch (InterruptedException ie) {
 				continue;

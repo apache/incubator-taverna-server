@@ -394,5 +394,15 @@ public class ContentsDescriptorBuilder {
 		 *         the webapp.
 		 */
 		UriBuilder getBaseUriBuilder();
+
+		/**
+		 * Resolves a URI with respect to the base URI of the factory.
+		 * 
+		 * @param uri
+		 *            The URI to resolve, or <tt>null</tt>.
+		 * @return The resolved URI, or <tt>null</tt> if <b>uri</b> is
+		 *         <tt>null</tt>.
+		 */
+		String resolve(String uri);
 	}
 }

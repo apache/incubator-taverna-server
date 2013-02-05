@@ -9,7 +9,6 @@ import static javax.ws.rs.core.Response.created;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.taverna.server.master.common.Uri.secure;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 

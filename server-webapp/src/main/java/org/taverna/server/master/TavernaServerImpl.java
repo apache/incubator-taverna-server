@@ -199,7 +199,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		String feed = interactionFeed;
 		if ("none".equals(feed))
 			feed = null;
-		return new ServerDescription(ui, feed);
+		return new ServerDescription(ui, resolve(feed));
 	}
 
 	@Override
@@ -867,6 +867,12 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		pathInfo = pathInfo.replaceFirst("/soap$", "/rest/");
 		pathInfo = pathInfo.replaceFirst("/rest/.+$", "/rest/");
 		return secure(fromUri(pathInfo));
+	}
+
+	@Override
+	public
+	String resolve(String uri) {
+		return getBaseUriBuilder().build().resolve(uri).toString();
 	}
 
 	private Map<String, TavernaRun> runs() {

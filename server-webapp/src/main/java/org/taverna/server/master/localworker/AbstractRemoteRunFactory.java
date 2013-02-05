@@ -41,8 +41,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
+import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.localworker.server.UsageRecordReceiver;
+import org.taverna.server.master.ContentsDescriptorBuilder.UriBuilderFactory;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoListenerException;
@@ -63,6 +65,7 @@ import org.taverna.server.master.utils.UsernamePrincipal;
 @ManagedResource(objectName = JMX_ROOT + "Factory", description = "The factory for runs")
 public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		RunFactory, ConfigurableRunFactory {
+	/** The logger for writing messages out on. */
 	Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
 
 	@SuppressWarnings("unused")
@@ -72,36 +75,67 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		log = null;
 	}
 
+	/**
+	 * Whether to apply stronger limitations than normal to RMI. It is
+	 * recommended that this be true!
+	 */
 	@Value("${rmi.localhostOnly}")
 	private boolean rmiLocalhostOnly;
+	/** The interaction host name. */
+	private String interhost;
+	/** The interaction port number. */
+	private String interport;
+	/**
+	 * The interaction WebDAV location. Will be resolved before being passed to
+	 * the back-end.
+	 */
+	private String interwebdav;
+	/**
+	 * The interaction ATOM feed location. Will be resolved before being passed
+	 * to the back-end.
+	 */
+	private String interfeed;
+	/** Used for doing URI resolution. */
+	@Autowired
+	private UriBuilderFactory baseurifactory;
+
 	@Value("${taverna.interaction.host}")
 	void setInteractionHost(String host) {
 		if (host != null && host.equals("none"))
 			host = null;
 		interhost = host;
 	}
-	String interhost;
+
 	@Value("${taverna.interaction.port}")
 	void setInteractionPort(String port) {
 		if (port != null && port.equals("none"))
 			port = null;
 		interport = port;
 	}
-	String interport;
+
 	@Value("${taverna.interaction.webdav_path}")
 	void setInteractionWebdav(String webdav) {
 		if (webdav != null && webdav.equals("none"))
 			webdav = null;
 		interwebdav = webdav;
 	}
-	String interwebdav;
+
 	@Value("${taverna.interaction.feed_path}")
 	void setInteractionFeed(String feed) {
 		if (feed != null && feed.equals("none"))
 			feed = null;
 		interfeed = feed;
 	}
-	String interfeed;
+
+	protected void initInteractionDetails(RemoteRunFactory factory)
+			throws RemoteException {
+		if (interhost != null) {
+			String feed = baseurifactory.resolve(interfeed);
+			String webdav = baseurifactory.resolve(interwebdav);
+			factory.setInteractionServiceDetails(interhost, interport, webdav,
+					feed);
+		}
+	}
 
 	private Registry makeRegistry(int port) throws RemoteException {
 		if (rmiLocalhostOnly) {

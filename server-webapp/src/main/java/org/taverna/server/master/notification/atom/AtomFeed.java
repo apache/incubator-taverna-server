@@ -113,6 +113,11 @@ public class AtomFeed implements EventFeed, UriBuilderFactory,
 	}
 
 	@Override
+	public String resolve(String uri) {
+		return baseURI.resolve(uri).toString();
+	}
+
+	@Override
 	public void setServletContext(ServletContext servletContext) {
 		String base = servletContext.getInitParameter(PREFERRED_URI_PARAM);
 		if (base == null)
