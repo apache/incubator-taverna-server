@@ -5,9 +5,9 @@
  */
 package org.taverna.server.master.localworker;
 
-import static java.lang.System.getSecurityManager;
+//import static java.lang.System.getSecurityManager;
 import static java.lang.System.setProperty;
-import static java.lang.System.setSecurityManager;
+//import static java.lang.System.setSecurityManager;
 import static java.net.InetAddress.getLocalHost;
 import static java.rmi.registry.LocateRegistry.createRegistry;
 import static java.rmi.registry.LocateRegistry.getRegistry;
@@ -18,7 +18,7 @@ import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.rmi.RMISecurityManager;
+//import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
