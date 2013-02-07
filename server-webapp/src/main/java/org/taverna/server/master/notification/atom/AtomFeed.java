@@ -6,10 +6,12 @@
 package org.taverna.server.master.notification.atom;
 
 import static javax.ws.rs.core.UriBuilder.fromUri;
+import static org.taverna.server.master.common.Roles.USER;
 
 import java.net.URI;
 import java.util.List;
 
+import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.UriBuilder;
 
@@ -91,12 +93,14 @@ public class AtomFeed implements EventFeed, UriBuilderFactory,
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public Events getFeed() {
 		return new Feed(eventSource, support.getPrincipal());
 	}
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public AbstractEvent getEvent(String id) {
 		return eventSource.getEvent(support.getPrincipal(), id);
 	}

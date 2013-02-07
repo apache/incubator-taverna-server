@@ -281,14 +281,14 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		this.urProcessorPool = urProcessorPool;
 	}
 
-	static {
-		if (getSecurityManager() == null) {
-			setProperty("java.security.policy", AbstractRemoteRunFactory.class
-					.getClassLoader().getResource(SECURITY_POLICY_FILE)
-					.toExternalForm());
-			setSecurityManager(new RMISecurityManager());
-		}
-	}
+//	static {
+//		if (getSecurityManager() == null) {
+//			setProperty("java.security.policy", AbstractRemoteRunFactory.class
+//					.getClassLoader().getResource(SECURITY_POLICY_FILE)
+//					.toExternalForm());
+//			setSecurityManager(new RMISecurityManager());
+//		}
+//	}
 
 	/**
 	 * Set up the run expiry management engine.
