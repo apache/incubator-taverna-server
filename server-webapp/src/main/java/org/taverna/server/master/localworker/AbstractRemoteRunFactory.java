@@ -96,7 +96,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 */
 	private String interfeed;
 	/** Used for doing URI resolution. */
-	@Autowired
+	@Resource(name = "webapp")
 	private UriBuilderFactory baseurifactory;
 
 	@Value("${taverna.interaction.host}")
