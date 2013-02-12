@@ -5,6 +5,8 @@
  */
 package org.taverna.server.master.interfaces;
 
+import java.util.Date;
+
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 
 /**
@@ -27,6 +29,11 @@ public interface DirectoryEntry extends Comparable<DirectoryEntry> {
 	 *         character.
 	 */
 	public String getFullName();
+
+	/**
+	 * @return The time that the entry was last modified.
+	 */
+	public Date getModificationDate();
 
 	/**
 	 * Destroy this directory entry, deleting the file or sub-directory. The

@@ -16,6 +16,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 
 import org.apache.commons.collections.MapIterator;
 import org.apache.commons.collections.map.ReferenceMap;
@@ -150,5 +151,10 @@ public class DirectoryDelegate extends UnicastRemoteObject implements
 		if (parent == null)
 			return "";
 		return dir.getName();
+	}
+
+	@Override
+	public Date getModificationDate() throws RemoteException {
+		return new Date(dir.lastModified());
 	}
 }

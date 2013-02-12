@@ -8,6 +8,7 @@ package org.taverna.server.localworker.remote;
 import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.Date;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -28,6 +29,14 @@ public interface RemoteDirectoryEntry extends Remote {
 	 */
 	@NonNull
 	public String getName() throws RemoteException;
+
+	/**
+	 * @return The time when the entry was last modified.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
+	 */
+	@NonNull
+	public Date getModificationDate() throws RemoteException;
 
 	/**
 	 * Gets the directory containing this directory entry.

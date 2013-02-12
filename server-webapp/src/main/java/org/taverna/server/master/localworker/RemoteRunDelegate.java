@@ -5,7 +5,9 @@
  */
 package org.taverna.server.master.localworker;
 
+import static java.lang.System.currentTimeMillis;
 import static java.util.Calendar.MINUTE;
+import static java.util.Collections.sort;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.io.IOUtils.closeQuietly;
@@ -24,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -442,6 +445,8 @@ abstract class DEDelegate implements DirectoryEntry {
 	private RemoteDirectoryEntry entry;
 	private String name;
 	private String full;
+	private Date cacheModTime;
+	private long cacheQueryTime = 0L;
 
 	DEDelegate(RemoteDirectoryEntry entry) {
 		this.entry = entry;
@@ -489,6 +494,18 @@ abstract class DEDelegate implements DirectoryEntry {
 	}
 
 	@Override
+	public Date getModificationDate() {
+		if (cacheModTime == null || currentTimeMillis() - cacheQueryTime < 5000)
+			try {
+				cacheModTime = entry.getModificationDate();
+				cacheQueryTime = currentTimeMillis();
+			} catch (RemoteException e) {
+				log.error("failed to get modification time", e);
+			}
+		return cacheModTime;
+	}
+
+	@Override
 	public int compareTo(DirectoryEntry de) {
 		return getFullName().compareTo(de.getFullName());
 	}
@@ -532,6 +549,22 @@ class DirectoryDelegate extends DEDelegate implements Directory {
 	}
 
 	@Override
+	public Collection<DirectoryEntry> getContentsByDate()
+			throws FilesystemAccessException {
+		ArrayList<DirectoryEntry> result = new ArrayList<DirectoryEntry>(
+				getContents());
+		sort(result, new DateComparator());
+		return result;
+	}
+
+	static class DateComparator implements Comparator<DirectoryEntry> {
+		@Override
+		public int compare(DirectoryEntry a, DirectoryEntry b) {
+			return a.getModificationDate().compareTo(b.getModificationDate());
+		}
+	}
+
+	@Override
 	public File makeEmptyFile(Principal actor, String name)
 			throws FilesystemAccessException {
 		try {
@@ -560,7 +593,8 @@ class DirectoryDelegate extends DEDelegate implements Directory {
 		try {
 			zos = new ZipOutputStream(new PipedOutputStream(zs));
 		} catch (IOException e) {
-			throw new FilesystemAccessException("problem building zip stream", e);
+			throw new FilesystemAccessException("problem building zip stream",
+					e);
 		}
 		Thread t = new Thread(new Runnable() {
 			@Override
@@ -594,8 +628,8 @@ class DirectoryDelegate extends DEDelegate implements Directory {
 	 * @throws IOException
 	 *             If we run into problems with reading or writing data.
 	 */
-	void zipDirectory(RemoteDirectory dir, String base,
-			ZipOutputStream zos) throws RemoteException, IOException {
+	void zipDirectory(RemoteDirectory dir, String base, ZipOutputStream zos)
+			throws RemoteException, IOException {
 		for (RemoteDirectoryEntry rde : dir.getContents()) {
 			String name = rde.getName();
 			if (base != null)

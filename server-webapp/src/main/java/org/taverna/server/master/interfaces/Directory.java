@@ -24,7 +24,15 @@ public interface Directory extends DirectoryEntry {
 	 * @throws FilesystemAccessException
 	 *             If things go wrong.
 	 */
-	public Collection<DirectoryEntry> getContents()
+	Collection<DirectoryEntry> getContents() throws FilesystemAccessException;
+
+	/**
+	 * @return A list of the contents of the directory, in guaranteed date
+	 *         order.
+	 * @throws FilesystemAccessException
+	 *             If things go wrong.
+	 */
+	Collection<DirectoryEntry> getContentsByDate()
 			throws FilesystemAccessException;
 
 	/**
@@ -32,7 +40,7 @@ public interface Directory extends DirectoryEntry {
 	 * @throws FilesystemAccessException
 	 *             If things go wrong.
 	 */
-	public ZipStream getContentsAsZip() throws FilesystemAccessException;
+	ZipStream getContentsAsZip() throws FilesystemAccessException;
 
 	/**
 	 * Creates a sub-directory of this directory.
@@ -46,7 +54,7 @@ public interface Directory extends DirectoryEntry {
 	 *             If the name is the same as some existing entry in the
 	 *             directory, or if something else goes wrong during creation.
 	 */
-	public Directory makeSubdirectory(Principal actor, String name)
+	Directory makeSubdirectory(Principal actor, String name)
 			throws FilesystemAccessException;
 
 	/**
@@ -61,7 +69,7 @@ public interface Directory extends DirectoryEntry {
 	 *             If the name is the same as some existing entry in the
 	 *             directory, or if something else goes wrong during creation.
 	 */
-	public File makeEmptyFile(Principal actor, String name)
+	File makeEmptyFile(Principal actor, String name)
 			throws FilesystemAccessException;
 
 	/**
