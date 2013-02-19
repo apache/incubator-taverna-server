@@ -8,6 +8,7 @@ package org.taverna.server.master.rest;
 import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.common.Workflow;
+import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.interfaces.TavernaRun;
@@ -99,6 +101,31 @@ public interface TavernaServerREST {
 	@NonNull
 	Response submitWorkflow(@NonNull Workflow workflow,
 			@NonNull @Context UriInfo ui) throws NoUpdateException;
+
+	/**
+	 * Accepts (or not) a request to create a new run executing the workflow at
+	 * the given location.
+	 * 
+	 * @param referenceList
+	 *            The URI to workflow document to execute.
+	 * @param ui
+	 *            About the URI being POSTed to.
+	 * @return A response to the POST describing what was created.
+	 * @throws NoUpdateException
+	 *             If the POST failed.
+	 * @throws NoCreateException
+	 *             If the workflow couldn't be read into the server or the
+	 *             engine rejects it.
+	 */
+	@POST
+	@Path("runs")
+	@Consumes("text/uri-list")
+	@RolesAllowed(USER)
+	@Description("Accepts a URL to a workflow to download and run. The URL must be hosted on a publicly-accessible service.")
+	@NonNull
+	Response submitWorkflowByURL(@NonNull List<URI> referenceList,
+			@NonNull @Context UriInfo ui) throws NoCreateException,
+			NoUpdateException;
 
 	/**
 	 * @return A description of the policies supported by this server.

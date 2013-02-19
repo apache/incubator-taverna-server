@@ -10,13 +10,17 @@ import static javax.ws.rs.core.Response.created;
 import static javax.ws.rs.core.Response.noContent;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.seeOther;
+import static javax.ws.rs.core.Response.status;
 import static org.taverna.server.master.ContentTypes.APPLICATION_ZIP_TYPE;
 import static org.taverna.server.master.ContentTypes.DIRECTORY_VARIANTS;
 import static org.taverna.server.master.ContentTypes.INITIAL_FILE_VARIANTS;
 import static org.taverna.server.master.TavernaServerImpl.log;
 import static org.taverna.server.master.common.Uri.secure;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +31,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
+import javax.xml.ws.Holder;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.TavernaServerImpl.SupportAware;
@@ -256,30 +261,26 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 		return seeOther(ub.build(f.getName())).build();
 	}
 
-	@Override
-	@CallCounted
-	public Response setFileContents(List<PathSegment> filePath,
-			InputStream contents, UriInfo ui) throws NoDirectoryEntryException,
-			NoUpdateException, FilesystemAccessException {
+	private File getFileForWrite(List<PathSegment> filePath,
+			Holder<Boolean> isNew) throws FilesystemAccessException,
+			NoDirectoryEntryException, NoUpdateException {
 		support.permitUpdate(run);
-		Directory d;
-		String name;
 		if (filePath == null || filePath.size() == 0)
 			throw new FilesystemAccessException(
 					"Cannot create a file that is not in a directory.");
 
 		List<PathSegment> dirPath = new ArrayList<PathSegment>(filePath);
-		name = dirPath.remove(dirPath.size() - 1).getPath();
+		String name = dirPath.remove(dirPath.size() - 1).getPath();
 		DirectoryEntry de = fileUtils.getDirEntry(run, dirPath);
 		if (!(de instanceof Directory)) {
 			throw new FilesystemAccessException(
 					"Cannot create a file that is not in a directory.");
 		}
-		d = (Directory) de;
+		Directory d = (Directory) de;
 
 		File f = null;
-		boolean isNew = false;
-		for (DirectoryEntry e : d.getContents()) {
+		isNew.value = false;
+		for (DirectoryEntry e : d.getContents())
 			if (e.getName().equals(name)) {
 				if (e instanceof File) {
 					f = (File) e;
@@ -288,15 +289,58 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 				throw new FilesystemAccessException(
 						"Cannot create a file that is not in a directory.");
 			}
-		}
+
 		if (f == null) {
 			f = d.makeEmptyFile(support.getPrincipal(), name);
-			isNew = true;
+			isNew.value = true;
 		} else
 			f.setContents(new byte[0]);
-		support.copyStreamToFile(contents, f);
+		return f;
+	}
 
-		if (isNew)
+	@Override
+	@CallCounted
+	public Response setFileContents(List<PathSegment> filePath,
+			InputStream contents, UriInfo ui) throws NoDirectoryEntryException,
+			NoUpdateException, FilesystemAccessException {
+		Holder<Boolean> isNew = new Holder<Boolean>(true);
+		support.copyStreamToFile(contents, getFileForWrite(filePath, isNew));
+
+		if (isNew.value)
+			return created(ui.getAbsolutePath()).build();
+		else
+			return noContent().build();
+	}
+
+	@Override
+	public Response setFileContentsFromURL(List<PathSegment> filePath,
+			List<URI> referenceList, UriInfo ui)
+			throws NoDirectoryEntryException, NoUpdateException,
+			FilesystemAccessException {
+		if (referenceList.isEmpty() || referenceList.size() > 1)
+			return status(422).entity("URI list must have single URI in it")
+					.build();
+		URI uri = referenceList.get(0);
+		try {
+			uri.toURL();
+		} catch (MalformedURLException e) {
+			return status(422).entity("URI list must have value URL in it")
+					.build();
+		}
+		Holder<Boolean> isNew = new Holder<Boolean>(true);
+		File f = getFileForWrite(filePath, isNew);
+
+		try {
+			support.copyDataToFile(uri, f);
+		} catch (MalformedURLException ex) {
+			// Should not happen; called uri.toURL() successfully above
+			throw new NoUpdateException("failed to parse URI", ex);
+		} catch (IOException ex) {
+			throw new FilesystemAccessException(
+					"failed to transfer data from URI", ex);
+		}
+
+		if (isNew.value)
 			return created(ui.getAbsolutePath()).build();
 		else
 			return noContent().build();

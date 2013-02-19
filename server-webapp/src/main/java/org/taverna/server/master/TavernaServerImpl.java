@@ -19,9 +19,11 @@ import static org.taverna.server.master.common.Roles.ADMIN;
 import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.common.Status.Initialized;
 import static org.taverna.server.master.common.Uri.secure;
+import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -41,6 +43,7 @@ import javax.xml.ws.WebServiceContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.cxf.annotations.WSDLDocumentation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
 import org.taverna.server.master.TavernaServerImpl.SupportAware;
@@ -55,6 +58,7 @@ import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.InvalidCredentialException;
+import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoCredentialException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoListenerException;
@@ -79,6 +83,7 @@ import org.taverna.server.master.rest.TavernaServerREST.PermittedListeners;
 import org.taverna.server.master.rest.TavernaServerREST.PermittedWorkflows;
 import org.taverna.server.master.rest.TavernaServerREST.PolicyView;
 import org.taverna.server.master.rest.TavernaServerRunREST;
+import org.taverna.server.master.rest.handler.T2FlowDocumentHandler;
 import org.taverna.server.master.soap.FileContents;
 import org.taverna.server.master.soap.PermissionList;
 import org.taverna.server.master.soap.TavernaServerSOAP;
@@ -189,7 +194,6 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	// REST INTERFACE
 
-	
 	@Value("${taverna.interaction.feed_path}")
 	private String interactionFeed;
 
@@ -212,6 +216,32 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	@CallCounted
 	public Response submitWorkflow(Workflow workflow, UriInfo ui)
 			throws NoUpdateException {
+		String name = support.buildWorkflow(workflow);
+		return created(secure(ui).path("{uuid}").build(name)).build();
+	}
+
+	@Autowired
+	private T2FlowDocumentHandler t2flowHandler;
+
+	@Override
+	@CallCounted
+	public Response submitWorkflowByURL(List<URI> referenceList, UriInfo ui)
+			throws NoCreateException {
+		if (referenceList == null || referenceList.size() == 0)
+			throw new NoCreateException("no workflow URI supplied");
+		URI u = referenceList.get(0);
+		Workflow workflow;
+		try {
+			URLConnection conn = u.toURL().openConnection();
+			conn.setRequestProperty("Accept", T2FLOW);
+			conn.connect();
+			// Tricky point: we know the reader part of the handler only cares
+			// about the stream argument.
+			workflow = t2flowHandler.readFrom(null, null, null, null, null,
+					conn.getInputStream());
+		} catch (IOException e) {
+			throw new NoCreateException("could not read workflow", e);
+		}
 		String name = support.buildWorkflow(workflow);
 		return created(secure(ui).path("{uuid}").build(name)).build();
 	}
@@ -870,8 +900,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	@Override
-	public
-	String resolve(String uri) {
+	public String resolve(String uri) {
 		return getBaseUriBuilder().build().resolve(uri).toString();
 	}
 

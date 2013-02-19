@@ -17,6 +17,8 @@ import static org.taverna.server.master.common.Roles.ADMIN;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -672,6 +674,12 @@ public class TavernaServerSupport {
 			throw new FilesystemAccessException(
 					"problem constructing stream from data source", e);
 		}
+	}
+
+	public void copyDataToFile(URI uri, File file)
+			throws MalformedURLException, FilesystemAccessException,
+			IOException {
+		copyStreamToFile(uri.toURL().openStream(), file);
 	}
 
 	public void copyStreamToFile(InputStream stream, File file)
