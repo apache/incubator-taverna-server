@@ -7,6 +7,7 @@ package org.taverna.server.master.interfaces;
 
 import java.util.List;
 
+import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoDestroyException;
@@ -99,4 +100,10 @@ public interface Policy {
 	 *         if any workflow may be submitted.
 	 */
 	public List<Workflow> listPermittedWorkflows(UsernamePrincipal user);
+
+	/**
+	 * @return The maximum number of {@linkplain Status#Operating operating}
+	 *         runs that the system can support.
+	 */
+	int getOperatingLimit();
 }

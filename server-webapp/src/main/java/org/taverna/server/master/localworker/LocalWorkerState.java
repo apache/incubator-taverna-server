@@ -123,6 +123,9 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	String registryHost;
 	int registryPort;
 
+	int operatingLimit;
+	private static final int DEFAULT_OPERATING_LIMIT = 10;
+
 	/**
 	 * @param defaultLifetime
 	 *            how long a workflow run should live by default, in minutes.
@@ -155,6 +158,23 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 */
 	public int getMaxRuns() {
 		return maxRuns < 1 ? DEFAULT_MAX : maxRuns;
+	}
+
+	/**
+	 * @return the operatingLimit
+	 */
+	public int getOperatingLimit() {
+		return operatingLimit < 1 ? DEFAULT_OPERATING_LIMIT : operatingLimit;
+	}
+
+	/**
+	 * @param operatingLimit
+	 *            the operatingLimit to set
+	 */
+	public void setOperatingLimit(int operatingLimit) {
+		this.operatingLimit = operatingLimit;
+		if (loadedState)
+			self.store();
 	}
 
 	/**
@@ -361,7 +381,8 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 * @return the registryHost
 	 */
 	public String getRegistryHost() {
-		return (registryHost == null || registryHost.isEmpty()) ? null : registryHost;
+		return (registryHost == null || registryHost.isEmpty()) ? null
+				: registryHost;
 	}
 
 	/**
@@ -410,6 +431,7 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 		waitSeconds = state.getWaitSeconds();
 		registryHost = state.getRegistryHost();
 		registryPort = state.getRegistryPort();
+		operatingLimit = state.getOperatingLimit();
 
 		loadedState = true;
 	}
@@ -436,6 +458,7 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 		state.setWaitSeconds(waitSeconds);
 		state.setRegistryHost(registryHost);
 		state.setRegistryPort(registryPort);
+		state.setOperatingLimit(operatingLimit);
 
 		loadedState = true;
 	}

@@ -204,6 +204,17 @@ public interface Admin {
 	int runCount();
 
 	/**
+	 * The property for the number of runs that are currently running.
+	 * 
+	 * @return The property value (read-only).
+	 */
+	@GET
+	@Path("operatingCount")
+	@Produces("text/plain")
+	@Description("How many runs are currently actually running.")
+	int operatingCount();
+
+	/**
 	 * Get the location of the RMI registry.
 	 * 
 	 * @return The current setting.
@@ -279,6 +290,31 @@ public interface Admin {
 	@Produces("text/plain")
 	@Description("What is the maximum number of simultaneous runs?")
 	int setRunLimit(int runLimit);
+
+	/**
+	 * Get the maximum number of simultaneous executing runs.
+	 * 
+	 * @return The current setting.
+	 */
+	@GET
+	@Path("operatingLimit")
+	@Produces("text/plain")
+	@Description("What is the maximum number of simultaneous executing runs?")
+	int getOperatingLimit();
+
+	/**
+	 * Set the maximum number of simultaneous executing runs.
+	 * 
+	 * @param operatingLimit
+	 *            What to set it to.
+	 * @return The new setting.
+	 */
+	@PUT
+	@Path("operatingLimit")
+	@Consumes("text/plain")
+	@Produces("text/plain")
+	@Description("What is the maximum number of simultaneous executing runs?")
+	int setOperatingLimit(int operatingLimit);
 
 	/**
 	 * Get the default lifetime of workflow runs.
@@ -642,6 +678,8 @@ public interface Admin {
 		public Uri factoryProcessMapping;
 		public Uri usageRecords;
 		public Uri users;
+		public Uri operatingLimit;
+		public Uri operatingCount;
 
 		public AdminDescription() {
 		}
@@ -671,6 +709,8 @@ public interface Admin {
 			factoryProcessMapping = new Uri(ui, "factoryProcessMapping");
 			usageRecords = new Uri(ui, "usageRecords");
 			users = new Uri(ui, "users");
+			operatingLimit = new Uri(ui, "operatingLimit");
+			operatingCount = new Uri(ui, "operatingCount");
 		}
 	}
 

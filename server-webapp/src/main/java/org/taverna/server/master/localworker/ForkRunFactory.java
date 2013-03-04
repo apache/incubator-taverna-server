@@ -12,6 +12,7 @@ import static java.util.Calendar.SECOND;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.logging.LogFactory.getLog;
 import static org.springframework.jmx.support.MetricType.COUNTER;
+import static org.springframework.jmx.support.MetricType.GAUGE;
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 
 import java.io.BufferedReader;
@@ -73,6 +74,17 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		} catch (Exception e) {
 			log.fatal("failed to make connection to remote run factory", e);
 		}
+	}
+
+	private RemoteRunFactory getFactory() throws RemoteException {
+		try {
+			initFactory();
+		} catch (RemoteException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new RemoteException("problem constructing factory", e);
+		}
+		return factory;
 	}
 
 	/** @return Which java executable to run. */
@@ -269,20 +281,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 			try {
 				sleep(state.getSleepMS());
 				lastStartupCheckCount++;
-				log.info("about to look up resource called "
-						+ factoryProcessName);
-				try {
-					// Validate registry connection first
-					getTheRegistry().list();
-				} catch (ConnectException ce) {
-					log.warn("connection problems with registry", ce);
-				} catch (ConnectIOException e) {
-					log.warn("connection problems with registry", e);
-				}
-				factory = (RemoteRunFactory) getTheRegistry().lookup(
-						factoryProcessName);
-				log.info("successfully connected to factory subprocess "
-						+ factoryProcessName);
+				factory = getRemoteFactoryHandle(factoryProcessName);
 				initInteractionDetails(factory);
 				return;
 			} catch (InterruptedException ie) {
@@ -301,11 +300,28 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 				} catch (Throwable t) {
 					// Ignore!
 				}
-			} catch (Exception e) {
+			} catch (RuntimeException e) {
 				lastException = e;
 			}
 		}
 		throw lastException;
+	}
+
+	private RemoteRunFactory getRemoteFactoryHandle(String name)
+			throws RemoteException, NotBoundException {
+		log.info("about to look up resource called " + name);
+		try {
+			// Validate registry connection first
+			getTheRegistry().list();
+		} catch (ConnectException ce) {
+			log.warn("connection problems with registry", ce);
+		} catch (ConnectIOException e) {
+			log.warn("connection problems with registry", e);
+		}
+		RemoteRunFactory rrf = (RemoteRunFactory) getTheRegistry().lookup(name);
+		log.info("successfully connected to factory subprocess "
+				+ factoryProcessName);
+		return rrf;
 	}
 
 	private static class OutputLogger implements Runnable {
@@ -450,7 +466,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		String globaluser = "Unknown Person";
 		if (creator != null)
 			globaluser = creator.getName();
-		RemoteSingleRun rsr = factory.make(wf, globaluser,
+		RemoteSingleRun rsr = getFactory().make(wf, globaluser,
 				makeURReciver(creator), id);
 		totalRuns++;
 		return rsr;
@@ -461,8 +477,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 			Workflow workflow, UUID id) throws Exception {
 		String wf = serializeWorkflow(workflow);
 		for (int i = 0; i < 3; i++) {
-			if (factory == null)
-				initFactory();
+			initFactory();
 			try {
 				return getRealRun(creator, wf, id);
 			} catch (ConnectException e) {
@@ -499,5 +514,11 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	@Override
 	public String[] getFactoryProcessMapping() {
 		return new String[0];
+	}
+
+	@ManagedMetric(description = "How many workflow runs are currently actually executing.", currencyTimeLimit = 10, metricType = GAUGE, category = "throughput")
+	@Override
+	public int getOperatingCount() throws Exception {
+		return getFactory().countOperatingRuns();
 	}
 }

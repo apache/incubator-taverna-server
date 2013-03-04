@@ -119,13 +119,16 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	private UsageRecordReceiver urreceiver;
 	private File workflowFile;
 
+	private TavernaRunManager runManager;
+
 	/**
 	 * @throws RemoteException
 	 */
-	public WorkerCore() throws RemoteException {
+	public WorkerCore(TavernaRunManager runManager) throws RemoteException {
 		super();
 		stdout = new StringWriter();
 		stderr = new StringWriter();
+		this.runManager = runManager;
 	}
 
 	/**
@@ -357,6 +360,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		if (subprocess == null)
 			throw new IOException("unknown failure creating process");
 		start = new Date();
+		runManager.runStarted();
 
 		// Capture its stdout and stderr
 		new AsyncCopy(subprocess.getInputStream(), stdout);
@@ -375,6 +379,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			try {
 				// Check if the workflow terminated of its own accord
 				code = subprocess.exitValue();
+				runManager.runCeased();
 				buildUR(code == 0 ? Completed : Failed);
 			} catch (IllegalThreadStateException e) {
 				subprocess.destroy();
@@ -384,6 +389,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 					e1.printStackTrace(out); // not expected
 					return;
 				}
+				runManager.runCeased();
 				buildUR(code == 0 ? Completed : Aborted);
 			}
 			finished = true;
@@ -453,6 +459,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			exitCode = subprocess.exitValue();
 			finished = true;
 			readyToSendEmail = true;
+			runManager.runCeased();
 			buildUR(exitCode.intValue() == 0 ? Completed : Failed);
 			return Finished;
 		} catch (IllegalThreadStateException e) {

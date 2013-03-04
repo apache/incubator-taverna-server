@@ -463,4 +463,20 @@ public class AdminBean implements Admin {
 		userStore.deleteUser(username);
 		return noContent().build();
 	}
+
+	@Override
+	public int operatingCount() {
+		return factory.getOperatingCount();
+	}
+
+	@Override
+	public int getOperatingLimit() {
+		return factory.getOperatingLimit();
+	}
+
+	@Override
+	public int setOperatingLimit(int operatingLimit) {
+		factory.setOperatingLimit(operatingLimit);
+		return factory.getOperatingLimit();
+	}
 }

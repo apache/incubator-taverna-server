@@ -281,14 +281,14 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		this.urProcessorPool = urProcessorPool;
 	}
 
-//	static {
-//		if (getSecurityManager() == null) {
-//			setProperty("java.security.policy", AbstractRemoteRunFactory.class
-//					.getClassLoader().getResource(SECURITY_POLICY_FILE)
-//					.toExternalForm());
-//			setSecurityManager(new RMISecurityManager());
-//		}
-//	}
+	// static {
+	// if (getSecurityManager() == null) {
+	// setProperty("java.security.policy", AbstractRemoteRunFactory.class
+	// .getClassLoader().getResource(SECURITY_POLICY_FILE)
+	// .toExternalForm());
+	// setSecurityManager(new RMISecurityManager());
+	// }
+	// }
 
 	/**
 	 * Set up the run expiry management engine.
@@ -342,7 +342,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 			UUID id = randomUUID();
 			RemoteSingleRun rsr = getRealRun(creator, workflow, id);
 			RemoteRunDelegate run = new RemoteRunDelegate(now, workflow, rsr,
-					state.getDefaultLifetime(), runDB, id);
+					state.getDefaultLifetime(), runDB, id, this);
 			run.setSecurityContext(securityFactory.create(run, creator));
 			return run;
 		} catch (NoCreateException e) {
@@ -390,6 +390,27 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		state.setMaxRuns(maxRuns);
 	}
 
+	@ManagedAttribute(description = "The maximum number of simultaneous operating runs supported by the server.", currencyTimeLimit = 300)
+	@Override
+	public int getOperatingLimit() {
+		return state.getOperatingLimit();
+	}
+
+	@ManagedAttribute(description = "The maximum number of simultaneous operating runs supported by the server.")
+	@Override
+	public void setOperatingLimit(int operatingLimit) {
+		state.setOperatingLimit(operatingLimit);
+	}
+
+	/**
+	 * @return A count of the number of runs believed to actually be in the
+	 *         {@linkplain uk.org.taverna.server.master.common.Status#Operating
+	 *         operating} state.
+	 * @throws Exception
+	 *             If anything goes wrong.
+	 */
+	public abstract int getOperatingCount() throws Exception;
+
 	/** @return How many minutes should a workflow live by default? */
 	@ManagedAttribute(description = "How many minutes should a workflow live by default?", currencyTimeLimit = 300)
 	@Override
@@ -420,6 +441,15 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 */
 	protected String serializeWorkflow(Workflow workflow) throws JAXBException {
 		return workflow.marshal();
+	}
+
+	protected boolean isStartable() {
+		try {
+			return state.getOperatingLimit() > getOperatingCount();
+		} catch (Exception e) {
+			log.info("failed to get operating run count", e);
+			return false;
+		}
 	}
 
 	/**

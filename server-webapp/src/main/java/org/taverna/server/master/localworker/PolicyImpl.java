@@ -57,6 +57,11 @@ class PolicyImpl implements Policy {
 	}
 
 	@Override
+	public int getOperatingLimit() {
+		return state.getOperatingLimit();
+	}
+
+	@Override
 	public List<Workflow> listPermittedWorkflows(UsernamePrincipal user) {
 		return emptyList();
 	}

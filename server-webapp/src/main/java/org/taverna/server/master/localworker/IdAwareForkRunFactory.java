@@ -12,6 +12,7 @@ import static java.util.Calendar.SECOND;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.logging.LogFactory.getLog;
 import static org.springframework.jmx.support.MetricType.COUNTER;
+import static org.springframework.jmx.support.MetricType.GAUGE;
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 
 import java.io.BufferedReader;
@@ -45,6 +46,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedMetric;
 import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.jmx.support.MetricType;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.master.common.Workflow;
@@ -484,6 +486,15 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	@Override
 	public String getFactoryProcessName() {
 		return "<PROPERTY-NOT-SUPPORTED>";
+	}
+
+	@ManagedMetric(description = "How many workflow runs are currently actually executing.", currencyTimeLimit = 10, metricType = GAUGE, category = "throughput")
+	@Override
+	public int getOperatingCount() throws Exception {
+		int total = 0;
+		for (RemoteRunFactory rrf : factory.values())
+			total += rrf.countOperatingRuns();
+		return total;
 	}
 }
 

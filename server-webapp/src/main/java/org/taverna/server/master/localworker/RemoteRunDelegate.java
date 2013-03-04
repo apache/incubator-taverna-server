@@ -51,6 +51,7 @@ import org.taverna.server.master.exceptions.BadPropertyValueException;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoListenerException;
+import org.taverna.server.master.exceptions.OverloadedException;
 import org.taverna.server.master.interfaces.Directory;
 import org.taverna.server.master.interfaces.DirectoryEntry;
 import org.taverna.server.master.interfaces.File;
@@ -79,10 +80,12 @@ public class RemoteRunDelegate implements TavernaRun {
 	transient String id;
 	transient RemoteSingleRun run;
 	transient RunDBSupport db;
+	transient AbstractRemoteRunFactory factory;
 	boolean doneTransitionToFinished;
 
 	RemoteRunDelegate(Date creationInstant, Workflow workflow,
-			RemoteSingleRun rsr, int defaultLifetime, RunDBSupport db, UUID id) {
+			RemoteSingleRun rsr, int defaultLifetime, RunDBSupport db, UUID id,
+			AbstractRemoteRunFactory factory) {
 		if (rsr == null) {
 			throw new IllegalArgumentException("remote run must not be null");
 		}
@@ -93,6 +96,7 @@ public class RemoteRunDelegate implements TavernaRun {
 		this.expiry = c.getTime();
 		this.run = rsr;
 		this.db = db;
+		this.factory = factory;
 		if (id != null)
 			this.id = id.toString();
 	}
@@ -230,6 +234,8 @@ public class RemoteRunDelegate implements TavernaRun {
 				if (run.getStatus() == RemoteStatus.Initialized) {
 					secContext.conveySecurity();
 				}
+				if (!factory.isStartable())
+					throw new OverloadedException();
 				run.setStatus(RemoteStatus.Operating);
 				break;
 			case Stopped:

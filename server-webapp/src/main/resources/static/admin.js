@@ -124,11 +124,11 @@ var NodeAll;
 })();
 
 var buttonlist = [ "allowNew", "logFaults", "logWorkflows" ];
-var readonlies = [ "invokationCount", "lastExitCode", "runCount", "startupTime" ];
+var readonlies = [ "invokationCount", "lastExitCode", "runCount", "startupTime", "operatingCount" ];
 var entries = [ "defaultLifetime", "executeWorkflowScript", "javaBinary",
 		"registrationPollMillis", "registrationWaitSeconds", "registryHost",
 		"registryPort", "runLimit", "runasPasswordFile", "serverForkerJar",
-		"serverWorkerJar", "usageRecordDumpFile" ];
+		"serverWorkerJar", "usageRecordDumpFile", "operatingLimit" ];
 /** Cached information about users. */
 var userinfo = [];
 /** Extra arguments to pass to the runtime. */

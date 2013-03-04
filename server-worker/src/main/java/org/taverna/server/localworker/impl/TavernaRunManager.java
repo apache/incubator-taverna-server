@@ -15,8 +15,6 @@ import static java.rmi.registry.LocateRegistry.getRegistry;
 
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
@@ -58,8 +56,6 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	DocumentBuilderFactory dbf;
 	TransformerFactory tf;
 	String command;
-	Constructor<? extends RemoteSingleRun> cons;
-	Class<? extends Worker> workerClass;
 	// Hacks!
 	public static String interactionHost;
 	public static String interactionPort;
@@ -67,6 +63,7 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	public static String interactionFeedPath;
 	Map<String, String> seedEnvironment = new HashMap<String, String>();
 	List<String> javaInitParams = new ArrayList<String>();
+	private int activeRuns = 0;
 
 	/**
 	 * How to get the actual workflow document from the XML document that it is
@@ -88,28 +85,15 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	 * 
 	 * @param command
 	 *            What command to call to actually run a run.
-	 * @param constructor
-	 *            What constructor to call to instantiate the RMI server object
-	 *            for the run. The constructor <i>must</i> be able to take two
-	 *            strings (the execution command, and the workflow document) and
-	 *            a class (the <tt>workerClass</tt> parameter, below) as
-	 *            arguments.
-	 * @param workerClass
-	 *            What class to create to actually manufacture and manage the
-	 *            connection to the workflow engine.
 	 * @throws RemoteException
 	 *             If anything goes wrong during creation of the instance.
 	 */
-	public TavernaRunManager(String command,
-			Constructor<? extends RemoteSingleRun> constructor,
-			Class<? extends Worker> workerClass) throws RemoteException {
+	public TavernaRunManager(String command) throws RemoteException {
 		this.command = command;
 		this.dbf = DocumentBuilderFactory.newInstance();
 		this.dbf.setNamespaceAware(true);
 		this.dbf.setCoalescing(true);
 		this.tf = TransformerFactory.newInstance();
-		this.cons = constructor;
-		this.workerClass = workerClass;
 	}
 
 	/**
@@ -157,15 +141,10 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 			workflow = unwrapWorkflow(workflow, wfid);
 			out.println("Creating run from workflow <" + wfid.value + "> for <"
 					+ creator + ">");
-			return cons.newInstance(command, workflow, workerClass, urReceiver,
-					id, seedEnvironment, javaInitParams);
+			return new LocalWorker(command, workflow, urReceiver, id,
+					seedEnvironment, javaInitParams, this);
 		} catch (RemoteException e) {
 			throw e;
-		} catch (InvocationTargetException e) {
-			if (e.getTargetException() instanceof RemoteException)
-				throw (RemoteException) e.getTargetException();
-			throw new RemoteException("unexpected exception",
-					e.getTargetException());
 		} catch (Exception e) {
 			throw new RemoteException("bad instance construction", e);
 		}
@@ -236,10 +215,7 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 		String command = args[0];
 		factoryName = args[args.length - 1];
 		registry = getRegistry();
-		TavernaRunManager man = new TavernaRunManager(command,
-				LocalWorker.class.getDeclaredConstructor(String.class,
-						String.class, Class.class, UsageRecordReceiver.class,
-						UUID.class, Map.class, List.class), WorkerCore.class);
+		TavernaRunManager man = new TavernaRunManager(command);
 		for (int i = 1; i < args.length - 1; i++) {
 			if (args[i].startsWith("-E")) {
 				String arg = args[i].substring(2);
@@ -258,8 +234,10 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 				man.addJavaParameter(args[i].substring(2));
 				continue;
 			}
-			throw new IllegalArgumentException("argument \"" + args[i]
-					+ "\" must start with -D, -E or -J; -D and -E must contain a \"=\"");
+			throw new IllegalArgumentException(
+					"argument \""
+							+ args[i]
+							+ "\" must start with -D, -E or -J; -D and -E must contain a \"=\"");
 		}
 		registry.bind(factoryName, man);
 		getRuntime().addShutdownHook(new Thread() {
@@ -289,5 +267,18 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 		interactionPort = port;
 		interactionWebdavPath = webdavPath;
 		interactionFeedPath = feedPath;
+	}
+
+	@Override
+	public synchronized int countOperatingRuns() {
+		return (activeRuns < 0 ? 0 : activeRuns);
+	}
+
+	public synchronized void runStarted() {
+		activeRuns++;
+	}
+
+	public synchronized void runCeased() {
+		activeRuns--;
 	}
 }

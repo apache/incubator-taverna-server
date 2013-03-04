@@ -101,4 +101,12 @@ public interface ConfigurableRunFactory extends RunFactory {
 	/** What factory process to use for a particular user? */
 	String[] getFactoryProcessMapping();
 
+	/** How many runs can be operating at once? Setter */
+	void setOperatingLimit(int operatingLimit);
+
+	/** How many runs can be operating at once? Getter */
+	int getOperatingLimit();
+
+	/** How many runs are actually operating? */
+	int getOperatingCount();
 }
