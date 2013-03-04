@@ -143,11 +143,24 @@ public class LocalWorkerTest {
 		}
 	}
 
+	int startedCount = 0, ceasedCount = 0;
+	RunAccounting accounter = new RunAccounting() {
+		@Override
+		public void runStarted() {
+			startedCount++;
+		}
+
+		@Override
+		public void runCeased() {
+			ceasedCount++;
+		}
+	};
+
 	@Before
 	public void setUp() throws Exception {
-		lw = new LocalWorker("XWC", "WF", DummyWorker.class, null,
-				randomUUID(), new HashMap<String, String>(),
-				new ArrayList<String>());
+		lw = new LocalWorker("XWC", "WF", null, randomUUID(),
+				new HashMap<String, String>(), new ArrayList<String>(),
+				accounter);
 		events = new ArrayList<String>();
 		returnThisStatus = RemoteStatus.Operating;
 	}

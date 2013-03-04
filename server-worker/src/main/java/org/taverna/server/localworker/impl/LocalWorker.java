@@ -195,7 +195,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	protected LocalWorker(String executeWorkflowCommand, String workflow,
 			UsageRecordReceiver urReceiver, UUID id,
 			Map<String, String> seedEnvironment, List<String> javaParams,
-			TavernaRunManager runManager) throws RemoteException,
+			RunAccounting accounting) throws RemoteException,
 			ImplementationException {
 		super();
 		if (id == null)
@@ -221,7 +221,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		environment.putAll(seedEnvironment);
 		runtimeSettings.addAll(javaParams);
 		try {
-			core = new WorkerCore(runManager);
+			core = new WorkerCore(accounting);
 		} catch (Exception e) {
 			out.println("problem when creating core worker implementation");
 			e.printStackTrace(out);
