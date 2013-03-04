@@ -187,6 +187,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	 * @param javaParams
 	 *            Parameters to pass to the worker subprocess java runtime
 	 *            itself.
+	 * @param workerFactory
+	 *            How to make instances of the low-level worker objects.
 	 * @throws RemoteException
 	 *             If registration of the worker fails.
 	 * @throws ImplementationException
@@ -195,7 +197,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	protected LocalWorker(String executeWorkflowCommand, String workflow,
 			UsageRecordReceiver urReceiver, UUID id,
 			Map<String, String> seedEnvironment, List<String> javaParams,
-			RunAccounting accounting) throws RemoteException,
+			WorkerFactory workerFactory) throws RemoteException,
 			ImplementationException {
 		super();
 		if (id == null)
@@ -221,7 +223,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		environment.putAll(seedEnvironment);
 		runtimeSettings.addAll(javaParams);
 		try {
-			core = new WorkerCore(accounting);
+			core = workerFactory.makeInstance();
 		} catch (Exception e) {
 			out.println("problem when creating core worker implementation");
 			e.printStackTrace(out);

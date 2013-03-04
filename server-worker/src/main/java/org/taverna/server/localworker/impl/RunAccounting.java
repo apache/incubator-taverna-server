@@ -6,7 +6,6 @@
 package org.taverna.server.localworker.impl;
 
 /**
- * How the accounting for workflow runs is handled.
  * 
  * @author Donal Fellows
  */

@@ -16,10 +16,10 @@ public interface ConfigurableRunFactory extends RunFactory {
 
 	/** Where is the registry? Setter */
 	void setRegistryHost(String host);
-	
+
 	/** Where is the registry? Getter */
 	int getRegistryPort();
-	
+
 	/** Where is the registry? Setter */
 	void setRegistryPort(int port);
 
@@ -37,13 +37,13 @@ public interface ConfigurableRunFactory extends RunFactory {
 
 	/** How often do we probe for info? Getter */
 	int getSleepTime();
-	
+
 	/** How often do we probe for info? Setter */
 	void setSleepTime(int sleepTime);
 
 	/** How long do we allow for actions? Getter */
 	int getWaitSeconds();
-	
+
 	/** How long do we allow for actions? Setter */
 	void setWaitSeconds(int seconds);
 
@@ -59,10 +59,16 @@ public interface ConfigurableRunFactory extends RunFactory {
 	/** How do we start the file system access process? Setter */
 	void setServerWorkerJar(String serverWorkerJar);
 
-	/** How do we start the file system access process? Extra arguments to pass. Getter */
+	/**
+	 * How do we start the file system access process? Extra arguments to pass.
+	 * Getter
+	 */
 	String[] getExtraArguments();
 
-	/** How do we start the file system access process? Extra arguments to pass. Setter */
+	/**
+	 * How do we start the file system access process? Extra arguments to pass.
+	 * Setter
+	 */
 	void setExtraArguments(String[] firstArguments);
 
 	/** Where is Java? Getter */
@@ -85,10 +91,10 @@ public interface ConfigurableRunFactory extends RunFactory {
 
 	/** How many runs have there been? */
 	int getTotalRuns();
-	
+
 	/** How long did the last subprocess startup take? */
 	int getLastStartupCheckCount();
-	
+
 	/** What are the current runs? */
 	String[] getCurrentRunNames();
 
@@ -107,6 +113,11 @@ public interface ConfigurableRunFactory extends RunFactory {
 	/** How many runs can be operating at once? Getter */
 	int getOperatingLimit();
 
-	/** How many runs are actually operating? */
-	int getOperatingCount();
+	/**
+	 * How many runs are actually operating?
+	 * 
+	 * @throws Exception
+	 *             if anything goes wrong
+	 */
+	int getOperatingCount() throws Exception;
 }

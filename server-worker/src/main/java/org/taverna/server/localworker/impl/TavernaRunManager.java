@@ -52,7 +52,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  */
 @SuppressWarnings({ "SE_BAD_FIELD", "SE_NO_SERIALVERSIONID" })
 public class TavernaRunManager extends UnicastRemoteObject implements
-		RemoteRunFactory, RunAccounting {
+		RemoteRunFactory, RunAccounting, WorkerFactory {
 	DocumentBuilderFactory dbf;
 	TransformerFactory tf;
 	String command;
@@ -282,5 +282,10 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	@Override
 	public synchronized void runCeased() {
 		activeRuns--;
+	}
+
+	@Override
+	public Worker makeInstance() throws Exception {
+		return new WorkerCore(this);
 	}
 }

@@ -29,6 +29,7 @@ import static org.taverna.server.localworker.remote.RemoteStatus.Initialized;
 import static org.taverna.server.localworker.remote.RemoteStatus.Operating;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -122,7 +123,8 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	private RunAccounting accounting;
 
 	/**
-	 * @param accounting Object that looks after how many runs are executing.
+	 * @param accounting
+	 *            Object that looks after how many runs are executing.
 	 * @throws RemoteException
 	 */
 	public WorkerCore(RunAccounting accounting) throws RemoteException {
@@ -230,6 +232,68 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			Map<String, String> inputValues, File outputBaclava,
 			File securityDir, char[] password, Map<String, String> environment,
 			String token, List<String> runtime) throws IOException {
+		ProcessBuilder pb = createProcessBuilder(executeWorkflowCommand,
+				workflow, workingDir, inputBaclava, inputFiles, inputValues,
+				outputBaclava, securityDir, password, environment, token,
+				runtime);
+
+		// Start the subprocess
+		out.println("starting " + pb.command() + " in directory " + workingDir);
+		subprocess = pb.start();
+		if (subprocess == null)
+			throw new IOException("unknown failure creating process");
+		start = new Date();
+		accounting.runStarted();
+
+		// Capture its stdout and stderr
+		new AsyncCopy(subprocess.getInputStream(), stdout);
+		new AsyncCopy(subprocess.getErrorStream(), stderr);
+		if (password != null)
+			new AsyncPrint(subprocess.getOutputStream(), password);
+	}
+
+	/**
+	 * Assemble the process builder. Does not launch the subprocess.
+	 * 
+	 * @param executeWorkflowCommand
+	 *            The reference to the workflow engine implementation.
+	 * @param workflow
+	 *            The workflow to execute.
+	 * @param workingDir
+	 *            The working directory to use.
+	 * @param inputBaclava
+	 *            What file to read a baclava document from (or <tt>null</tt>)
+	 * @param inputFiles
+	 *            The mapping from inputs to files.
+	 * @param inputValues
+	 *            The mapping from inputs to literal values.
+	 * @param outputBaclava
+	 *            What file to write a baclava document to (or <tt>null</tt>)
+	 * @param securityDir
+	 *            The credential manager directory.
+	 * @param password
+	 *            The password for the credential manager.
+	 * @param environment
+	 *            The seed environment
+	 * @param token
+	 *            The run identifier that the server wants to use.
+	 * @param runtime
+	 *            Any runtime parameters to Java.
+	 * @return The configured process builder.
+	 * @throws IOException
+	 *             If file handling fails
+	 * @throws UnsupportedEncodingException
+	 *             If we can't encode any text (unlikely)
+	 * @throws FileNotFoundException
+	 *             If we can't write the workflow out (unlikely)
+	 */
+	ProcessBuilder createProcessBuilder(String executeWorkflowCommand,
+			String workflow, File workingDir, File inputBaclava,
+			Map<String, File> inputFiles, Map<String, String> inputValues,
+			File outputBaclava, File securityDir, char[] password,
+			Map<String, String> environment, String token, List<String> runtime)
+			throws IOException, UnsupportedEncodingException,
+			FileNotFoundException {
 		ProcessBuilder pb = new ProcessBuilder();
 		/*
 		 * WARNING! HERE THERE BE DRAGONS! BE CAREFUL HERE!
@@ -323,7 +387,8 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 
 		// Add an argument holding the workflow
 		workflowFile = createTempFile("taverna", ".t2flow");
-		Writer w = new OutputStreamWriter(new FileOutputStream(workflowFile), "UTF-8");
+		Writer w = new OutputStreamWriter(new FileOutputStream(workflowFile),
+				"UTF-8");
 		try {
 			w.write(workflow);
 		} finally {
@@ -354,20 +419,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			env.put("INTERACTION_WEBDAV", interactionWebdavPath);
 			env.put("INTERACTION_FEED", interactionFeedPath);
 		}
-
-		// Start the subprocess
-		out.println("starting " + pb.command() + " in directory " + workingDir);
-		subprocess = pb.start();
-		if (subprocess == null)
-			throw new IOException("unknown failure creating process");
-		start = new Date();
-		accounting.runStarted();
-
-		// Capture its stdout and stderr
-		new AsyncCopy(subprocess.getInputStream(), stdout);
-		new AsyncCopy(subprocess.getErrorStream(), stderr);
-		if (password != null)
-			new AsyncPrint(subprocess.getOutputStream(), password);
+		return pb;
 	}
 
 	/**
@@ -564,7 +616,8 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			try {
 				forceDelete(workflowFile);
 			} catch (IOException e) {
-				throw new ImplementationException("problem deleting workflow file", e);
+				throw new ImplementationException(
+						"problem deleting workflow file", e);
 			}
 	}
 }

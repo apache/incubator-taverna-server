@@ -24,6 +24,7 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.ManagementModel;
+import org.taverna.server.master.exceptions.GeneralFailureException;
 import org.taverna.server.master.factories.ConfigurableRunFactory;
 import org.taverna.server.master.identity.User;
 import org.taverna.server.master.identity.UserStore;
@@ -466,7 +467,11 @@ public class AdminBean implements Admin {
 
 	@Override
 	public int operatingCount() {
-		return factory.getOperatingCount();
+		try {
+			return factory.getOperatingCount();
+		} catch (Exception e) {
+			throw new GeneralFailureException(e);
+		}
 	}
 
 	@Override
