@@ -37,6 +37,9 @@
 	<bean id="ExceptionProvider.NoCreate" class="org.taverna.server.master.rest.handler.NoCreateHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
+	<bean id="ExceptionProvider.Overloaded" class="org.taverna.server.master.rest.handler.OverloadedHandler">
+		<property name="managementModel" ref="webapp.state" />
+	</bean>
 	<bean id="ExceptionProvider.NoCredential" class="org.taverna.server.master.rest.handler.NoCredentialHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>

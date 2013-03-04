@@ -85,6 +85,7 @@
 			<ref bean="ExceptionProvider.NoListener" />
 			<ref bean="ExceptionProvider.NoUpdate" />
 			<ref bean="ExceptionProvider.NotOwner" />
+			<ref bean="ExceptionProvider.Overloaded" />
 			<ref bean="ExceptionProvider.UnknownRun" />
 			<ref bean="MessagingProvider.File" />
 			<ref bean="MessagingProvider.FileSegment" />
