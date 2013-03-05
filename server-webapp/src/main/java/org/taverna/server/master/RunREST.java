@@ -6,6 +6,8 @@
 package org.taverna.server.master;
 
 import static javax.ws.rs.core.Response.noContent;
+import static javax.ws.rs.core.Response.ok;
+import static javax.ws.rs.core.Response.status;
 import static org.joda.time.format.ISODateTimeFormat.dateTime;
 import static org.joda.time.format.ISODateTimeFormat.dateTimeParser;
 import static org.taverna.server.master.TavernaServerImpl.log;
@@ -157,10 +159,12 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
-	public String setStatus(String status) throws NoUpdateException {
+	public Response setStatus(String status) throws NoUpdateException {
 		support.permitUpdate(run);
-		run.setStatus(Status.valueOf(status.trim()));
-		return run.getStatus().toString();
+		String issue = run.setStatus(Status.valueOf(status.trim()));
+		if (issue != null)
+			return status(202).entity(issue).type("text/plain").build();
+		return ok(run.getStatus().toString()).type("text/plain").build();
 	}
 
 	@Override

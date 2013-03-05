@@ -21,14 +21,12 @@ import java.util.List;
 
 import javax.jdo.annotations.Column;
 import javax.jdo.annotations.Join;
-import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 import javax.jdo.annotations.Queries;
 import javax.jdo.annotations.Query;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.Trust;

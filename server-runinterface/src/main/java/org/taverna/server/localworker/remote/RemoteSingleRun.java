@@ -105,10 +105,13 @@ public interface RemoteSingleRun extends Remote {
 	 *             If anything goes wrong with the communication.
 	 * @throws ImplementationException
 	 *             If something goes horribly wrong on the back end.
+	 * @throws StillWorkingOnItException
+	 *             If the startup time of the workflow implementation exceeds a
+	 *             built-in threshold.
 	 */
 	public void setStatus(@NonNull RemoteStatus s)
 			throws IllegalStateTransitionException, RemoteException,
-			ImplementationException;
+			ImplementationException, StillWorkingOnItException;
 
 	/**
 	 * @return When this workflow run was found to have finished, or

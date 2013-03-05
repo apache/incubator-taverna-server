@@ -90,8 +90,8 @@ public class LocalWorkerTest {
 		}
 
 		@Override
-		public void initWorker(String executeWorkflowCommand, String workflow,
-				File workingDir, File inputBaclava,
+		public boolean initWorker(String executeWorkflowCommand,
+				String workflow, File workingDir, File inputBaclava,
 				Map<String, File> inputFiles, Map<String, String> inputValues,
 				File outputBaclava, File cmdir, char[] cmpass,
 				Map<String, String> env, String id, List<String> conf)
@@ -115,6 +115,7 @@ public class LocalWorkerTest {
 			// TODO: check cmdir and cmpass
 			// TODO: log env
 			events.add("]");
+			return true;
 		}
 
 		@Override
@@ -153,8 +154,7 @@ public class LocalWorkerTest {
 	@Before
 	public void setUp() throws Exception {
 		lw = new LocalWorker("XWC", "WF", null, randomUUID(),
-				new HashMap<String, String>(), new ArrayList<String>(),
-				factory);
+				new HashMap<String, String>(), new ArrayList<String>(), factory);
 		events = new ArrayList<String>();
 		returnThisStatus = RemoteStatus.Operating;
 	}

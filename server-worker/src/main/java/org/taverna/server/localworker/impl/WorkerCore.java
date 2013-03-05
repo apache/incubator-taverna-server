@@ -49,6 +49,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.xml.ws.Holder;
+
 import org.ogf.usage.JobUsageRecord;
 import org.taverna.server.localworker.remote.ImplementationException;
 import org.taverna.server.localworker.remote.RemoteListener;
@@ -73,6 +75,11 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	 * The name of the standard listener, which is installed by default.
 	 */
 	public static final String DEFAULT_LISTENER_NAME = "io";
+
+	/**
+	 * Time to wait for the subprocess to wait, in milliseconds.
+	 */
+	private static final int START_WAIT_TIME = 1500;
 
 	static final Map<String, Property> pmap = new HashMap<String, Property>();
 
@@ -107,20 +114,19 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	}
 
 	Process subprocess;
-	private boolean finished;
 	StringWriter stdout;
 	StringWriter stderr;
 	Integer exitCode;
 	boolean readyToSendEmail;
 	String emailAddress;
+	Date start;
+	RunAccounting accounting;
 
-	private Date start;
+	private boolean finished;
 	private JobUsageRecord ur;
 	private File wd;
 	private UsageRecordReceiver urreceiver;
 	private File workflowFile;
-
-	private RunAccounting accounting;
 
 	/**
 	 * @param accounting
@@ -227,29 +233,53 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	 *             If any of quite a large number of things goes wrong.
 	 */
 	@Override
-	public void initWorker(String executeWorkflowCommand, String workflow,
-			File workingDir, File inputBaclava, Map<String, File> inputFiles,
-			Map<String, String> inputValues, File outputBaclava,
-			File securityDir, char[] password, Map<String, String> environment,
-			String token, List<String> runtime) throws IOException {
-		ProcessBuilder pb = createProcessBuilder(executeWorkflowCommand,
-				workflow, workingDir, inputBaclava, inputFiles, inputValues,
-				outputBaclava, securityDir, password, environment, token,
-				runtime);
+	public boolean initWorker(final String executeWorkflowCommand,
+			final String workflow, final File workingDir,
+			final File inputBaclava, final Map<String, File> inputFiles,
+			final Map<String, String> inputValues, final File outputBaclava,
+			final File securityDir, final char[] password,
+			final Map<String, String> environment, final String token,
+			final List<String> runtime) throws IOException {
+		final Holder<IOException> h = new Holder<IOException>();
+		Thread t = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					ProcessBuilder pb = createProcessBuilder(
+							executeWorkflowCommand, workflow, workingDir,
+							inputBaclava, inputFiles, inputValues,
+							outputBaclava, securityDir, password, environment,
+							token, runtime);
 
-		// Start the subprocess
-		out.println("starting " + pb.command() + " in directory " + workingDir);
-		subprocess = pb.start();
-		if (subprocess == null)
-			throw new IOException("unknown failure creating process");
-		start = new Date();
-		accounting.runStarted();
+					// Start the subprocess
+					out.println("starting " + pb.command() + " in directory "
+							+ workingDir);
+					subprocess = pb.start();
+					if (subprocess == null)
+						throw new IOException(
+								"unknown failure creating process");
+					start = new Date();
+					accounting.runStarted();
 
-		// Capture its stdout and stderr
-		new AsyncCopy(subprocess.getInputStream(), stdout);
-		new AsyncCopy(subprocess.getErrorStream(), stderr);
-		if (password != null)
-			new AsyncPrint(subprocess.getOutputStream(), password);
+					// Capture its stdout and stderr
+					new AsyncCopy(subprocess.getInputStream(), stdout);
+					new AsyncCopy(subprocess.getErrorStream(), stderr);
+					if (password != null)
+						new AsyncPrint(subprocess.getOutputStream(), password);
+				} catch (IOException e) {
+					h.value = e;
+				}
+			}
+		});
+		t.start();
+		try {
+			t.join(START_WAIT_TIME);
+		} catch (InterruptedException e) {
+			// Won't happen
+		}
+		if (h.value != null)
+			throw h.value;
+		return subprocess != null;
 	}
 
 	/**

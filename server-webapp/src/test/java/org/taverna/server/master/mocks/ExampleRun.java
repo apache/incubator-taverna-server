@@ -115,8 +115,9 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	}
 
 	@Override
-	public void setStatus(Status s) {
+	public String setStatus(Status s) {
 		this.status = s;
+		return null;
 	}
 
 	@Override

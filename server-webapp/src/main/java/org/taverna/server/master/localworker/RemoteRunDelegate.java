@@ -45,6 +45,7 @@ import org.taverna.server.localworker.remote.RemoteInput;
 import org.taverna.server.localworker.remote.RemoteListener;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.localworker.remote.RemoteStatus;
+import org.taverna.server.localworker.remote.StillWorkingOnItException;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadPropertyValueException;
@@ -224,8 +225,9 @@ public class RemoteRunDelegate implements TavernaRun {
 	}
 
 	@Override
-	public void setStatus(Status s) throws BadStateChangeException {
+	public String setStatus(Status s) throws BadStateChangeException {
 		try {
+			log.info("setting status of run " + id + " to " + s);
 			switch (s) {
 			case Initialized:
 				run.setStatus(RemoteStatus.Initialized);
@@ -245,6 +247,7 @@ public class RemoteRunDelegate implements TavernaRun {
 				run.setStatus(RemoteStatus.Finished);
 				break;
 			}
+			return null;
 		} catch (IllegalStateTransitionException e) {
 			throw new BadStateChangeException(e.getMessage());
 		} catch (RemoteException e) {
@@ -257,6 +260,10 @@ public class RemoteRunDelegate implements TavernaRun {
 			if (e.getCause() != null)
 				throw new BadStateChangeException(e.getMessage(), e.getCause());
 			throw new BadStateChangeException(e.getMessage(), e);
+		} catch (StillWorkingOnItException e) {
+			log.info("still working on setting status of run " + id + " to "
+					+ s, e);
+			return e.getMessage();
 		}
 	}
 

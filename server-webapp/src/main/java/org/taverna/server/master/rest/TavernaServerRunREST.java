@@ -197,7 +197,8 @@ public interface TavernaServerRunREST {
 	 * 
 	 * @param status
 	 *            The new status code.
-	 * @return What status the run is actually in.
+	 * @return Description of what status the run is actually in, or a 202 to
+	 *         indicate that things are still changing.
 	 * @throws NoUpdateException
 	 *             If the current user is not permitted to update the run.
 	 * @throws BadStateChangeException
@@ -209,7 +210,7 @@ public interface TavernaServerRunREST {
 	@Produces("text/plain")
 	@Description("Attempts to update the status of the workflow run.")
 	@NonNull
-	public String setStatus(@NonNull String status) throws NoUpdateException,
+	public Response setStatus(@NonNull String status) throws NoUpdateException,
 			BadStateChangeException;
 
 	/**
@@ -419,7 +420,8 @@ public interface TavernaServerRunREST {
 			 * @param parts
 			 *            Anything required to fill out the path.
 			 */
-			ListenerList(TavernaRun run, UriInfo ui, String path, String... parts) {
+			ListenerList(TavernaRun run, UriInfo ui, String path,
+					String... parts) {
 				this(run, secure(fromUri(new Uri(ui, path, parts).ref)));
 			}
 		}

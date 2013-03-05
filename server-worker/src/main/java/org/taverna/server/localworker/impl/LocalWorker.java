@@ -50,6 +50,7 @@ import org.taverna.server.localworker.remote.RemoteListener;
 import org.taverna.server.localworker.remote.RemoteSecurityContext;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.localworker.remote.RemoteStatus;
+import org.taverna.server.localworker.remote.StillWorkingOnItException;
 import org.taverna.server.localworker.server.UsageRecordReceiver;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -620,7 +621,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	@Override
 	public void setStatus(RemoteStatus newStatus)
 			throws IllegalStateTransitionException, RemoteException,
-			ImplementationException {
+			ImplementationException, StillWorkingOnItException {
 		if (status == newStatus)
 			return;
 
@@ -631,23 +632,15 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		case Operating:
 			switch (status) {
 			case Initialized:
+				boolean started;
 				try {
-					start = new Date();
-					core.initWorker(executeWorkflowCommand, workflow, base,
-							inputBaclavaFile, inputRealFiles, inputValues,
-							outputBaclavaFile, securityDirectory,
-							keystorePassword, environment, masterToken,
-							runtimeSettings);
-					/*
-					 * Do not clear the keystorePassword array here; its
-					 * ownership is *transferred* to the worker core which
-					 * doesn't copy it but *does* clear it after use.
-					 */
-					keystorePassword = null;
+					started = startWorker();
 				} catch (Exception e) {
 					throw new ImplementationException(
 							"problem creating executing workflow", e);
 				}
+				if (!started)
+					throw new StillWorkingOnItException("workflow start in process");
 				break;
 			case Stopped:
 				try {
@@ -697,6 +690,21 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			status = Finished;
 			break;
 		}
+	}
+
+	private boolean startWorker() throws Exception {
+		start = new Date();
+		char[] pw = keystorePassword;
+		keystorePassword = null;
+		/*
+		 * Do not clear the keystorePassword array here; its ownership is
+		 * *transferred* to the worker core which doesn't copy it but *does*
+		 * clear it after use.
+		 */
+		return core.initWorker(executeWorkflowCommand, workflow, base,
+				inputBaclavaFile, inputRealFiles, inputValues,
+				outputBaclavaFile, securityDirectory, pw, environment,
+				masterToken, runtimeSettings);
 	}
 
 	@Override

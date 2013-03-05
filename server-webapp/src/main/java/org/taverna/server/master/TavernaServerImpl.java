@@ -389,7 +389,11 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 			throws UnknownRunException, NoUpdateException {
 		TavernaRun w = support.getRun(runName);
 		support.permitUpdate(w);
-		w.setStatus(s);
+		String issue = w.setStatus(s);
+		if (issue != null) {
+			// LATER report partial state change
+			// (requires visible SOAP API change)
+		}
 	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

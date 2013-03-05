@@ -58,10 +58,11 @@ public interface Worker {
 	 *            The internal name of the workflow run.
 	 * @param runtimeSettings
 	 *            List of configuration details for the forked runtime.
+	 * @return Whether a successful start happened.
 	 * @throws Exception
 	 *             If any of quite a large number of things goes wrong.
 	 */
-	void initWorker(String executeWorkflowCommand, String workflow,
+	boolean initWorker(String executeWorkflowCommand, String workflow,
 			File workingDir, File inputBaclavaFile,
 			Map<String, File> inputRealFiles, Map<String, String> inputValues,
 			File outputBaclavaFile, File contextDirectory,
