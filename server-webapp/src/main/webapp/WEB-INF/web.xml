@@ -6,8 +6,8 @@
 <!-- Copyright (C) 2010-2011 The University of Manchester See the file "LICENSE.txt" 
 	for license terms. -->
 <web-app id="TAVSERV-2.4.1">
-	<display-name>Taverna 2.4.1 Server</display-name>
-	<description>This is the front-end engine for Taverna 2.4.1 Server.</description>
+	<display-name>Taverna 2.4.2 Server</display-name>
+	<description>This is the front-end engine for Taverna 2.4.2 Server.</description>
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>WEB-INF/secure.xml</param-value>
