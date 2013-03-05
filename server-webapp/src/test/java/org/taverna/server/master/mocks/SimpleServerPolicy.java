@@ -104,4 +104,9 @@ public class SimpleServerPolicy implements Policy {
 		if (p == null || !p.equals(run.getSecurityContext().getOwner()))
 			throw new NoUpdateException();
 	}
+
+	@Override
+	public int getOperatingLimit() {
+		return 1;
+	}
 }
