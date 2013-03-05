@@ -8,6 +8,7 @@ package org.taverna.server.master.rest;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.joda.time.format.ISODateTimeFormat.basicDateTime;
 import static org.taverna.server.master.common.Roles.USER;
+import static org.taverna.server.master.interaction.InteractionFeedSupport.FEED_URL_DIR;
 import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 
 import java.net.URI;
@@ -43,6 +44,7 @@ import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.NotOwnerException;
+import org.taverna.server.master.interaction.InteractionFeedSupport;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.port_description.OutputDescription;
@@ -308,6 +310,15 @@ public interface TavernaServerRunREST {
 			BadStateChangeException;
 
 	/**
+	 * Get a handle to the interaction feed.
+	 * @return
+	 */
+	@Path(FEED_URL_DIR)
+	@Description("Access the interaction feed for the workflow run.")
+	@NonNull
+	InteractionFeedREST getInteractionFeed();
+
+	/**
 	 * The description of where everything is in a RESTful view of a workflow
 	 * run. Done with JAXB.
 	 * 
@@ -341,6 +352,8 @@ public interface TavernaServerRunREST {
 		public Uri securityContext;
 		/** The list of listeners. */
 		public ListenerList listeners;
+		/** The location of the interaction feed. */
+		public Uri interaction;
 
 		/**
 		 * How to describe a run's expiry.
@@ -453,6 +466,7 @@ public interface TavernaServerRunREST {
 			createTime = new Uri(ui, "createTime");
 			startTime = new Uri(ui, "startTime");
 			finishTime = new Uri(ui, "finishTime");
+			interaction = new Uri(ui, FEED_URL_DIR);
 			owner = run.getSecurityContext().getOwner().getName();
 		}
 	}

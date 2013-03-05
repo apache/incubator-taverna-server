@@ -72,8 +72,9 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	/**
 	 * Subdirectories of the working directory to create by default.
 	 */
-	private static final String[] dirstomake = { "conf", "externaltool", "lib",
-			"logs", "plugins", "repository", "t2-database", "var" };
+	private static final String[] dirstomake = { "conf", "externaltool",
+			"feed", "lib", "logs", "plugins", "repository", "t2-database",
+			"var" };
 
 	/** The name of the default encoding for characters on this machine. */
 	public static final String SYSTEM_ENCODING = defaultCharset().name();
@@ -640,7 +641,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 							"problem creating executing workflow", e);
 				}
 				if (!started)
-					throw new StillWorkingOnItException("workflow start in process");
+					throw new StillWorkingOnItException(
+							"workflow start in process");
 				break;
 			case Stopped:
 				try {

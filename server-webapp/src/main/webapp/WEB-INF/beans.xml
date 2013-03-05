@@ -2,10 +2,8 @@
 <!-- Copyright (C) 2010-2011 The University of Manchester See the file "LICENSE.txt" 
 	for license terms. -->
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:task="http://www.springframework.org/schema/task"
-	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task" xmlns:util="http://www.springframework.org/schema/util"
 	default-lazy-init="false"
 	xsi:schemaLocation="http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
@@ -35,8 +33,9 @@
 		<property name="webapp" ref="webapp" />
 		<property name="contentTypeMap">
 			<map key-type="java.lang.String" value-type="java.lang.String">
-				<description>Maps suffixes (post '.') to content types.</description>
-				<entry key="baclava" value="application/vnd.taverna.baclava+xml"/>
+				<description>Maps suffixes (post '.') to content types.
+				</description>
+				<entry key="baclava" value="application/vnd.taverna.baclava+xml" />
 			</map>
 		</property>
 	</bean>
@@ -68,6 +67,7 @@
 		class="org.taverna.server.master.RunREST">
 		<property name="support" ref="webapp.support" />
 		<property name="cdBuilder" ref="contentsDescriptorBuilder" />
+		<property name="interactionFeed" ref="interactionFeed" />
 		<lookup-method name="makeSecurityInterface" bean="run.securityView.prototype" />
 		<lookup-method name="makeInputInterface" bean="run.inputView.prototype" />
 		<lookup-method name="makeListenersInterface" bean="run.listenersView.prototype" />
@@ -108,8 +108,7 @@
 		<property name="support" ref="webapp.support" />
 	</bean>
 
-	<bean id="feed"
-		class="org.taverna.server.master.notification.atom.AtomFeed">
+	<bean id="feed" class="org.taverna.server.master.notification.atom.AtomFeed">
 		<property name="eventSource" ref="dispatch.atom" />
 		<property name="support" ref="webapp.support" />
 		<property name="feedLanguage" value="${atom.language}" />
@@ -128,7 +127,8 @@
 	<bean id="IdentityMapper" class="org.taverna.server.master.identity.CompositeIDMapper">
 		<property name="identityMappers">
 			<list>
-				<bean id="AuthorityBased" class="org.taverna.server.master.identity.AuthorityDerivedIDMapper">
+				<bean id="AuthorityBased"
+					class="org.taverna.server.master.identity.AuthorityDerivedIDMapper">
 					<description>Derives the local user identity to use for execution
 						from the LOCALUSER_* Spring Security authority. Thus, if the user
 						has &quot;LOCALUSER_foo&quot;, they will be executing as the local
@@ -141,12 +141,14 @@
 					<property name="regexp" value="${localusernameregexp}">
 						<description>An optional regexp to extract the local user name
 							from the principal's string description. The first capturing
-							group will be the result of the mapping operation.</description>
+							group will be the result of the mapping operation.
+						</description>
 					</property>
 				</bean>
 				<bean id="Constant" class="org.taverna.server.master.identity.ConstantIDMapper">
 					<description>How to map web principals to local users. This one
-						maps everyone to the same user, "taverna".</description>
+						maps everyone to the same user, "taverna".
+					</description>
 					<property name="constantId" value="${default.localusername}" />
 				</bean>
 			</list>
@@ -158,7 +160,7 @@
 	<bean class="org.taverna.server.master.identity.UserStore" id="userStore">
 		<property name="persistenceManagerFactory" ref="pmf" />
 		<property name="baselineUserProperties">
-			<util:properties location="/WEB-INF/security/users.properties"/>
+			<util:properties location="/WEB-INF/security/users.properties" />
 		</property>
 		<property name="defaultLocalUser" value="${default.localusername}" />
 		<property name="encoder" ref="passwordEncoder" />
@@ -215,31 +217,24 @@
 		<property name="logFile" value="${usage.logFile}" />
 	</bean>
 
-	<context:property-placeholder ignore-unresolvable="true" order="2"
-		properties-ref="default-factory-properties" />
+	<context:property-placeholder
+		ignore-unresolvable="true" order="2" properties-ref="default-factory-properties" />
 	<util:properties id="default-factory-properties">
-		<prop key="backEndFactory">org.taverna.server.master.localworker.IdAwareForkRunFactory</prop>
+		<prop key="backEndFactory">org.taverna.server.master.localworker.IdAwareForkRunFactory
+		</prop>
 	</util:properties>
 
 	<!-- This bean configuration replaced with org.taverna.server.master.localworker.ConfigBean -->
-<!--
-	<bean id="localworker.factory" scope="singleton" lazy-init="false"
-		class="${backEndFactory}">
-		<description>
-			The simple policy manager and factory for the baseline
-			localworker case.
-		</description>
-		<property name="state" ref="localworker.state" />
-		<property name="runDB" ref="localworker.rundb" />
--->
-		<!-- Handled by autowiring to make type-resilient. -->
-		<!-- <property name="idMapper" ref="IdentityMapper" /> -->
-<!--
-		<property name="securityContextFactory" ref="localworker.securityContext" />
-		<property name="usageRecordSink" ref="usageRecordSink" />
-		<property name="URProcessorPool" ref="URThreads" />
-	</bean>
--->
+	<!-- <bean id="localworker.factory" scope="singleton" lazy-init="false" 
+		class="${backEndFactory}"> <description> The simple policy manager and factory 
+		for the baseline localworker case. </description> <property name="state" 
+		ref="localworker.state" /> <property name="runDB" ref="localworker.rundb" 
+		/> -->
+	<!-- Handled by autowiring to make type-resilient. -->
+	<!-- <property name="idMapper" ref="IdentityMapper" /> -->
+	<!-- <property name="securityContextFactory" ref="localworker.securityContext" 
+		/> <property name="usageRecordSink" ref="usageRecordSink" /> <property name="URProcessorPool" 
+		ref="URThreads" /> </bean> -->
 
 	<task:executor id="URThreads" pool-size="${pool.size}" />
 
@@ -265,17 +260,20 @@
 		</property>
 		<property name="extraArgs">
 			<description>Any extra arguments (memory control, etc.) to pass to
-				the spawned subprocesses.</description>
+				the spawned subprocesses.
+			</description>
 			<list>
 			</list>
 		</property>
 		<property name="waitSeconds" value="40">
 			<description>An upper bound (in seconds) on the time to wait for a
-				subprocess to start before failing it.</description>
+				subprocess to start before failing it.
+			</description>
 		</property>
 		<property name="sleepMS" value="1000">
 			<description>The time to wait (in milliseconds) between polling for
-				the subprocess to complete its registration.</description>
+				the subprocess to complete its registration.
+			</description>
 		</property>
 		<property name="persistenceManagerFactory" ref="pmf" />
 		<!-- <property name="javaBinary"> <description>The name of the java executable 
@@ -362,7 +360,7 @@
 	<bean id="dispatch.twitter"
 		class="org.taverna.server.master.notification.TwitterDispatcher">
 		<property name="cooldownSeconds" value="${message.cooldown}" />
-		<property name="accessToken" value="${twitter.oauth.accessToken}"/>
+		<property name="accessToken" value="${twitter.oauth.accessToken}" />
 		<property name="accessSecret" value="${twitter.oauth.accessTokenSecret}" />
 	</bean>
 	<bean id="dispatch.xmpp" class="org.taverna.server.master.notification.JabberDispatcher">
@@ -396,4 +394,11 @@
 	<task:scheduler id="taskScheduler" pool-size="${pool.size}" />
 
 	<bean class="org.taverna.server.master.utils.JCECheck" id="JCECheck" />
+
+	<bean class="org.taverna.server.master.interaction.InteractionFeedSupport"
+		id="interactionFeed" scope="singleton">
+		<property name="abdera">
+			<bean class="org.apache.abdera.Abdera" />
+		</property>
+	</bean>
 </beans>

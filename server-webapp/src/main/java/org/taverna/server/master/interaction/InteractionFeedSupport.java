@@ -21,7 +21,6 @@ import org.taverna.server.master.TavernaServerSupport;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoUpdateException;
-import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.interfaces.Directory;
 import org.taverna.server.master.interfaces.DirectoryEntry;
 import org.taverna.server.master.interfaces.File;
@@ -33,7 +32,7 @@ public class InteractionFeedSupport {
 	 * The name of the resource within the run resource that is the run's
 	 * interaction feed resource.
 	 */
-	public static final String FEED_URL_DIR = "feed";
+	public static final String FEED_URL_DIR = "interaction";
 	/**
 	 * The name of the directory below the run working directory that will
 	 * contain the entries of the interaction feed.
@@ -134,8 +133,7 @@ public class InteractionFeedSupport {
 	 *             If the entry can't be found.
 	 */
 	public Entry getRunFeedEntry(TavernaRun run, String entryID)
-			throws FilesystemAccessException, NoDirectoryEntryException,
-			UnknownRunException {
+			throws FilesystemAccessException, NoDirectoryEntryException {
 		File entryFile = utils
 				.getFile(run, FEED_DIR + "/" + entryID + ".entry");
 		return getEntryFromFile(entryFile);
@@ -168,7 +166,8 @@ public class InteractionFeedSupport {
 		String localId = "interact_" + currentTimeMillis();
 		entry.setId("urn:uuid:" + randomUUID());
 		String selfLink = uriBuilder.getRunUriBuilder(run)
-				.path("feed/{entryID}").build(localId).toURL().toString();
+				.path(FEED_URL_DIR + "/{entryID}").build(localId).toURL()
+				.toString();
 		entry.addLink(selfLink);
 		entry.setUpdated(new Date());
 		putEntryInFile(utils.getDirectory(run, FEED_DIR), localId + ".entry",
