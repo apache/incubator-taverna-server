@@ -102,4 +102,8 @@
 
 	<bean id="Provider.RuntimeExceptionRemapping" class="org.taverna.server.master.utils.RuntimeExceptionWrapper" />
 	<bean id="MessagingProvider.ZipStream" class="org.taverna.server.master.rest.handler.ZipStreamHandler" />
+	<bean id="Interceptor.FlushThreadLocalCache"
+		class="org.taverna.server.master.utils.FlushThreadLocalCacheInterceptor"
+		lazy-init="false">
+	</bean>
 </beans>

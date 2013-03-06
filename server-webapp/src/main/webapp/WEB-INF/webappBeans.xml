@@ -95,6 +95,9 @@
 			<ref bean="MessagingProvider.ZipStream"/>
 			<ref bean="jsonProvider" />
 		</jaxrs:providers>
+		<jaxrs:outInterceptors>
+			<ref bean="Interceptor.FlushThreadLocalCache" />
+		</jaxrs:outInterceptors>
  	</jaxrs:server>
 
 	<jaxrs:server id="AtomFeed" address="/feed">
