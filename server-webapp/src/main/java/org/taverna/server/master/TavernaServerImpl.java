@@ -64,6 +64,7 @@ import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.NotOwnerException;
+import org.taverna.server.master.exceptions.OverloadedException;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.factories.ListenerFactory;
 import org.taverna.server.master.interfaces.Directory;
@@ -389,10 +390,16 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 			throws UnknownRunException, NoUpdateException {
 		TavernaRun w = support.getRun(runName);
 		support.permitUpdate(w);
-		String issue = w.setStatus(s);
-		if (issue != null) {
-			// LATER report partial state change
-			// (requires visible SOAP API change)
+		if (s == Status.Operating && w.getStatus() == Status.Initialized) {
+			if (!support.getAllowStartWorkflowRuns())
+				throw new OverloadedException();
+			String issue = w.setStatus(s);
+			if (issue != null) {
+				// LATER report partial state change
+				// (requires visible SOAP API change)
+			}
+		} else {
+			w.setStatus(s);
 		}
 	}
 

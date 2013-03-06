@@ -443,7 +443,8 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		return workflow.marshal();
 	}
 
-	protected boolean isStartable() {
+	@Override
+	public boolean isAllowingRunsToStart() {
 		try {
 			return state.getOperatingLimit() > getOperatingCount();
 		} catch (Exception e) {

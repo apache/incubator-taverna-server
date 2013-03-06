@@ -236,7 +236,7 @@ public class RemoteRunDelegate implements TavernaRun {
 				if (run.getStatus() == RemoteStatus.Initialized) {
 					secContext.conveySecurity();
 				}
-				if (!factory.isStartable())
+				if (!factory.isAllowingRunsToStart())
 					throw new OverloadedException();
 				run.setStatus(RemoteStatus.Operating);
 				break;

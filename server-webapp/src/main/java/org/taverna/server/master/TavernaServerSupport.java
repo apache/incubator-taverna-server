@@ -707,4 +707,8 @@ public class TavernaServerSupport {
 			throw new FilesystemAccessException("failed to transfer bytes", exn);
 		}
 	}
+
+	public boolean getAllowStartWorkflowRuns() {
+		return runFactory.isAllowingRunsToStart();
+	}
 }

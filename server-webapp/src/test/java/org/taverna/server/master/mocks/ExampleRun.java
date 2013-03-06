@@ -138,6 +138,11 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 			c.add(MINUTE, lifetime);
 			return new ExampleRun(creator, workflow, c.getTime());
 		}
+
+		@Override
+		public boolean isAllowingRunsToStart() {
+			return true;
+		}
 	}
 
 	static final String[] emptyArray = new String[0];

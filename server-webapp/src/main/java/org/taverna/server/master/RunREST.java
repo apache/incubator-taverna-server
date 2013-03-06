@@ -12,6 +12,7 @@ import static org.joda.time.format.ISODateTimeFormat.dateTime;
 import static org.joda.time.format.ISODateTimeFormat.dateTimeParser;
 import static org.taverna.server.master.TavernaServerImpl.log;
 import static org.taverna.server.master.common.Status.Initialized;
+import static org.taverna.server.master.common.Status.Operating;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -32,6 +33,7 @@ import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.NotOwnerException;
+import org.taverna.server.master.exceptions.OverloadedException;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.interaction.InteractionFeedSupport;
 import org.taverna.server.master.interfaces.TavernaRun;
@@ -174,10 +176,17 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	@Override
 	@CallCounted
 	public Response setStatus(String status) throws NoUpdateException {
+		Status newStatus = Status.valueOf(status.trim());
 		support.permitUpdate(run);
-		String issue = run.setStatus(Status.valueOf(status.trim()));
-		if (issue != null)
+		if (newStatus == Operating && run.getStatus() == Initialized) {
+			if (!support.getAllowStartWorkflowRuns())
+				throw new OverloadedException();
+			String issue = run.setStatus(newStatus);
+			if (issue == null)
+				issue = "starting run...";
 			return status(202).entity(issue).type("text/plain").build();
+		}
+		run.setStatus(newStatus); // Ignore the result
 		return ok(run.getStatus().toString()).type("text/plain").build();
 	}
 
