@@ -400,5 +400,8 @@
 		<property name="abdera">
 			<bean class="org.apache.abdera.Abdera" />
 		</property>
+		<property name="support" ref="webapp.support" />
+		<property name="uriBuilder" ref="webapp" />
+		<property name="utils" ref="fileUtils" />
 	</bean>
 </beans>

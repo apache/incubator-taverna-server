@@ -10,12 +10,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.Date;
 
-import javax.annotation.Resource;
-
 import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.ContentsDescriptorBuilder.UriBuilderFactory;
 import org.taverna.server.master.TavernaServerSupport;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
@@ -47,14 +45,30 @@ public class InteractionFeedSupport {
 	/** Maximum size of an entry before truncation. */
 	private static final long MAX_ENTRY_SIZE = 50 * 1024;
 
-	@Autowired(required = true)
 	private TavernaServerSupport support;
-	@Autowired(required = true)
 	private FilenameUtils utils;
-	@Autowired(required = true)
 	private Abdera abdera;
-	@Resource(name = "webapp")
 	private UriBuilderFactory uriBuilder;
+
+	@Required
+	public void setSupport(TavernaServerSupport support) {
+		this.support = support;
+	}
+
+	@Required
+	public void setUtils(FilenameUtils utils) {
+		this.utils = utils;
+	}
+
+	@Required
+	public void setAbdera(Abdera abdera) {
+		this.abdera = abdera;
+	}
+
+	@Required // webapp
+	public void setUriBuilder(UriBuilderFactory uriBuilder) {
+		this.uriBuilder = uriBuilder;
+	}
 
 	private Entry getEntryFromFile(File f) throws FilesystemAccessException {
 		long size = f.getSize();
