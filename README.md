@@ -15,13 +15,13 @@ You will need:
   works.
 
 * **Java 6** (or later) installed. See the Java requirements on the
-  Taverna website.
+  [Taverna website](http://www.taverna.org.uk/download/workbench/system-requirements/).
 
 * **Tomcat 6** (recent version).
 
 * **Taverna Server 2.4**. Either the "full installation" or WAR will do
   (the "full installation" zip contains a copy of the WAR) - see the
-  Taverna website for details on downloading the file.
+  [Taverna website](http://www.taverna.org.uk/download/server/2-4/) for details on downloading the file.
 
 If you are installing in secured mode (default) you will also need:
 
