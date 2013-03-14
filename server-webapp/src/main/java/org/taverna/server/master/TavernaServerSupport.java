@@ -739,4 +739,8 @@ public class TavernaServerSupport {
 		}
 		return result;
 	}
+
+	public boolean getAllowStartWorkflowRuns() {
+		return runFactory.isAllowingRunsToStart();
+	}
 }

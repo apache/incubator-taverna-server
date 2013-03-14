@@ -44,7 +44,9 @@ import javax.xml.ws.WebServiceContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.cxf.annotations.WSDLDocumentation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Value;
 import org.taverna.server.master.TavernaServerImpl.SupportAware;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.DirEntryReference;
@@ -64,6 +66,7 @@ import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.NotOwnerException;
+import org.taverna.server.master.exceptions.OverloadedException;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.factories.ListenerFactory;
 import org.taverna.server.master.interfaces.Directory;
@@ -196,10 +199,16 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	// REST INTERFACE
 
+	@Value("${taverna.interaction.feed_path}")
+	private String interactionFeed;
+
 	@Override
 	@CallCounted
 	public ServerDescription describeService(UriInfo ui) {
-		return new ServerDescription(ui);
+		String feed = interactionFeed;
+		if ("none".equals(feed))
+			feed = null;
+		return new ServerDescription(ui, resolve(feed));
 	}
 
 	@Override
@@ -425,7 +434,17 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 			throws UnknownRunException, NoUpdateException {
 		TavernaRun w = support.getRun(runName);
 		support.permitUpdate(w);
-		w.setStatus(s);
+		if (s == Status.Operating && w.getStatus() == Status.Initialized) {
+			if (!support.getAllowStartWorkflowRuns())
+				throw new OverloadedException();
+			String issue = w.setStatus(s);
+			if (issue != null) {
+				// LATER report partial state change
+				// (requires visible SOAP API change)
+			}
+		} else {
+			w.setStatus(s);
+		}
 	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -947,6 +966,11 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		pathInfo = pathInfo.replaceFirst("/soap$", "/rest/");
 		pathInfo = pathInfo.replaceFirst("/rest/.+$", "/rest/");
 		return secure(fromUri(pathInfo));
+	}
+
+	@Override
+	public String resolve(String uri) {
+		return getBaseUriBuilder().build().resolve(uri).toString();
 	}
 
 	private Map<String, TavernaRun> runs() {

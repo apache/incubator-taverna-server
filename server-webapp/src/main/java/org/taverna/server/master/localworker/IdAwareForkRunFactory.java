@@ -12,6 +12,7 @@ import static java.util.Calendar.SECOND;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.logging.LogFactory.getLog;
 import static org.springframework.jmx.support.MetricType.COUNTER;
+import static org.springframework.jmx.support.MetricType.GAUGE;
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 
 import java.io.BufferedReader;
@@ -485,6 +486,15 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	public String getFactoryProcessName() {
 		return "<PROPERTY-NOT-SUPPORTED>";
 	}
+
+	@ManagedMetric(description = "How many workflow runs are currently actually executing.", currencyTimeLimit = 10, metricType = GAUGE, category = "throughput")
+	@Override
+	public int getOperatingCount() throws Exception {
+		int total = 0;
+		for (RemoteRunFactory rrf : factory.values())
+			total += rrf.countOperatingRuns();
+		return total;
+	}
 }
 
 abstract class StreamLogger {
@@ -684,9 +694,7 @@ class SecureFork implements IdAwareForkRunFactory.MetaFactory {
 				RemoteRunFactory f = (RemoteRunFactory) main.getTheRegistry()
 						.lookup(fpn);
 				log.info("successfully connected to factory subprocess " + fpn);
-				if (main.interhost != null)
-					f.setInteractionServiceDetails(main.interhost,
-							main.interport, main.interwebdav, main.interfeed);
+				main.initInteractionDetails(f);
 				main.registerFactory(username, fpn, f);
 				return f;
 			} catch (InterruptedException ie) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The University of Manchester
+ * Copyright (C) 2010-2013 The University of Manchester
  * 
  * See the file "LICENSE.txt" for license terms.
  */
@@ -25,7 +25,16 @@ public interface RunFactory {
 	 * @param workflow
 	 *            The workflow to instantiate
 	 * @return An object representing the run.
-	 * @throws NoCreateException On failure.
+	 * @throws NoCreateException
+	 *             On failure.
 	 */
-	public TavernaRun create(UsernamePrincipal creator, Workflow workflow) throws NoCreateException;
+	TavernaRun create(UsernamePrincipal creator, Workflow workflow)
+			throws NoCreateException;
+
+	/**
+	 * Check whether the factory is permitting runs to actually start operating.
+	 * 
+	 * @return Whether a run should start.
+	 */
+	boolean isAllowingRunsToStart();
 }

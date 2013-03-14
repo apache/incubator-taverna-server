@@ -18,6 +18,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.interfaces.Listener;
@@ -37,6 +38,8 @@ public class RunDatabase implements RunStore, RunDBSupport {
 	private RunDatabaseDAO dao;
 	private List<CompletionNotifier> notifier = new ArrayList<CompletionNotifier>();
 	private NotificationEngine notificationEngine;
+	@Autowired
+	private AbstractRemoteRunFactory factory;
 
 	@Override
 	public void setNotifier(CompletionNotifier n) {
@@ -197,5 +200,10 @@ public class RunDatabase implements RunStore, RunDBSupport {
 			notificationEngine.dispatchMessage(run, to,
 					n.makeMessageSubject(name, run, code),
 					n.makeCompletionMessage(name, run, code));
+	}
+
+	@Override
+	public AbstractRemoteRunFactory getFactory() {
+		return factory;
 	}
 }

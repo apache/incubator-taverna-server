@@ -115,8 +115,9 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	}
 
 	@Override
-	public void setStatus(Status s) {
+	public String setStatus(Status s) {
 		this.status = s;
+		return null;
 	}
 
 	@Override
@@ -136,6 +137,11 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 			Calendar c = GregorianCalendar.getInstance();
 			c.add(MINUTE, lifetime);
 			return new ExampleRun(creator, workflow, c.getTime());
+		}
+
+		@Override
+		public boolean isAllowingRunsToStart() {
+			return true;
 		}
 	}
 

@@ -5,9 +5,9 @@
  */
 package org.taverna.server.master.localworker;
 
-import static java.lang.System.getSecurityManager;
+//import static java.lang.System.getSecurityManager;
 import static java.lang.System.setProperty;
-import static java.lang.System.setSecurityManager;
+//import static java.lang.System.setSecurityManager;
 import static java.net.InetAddress.getLocalHost;
 import static java.rmi.registry.LocateRegistry.createRegistry;
 import static java.rmi.registry.LocateRegistry.getRegistry;
@@ -18,7 +18,7 @@ import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.rmi.RMISecurityManager;
+//import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -41,8 +41,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
+import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.localworker.server.UsageRecordReceiver;
+import org.taverna.server.master.ContentsDescriptorBuilder.UriBuilderFactory;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoListenerException;
@@ -65,6 +67,7 @@ import uk.org.taverna.scufl2.api.io.WriterException;
 @ManagedResource(objectName = JMX_ROOT + "Factory", description = "The factory for runs")
 public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		RunFactory, ConfigurableRunFactory {
+	/** The logger for writing messages out on. */
 	Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
 
 	@SuppressWarnings("unused")
@@ -74,8 +77,29 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		log = null;
 	}
 
+	/**
+	 * Whether to apply stronger limitations than normal to RMI. It is
+	 * recommended that this be true!
+	 */
 	@Value("${rmi.localhostOnly}")
 	private boolean rmiLocalhostOnly;
+	/** The interaction host name. */
+	private String interhost;
+	/** The interaction port number. */
+	private String interport;
+	/**
+	 * The interaction WebDAV location. Will be resolved before being passed to
+	 * the back-end.
+	 */
+	private String interwebdav;
+	/**
+	 * The interaction ATOM feed location. Will be resolved before being passed
+	 * to the back-end.
+	 */
+	private String interfeed;
+	/** Used for doing URI resolution. */
+	@Resource(name = "webapp")
+	private UriBuilderFactory baseurifactory;
 
 	@Value("${taverna.interaction.host}")
 	void setInteractionHost(String host) {
@@ -84,16 +108,12 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		interhost = host;
 	}
 
-	String interhost;
-
 	@Value("${taverna.interaction.port}")
 	void setInteractionPort(String port) {
 		if (port != null && port.equals("none"))
 			port = null;
 		interport = port;
 	}
-
-	String interport;
 
 	@Value("${taverna.interaction.webdav_path}")
 	void setInteractionWebdav(String webdav) {
@@ -102,8 +122,6 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		interwebdav = webdav;
 	}
 
-	String interwebdav;
-
 	@Value("${taverna.interaction.feed_path}")
 	void setInteractionFeed(String feed) {
 		if (feed != null && feed.equals("none"))
@@ -111,7 +129,15 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		interfeed = feed;
 	}
 
-	String interfeed;
+	protected void initInteractionDetails(RemoteRunFactory factory)
+			throws RemoteException {
+		if (interhost != null) {
+			String feed = baseurifactory.resolve(interfeed);
+			String webdav = baseurifactory.resolve(interwebdav);
+			factory.setInteractionServiceDetails(interhost, interport, webdav,
+					feed);
+		}
+	}
 
 	private Registry makeRegistry(int port) throws RemoteException {
 		if (rmiLocalhostOnly) {
@@ -257,14 +283,14 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		this.urProcessorPool = urProcessorPool;
 	}
 
-	static {
-		if (getSecurityManager() == null) {
-			setProperty("java.security.policy", AbstractRemoteRunFactory.class
-					.getClassLoader().getResource(SECURITY_POLICY_FILE)
-					.toExternalForm());
-			setSecurityManager(new RMISecurityManager());
-		}
-	}
+	// static {
+	// if (getSecurityManager() == null) {
+	// setProperty("java.security.policy", AbstractRemoteRunFactory.class
+	// .getClassLoader().getResource(SECURITY_POLICY_FILE)
+	// .toExternalForm());
+	// setSecurityManager(new RMISecurityManager());
+	// }
+	// }
 
 	/**
 	 * Set up the run expiry management engine.
@@ -318,7 +344,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 			UUID id = randomUUID();
 			RemoteSingleRun rsr = getRealRun(creator, workflow, id);
 			RemoteRunDelegate run = new RemoteRunDelegate(now, workflow, rsr,
-					state.getDefaultLifetime(), runDB, id);
+					state.getDefaultLifetime(), runDB, id, this);
 			run.setSecurityContext(securityFactory.create(run, creator));
 			return run;
 		} catch (NoCreateException e) {
@@ -366,6 +392,27 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		state.setMaxRuns(maxRuns);
 	}
 
+	@ManagedAttribute(description = "The maximum number of simultaneous operating runs supported by the server.", currencyTimeLimit = 300)
+	@Override
+	public int getOperatingLimit() {
+		return state.getOperatingLimit();
+	}
+
+	@ManagedAttribute(description = "The maximum number of simultaneous operating runs supported by the server.")
+	@Override
+	public void setOperatingLimit(int operatingLimit) {
+		state.setOperatingLimit(operatingLimit);
+	}
+
+	/**
+	 * @return A count of the number of runs believed to actually be in the
+	 *         {@linkplain uk.org.taverna.server.master.common.Status#Operating
+	 *         operating} state.
+	 * @throws Exception
+	 *             If anything goes wrong.
+	 */
+	public abstract int getOperatingCount() throws Exception;
+
 	/** @return How many minutes should a workflow live by default? */
 	@ManagedAttribute(description = "How many minutes should a workflow live by default?", currencyTimeLimit = 300)
 	@Override
@@ -401,6 +448,16 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 			throw new JAXBException("problem converting to scufl2", e);
 		} catch (WriterException e) {
 			throw new JAXBException("problem converting to scufl2", e);
+		}
+	}
+
+	@Override
+	public boolean isAllowingRunsToStart() {
+		try {
+			return state.getOperatingLimit() > getOperatingCount();
+		} catch (Exception e) {
+			log.info("failed to get operating run count", e);
+			return false;
 		}
 	}
 

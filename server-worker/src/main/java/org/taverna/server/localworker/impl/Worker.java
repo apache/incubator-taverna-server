@@ -9,6 +9,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
+import org.taverna.server.localworker.remote.ImplementationException;
 import org.taverna.server.localworker.remote.RemoteListener;
 import org.taverna.server.localworker.remote.RemoteStatus;
 import org.taverna.server.localworker.server.UsageRecordReceiver;
@@ -57,10 +58,11 @@ public interface Worker {
 	 *            The internal name of the workflow run.
 	 * @param runtimeSettings
 	 *            List of configuration details for the forked runtime.
+	 * @return Whether a successful start happened.
 	 * @throws Exception
 	 *             If any of quite a large number of things goes wrong.
 	 */
-	void initWorker(String executeWorkflowCommand, byte[] workflow,
+	boolean initWorker(String executeWorkflowCommand, String workflow,
 			File workingDir, File inputBaclavaFile,
 			Map<String, File> inputRealFiles, Map<String, String> inputValues,
 			File outputBaclavaFile, File contextDirectory,
@@ -112,4 +114,13 @@ public interface Worker {
 	 *            written in order to log them back to the server.
 	 */
 	void setURReceiver(UsageRecordReceiver receiver);
+
+	/**
+	 * Arrange for the deletion of any resources created during worker process
+	 * construction. Guaranteed to be the last thing done before finalization.
+	 * 
+	 * @throws ImplementationException
+	 *             If anything goes wrong.
+	 */
+	void deleteLocalResources() throws ImplementationException;
 }

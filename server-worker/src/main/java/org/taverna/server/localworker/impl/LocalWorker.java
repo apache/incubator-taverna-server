@@ -50,6 +50,7 @@ import org.taverna.server.localworker.remote.RemoteListener;
 import org.taverna.server.localworker.remote.RemoteSecurityContext;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.localworker.remote.RemoteStatus;
+import org.taverna.server.localworker.remote.StillWorkingOnItException;
 import org.taverna.server.localworker.server.UsageRecordReceiver;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -71,8 +72,9 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	/**
 	 * Subdirectories of the working directory to create by default.
 	 */
-	private static final String[] dirstomake = { "conf", "externaltool", "lib",
-			"logs", "plugins", "repository", "t2-database", "var" };
+	private static final String[] dirstomake = { "conf", "externaltool",
+			"feed", "lib", "logs", "plugins", "repository", "t2-database",
+			"var" };
 
 	/** The name of the default encoding for characters on this machine. */
 	public static final String SYSTEM_ENCODING = defaultCharset().name();
@@ -169,18 +171,6 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 
 	// ----------------------- METHODS -----------------------
 
-	static final class Instantiate implements TavernaRunManager.RunFactory {
-		@Override
-		public LocalWorker construct(String executeWorkflowCommand,
-				byte[] workflow, Class<? extends Worker> workerClass,
-				UsageRecordReceiver urReceiver, UUID id,
-				Map<String, String> seedEnvironment, List<String> javaParams)
-				throws RemoteException, ImplementationException {
-			return new LocalWorker(executeWorkflowCommand, workflow,
-					workerClass, urReceiver, id, seedEnvironment, javaParams);
-		}
-	}
-
 	/**
 	 * @param executeWorkflowCommand
 	 *            The script used to execute workflows.
@@ -199,16 +189,18 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	 * @param javaParams
 	 *            Parameters to pass to the worker subprocess java runtime
 	 *            itself.
+	 * @param workerFactory
+	 *            How to make instances of the low-level worker objects.
 	 * @throws RemoteException
 	 *             If registration of the worker fails.
 	 * @throws ImplementationException
 	 *             If something goes wrong during local setup.
 	 */
 	protected LocalWorker(String executeWorkflowCommand, byte[] workflow,
-			Class<? extends Worker> workerClass,
 			UsageRecordReceiver urReceiver, UUID id,
-			Map<String, String> seedEnvironment, List<String> javaParams)
-			throws RemoteException, ImplementationException {
+			Map<String, String> seedEnvironment, List<String> javaParams,
+			WorkerFactory workerFactory) throws RemoteException,
+			ImplementationException {
 		super();
 		if (id == null)
 			id = randomUUID();
@@ -233,7 +225,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		environment.putAll(seedEnvironment);
 		runtimeSettings.addAll(javaParams);
 		try {
-			core = workerClass.newInstance();
+			core = workerFactory.makeInstance();
 		} catch (Exception e) {
 			out.println("problem when creating core worker implementation");
 			e.printStackTrace(out);
@@ -251,7 +243,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 					shutdownHook = null;
 					destroy();
 				} catch (ImplementationException e) {
-				} catch (RemoteException e) {
+					// Absolutely nothing we can do here
 				}
 			}
 		});
@@ -261,7 +253,16 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	}
 
 	@Override
-	public void destroy() throws RemoteException, ImplementationException {
+	public void destroy() throws ImplementationException {
+		killWorkflowSubprocess();
+		removeFromShutdownHooks();
+		// Is this it?
+		deleteWorkingDirectory();
+		deleteSecurityManagerDirectory();
+		core.deleteLocalResources();
+	}
+
+	private void killWorkflowSubprocess() {
 		if (status != Finished && status != Initialized)
 			try {
 				core.killWorker();
@@ -271,6 +272,9 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 				out.println("problem when killing worker");
 				e.printStackTrace(out);
 			}
+	}
+
+	private void removeFromShutdownHooks() throws ImplementationException {
 		try {
 			if (shutdownHook != null)
 				getRuntime().removeShutdownHook(shutdownHook);
@@ -280,7 +284,9 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		} finally {
 			shutdownHook = null;
 		}
-		// Is this it?
+	}
+
+	private void deleteWorkingDirectory() throws ImplementationException {
 		try {
 			if (base != null)
 				forceDelete(base);
@@ -292,6 +298,10 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		} finally {
 			base = null;
 		}
+	}
+
+	private void deleteSecurityManagerDirectory()
+			throws ImplementationException {
 		try {
 			if (securityDirectory != null)
 				forceDelete(securityDirectory);
@@ -612,7 +622,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	@Override
 	public void setStatus(RemoteStatus newStatus)
 			throws IllegalStateTransitionException, RemoteException,
-			ImplementationException {
+			ImplementationException, StillWorkingOnItException {
 		if (status == newStatus)
 			return;
 
@@ -623,23 +633,16 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		case Operating:
 			switch (status) {
 			case Initialized:
+				boolean started;
 				try {
-					start = new Date();
-					core.initWorker(executeWorkflowCommand, workflow, base,
-							inputBaclavaFile, inputRealFiles, inputValues,
-							outputBaclavaFile, securityDirectory,
-							keystorePassword, environment, masterToken,
-							runtimeSettings);
-					/*
-					 * Do not clear the keystorePassword array here; its
-					 * ownership is *transferred* to the worker core which
-					 * doesn't copy it but *does* clear it after use.
-					 */
-					keystorePassword = null;
+					started = startWorker();
 				} catch (Exception e) {
 					throw new ImplementationException(
 							"problem creating executing workflow", e);
 				}
+				if (!started)
+					throw new StillWorkingOnItException(
+							"workflow start in process");
 				break;
 			case Stopped:
 				try {
@@ -689,6 +692,21 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			status = Finished;
 			break;
 		}
+	}
+
+	private boolean startWorker() throws Exception {
+		start = new Date();
+		char[] pw = keystorePassword;
+		keystorePassword = null;
+		/*
+		 * Do not clear the keystorePassword array here; its ownership is
+		 * *transferred* to the worker core which doesn't copy it but *does*
+		 * clear it after use.
+		 */
+		return core.initWorker(executeWorkflowCommand, workflow, base,
+				inputBaclavaFile, inputRealFiles, inputValues,
+				outputBaclavaFile, securityDirectory, pw, environment,
+				masterToken, runtimeSettings);
 	}
 
 	@Override

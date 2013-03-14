@@ -222,8 +222,15 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 		log.debug("deleting runs that timed out before " + new Date());
 		List<String> toDelete = expiredRuns();
 		log.debug("found " + toDelete.size() + " runs to delete");
-		for (String id : toDelete)
-			delete(getById(id));
+		for (String id : toDelete) {
+			RunConnection rc = getById(id);
+			try {
+				rc.fromDBform(facade).run.destroy();
+			} catch (Exception e) {
+				log.debug("failed to delete execution resource for " + id, e);
+			}
+			delete(rc);
+		}
 	}
 
 	/**

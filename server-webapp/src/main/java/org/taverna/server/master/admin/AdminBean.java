@@ -24,6 +24,7 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.ManagementModel;
+import org.taverna.server.master.exceptions.GeneralFailureException;
 import org.taverna.server.master.factories.ConfigurableRunFactory;
 import org.taverna.server.master.identity.User;
 import org.taverna.server.master.identity.UserStore;
@@ -462,5 +463,25 @@ public class AdminBean implements Admin {
 	public Response userdel(String username) {
 		userStore.deleteUser(username);
 		return noContent().build();
+	}
+
+	@Override
+	public int operatingCount() {
+		try {
+			return factory.getOperatingCount();
+		} catch (Exception e) {
+			throw new GeneralFailureException(e);
+		}
+	}
+
+	@Override
+	public int getOperatingLimit() {
+		return factory.getOperatingLimit();
+	}
+
+	@Override
+	public int setOperatingLimit(int operatingLimit) {
+		factory.setOperatingLimit(operatingLimit);
+		return factory.getOperatingLimit();
 	}
 }

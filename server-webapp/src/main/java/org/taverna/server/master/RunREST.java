@@ -6,16 +6,23 @@
 package org.taverna.server.master;
 
 import static javax.ws.rs.core.Response.noContent;
+import static javax.ws.rs.core.Response.ok;
+import static javax.ws.rs.core.Response.status;
 import static org.joda.time.format.ISODateTimeFormat.dateTime;
 import static org.joda.time.format.ISODateTimeFormat.dateTimeParser;
 import static org.taverna.server.master.TavernaServerImpl.log;
 import static org.taverna.server.master.common.Status.Initialized;
+import static org.taverna.server.master.common.Status.Operating;
 
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.Date;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.abdera.model.Entry;
+import org.apache.abdera.model.Feed;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.TavernaServerImpl.SupportAware;
@@ -27,9 +34,12 @@ import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.NotOwnerException;
+import org.taverna.server.master.exceptions.OverloadedException;
 import org.taverna.server.master.exceptions.UnknownRunException;
+import org.taverna.server.master.interaction.InteractionFeedSupport;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
+import org.taverna.server.master.rest.InteractionFeedREST;
 import org.taverna.server.master.rest.TavernaServerInputREST;
 import org.taverna.server.master.rest.TavernaServerListenersREST;
 import org.taverna.server.master.rest.TavernaServerRunREST;
@@ -47,8 +57,10 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	private TavernaRun run;
 	private TavernaServerSupport support;
 	private ContentsDescriptorBuilder cdBuilder;
+	private InteractionFeedSupport interactionFeed;
 
 	@Override
+	@Required
 	public void setSupport(TavernaServerSupport support) {
 		this.support = support;
 	}
@@ -59,6 +71,12 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 		this.cdBuilder = cdBuilder;
 	}
 
+	@Override
+	@Required
+	public void setInteractionFeed(InteractionFeedSupport interactionFeed) {
+		this.interactionFeed = interactionFeed;
+	}
+	
 	@Override
 	public void setRunName(String runName) {
 		this.runName = runName;
@@ -171,10 +189,19 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
-	public String setStatus(String status) throws NoUpdateException {
+	public Response setStatus(String status) throws NoUpdateException {
+		Status newStatus = Status.valueOf(status.trim());
 		support.permitUpdate(run);
-		run.setStatus(Status.valueOf(status.trim()));
-		return run.getStatus().toString();
+		if (newStatus == Operating && run.getStatus() == Initialized) {
+			if (!support.getAllowStartWorkflowRuns())
+				throw new OverloadedException();
+			String issue = run.setStatus(newStatus);
+			if (issue == null)
+				issue = "starting run...";
+			return status(202).entity(issue).type("text/plain").build();
+		}
+		run.setStatus(newStatus); // Ignore the result
+		return ok(run.getStatus().toString()).type("text/plain").build();
 	}
 
 	@Override
@@ -211,6 +238,10 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 			throw new BadStateChangeException(
 					"may not get output description in initial state");
 		return cdBuilder.makeOutputDescriptor(run, ui);
+	}
+
+	public InteractionFeedREST getInteractionFeed() {
+		return new InteractionFeed(interactionFeed, run);
 	}
 
 	/**
@@ -250,7 +281,46 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 interface RunBean extends SupportAware {
 	void setCdBuilder(ContentsDescriptorBuilder cdBuilder);
 
+	void setInteractionFeed(InteractionFeedSupport interactionFeed);
+
 	void setRun(TavernaRun run);
 
 	void setRunName(String runName);
+}
+
+class InteractionFeed implements InteractionFeedREST {
+	private InteractionFeedSupport interactionFeed;
+	private TavernaRun run;
+
+	InteractionFeed(InteractionFeedSupport interactionFeed, TavernaRun run) {
+		this.interactionFeed = interactionFeed;
+		this.run = run;
+	}
+
+	@Override
+	public Feed getFeed() throws FilesystemAccessException,
+			NoDirectoryEntryException {
+		return interactionFeed.getRunFeed(run);
+	}
+
+	@Override
+	public Response addEntry(Entry entry) throws MalformedURLException,
+			FilesystemAccessException, NoDirectoryEntryException,
+			NoUpdateException {
+		String location = interactionFeed.addRunFeedEntry(run, entry);
+		return Response.created(URI.create(location)).build();
+	}
+
+	@Override
+	public Entry getEntry(String id) throws FilesystemAccessException,
+			NoDirectoryEntryException {
+		return interactionFeed.getRunFeedEntry(run, id);
+	}
+
+	@Override
+	public String deleteEntry(String id) throws FilesystemAccessException,
+			NoDirectoryEntryException, NoUpdateException {
+		interactionFeed.removeRunFeedEntry(run, id);
+		return "entry successfully deleted";
+	}
 }

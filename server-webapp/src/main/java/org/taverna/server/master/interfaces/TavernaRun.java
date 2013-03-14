@@ -51,8 +51,8 @@ public interface TavernaRun extends Serializable {
 	 *             If the workflow is not in the {@link Status#Initialized
 	 *             Initialized} state.
 	 */
-	void setInputBaclavaFile(String filename)
-			throws FilesystemAccessException, BadStateChangeException;
+	void setInputBaclavaFile(String filename) throws FilesystemAccessException,
+			BadStateChangeException;
 
 	/**
 	 * @return The list of input assignments.
@@ -124,10 +124,12 @@ public interface TavernaRun extends Serializable {
 	 * 
 	 * @param s
 	 *            The state to try to change to.
+	 * @return <tt>null</tt>, or a string describing the incomplete state change
+	 *         if the operation has internally timed out.
 	 * @throws BadStateChangeException
 	 *             If the change to the given state is impossible.
 	 */
-	void setStatus(Status s) throws BadStateChangeException;
+	String setStatus(Status s) throws BadStateChangeException;
 
 	/**
 	 * @return Handle to the main working directory of the run.

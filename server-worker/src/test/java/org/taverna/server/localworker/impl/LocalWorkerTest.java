@@ -90,8 +90,8 @@ public class LocalWorkerTest {
 		}
 
 		@Override
-		public void initWorker(String executeWorkflowCommand, byte[] workflow,
-				File workingDir, File inputBaclava,
+		public boolean initWorker(String executeWorkflowCommand,
+				byte[] workflow, File workingDir, File inputBaclava,
 				Map<String, File> inputFiles, Map<String, String> inputValues,
 				File outputBaclava, File cmdir, char[] cmpass,
 				Map<String, String> env, String id, List<String> conf)
@@ -115,6 +115,7 @@ public class LocalWorkerTest {
 			// TODO: check cmdir and cmpass
 			// TODO: log env
 			events.add("]");
+			return true;
 		}
 
 		@Override
@@ -136,13 +137,24 @@ public class LocalWorkerTest {
 		public void setURReceiver(UsageRecordReceiver receiver) {
 			// We just ignore this
 		}
+
+		@Override
+		public void deleteLocalResources() throws ImplementationException {
+			// Nothing to do here
+		}
 	}
+
+	WorkerFactory factory = new WorkerFactory() {
+		@Override
+		public Worker makeInstance() throws Exception {
+			return new DummyWorker();
+		}
+	};
 
 	@Before
 	public void setUp() throws Exception {
-		lw = new LocalWorker("XWC", "WF".getBytes("UTF-8"), DummyWorker.class,
-				null, randomUUID(), new HashMap<String, String>(),
-				new ArrayList<String>());
+		lw = new LocalWorker("XWC", "WF".getBytes("UTF-8"), null, randomUUID(),
+				new HashMap<String, String>(), new ArrayList<String>(), factory);
 		events = new ArrayList<String>();
 		returnThisStatus = RemoteStatus.Operating;
 	}

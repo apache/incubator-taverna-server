@@ -9,6 +9,7 @@ import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.joda.time.format.ISODateTimeFormat.basicDateTime;
 import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.rest.handler.Scufl2DocumentHandler.SCUFL2;
+import static org.taverna.server.master.interaction.InteractionFeedSupport.FEED_URL_DIR;
 import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 
 import java.net.URI;
@@ -225,7 +226,8 @@ public interface TavernaServerRunREST {
 	 * 
 	 * @param status
 	 *            The new status code.
-	 * @return What status the run is actually in.
+	 * @return Description of what status the run is actually in, or a 202 to
+	 *         indicate that things are still changing.
 	 * @throws NoUpdateException
 	 *             If the current user is not permitted to update the run.
 	 * @throws BadStateChangeException
@@ -237,7 +239,7 @@ public interface TavernaServerRunREST {
 	@Produces("text/plain")
 	@Description("Attempts to update the status of the workflow run.")
 	@NonNull
-	public String setStatus(@NonNull String status) throws NoUpdateException,
+	public Response setStatus(@NonNull String status) throws NoUpdateException,
 			BadStateChangeException;
 
 	/**
@@ -335,6 +337,15 @@ public interface TavernaServerRunREST {
 			BadStateChangeException;
 
 	/**
+	 * Get a handle to the interaction feed.
+	 * @return
+	 */
+	@Path(FEED_URL_DIR)
+	@Description("Access the interaction feed for the workflow run.")
+	@NonNull
+	InteractionFeedREST getInteractionFeed();
+
+	/**
 	 * The description of where everything is in a RESTful view of a workflow
 	 * run. Done with JAXB.
 	 * 
@@ -368,6 +379,8 @@ public interface TavernaServerRunREST {
 		public Uri securityContext;
 		/** The list of listeners. */
 		public ListenerList listeners;
+		/** The location of the interaction feed. */
+		public Uri interaction;
 
 		/**
 		 * How to describe a run's expiry.
@@ -480,6 +493,7 @@ public interface TavernaServerRunREST {
 			createTime = new Uri(ui, "createTime");
 			startTime = new Uri(ui, "startTime");
 			finishTime = new Uri(ui, "finishTime");
+			interaction = new Uri(ui, FEED_URL_DIR);
 			owner = run.getSecurityContext().getOwner().getName();
 		}
 	}

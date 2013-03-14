@@ -70,4 +70,15 @@ public interface RemoteRunFactory extends Remote {
 	void setInteractionServiceDetails(@NonNull String host,
 			@NonNull String port, @NonNull String webdavPath,
 			@NonNull String feedPath) throws RemoteException;
+
+	/**
+	 * Gets a count of the number of {@linkplain RemoteSingleRun workflow runs}
+	 * that this factor knows about that are in the
+	 * {@link RemoteStatus#Operating Operating} state.
+	 * 
+	 * @return A count of "running" workflow runs.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
+	 */
+	int countOperatingRuns() throws RemoteException;
 }

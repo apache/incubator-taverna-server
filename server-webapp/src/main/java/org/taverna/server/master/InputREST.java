@@ -7,6 +7,8 @@ package org.taverna.server.master;
 
 import static java.util.UUID.randomUUID;
 
+import java.util.Date;
+
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
@@ -171,9 +173,11 @@ class InputREST implements TavernaServerInputREST, InputBean {
 
 		private FalseDE(String p) {
 			this.p = p;
+			this.d = new Date();
 		}
 
 		private String p;
+		private Date d;
 
 		@Override
 		public String getName() {
@@ -192,6 +196,11 @@ class InputREST implements TavernaServerInputREST, InputBean {
 		@Override
 		public int compareTo(DirectoryEntry o) {
 			return p.compareTo(o.getFullName());
+		}
+
+		@Override
+		public Date getModificationDate() {
+			return d;
 		}
 	}
 }

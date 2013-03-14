@@ -171,6 +171,7 @@ public class RunConnection {
 				new UsernamePrincipal(owner));
 		((SecurityContextDelegate)rrd.secContext).setCredentialsAndTrust(credentials,trust);
 		rrd.db = db;
+		rrd.factory = db.getFactory();
 		return rrd;
 	}
 

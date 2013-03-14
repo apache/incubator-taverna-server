@@ -5,7 +5,9 @@
  */
 package org.taverna.server.master.localworker;
 
+import static java.lang.System.currentTimeMillis;
 import static java.util.Calendar.MINUTE;
+import static java.util.Collections.sort;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.compress.archivers.zip.Zip64Mode.Always;
@@ -25,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -43,12 +46,14 @@ import org.taverna.server.localworker.remote.RemoteInput;
 import org.taverna.server.localworker.remote.RemoteListener;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.localworker.remote.RemoteStatus;
+import org.taverna.server.localworker.remote.StillWorkingOnItException;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadPropertyValueException;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoListenerException;
+import org.taverna.server.master.exceptions.OverloadedException;
 import org.taverna.server.master.interfaces.Directory;
 import org.taverna.server.master.interfaces.DirectoryEntry;
 import org.taverna.server.master.interfaces.File;
@@ -77,10 +82,12 @@ public class RemoteRunDelegate implements TavernaRun {
 	transient String id;
 	transient RemoteSingleRun run;
 	transient RunDBSupport db;
+	transient AbstractRemoteRunFactory factory;
 	boolean doneTransitionToFinished;
 
 	RemoteRunDelegate(Date creationInstant, Workflow workflow,
-			RemoteSingleRun rsr, int defaultLifetime, RunDBSupport db, UUID id) {
+			RemoteSingleRun rsr, int defaultLifetime, RunDBSupport db, UUID id,
+			AbstractRemoteRunFactory factory) {
 		if (rsr == null) {
 			throw new IllegalArgumentException("remote run must not be null");
 		}
@@ -91,6 +98,7 @@ public class RemoteRunDelegate implements TavernaRun {
 		this.expiry = c.getTime();
 		this.run = rsr;
 		this.db = db;
+		this.factory = factory;
 		if (id != null)
 			this.id = id.toString();
 	}
@@ -218,8 +226,9 @@ public class RemoteRunDelegate implements TavernaRun {
 	}
 
 	@Override
-	public void setStatus(Status s) throws BadStateChangeException {
+	public String setStatus(Status s) throws BadStateChangeException {
 		try {
+			log.info("setting status of run " + id + " to " + s);
 			switch (s) {
 			case Initialized:
 				run.setStatus(RemoteStatus.Initialized);
@@ -228,6 +237,8 @@ public class RemoteRunDelegate implements TavernaRun {
 				if (run.getStatus() == RemoteStatus.Initialized) {
 					secContext.conveySecurity();
 				}
+				if (!factory.isAllowingRunsToStart())
+					throw new OverloadedException();
 				run.setStatus(RemoteStatus.Operating);
 				break;
 			case Stopped:
@@ -237,6 +248,7 @@ public class RemoteRunDelegate implements TavernaRun {
 				run.setStatus(RemoteStatus.Finished);
 				break;
 			}
+			return null;
 		} catch (IllegalStateTransitionException e) {
 			throw new BadStateChangeException(e.getMessage());
 		} catch (RemoteException e) {
@@ -249,6 +261,10 @@ public class RemoteRunDelegate implements TavernaRun {
 			if (e.getCause() != null)
 				throw new BadStateChangeException(e.getMessage(), e.getCause());
 			throw new BadStateChangeException(e.getMessage(), e);
+		} catch (StillWorkingOnItException e) {
+			log.info("still working on setting status of run " + id + " to "
+					+ s, e);
+			return e.getMessage();
 		}
 	}
 
@@ -443,6 +459,8 @@ abstract class DEDelegate implements DirectoryEntry {
 	private RemoteDirectoryEntry entry;
 	private String name;
 	private String full;
+	private Date cacheModTime;
+	private long cacheQueryTime = 0L;
 
 	DEDelegate(RemoteDirectoryEntry entry) {
 		this.entry = entry;
@@ -490,6 +508,18 @@ abstract class DEDelegate implements DirectoryEntry {
 	}
 
 	@Override
+	public Date getModificationDate() {
+		if (cacheModTime == null || currentTimeMillis() - cacheQueryTime < 5000)
+			try {
+				cacheModTime = entry.getModificationDate();
+				cacheQueryTime = currentTimeMillis();
+			} catch (RemoteException e) {
+				log.error("failed to get modification time", e);
+			}
+		return cacheModTime;
+	}
+
+	@Override
 	public int compareTo(DirectoryEntry de) {
 		return getFullName().compareTo(de.getFullName());
 	}
@@ -530,6 +560,22 @@ class DirectoryDelegate extends DEDelegate implements Directory {
 					"failed to get directory contents", e);
 		}
 		return result;
+	}
+
+	@Override
+	public Collection<DirectoryEntry> getContentsByDate()
+			throws FilesystemAccessException {
+		ArrayList<DirectoryEntry> result = new ArrayList<DirectoryEntry>(
+				getContents());
+		sort(result, new DateComparator());
+		return result;
+	}
+
+	static class DateComparator implements Comparator<DirectoryEntry> {
+		@Override
+		public int compare(DirectoryEntry a, DirectoryEntry b) {
+			return a.getModificationDate().compareTo(b.getModificationDate());
+		}
 	}
 
 	@Override

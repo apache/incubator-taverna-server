@@ -44,13 +44,12 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  */
 @SuppressWarnings({ "SE_BAD_FIELD", "SE_NO_SERIALVERSIONID" })
 public class TavernaRunManager extends UnicastRemoteObject implements
-		RemoteRunFactory {
+		RemoteRunFactory, RunAccounting, WorkerFactory {
 	String command;
-	RunFactory cons;
-	Class<? extends Worker> workerClass;
 	Map<String, String> seedEnvironment = new HashMap<String, String>();
 	List<String> javaInitParams = new ArrayList<String>();
 	private WorkflowBundleIO io;
+	private int activeRuns = 0;
 	// Hacks!
 	public static String interactionHost;
 	public static String interactionPort;
@@ -64,23 +63,11 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	 * 
 	 * @param command
 	 *            What command to call to actually run a run.
-	 * @param constructor
-	 *            What constructor to call to instantiate the RMI server object
-	 *            for the run. The constructor <i>must</i> be able to take two
-	 *            strings (the execution command, and the workflow document) and
-	 *            a class (the <tt>workerClass</tt> parameter, below) as
-	 *            arguments.
-	 * @param workerClass
-	 *            What class to create to actually manufacture and manage the
-	 *            connection to the workflow engine.
 	 * @throws RemoteException
 	 *             If anything goes wrong during creation of the instance.
 	 */
-	public TavernaRunManager(String command, RunFactory constructor,
-			Class<? extends Worker> workerClass) throws RemoteException {
+	public TavernaRunManager(String command) throws RemoteException {
 		this.command = command;
-		this.cons = constructor;
-		this.workerClass = workerClass;
 		this.io = new WorkflowBundleIO();
 	}
 
@@ -94,8 +81,8 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 					.getMainWorkflow().getWorkflowIdentifier();
 			out.println("Creating run from workflow <" + wfid + "> for <"
 					+ creator + ">");
-			return cons.construct(command, workflow, workerClass, urReceiver,
-					id, seedEnvironment, javaInitParams);
+			return new LocalWorker(command, workflow, urReceiver, id,
+					seedEnvironment, javaInitParams, this);
 		} catch (RemoteException e) {
 			throw e;
 		} catch (Exception e) {
@@ -168,8 +155,7 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 		String command = args[0];
 		factoryName = args[args.length - 1];
 		registry = getRegistry();
-		TavernaRunManager man = new TavernaRunManager(command,
-				new LocalWorker.Instantiate(), WorkerCore.class);
+		TavernaRunManager man = new TavernaRunManager(command);
 		for (int i = 1; i < args.length - 1; i++) {
 			if (args[i].startsWith("-E")) {
 				String arg = args[i].substring(2);
@@ -222,43 +208,23 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 		interactionFeedPath = feedPath;
 	}
 
-	/**
-	 * How to actually make an instance of the local worker class.
-	 * 
-	 * @author Donal Fellows
-	 */
-	public interface RunFactory {
-		/**
-		 * Construct an instance of the workflow run access code.
-		 * 
-		 * @param executeWorkflowCommand
-		 *            The script used to execute workflows.
-		 * @param workflow
-		 *            The workflow to execute.
-		 * @param workerClass
-		 *            The class to instantiate as our local representative of
-		 *            the run.
-		 * @param urReceiver
-		 *            The remote class to report the generated usage record(s)
-		 *            to.
-		 * @param id
-		 *            The UUID to use, or <tt>null</tt> if we are to invent one.
-		 * @param seedEnvironment
-		 *            The key/value pairs to seed the worker subprocess
-		 *            environment with.
-		 * @param javaParams
-		 *            Parameters to pass to the worker subprocess java runtime
-		 *            itself.
-		 * @return The local worker class.
-		 * @throws RemoteException
-		 *             If registration of the worker fails.
-		 * @throws ImplementationException
-		 *             If something goes wrong during local setup.
-		 */
-		RemoteSingleRun construct(String executeWorkflowCommand,
-				byte[] workflow, Class<? extends Worker> workerClass,
-				UsageRecordReceiver urReceiver, UUID id,
-				Map<String, String> seedEnvironment, List<String> javaParams)
-				throws RemoteException, ImplementationException;
+	@Override
+	public synchronized int countOperatingRuns() {
+		return (activeRuns < 0 ? 0 : activeRuns);
+	}
+
+	@Override
+	public synchronized void runStarted() {
+		activeRuns++;
+	}
+
+	@Override
+	public synchronized void runCeased() {
+		activeRuns--;
+	}
+
+	@Override
+	public Worker makeInstance() throws Exception {
+		return new WorkerCore(this);
 	}
 }

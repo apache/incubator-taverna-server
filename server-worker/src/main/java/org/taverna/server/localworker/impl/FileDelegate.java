@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Date;
 
 import org.taverna.server.localworker.remote.RemoteDirectory;
 import org.taverna.server.localworker.remote.RemoteFile;
@@ -149,5 +150,10 @@ public class FileDelegate extends UnicastRemoteObject implements RemoteFile {
 			throw new RuntimeException(
 					"unexpected failure to resolve local host address", e);
 		}
+	}
+
+	@Override
+	public Date getModificationDate() throws RemoteException {
+		return new Date(file.lastModified());
 	}
 }

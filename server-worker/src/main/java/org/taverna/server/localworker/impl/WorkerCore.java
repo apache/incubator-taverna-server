@@ -9,6 +9,7 @@ import static java.io.File.createTempFile;
 import static java.io.File.pathSeparator;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.System.out;
+import static org.apache.commons.io.FileUtils.forceDelete;
 import static org.apache.commons.io.IOUtils.copy;
 //import static org.taverna.server.localworker.impl.LocalWorker.PASSWORD_FILE;
 import static org.taverna.server.localworker.impl.LocalWorker.SYSTEM_ENCODING;
@@ -28,6 +29,7 @@ import static org.taverna.server.localworker.remote.RemoteStatus.Initialized;
 import static org.taverna.server.localworker.remote.RemoteStatus.Operating;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,7 +49,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.xml.ws.Holder;
+
 import org.ogf.usage.JobUsageRecord;
+import org.taverna.server.localworker.remote.ImplementationException;
 import org.taverna.server.localworker.remote.RemoteListener;
 import org.taverna.server.localworker.remote.RemoteStatus;
 import org.taverna.server.localworker.server.UsageRecordReceiver;
@@ -70,6 +75,11 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	 * The name of the standard listener, which is installed by default.
 	 */
 	public static final String DEFAULT_LISTENER_NAME = "io";
+
+	/**
+	 * Time to wait for the subprocess to wait, in milliseconds.
+	 */
+	private static final int START_WAIT_TIME = 1500;
 
 	static final Map<String, Property> pmap = new HashMap<String, Property>();
 
@@ -104,25 +114,30 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	}
 
 	Process subprocess;
-	private boolean finished;
 	StringWriter stdout;
 	StringWriter stderr;
 	Integer exitCode;
 	boolean readyToSendEmail;
 	String emailAddress;
+	Date start;
+	RunAccounting accounting;
 
-	private Date start;
+	private boolean finished;
 	private JobUsageRecord ur;
 	private File wd;
 	private UsageRecordReceiver urreceiver;
+	private File workflowFile;
 
 	/**
+	 * @param accounting
+	 *            Object that looks after how many runs are executing.
 	 * @throws RemoteException
 	 */
-	public WorkerCore() throws RemoteException {
+	public WorkerCore(RunAccounting accounting) throws RemoteException {
 		super();
 		stdout = new StringWriter();
 		stderr = new StringWriter();
+		this.accounting = accounting;
 	}
 
 	/**
@@ -218,11 +233,97 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	 *             If any of quite a large number of things goes wrong.
 	 */
 	@Override
-	public void initWorker(String executeWorkflowCommand, byte[] workflow,
-			File workingDir, File inputBaclava, Map<String, File> inputFiles,
-			Map<String, String> inputValues, File outputBaclava,
-			File securityDir, char[] password, Map<String, String> environment,
-			String token, List<String> runtime) throws IOException {
+	public boolean initWorker(final String executeWorkflowCommand,
+			final byte[] workflow, final File workingDir,
+			final File inputBaclava, final Map<String, File> inputFiles,
+			final Map<String, String> inputValues, final File outputBaclava,
+			final File securityDir, final char[] password,
+			final Map<String, String> environment, final String token,
+			final List<String> runtime) throws IOException {
+		final Holder<IOException> h = new Holder<IOException>();
+		Thread t = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					ProcessBuilder pb = createProcessBuilder(
+							executeWorkflowCommand, workflow, workingDir,
+							inputBaclava, inputFiles, inputValues,
+							outputBaclava, securityDir, password, environment,
+							token, runtime);
+
+					// Start the subprocess
+					out.println("starting " + pb.command() + " in directory "
+							+ workingDir);
+					subprocess = pb.start();
+					if (subprocess == null)
+						throw new IOException(
+								"unknown failure creating process");
+					start = new Date();
+					accounting.runStarted();
+
+					// Capture its stdout and stderr
+					new AsyncCopy(subprocess.getInputStream(), stdout);
+					new AsyncCopy(subprocess.getErrorStream(), stderr);
+					if (password != null)
+						new AsyncPrint(subprocess.getOutputStream(), password);
+				} catch (IOException e) {
+					h.value = e;
+				}
+			}
+		});
+		t.start();
+		try {
+			t.join(START_WAIT_TIME);
+		} catch (InterruptedException e) {
+			// Won't happen
+		}
+		if (h.value != null)
+			throw h.value;
+		return subprocess != null;
+	}
+
+	/**
+	 * Assemble the process builder. Does not launch the subprocess.
+	 * 
+	 * @param executeWorkflowCommand
+	 *            The reference to the workflow engine implementation.
+	 * @param workflow
+	 *            The workflow to execute.
+	 * @param workingDir
+	 *            The working directory to use.
+	 * @param inputBaclava
+	 *            What file to read a baclava document from (or <tt>null</tt>)
+	 * @param inputFiles
+	 *            The mapping from inputs to files.
+	 * @param inputValues
+	 *            The mapping from inputs to literal values.
+	 * @param outputBaclava
+	 *            What file to write a baclava document to (or <tt>null</tt>)
+	 * @param securityDir
+	 *            The credential manager directory.
+	 * @param password
+	 *            The password for the credential manager.
+	 * @param environment
+	 *            The seed environment
+	 * @param token
+	 *            The run identifier that the server wants to use.
+	 * @param runtime
+	 *            Any runtime parameters to Java.
+	 * @return The configured process builder.
+	 * @throws IOException
+	 *             If file handling fails
+	 * @throws UnsupportedEncodingException
+	 *             If we can't encode any text (unlikely)
+	 * @throws FileNotFoundException
+	 *             If we can't write the workflow out (unlikely)
+	 */
+	ProcessBuilder createProcessBuilder(String executeWorkflowCommand,
+			byte[] workflow, File workingDir, File inputBaclava,
+			Map<String, File> inputFiles, Map<String, String> inputValues,
+			File outputBaclava, File securityDir, char[] password,
+			Map<String, String> environment, String token, List<String> runtime)
+			throws IOException, UnsupportedEncodingException,
+			FileNotFoundException {
 		ProcessBuilder pb = new ProcessBuilder();
 		/*
 		 * WARNING! HERE THERE BE DRAGONS! BE CAREFUL HERE!
@@ -322,8 +423,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		} finally {
 			os.close();
 		}
-		tmp.deleteOnExit();
-		pb.command().add(tmp.getAbsolutePath());
+		pb.command().add(workflowFile.getAbsolutePath());
 
 		// Indicate what working directory to use
 		pb.directory(workingDir);
@@ -348,19 +448,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			env.put("INTERACTION_WEBDAV", interactionWebdavPath);
 			env.put("INTERACTION_FEED", interactionFeedPath);
 		}
-
-		// Start the subprocess
-		out.println("starting " + pb.command() + " in directory " + workingDir);
-		subprocess = pb.start();
-		if (subprocess == null)
-			throw new IOException("unknown failure creating process");
-		start = new Date();
-
-		// Capture its stdout and stderr
-		new AsyncCopy(subprocess.getInputStream(), stdout);
-		new AsyncCopy(subprocess.getErrorStream(), stderr);
-		if (password != null)
-			new AsyncPrint(subprocess.getOutputStream(), password);
+		return pb;
 	}
 
 	/**
@@ -373,6 +461,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			try {
 				// Check if the workflow terminated of its own accord
 				code = subprocess.exitValue();
+				accounting.runCeased();
 				buildUR(code == 0 ? Completed : Failed);
 			} catch (IllegalThreadStateException e) {
 				subprocess.destroy();
@@ -382,6 +471,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 					e1.printStackTrace(out); // not expected
 					return;
 				}
+				accounting.runCeased();
 				buildUR(code == 0 ? Completed : Aborted);
 			}
 			finished = true;
@@ -451,6 +541,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			exitCode = subprocess.exitValue();
 			finished = true;
 			readyToSendEmail = true;
+			accounting.runCeased();
 			buildUR(exitCode.intValue() == 0 ? Completed : Failed);
 			return Finished;
 		} catch (IllegalThreadStateException e) {
@@ -546,5 +637,16 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	@Override
 	public void setURReceiver(UsageRecordReceiver receiver) {
 		urreceiver = receiver;
+	}
+
+	@Override
+	public void deleteLocalResources() throws ImplementationException {
+		if (workflowFile != null)
+			try {
+				forceDelete(workflowFile);
+			} catch (IOException e) {
+				throw new ImplementationException(
+						"problem deleting workflow file", e);
+			}
 	}
 }

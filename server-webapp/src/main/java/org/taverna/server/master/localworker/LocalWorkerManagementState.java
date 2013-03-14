@@ -48,6 +48,8 @@ class LocalWorkerManagementState {
 	private int registryPort;
 	@Persistent
 	private String registryHost;
+	@Persistent
+	private int operatingLimit;
 
 	/**
 	 * @param defaultLifetime
@@ -242,5 +244,20 @@ class LocalWorkerManagementState {
 	 */
 	public String getPasswordFile() {
 		return passwordFile;
+	}
+
+	/**
+	 * @param operatingLimit
+	 *            the operatingLimit to set
+	 */
+	public void setOperatingLimit(int operatingLimit) {
+		this.operatingLimit = operatingLimit;
+	}
+
+	/**
+	 * @return the operatingLimit
+	 */
+	public int getOperatingLimit() {
+		return operatingLimit;
 	}
 }

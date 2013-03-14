@@ -75,4 +75,6 @@ public interface RunDBSupport {
 	 *            run termination.
 	 */
 	void setNotifier(CompletionNotifier notifier);
+
+	AbstractRemoteRunFactory getFactory();
 }
