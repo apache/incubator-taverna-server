@@ -2,18 +2,16 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>server-webapp</artifactId>
 	<packaging>war</packaging>
-	<name>Taverna Server WebApp</name>
+	<name>Web Application Core</name>
 	<description>This is the implementation of the web-app that provides the Taverna Server with its SOAP and REST faces. It relies on the worker process to handle the actual launching of workflow runs.</description>
 	<parent>
 		<groupId>uk.org.taverna.server</groupId>
 		<artifactId>server</artifactId>
-		<version>2.4.2</version>
+		<version>2.4.2-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<scm>
-		<connection>scm:svn:http://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/branches/2.4-release/server-webapp</connection>
-		<developerConnection>scm:svn:https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/branches/2.4-release/server-webapp</developerConnection>
-		<url>http://code.google.com/p/taverna/source/browse/taverna/products/uk.org.taverna.server/branches/2.4-release/server-webapp</url>
+		<url>https://github.com/myGrid/taverna-server/tree/2.4.1i-branch/server-webapp</url>
 	</scm>
 
 	<properties>
@@ -448,11 +446,11 @@
 								</pluginExecution>
 								<pluginExecution>
 									<pluginExecutionFilter>
-										<groupId>com.google.code.maven-svn-revision-number-plugin</groupId>
-										<artifactId>maven-svn-revision-number-plugin</artifactId>
-										<versionRange>[1.6,)</versionRange>
+										<groupId>org.datanucleus</groupId>
+										<artifactId>maven-datanucleus-plugin</artifactId>
+										<versionRange>[3.0.1,)</versionRange>
 										<goals>
-											<goal>revision</goal>
+											<goal>enhance</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>
@@ -461,11 +459,11 @@
 								</pluginExecution>
 								<pluginExecution>
 									<pluginExecutionFilter>
-										<groupId>org.datanucleus</groupId>
-										<artifactId>maven-datanucleus-plugin</artifactId>
-										<versionRange>[3.0.1,)</versionRange>
+										<groupId>pl.project13.maven</groupId>
+										<artifactId>git-commit-id-plugin</artifactId>
+										<versionRange>[2.1.4,)</versionRange>
 										<goals>
-											<goal>enhance</goal>
+											<goal>revision</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>
@@ -562,26 +560,6 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>buildnumber-maven-plugin</artifactId>
-				<version>1.0</version>
-				<executions>
-					<execution>
-						<id>buildinfo</id>
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>create</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<providerImplementations>
-						<svn>javasvn</svn>
-					</providerImplementations>
-					<timestampFormat>{0,date,yyyy-MM-dd'T'HH:mm:ssZ}</timestampFormat>
-				</configuration>
-			</plugin>
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
@@ -591,9 +569,9 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>com.google.code.maven-svn-revision-number-plugin</groupId>
-				<artifactId>maven-svn-revision-number-plugin</artifactId>
-				<version>1.6</version>
+				<groupId>pl.project13.maven</groupId>
+				<artifactId>git-commit-id-plugin</artifactId>
+				<version>2.1.4</version>
 				<executions>
 					<execution>
 						<id>buildinfo</id>
@@ -603,6 +581,10 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+					<prefix>git</prefix>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

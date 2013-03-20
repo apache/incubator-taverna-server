@@ -4,7 +4,7 @@
 	<groupId>uk.org.taverna.server</groupId>
 	<artifactId>server</artifactId>
 	<packaging>pom</packaging>
-	<version>2.4.2</version>
+	<version>2.4.2-SNAPSHOT</version>
 	<name>Taverna Server</name>
 	<description>Taverna Server is a service that provides execution of Taverna Workflows, provided they do not access the user interface while executing.</description>
 	<url>http://www.taverna.org.uk/</url>
@@ -44,9 +44,10 @@
 		</developer>
 	</developers>
 	<scm>
-		<connection>scm:svn:http://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/branches/2.4-release</connection>
-		<developerConnection>scm:svn:https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/branches/2.4-release</developerConnection>
-		<url>http://code.google.com/p/taverna/source/browse/taverna/products/uk.org.taverna.server/branches/2.4-release</url>
+		<connection>scm:git://github.com/myGrid/taverna-server.git</connection>
+		<developerConnection>scm:https://github.com/myGrid/taverna-server.git</developerConnection>
+		<url>https://github.com/myGrid/taverna-server/tree/2.4.1i-branch/</url>
+		<tag>2.4.1i-branch</tag>
 	</scm>
 	<organization>
 		<name>University of Manchester</name>
@@ -123,8 +124,8 @@
 		</contributor>
 	</contributors>
 	<ciManagement>
-		<system>Hudson</system>
-		<url>http://www.mygrid.org.uk/hudson/job/uk.org.taverna.server/</url>
+		<system>Jenkins</system>
+		<url>http://build.mygrid.org.uk/ci/job/taverna-server-2.4.2/</url>
 		<notifiers>
 			<notifier>
 				<type>mail</type>
@@ -164,18 +165,7 @@
 					<version>2.2.1</version>
 					<configuration>
 						<autoVersionSubmodules>true</autoVersionSubmodules>
-						<tagBase>https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/tags</tagBase>
-						<providerImplementations>
-							<svn>javasvn</svn>
-						</providerImplementations>
 					</configuration>
-					<dependencies>
-						<dependency>
-							<groupId>com.google.code.maven-scm-provider-svnjava</groupId>
-							<artifactId>maven-scm-provider-svnjava</artifactId>
-							<version>[1.13,)</version>
-						</dependency>
-					</dependencies>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -244,7 +234,6 @@
 				<artifactId>maven-release-plugin</artifactId>
 				<configuration>
 					<autoVersionSubmodules>true</autoVersionSubmodules>
-					<tagBase>https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/tags</tagBase>
 				</configuration>
 			</plugin>
 		</plugins>

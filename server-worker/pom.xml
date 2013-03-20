@@ -1,18 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>server-worker</artifactId>
-	<name>Taverna Workflow Run Implementation</name>
-	<description>This is the implementation of the factory process that is started up by the web application to manage executing Taverna Workflow executeworkflow.sh calls.</description>
+	<name>Workflow Executor/File System Access Process Implementation</name>
+	<description>This is the implementation of the factory process that is started up by the web application to manage executing Taverna Workflow executeworkflow.sh calls. Also provides per-user access to filestore.</description>
 	<parent>
 		<groupId>uk.org.taverna.server</groupId>
 		<artifactId>server</artifactId>
-		<version>2.4.2</version>
+		<version>2.4.2-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<scm>
-		<connection>scm:svn:http://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/branches/2.4-release/server-worker</connection>
-		<developerConnection>scm:svn:https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/branches/2.4-release/server-worker</developerConnection>
-		<url>http://code.google.com/p/taverna/source/browse/taverna/products/uk.org.taverna.server/branches/2.4-release/server-worker</url>
+		<url>https://github.com/myGrid/taverna-server/tree/2.4.1i-branch/server-worker</url>
 	</scm>
 
 	<properties>
