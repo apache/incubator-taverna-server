@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2013 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.defaults;
 
 import org.taverna.server.master.common.Status;
