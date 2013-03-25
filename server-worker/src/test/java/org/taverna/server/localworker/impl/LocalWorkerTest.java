@@ -90,8 +90,9 @@ public class LocalWorkerTest {
 		}
 
 		@Override
-		public boolean initWorker(String executeWorkflowCommand,
-				String workflow, File workingDir, File inputBaclava,
+		public boolean initWorker(LocalWorker local,
+				String executeWorkflowCommand, String workflow,
+				File workingDir, File inputBaclava,
 				Map<String, File> inputFiles, Map<String, String> inputValues,
 				File outputBaclava, File cmdir, char[] cmpass,
 				Map<String, String> env, String id, List<String> conf)

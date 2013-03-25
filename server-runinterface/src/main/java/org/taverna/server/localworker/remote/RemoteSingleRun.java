@@ -5,6 +5,7 @@
  */
 package org.taverna.server.localworker.remote;
 
+import java.net.URL;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.Date;
@@ -208,4 +209,21 @@ public interface RemoteSingleRun extends Remote {
 	@NonNull
 	public RemoteListener makeListener(@NonNull String type,
 			@NonNull String configuration) throws RemoteException;
+
+	/**
+	 * Configures the details to use when setting up the workflow run's
+	 * connnection to the interaction feed.
+	 * 
+	 * @param interactionFeed
+	 *            The location of the interaction feed. If <tt>null</tt>,
+	 *            defaults from the factory will be used instead.
+	 * @param webdavPath
+	 *            The path used for pushing web pages into the feed. If
+	 *            <tt>null</tt>, a default from the factory will be used
+	 *            instead.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
+	 */
+	void setInteractionServiceDetails(@NonNull URL interactionFeed,
+			@NonNull String webdavPath) throws RemoteException;
 }

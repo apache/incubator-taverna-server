@@ -233,9 +233,10 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	 *             If any of quite a large number of things goes wrong.
 	 */
 	@Override
-	public boolean initWorker(final String executeWorkflowCommand,
-			final String workflow, final File workingDir,
-			final File inputBaclava, final Map<String, File> inputFiles,
+	public boolean initWorker(final LocalWorker local,
+			final String executeWorkflowCommand, final String workflow,
+			final File workingDir, final File inputBaclava,
+			final Map<String, File> inputFiles,
 			final Map<String, String> inputValues, final File outputBaclava,
 			final File securityDir, final char[] password,
 			final Map<String, String> environment, final String token,
@@ -245,7 +246,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			@Override
 			public void run() {
 				try {
-					ProcessBuilder pb = createProcessBuilder(
+					ProcessBuilder pb = createProcessBuilder(local,
 							executeWorkflowCommand, workflow, workingDir,
 							inputBaclava, inputFiles, inputValues,
 							outputBaclava, securityDir, password, environment,
@@ -285,6 +286,8 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	/**
 	 * Assemble the process builder. Does not launch the subprocess.
 	 * 
+	 * @param local
+	 *            The local worker container.
 	 * @param executeWorkflowCommand
 	 *            The reference to the workflow engine implementation.
 	 * @param workflow
@@ -317,13 +320,13 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	 * @throws FileNotFoundException
 	 *             If we can't write the workflow out (unlikely)
 	 */
-	ProcessBuilder createProcessBuilder(String executeWorkflowCommand,
-			String workflow, File workingDir, File inputBaclava,
-			Map<String, File> inputFiles, Map<String, String> inputValues,
-			File outputBaclava, File securityDir, char[] password,
-			Map<String, String> environment, String token, List<String> runtime)
-			throws IOException, UnsupportedEncodingException,
-			FileNotFoundException {
+	ProcessBuilder createProcessBuilder(LocalWorker local,
+			String executeWorkflowCommand, String workflow, File workingDir,
+			File inputBaclava, Map<String, File> inputFiles,
+			Map<String, String> inputValues, File outputBaclava,
+			File securityDir, char[] password, Map<String, String> environment,
+			String token, List<String> runtime) throws IOException,
+			UnsupportedEncodingException, FileNotFoundException {
 		ProcessBuilder pb = new ProcessBuilder();
 		/*
 		 * WARNING! HERE THERE BE DRAGONS! BE CAREFUL HERE!
@@ -443,11 +446,21 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		env.put("RAVEN_APPHOME", workingDir.getCanonicalPath());
 		// Patch the environment to deal with TAVSERV-224
 		env.put("TAVERNA_RUN_ID", token);
-		if (interactionHost != null) {
-			env.put("INTERACTION_HOST", interactionHost);
-			env.put("INTERACTION_PORT", interactionPort);
-			env.put("INTERACTION_WEBDAV", interactionWebdavPath);
-			env.put("INTERACTION_FEED", interactionFeedPath);
+		if (interactionHost != null || local.interactionFeed != null
+				|| local.webdavPath != null) {
+			env.put("INTERACTION_HOST",
+					local.interactionFeed != null ? local.interactionFeed
+							.getHost() : interactionHost);
+			env.put("INTERACTION_PORT",
+					local.interactionFeed != null ? Integer
+							.toString(local.interactionFeed.getPort())
+							: interactionPort);
+			env.put("INTERACTION_FEED",
+					local.interactionFeed != null ? local.interactionFeed
+							.getPath() : interactionFeedPath);
+			env.put("INTERACTION_WEBDAV",
+					local.webdavPath != null ? local.webdavPath
+							: interactionWebdavPath);
 		}
 		return pb;
 	}

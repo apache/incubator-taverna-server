@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.URI;
+import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -168,6 +169,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	Map<String, String> environment = new HashMap<String, String>();
 	/** Additional server-specified java runtime settings. */
 	List<String> runtimeSettings = new ArrayList<String>();
+	URL interactionFeed;
+	String webdavPath;
 
 	// ----------------------- METHODS -----------------------
 
@@ -703,7 +706,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		 * *transferred* to the worker core which doesn't copy it but *does*
 		 * clear it after use.
 		 */
-		return core.initWorker(executeWorkflowCommand, workflow, base,
+		return core.initWorker(this, executeWorkflowCommand, workflow, base,
 				inputBaclavaFile, inputRealFiles, inputValues,
 				outputBaclavaFile, securityDirectory, pw, environment,
 				masterToken, runtimeSettings);
@@ -717,5 +720,11 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	@Override
 	public Date getStartTimestamp() {
 		return start == null ? null : new Date(start.getTime());
+	}
+
+	@Override
+	public void setInteractionServiceDetails(URL feed, String webdavPath) {
+		this.interactionFeed = feed;
+		this.webdavPath = webdavPath;
 	}
 }

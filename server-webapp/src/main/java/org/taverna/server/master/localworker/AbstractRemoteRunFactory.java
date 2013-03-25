@@ -51,6 +51,7 @@ import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.factories.ConfigurableRunFactory;
 import org.taverna.server.master.factories.ListenerFactory;
 import org.taverna.server.master.factories.RunFactory;
+import org.taverna.server.master.interaction.InteractionFeedSupport;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.SecurityContextFactory;
 import org.taverna.server.master.interfaces.TavernaRun;
@@ -98,6 +99,8 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	/** Used for doing URI resolution. */
 	@Resource(name = "webapp")
 	private UriBuilderFactory baseurifactory;
+	@Autowired
+	private InteractionFeedSupport interactionFeedSupport;
 
 	@Value("${taverna.interaction.host}")
 	void setInteractionHost(String host) {
@@ -344,6 +347,8 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 			RemoteRunDelegate run = new RemoteRunDelegate(now, workflow, rsr,
 					state.getDefaultLifetime(), runDB, id, this);
 			run.setSecurityContext(securityFactory.create(run, creator));
+			rsr.setInteractionServiceDetails(
+					interactionFeedSupport.getFeedURI(run).toURL(), null);
 			return run;
 		} catch (NoCreateException e) {
 			log.warn("failed to build run instance", e);

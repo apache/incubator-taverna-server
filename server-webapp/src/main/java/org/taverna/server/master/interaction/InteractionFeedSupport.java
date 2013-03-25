@@ -65,9 +65,19 @@ public class InteractionFeedSupport {
 		this.abdera = abdera;
 	}
 
-	@Required // webapp
+	@Required
+	// webapp
 	public void setUriBuilder(UriBuilderFactory uriBuilder) {
 		this.uriBuilder = uriBuilder;
+	}
+
+	public URI getFeedURI(TavernaRun run) {
+		return uriBuilder.getRunUriBuilder(run).path(FEED_URL_DIR).build();
+	}
+
+	public URI getEntryURI(TavernaRun run, String id) {
+		return uriBuilder.getRunUriBuilder(run)
+				.path(FEED_URL_DIR + "/{entryID}").build(id);
 	}
 
 	private Entry getEntryFromFile(File f) throws FilesystemAccessException {
@@ -106,7 +116,7 @@ public class InteractionFeedSupport {
 	public Feed getRunFeed(TavernaRun run) throws FilesystemAccessException,
 			NoDirectoryEntryException {
 		Directory feedDir = utils.getDirectory(run, FEED_DIR);
-		URI feedURI = uriBuilder.getRunUriBuilder(run).path(FEED_URL_DIR).build();
+		URI feedURI = getFeedURI(run);
 		Feed feed = abdera.newFeed();
 		feed.setTitle("Interactions for Taverna Run #" + run.getId());
 		try {
@@ -179,9 +189,7 @@ public class InteractionFeedSupport {
 		// TODO Should this id be generated like this?
 		String localId = "interact_" + currentTimeMillis();
 		entry.setId("urn:uuid:" + randomUUID());
-		String selfLink = uriBuilder.getRunUriBuilder(run)
-				.path(FEED_URL_DIR + "/{entryID}").build(localId).toURL()
-				.toString();
+		String selfLink = getEntryURI(run, localId).toURL().toString();
 		entry.addLink(selfLink);
 		entry.setUpdated(new Date());
 		putEntryInFile(utils.getDirectory(run, FEED_DIR), localId + ".entry",

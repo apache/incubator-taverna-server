@@ -24,6 +24,8 @@ public interface Worker {
 	/**
 	 * Fire up the workflow. This causes a transition into the operating state.
 	 * 
+	 * @param local
+	 *            The reference to the factory class for this worker.
 	 * @param executeWorkflowCommand
 	 *            The command to run to execute the workflow.
 	 * @param workflow
@@ -62,8 +64,8 @@ public interface Worker {
 	 * @throws Exception
 	 *             If any of quite a large number of things goes wrong.
 	 */
-	boolean initWorker(String executeWorkflowCommand, String workflow,
-			File workingDir, File inputBaclavaFile,
+	boolean initWorker(LocalWorker local, String executeWorkflowCommand,
+			String workflow, File workingDir, File inputBaclavaFile,
 			Map<String, File> inputRealFiles, Map<String, String> inputValues,
 			File outputBaclavaFile, File contextDirectory,
 			char[] keystorePassword, Map<String, String> environment,
