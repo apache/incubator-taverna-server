@@ -106,7 +106,7 @@ public class InteractionFeedSupport {
 	public Feed getRunFeed(TavernaRun run) throws FilesystemAccessException,
 			NoDirectoryEntryException {
 		Directory feedDir = utils.getDirectory(run, FEED_DIR);
-		URI feedURI = uriBuilder.getRunUriBuilder(run).path("feed").build();
+		URI feedURI = uriBuilder.getRunUriBuilder(run).path(FEED_URL_DIR).build();
 		Feed feed = abdera.newFeed();
 		feed.setTitle("Interactions for Taverna Run #" + run.getId());
 		try {

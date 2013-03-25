@@ -7,7 +7,7 @@ package org.taverna.server.master.identity;
 
 import static org.taverna.server.master.common.Roles.ADMIN;
 import static org.taverna.server.master.common.Roles.USER;
-import static org.taverna.server.master.identity.AuthorityDerivedIDMapper.DEFAULT_PREFIX;
+import static org.taverna.server.master.defaults.Default.AUTHORITY_PREFIX;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,7 +56,7 @@ public class User implements UserDetails {
 		if (admin)
 			auths.add(new LiteralGrantedAuthority(ADMIN));
 		if (localUsername != null)
-			auths.add(new LiteralGrantedAuthority(DEFAULT_PREFIX
+			auths.add(new LiteralGrantedAuthority(AUTHORITY_PREFIX
 					+ localUsername));
 		return auths;
 	}

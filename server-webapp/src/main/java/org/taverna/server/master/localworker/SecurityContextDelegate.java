@@ -8,6 +8,9 @@ package org.taverna.server.master.localworker;
 import static java.lang.String.format;
 import static java.util.Arrays.fill;
 import static java.util.UUID.randomUUID;
+import static org.taverna.server.master.defaults.Default.CERTIFICATE_FIELD_NAMES;
+import static org.taverna.server.master.defaults.Default.CERTIFICATE_TYPE;
+import static org.taverna.server.master.defaults.Default.CREDENTIAL_FILE_SIZE_LIMIT;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -53,19 +56,6 @@ import org.taverna.server.master.utils.UsernamePrincipal;
  * @author Donal Fellows
  */
 public abstract class SecurityContextDelegate implements TavernaSecurityContext {
-	/**
-	 * What fields of a certificate we look at when understanding who it is
-	 * talking about, in the order that we look.
-	 */
-	private static final String[] DEFAULT_CERT_FIELD_NAMES = { "CN",
-			"COMMONNAME", "COMMON NAME", "COMMON_NAME", "OU",
-			"ORGANIZATIONALUNITNAME", "ORGANIZATIONAL UNIT NAME", "O",
-			"ORGANIZATIONNAME", "ORGANIZATION NAME" };
-	/** The type of certificates that are processed if we don't say otherwise. */
-	private static final String DEFAULT_CERTIFICATE_TYPE = "X.509";
-	/** Max size of credential file, in kiB. */
-	private static final int FILE_SIZE_LIMIT = 20;
-
 	Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
 	private final UsernamePrincipal owner;
 	private final List<Credential> credentials = new ArrayList<Credential>();
@@ -119,7 +109,7 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 	 * @return A name.
 	 */
 	protected final String getPrincipalName(X500Principal principal) {
-		return factory.x500Utils.getName(principal, DEFAULT_CERT_FIELD_NAMES);
+		return factory.x500Utils.getName(principal, CERTIFICATE_FIELD_NAMES);
 	}
 
 	/**
@@ -196,7 +186,7 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 		}
 		t.serverName = null;
 		if (t.fileType == null || t.fileType.trim().isEmpty())
-			t.fileType = DEFAULT_CERTIFICATE_TYPE;
+			t.fileType = CERTIFICATE_TYPE;
 		t.fileType = t.fileType.trim();
 		try {
 			t.loadedCertificates = CertificateFactory.getInstance(t.fileType)
@@ -383,8 +373,8 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 		try {
 			File f = (File) factory.fileUtils.getDirEntry(run, name);
 			long size = f.getSize();
-			if (size > FILE_SIZE_LIMIT * 1024)
-				throw new InvalidCredentialException(FILE_SIZE_LIMIT
+			if (size > CREDENTIAL_FILE_SIZE_LIMIT * 1024)
+				throw new InvalidCredentialException(CREDENTIAL_FILE_SIZE_LIMIT
 						+ "kB limit hit");
 			return new ByteArrayInputStream(f.getContents(0, (int) size));
 		} catch (NoDirectoryEntryException e) {

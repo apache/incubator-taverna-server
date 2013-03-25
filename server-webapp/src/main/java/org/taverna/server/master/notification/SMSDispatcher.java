@@ -5,6 +5,8 @@
  */
 package org.taverna.server.master.notification;
 
+import static org.taverna.server.master.defaults.Default.SMS_GATEWAY_URL;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URI;
@@ -31,8 +33,6 @@ import org.springframework.beans.factory.annotation.Required;
  * @author Donal Fellows
  */
 public class SMSDispatcher extends RateLimitedDispatcher {
-	/** The address of the SMS gateway service used by default. */
-	public static final String DEFAULT_SMS_GATEWAY = "https://www.intellisoftware.co.uk/smsgateway/sendmsg.aspx";
 	private HttpClient client;
 	private URI service;
 	private String user = "", pass = "";
@@ -81,8 +81,8 @@ public class SMSDispatcher extends RateLimitedDispatcher {
 		String s = valid(serviceURL, "");
 		if (s.isEmpty()) {
 			log.warn("did not get sms.service from servlet config; using default ("
-					+ DEFAULT_SMS_GATEWAY + ")");
-			s = DEFAULT_SMS_GATEWAY;
+					+ SMS_GATEWAY_URL + ")");
+			s = SMS_GATEWAY_URL;
 		}
 		try {
 			service = new URI(s);

@@ -9,7 +9,7 @@ import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 import static org.taverna.server.master.common.Roles.ADMIN;
 import static org.taverna.server.master.common.Roles.USER;
-import static org.taverna.server.master.identity.AuthorityDerivedIDMapper.DEFAULT_PREFIX;
+import static org.taverna.server.master.defaults.Default.AUTHORITY_PREFIX;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -359,8 +359,8 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 			boolean realUser = false;
 			for (GrantedAuthority ga : auth) {
 				String a = ga.getAuthority();
-				if (a.startsWith(DEFAULT_PREFIX))
-					u.setLocalUsername(a.substring(DEFAULT_PREFIX.length()));
+				if (a.startsWith(AUTHORITY_PREFIX))
+					u.setLocalUsername(a.substring(AUTHORITY_PREFIX.length()));
 				else if (a.equals(USER))
 					realUser = true;
 				else if (a.equals(ADMIN))

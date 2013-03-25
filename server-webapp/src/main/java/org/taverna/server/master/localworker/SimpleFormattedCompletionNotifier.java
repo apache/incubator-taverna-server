@@ -5,6 +5,8 @@
  */
 package org.taverna.server.master.localworker;
 
+import static org.taverna.server.master.defaults.Default.NOTIFY_MESSAGE_FORMAT;
+
 import java.text.MessageFormat;
 
 import org.springframework.beans.factory.annotation.Required;
@@ -34,12 +36,8 @@ public class SimpleFormattedCompletionNotifier implements CompletionNotifier {
 		this.format = new MessageFormat(messageFormat);
 	}
 
-	/**
-	 * The default message format to use if none is configured.
-	 */
-	public static final String DEFAULT_MESSAGE_FORMAT = "Your job with ID={0} has finished with exit code {1,number,integer}.";
 	private String subject;
-	private MessageFormat format = new MessageFormat(DEFAULT_MESSAGE_FORMAT);
+	private MessageFormat format = new MessageFormat(NOTIFY_MESSAGE_FORMAT);
 
 	@Override
 	public String makeCompletionMessage(String name, RemoteRunDelegate run,

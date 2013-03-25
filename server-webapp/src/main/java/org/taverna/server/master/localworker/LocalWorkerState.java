@@ -8,6 +8,15 @@ package org.taverna.server.master.localworker;
 import static java.io.File.separator;
 import static java.lang.System.getProperty;
 import static java.rmi.registry.Registry.REGISTRY_PORT;
+import static org.taverna.server.master.defaults.Default.EXTRA_ARGUMENTS;
+import static org.taverna.server.master.defaults.Default.PASSWORD_FILE;
+import static org.taverna.server.master.defaults.Default.RMI_PREFIX;
+import static org.taverna.server.master.defaults.Default.RUN_LIFE_MINUTES;
+import static org.taverna.server.master.defaults.Default.RUN_OPERATING_LIMIT;
+import static org.taverna.server.master.defaults.Default.SECURE_FORK_IMPLEMENTATION_JAR;
+import static org.taverna.server.master.defaults.Default.SERVER_WORKER_IMPLEMENTATION_JAR;
+import static org.taverna.server.master.defaults.Default.SUBPROCESS_START_POLL_SLEEP;
+import static org.taverna.server.master.defaults.Default.SUBPROCESS_START_WAIT;
 import static org.taverna.server.master.localworker.LocalWorkerManagementState.KEY;
 import static org.taverna.server.master.localworker.LocalWorkerManagementState.makeInstance;
 
@@ -19,6 +28,7 @@ import javax.jdo.annotations.PersistenceAware;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.common.Status;
+import org.taverna.server.master.defaults.Default;
 import org.taverna.server.master.utils.JDOSupport;
 
 /**
@@ -39,33 +49,18 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 		this.self = self;
 	}
 
-	/**
-	 * The name of the resource that is the implementation of the subprocess
-	 * that this class will fork off.
-	 */
-	public static final String SERVER_WORKER_IMPLEMENTATION_JAR = "util/server.worker.jar";
-
-	/**
-	 * The name of the resource that is the implementation of the subprocess
-	 * that manages secure forking.
-	 */
-	public static final String SECURE_FORK_IMPLEMENTATION_JAR = "util/secure.fork.jar";
-
 	/** Initial lifetime of runs, in minutes. */
 	int defaultLifetime;
-	private static final int DEFAULT_DEFAULT_LIFE = 20;
 	/**
 	 * Maximum number of runs to exist at once. Note that this includes when
 	 * they are just existing for the purposes of file transfer (
 	 * {@link Status#Initialized}/{@link Status#Finished} states).
 	 */
 	int maxRuns;
-	private static final int DEFAULT_MAX = 5;
 	/**
 	 * Prefix to use for RMI names.
 	 */
 	String factoryProcessNamePrefix;
-	private static final String DEFAULT_PREFIX = "ForkRunFactory.";
 	/**
 	 * Full path name of the script used to start running a workflow; normally
 	 * expected to be "<i>somewhere/</i><tt>executeWorkflow.sh</tt>".
@@ -83,22 +78,19 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 */
 	String passwordFile;
 	/** Default value for {@link #passwordFile}. */
-	private transient String defaultPasswordFile;
+	private transient String defaultPasswordFile = PASSWORD_FILE;
 	/**
 	 * The extra arguments to pass to the subprocess.
 	 */
 	String[] extraArgs;
-	private static final String[] DEFAULT_EXTRA_ARGS = new String[0];
 	/**
 	 * How long to wait for subprocess startup, in seconds.
 	 */
 	int waitSeconds;
-	private static final int DEFAULT_WAIT = 40;
 	/**
 	 * Polling interval to use during startup, in milliseconds.
 	 */
 	int sleepMS;
-	private static final int DEFAULT_SLEEP = 1000;
 	/**
 	 * Full path name to the worker process's implementation JAR.
 	 */
@@ -124,7 +116,6 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	int registryPort;
 
 	int operatingLimit;
-	private static final int DEFAULT_OPERATING_LIMIT = 10;
 
 	/**
 	 * @param defaultLifetime
@@ -140,7 +131,7 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 * @return how long a workflow run should live by default, in minutes.
 	 */
 	public int getDefaultLifetime() {
-		return defaultLifetime < 1 ? DEFAULT_DEFAULT_LIFE : defaultLifetime;
+		return defaultLifetime < 1 ? RUN_LIFE_MINUTES : defaultLifetime;
 	}
 
 	/**
@@ -157,14 +148,14 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 * @return the maxRuns
 	 */
 	public int getMaxRuns() {
-		return maxRuns < 1 ? DEFAULT_MAX : maxRuns;
+		return maxRuns < 1 ? Default.RUN_COUNT_MAX : maxRuns;
 	}
 
 	/**
 	 * @return the operatingLimit
 	 */
 	public int getOperatingLimit() {
-		return operatingLimit < 1 ? DEFAULT_OPERATING_LIMIT : operatingLimit;
+		return operatingLimit < 1 ? RUN_OPERATING_LIMIT : operatingLimit;
 	}
 
 	/**
@@ -191,7 +182,7 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 * @return the factoryProcessNamePrefix
 	 */
 	public String getFactoryProcessNamePrefix() {
-		return factoryProcessNamePrefix == null ? DEFAULT_PREFIX
+		return factoryProcessNamePrefix == null ? RMI_PREFIX
 				: factoryProcessNamePrefix;
 	}
 
@@ -258,7 +249,7 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 * @return the extraArgs
 	 */
 	public String[] getExtraArgs() {
-		return extraArgs == null ? DEFAULT_EXTRA_ARGS : extraArgs.clone();
+		return extraArgs == null ? EXTRA_ARGUMENTS : extraArgs.clone();
 	}
 
 	/**
@@ -275,7 +266,7 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 * @return the waitSeconds
 	 */
 	public int getWaitSeconds() {
-		return waitSeconds < 1 ? DEFAULT_WAIT : waitSeconds;
+		return waitSeconds < 1 ? SUBPROCESS_START_WAIT : waitSeconds;
 	}
 
 	/**
@@ -292,7 +283,7 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 * @return the sleepMS
 	 */
 	public int getSleepMS() {
-		return sleepMS < 1 ? DEFAULT_SLEEP : sleepMS;
+		return sleepMS < 1 ? SUBPROCESS_START_POLL_SLEEP : sleepMS;
 	}
 
 	/**
