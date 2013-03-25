@@ -348,7 +348,9 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 					state.getDefaultLifetime(), runDB, id, this);
 			run.setSecurityContext(securityFactory.create(run, creator));
 			rsr.setInteractionServiceDetails(
-					interactionFeedSupport.getFeedURI(run).toURL(), null);
+					interactionFeedSupport.getFeedURI(run).toURL(),
+					baseurifactory.getRunUriBuilder(run)
+							.path("wd/interactions").build().toURL());
 			return run;
 		} catch (NoCreateException e) {
 			log.warn("failed to build run instance", e);

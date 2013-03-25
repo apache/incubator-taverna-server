@@ -11,10 +11,12 @@ import static java.lang.Boolean.parseBoolean;
 import static java.lang.System.out;
 import static org.apache.commons.io.FileUtils.forceDelete;
 import static org.apache.commons.io.IOUtils.copy;
-//import static org.taverna.server.localworker.impl.LocalWorker.PASSWORD_FILE;
-import static org.taverna.server.localworker.impl.LocalWorker.SYSTEM_ENCODING;
-import static org.taverna.server.localworker.impl.SecurityConstants.CREDENTIAL_MANAGER_DIRECTORY;
-import static org.taverna.server.localworker.impl.SecurityConstants.CREDENTIAL_MANAGER_PASSWORD;
+import static org.taverna.server.localworker.impl.Constants.CREDENTIAL_MANAGER_DIRECTORY;
+import static org.taverna.server.localworker.impl.Constants.CREDENTIAL_MANAGER_PASSWORD;
+import static org.taverna.server.localworker.impl.Constants.DEFAULT_LISTENER_NAME;
+import static org.taverna.server.localworker.impl.Constants.KEYSTORE_PASSWORD;
+import static org.taverna.server.localworker.impl.Constants.START_WAIT_TIME;
+import static org.taverna.server.localworker.impl.Constants.SYSTEM_ENCODING;
 import static org.taverna.server.localworker.impl.TavernaRunManager.interactionFeedPath;
 import static org.taverna.server.localworker.impl.TavernaRunManager.interactionHost;
 import static org.taverna.server.localworker.impl.TavernaRunManager.interactionPort;
@@ -71,16 +73,6 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 @SuppressWarnings({ "SE_BAD_FIELD", "SE_NO_SERIALVERSIONID" })
 public class WorkerCore extends UnicastRemoteObject implements Worker,
 		RemoteListener {
-	/**
-	 * The name of the standard listener, which is installed by default.
-	 */
-	public static final String DEFAULT_LISTENER_NAME = "io";
-
-	/**
-	 * Time to wait for the subprocess to wait, in milliseconds.
-	 */
-	private static final int START_WAIT_TIME = 1500;
-
 	static final Map<String, Property> pmap = new HashMap<String, Property>();
 
 	enum Property {
@@ -195,7 +187,9 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 				e.printStackTrace();
 			} finally {
 				// We don't trust GC to clear password from memory
-				Arrays.fill(chars, '\00');
+				// We also take care not to clear the default password!
+				if (chars != KEYSTORE_PASSWORD)
+					Arrays.fill(chars, '\00');
 				if (pw != null)
 					pw.close();
 			}
@@ -446,20 +440,20 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		env.put("RAVEN_APPHOME", workingDir.getCanonicalPath());
 		// Patch the environment to deal with TAVSERV-224
 		env.put("TAVERNA_RUN_ID", token);
-		if (interactionHost != null || local.interactionFeed != null
-				|| local.webdavPath != null) {
+		if (interactionHost != null || local.interactionFeedURL != null
+				|| local.webdavURL != null) {
 			env.put("INTERACTION_HOST",
-					local.interactionFeed != null ? local.interactionFeed
+					local.interactionFeedURL != null ? local.interactionFeedURL
 							.getHost() : interactionHost);
 			env.put("INTERACTION_PORT",
-					local.interactionFeed != null ? Integer
-							.toString(local.interactionFeed.getPort())
+					local.interactionFeedURL != null ? Integer
+							.toString(local.interactionFeedURL.getPort())
 							: interactionPort);
 			env.put("INTERACTION_FEED",
-					local.interactionFeed != null ? local.interactionFeed
+					local.interactionFeedURL != null ? local.interactionFeedURL
 							.getPath() : interactionFeedPath);
 			env.put("INTERACTION_WEBDAV",
-					local.webdavPath != null ? local.webdavPath
+					local.webdavURL != null ? local.webdavURL.getPath()
 							: interactionWebdavPath);
 		}
 		return pb;

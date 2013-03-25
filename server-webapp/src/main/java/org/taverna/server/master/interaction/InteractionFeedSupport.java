@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2013 The University of Manchester
+ * 
+ * See the file "LICENSE.txt" for license terms.
+ */
 package org.taverna.server.master.interaction;
 
 import static java.lang.System.currentTimeMillis;
@@ -25,6 +30,12 @@ import org.taverna.server.master.interfaces.File;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.utils.FilenameUtils;
 
+/**
+ * Bean that supports interaction feeds. This glues together the Abdera
+ * serialization engine and the directory-based model used inside the server.
+ * 
+ * @author Donal Fellows
+ */
 public class InteractionFeedSupport {
 	/**
 	 * The name of the resource within the run resource that is the run's
@@ -71,10 +82,22 @@ public class InteractionFeedSupport {
 		this.uriBuilder = uriBuilder;
 	}
 
+	/**
+	 * @param run
+	 *            The workflow run that defines which feed we are operating on.
+	 * @return The URI of the feed
+	 */
 	public URI getFeedURI(TavernaRun run) {
 		return uriBuilder.getRunUriBuilder(run).path(FEED_URL_DIR).build();
 	}
 
+	/**
+	 * @param run
+	 *            The workflow run that defines which feed we are operating on.
+	 * @param id
+	 *            The ID of the entry.
+	 * @return The URI of the entry.
+	 */
 	public URI getEntryURI(TavernaRun run, String id) {
 		return uriBuilder.getRunUriBuilder(run)
 				.path(FEED_URL_DIR + "/{entryID}").build(id);
@@ -105,7 +128,7 @@ public class InteractionFeedSupport {
 	 * Get the interaction feed for a partciular run.
 	 * 
 	 * @param run
-	 *            The run to get the feed of.
+	 *            The workflow run that defines which feed we are operating on.
 	 * @return The Abdera feed descriptor.
 	 * @throws FilesystemAccessException
 	 *             If the feed directory can't be read for some reason.
@@ -147,7 +170,7 @@ public class InteractionFeedSupport {
 	 * Gets the contents of a particular feed entry.
 	 * 
 	 * @param run
-	 *            The workflow run within which context we are operating.
+	 *            The workflow run that defines which feed we are operating on.
 	 * @param entryID
 	 *            The identifier (from the path) of the entry to read.
 	 * @return The description of the entry.
@@ -169,7 +192,7 @@ public class InteractionFeedSupport {
 	 * existing entry; the entry is always created new.
 	 * 
 	 * @param run
-	 *            The workflow run within which context we are operating.
+	 *            The workflow run that defines which feed we are operating on.
 	 * @param entry
 	 *            The partial entry to store
 	 * @return A link to the entry.
@@ -198,11 +221,12 @@ public class InteractionFeedSupport {
 	}
 
 	/**
+	 * Deletes an entry from a feed.
 	 * 
 	 * @param run
-	 *            The workflow run within which context we are operating.
+	 *            The workflow run that defines which feed we are operating on.
 	 * @param entryID
-	 *            The ID of the entry.
+	 *            The ID of the entry to delete.
 	 * @throws FilesystemAccessException
 	 *             If the entry can't be deleted
 	 * @throws NoDirectoryEntryException

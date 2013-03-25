@@ -218,12 +218,12 @@ public interface RemoteSingleRun extends Remote {
 	 *            The location of the interaction feed. If <tt>null</tt>,
 	 *            defaults from the factory will be used instead.
 	 * @param webdavPath
-	 *            The path used for pushing web pages into the feed. If
-	 *            <tt>null</tt>, a default from the factory will be used
+	 *            The location used for pushing web pages to support the feed.
+	 *            If <tt>null</tt>, a default from the factory will be used
 	 *            instead.
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
 	void setInteractionServiceDetails(@NonNull URL interactionFeed,
-			@NonNull String webdavPath) throws RemoteException;
+			@NonNull URL webdavPath) throws RemoteException;
 }

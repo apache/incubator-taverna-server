@@ -12,6 +12,12 @@ import static java.lang.System.out;
 import static java.lang.System.setProperty;
 import static java.lang.System.setSecurityManager;
 import static java.rmi.registry.LocateRegistry.getRegistry;
+import static org.taverna.server.localworker.impl.Constants.DEATH_DELAY;
+import static org.taverna.server.localworker.impl.Constants.LOCALHOST;
+import static org.taverna.server.localworker.impl.Constants.RMI_HOST_PROP;
+import static org.taverna.server.localworker.impl.Constants.SECURITY_POLICY_FILE;
+import static org.taverna.server.localworker.impl.Constants.SEC_POLICY_PROP;
+import static org.taverna.server.localworker.impl.Constants.UNSECURE_PROP;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -177,23 +183,13 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 		@SuppressWarnings("DM_EXIT")
 		public void run() {
 			try {
-				Thread.sleep(500);
+				Thread.sleep(DEATH_DELAY);
 			} catch (InterruptedException e) {
 			} finally {
 				exit(0);
 			}
 		}
 	}
-
-	/**
-	 * The name of the file (in this code's resources) that provides the default
-	 * security policy that we use.
-	 */
-	public static final String SECURITY_POLICY_FILE = "security.policy";
-
-	private static final String SEC_POLICY_PROP = "java.security.policy";
-	private static final String UNSECURE_PROP = "taverna.suppressrestrictions.rmi";
-	private static final String RMI_HOST_PROP = "java.rmi.server.hostname";
 
 	/**
 	 * @param args
@@ -209,7 +205,7 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 		if (!getProperty(UNSECURE_PROP, "no").equals("yes")) {
 			setProperty(SEC_POLICY_PROP, LocalWorker.class.getClassLoader()
 					.getResource(SECURITY_POLICY_FILE).toExternalForm());
-			setProperty(RMI_HOST_PROP, "127.0.0.1");
+			setProperty(RMI_HOST_PROP, LOCALHOST);
 		}
 		setSecurityManager(new RMISecurityManager());
 		String command = args[0];
