@@ -67,10 +67,5 @@
 	</bean>
 	<security:authentication-manager>
 		<security:authentication-provider ref="authProvider" />
-<!-- 			<security:user-service id="users"
-				properties="/WEB-INF/security/users.properties">
-				FIXME
-			</security:user-service>
-		</security:authentication-provider> -->
 	</security:authentication-manager>
 </beans>
