@@ -243,6 +243,8 @@
 		<property name="runDatabase" ref="localworker.rundb" />
 		<property name="filenameConverter" ref="fileUtils" />
 		<property name="x500Utils" ref="x500Utils" />
+		<property name="httpRealm" value="${http.realmName}" />
+		<property name="uriSource" ref="webapp" />
 	</bean>
 
 	<bean id="localworker.state" class="org.taverna.server.master.localworker.LocalWorkerState"
@@ -403,5 +405,21 @@
 		<property name="support" ref="webapp.support" />
 		<property name="uriBuilder" ref="webapp" />
 		<property name="utils" ref="fileUtils" />
+	</bean>
+
+	<bean id="authProvider"
+		class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
+		<property name="passwordEncoder" ref="passwordEncoder" />
+		<property name="saltSource">
+			<bean id="saltSource"
+				class="org.springframework.security.authentication.dao.ReflectionSaltSource">
+				<property name="userPropertyToUse" value="username" />
+			</bean>
+		</property>
+		<property name="userDetailsService" ref="userStore" />
+	</bean>
+	<bean id="workflowInternalAuthProvder"
+		class="org.taverna.server.master.identity.WorkflowInternalAuthProvider">
+		<property name="dao" ref="localworker.runDAO" />
 	</bean>
 </beans>

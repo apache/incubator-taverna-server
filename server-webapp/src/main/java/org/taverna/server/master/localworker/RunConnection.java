@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The University of Manchester
+ * Copyright (C) 2010-2013 The University of Manchester
  * 
  * See the file "LICENSE.txt" for license terms.
  */
@@ -7,6 +7,7 @@ package org.taverna.server.master.localworker;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.UUID.randomUUID;
 import static org.taverna.server.master.localworker.RunConnection.COUNT_QUERY;
 import static org.taverna.server.master.localworker.RunConnection.NAMES_QUERY;
 import static org.taverna.server.master.localworker.RunConnection.SCHEMA;
@@ -47,7 +48,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 @Queries({
 		@Query(name = "count", language = "SQL", value = COUNT_QUERY, unique = "true", resultClass = Integer.class),
 		@Query(name = "names", language = "SQL", value = NAMES_QUERY, unique = "false", resultClass = String.class),
-		@Query(name = "timedout", language = "SQL", value = TIMEOUT_QUERY, unique = "false", resultClass = String.class) })
+		@Query(name = "timedout", language = "SQL", value = TIMEOUT_QUERY, unique = "false", resultClass = String.class)})
 @SuppressWarnings("IS2_INCONSISTENT_SYNC")
 public class RunConnection {
 	static final String SCHEMA = "TAVERNA";
@@ -56,7 +57,7 @@ public class RunConnection {
 	static final String COUNT_QUERY = "SELECT count(*) FROM " + FULL_NAME;
 	static final String NAMES_QUERY = "SELECT ID FROM " + FULL_NAME;
 	static final String TIMEOUT_QUERY = "SELECT ID FROM " + FULL_NAME
-			+ "   WHERE expiry < CURRENT_TIMESTAMP";
+			+ " WHERE expiry < CURRENT_TIMESTAMP";
 
 	@PrimaryKey
 	@Column(length = 40)
@@ -94,6 +95,9 @@ public class RunConnection {
 	@Persistent(defaultFetchGroup = "true")
 	@Column(length = 128)
 	String owner;
+	@Persistent(defaultFetchGroup = "true")
+	@Column(length = 32)
+	private String securityToken;
 
 	@Persistent(defaultFetchGroup = "true", serialized = "true")
 	@Column(jdbcType = "BLOB", sqlType = "BLOB")
@@ -192,6 +196,7 @@ public class RunConnection {
 			run = new MarshalledObject<RemoteSingleRun>(rrd.run);
 			securityContextFactory = rrd.getSecurityContext().getFactory();
 			owner = rrd.getSecurityContext().getOwner().getName();
+			securityToken = randomUUID().toString();
 		}
 		// Properties that are set multiple times
 		expiry = rrd.getExpiry();
@@ -201,5 +206,9 @@ public class RunConnection {
 		credentials = rrd.getSecurityContext().getCredentials();
 		trust = rrd.getSecurityContext().getTrusted();
 		setFinished(rrd.doneTransitionToFinished);
+	}
+
+	public String getSecurityToken() {
+		return securityToken;
 	}
 }

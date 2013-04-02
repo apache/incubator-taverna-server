@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
+import org.taverna.server.master.ContentsDescriptorBuilder.UriBuilderFactory;
 import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.UsernamePrincipal;
 import org.taverna.server.master.utils.X500Utils;
@@ -42,6 +43,8 @@ public class SecurityContextFactory implements
 	transient RunDBSupport db;
 	transient FilenameUtils fileUtils;
 	transient X500Utils x500Utils;
+	transient UriBuilderFactory uriSource;
+	transient String httpRealm;
 	private transient BouncyCastleProvider provider;
 
 	/**
@@ -112,6 +115,16 @@ public class SecurityContextFactory implements
 	@Required
 	public void setX500Utils(X500Utils x500Utils) {
 		this.x500Utils = x500Utils;
+	}
+
+	@Required
+	public void setUriSource(UriBuilderFactory uriSource) {
+		this.uriSource = uriSource;
+	}
+
+	@Required
+	public void setHttpRealm(String realm) {
+		this.httpRealm = realm; //${http.realmName}
 	}
 
 	@Override

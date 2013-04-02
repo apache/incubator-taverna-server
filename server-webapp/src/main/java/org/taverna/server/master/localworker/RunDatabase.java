@@ -35,7 +35,7 @@ import org.taverna.server.master.utils.UsernamePrincipal;
  */
 public class RunDatabase implements RunStore, RunDBSupport {
 	private Log log = LogFactory.getLog("Taverna.Server.LocalWorker.RunDB");
-	private RunDatabaseDAO dao;
+	RunDatabaseDAO dao;
 	private List<CompletionNotifier> notifier = new ArrayList<CompletionNotifier>();
 	private NotificationEngine notificationEngine;
 	@Autowired

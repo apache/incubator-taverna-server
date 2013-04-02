@@ -6,16 +6,22 @@
 package org.taverna.server.master.localworker;
 
 import static java.util.Collections.emptyList;
+import static org.taverna.server.master.identity.WorkflowInternalAuthProvider.PREFIX;
 
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.taverna.server.master.common.Roles;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoDestroyException;
 import org.taverna.server.master.exceptions.NoUpdateException;
+import org.taverna.server.master.identity.WorkflowInternalAuthProvider;
 import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
@@ -66,6 +72,24 @@ class PolicyImpl implements Policy {
 		return emptyList();
 	}
 
+	private boolean isSelfAccess(String runId) {
+		Authentication auth = SecurityContextHolder.getContext()
+				.getAuthentication();
+		boolean self = false;
+		String id = null;
+		for (GrantedAuthority a : auth.getAuthorities()) {
+			String aa = a.getAuthority();
+			if (aa.equals(Roles.SELF)) {
+				self = true;
+				continue;
+			}
+			if (!aa.startsWith(PREFIX))
+				continue;
+			id = aa.substring(PREFIX.length());
+		}
+		return self && runId.equals(id);
+	}
+
 	@Override
 	public boolean permitAccess(UsernamePrincipal user, TavernaRun run) {
 		String username = user.getName();
@@ -74,6 +98,11 @@ class PolicyImpl implements Policy {
 			if (log.isDebugEnabled())
 				log.debug("granted access by " + user.getName() + " to "
 						+ run.getId());
+			return true;
+		}
+		if (isSelfAccess(run.getId())) {
+			if (log.isDebugEnabled())
+				log.debug("access by workflow to itself: " + run.getId());
 			return true;
 		}
 		if (log.isDebugEnabled())
@@ -93,8 +122,8 @@ class PolicyImpl implements Policy {
 	}
 
 	@Override
-	public synchronized void permitDestroy(UsernamePrincipal user, TavernaRun run)
-			throws NoDestroyException {
+	public synchronized void permitDestroy(UsernamePrincipal user,
+			TavernaRun run) throws NoDestroyException {
 		if (user == null)
 			throw new NoDestroyException();
 		String username = user.getName();
@@ -115,6 +144,11 @@ class PolicyImpl implements Policy {
 		TavernaSecurityContext context = run.getSecurityContext();
 		if (context.getOwner().getName().equals(user.getName()))
 			return;
+		if (isSelfAccess(run.getId())) {
+			if (log.isDebugEnabled())
+				log.debug("update access by workflow to itself: " + run.getId());
+			return;
+		}
 		if (!context.getPermittedUpdaters().contains(user.getName()))
 			throw new NoUpdateException(
 					"workflow run not owned by you and you're not granted access");

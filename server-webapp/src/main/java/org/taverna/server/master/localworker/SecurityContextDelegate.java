@@ -11,6 +11,7 @@ import static java.util.UUID.randomUUID;
 import static org.taverna.server.master.defaults.Default.CERTIFICATE_FIELD_NAMES;
 import static org.taverna.server.master.defaults.Default.CERTIFICATE_TYPE;
 import static org.taverna.server.master.defaults.Default.CREDENTIAL_FILE_SIZE_LIMIT;
+import static org.taverna.server.master.identity.WorkflowInternalAuthProvider.PREFIX;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -223,6 +224,16 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 		// do nothing in this implementation
 	}
 
+	private Credential.Password getLocalPasswordCredential() {
+		Credential.Password pw = new Credential.Password();
+		pw.id = "run:self";
+		pw.username = PREFIX + run.id;
+		pw.password = ((RunDatabase) factory.db).dao.getSecurityToken(run.id);
+		pw.serviceURI = URI.create(factory.uriSource.getRunUriBuilder(run)
+				.build() + "#" + factory.httpRealm);
+		return pw;
+	}
+
 	/**
 	 * Builds and transfers a keystore with suitable credentials to the back-end
 	 * workflow execution engine.
@@ -240,10 +251,8 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 			IOException, ImplementationException {
 		RemoteSecurityContext rc = run.run.getSecurityContext();
 
-		synchronized (lock) {
-			if (credentials.isEmpty() && trusted.isEmpty())
-				return;
-		}
+		credentials.add(getLocalPasswordCredential());
+
 		char[] password = null;
 		try {
 			password = generateNewPassword();
