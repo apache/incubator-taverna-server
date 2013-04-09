@@ -1,0 +1,12 @@
+name: Taverna Server
+vendor: The University of Manchester
+maintainer:
+	name: Donal Fellows
+	email: donal.k.fellows( AT )manchester.ac.uk
+platform: "Java 6+, Tomcat 6, POSIX"
+download: http://www.taverna.org.uk/download/server/
+# Really the documentation page as the overall home page is shared with the workbench but will do for now
+homepage: http://dev.mygrid.org.uk/wiki/display/taverna/Taverna+Server+2.4
+issues: http://dev.mygrid.org.uk/issues/browse/TAVSERV
+# Note, no anti-spam armouring required for this one
+support-contact: support@mygrid.org.uk

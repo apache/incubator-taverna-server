@@ -3,7 +3,7 @@
     PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
     "http://java.sun.com/dtd/web-app_2_3.dtd">
 
-<!-- Copyright (C) 2010-2011 The University of Manchester See the file "LICENSE.txt" 
+<!-- Copyright (C) 2010-2011 The University of Manchester See the file "LICENSE" 
 	for license terms. -->
 <web-app id="TAVSERV-2.4.1">
 	<display-name>Taverna 2.4.2 Server</display-name>
