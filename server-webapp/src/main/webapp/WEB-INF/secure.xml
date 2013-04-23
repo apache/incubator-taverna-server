@@ -54,7 +54,9 @@
 			requires-channel="https" access="hasRole('ROLE_tavernauser')" />
 	</security:http>
 	<bean class="org.taverna.server.master.common.Uri.Rewriter"
-		autowire="byType" id="URI-Rewriter-Thunk" />
+		autowire="byType" id="URI-Rewriter-Thunk">
+		<property name="rewriteTarget" value="${default.webapp}" />
+	</bean>
 	<bean id="authProvider" class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
 		<property name="passwordEncoder" ref="passwordEncoder" />
 		<property name="saltSource">

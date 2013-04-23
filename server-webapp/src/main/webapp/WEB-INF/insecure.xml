@@ -58,6 +58,7 @@
 	<bean class="org.taverna.server.master.common.Uri.Rewriter"
 		autowire="byType" id="URI-Rewriter-Thunk">
 		<property name="suppressSecurity" value="true" />
+		<property name="rewriteTarget" value="${default.webapp}" />
 	</bean>
 	<bean id="authProvider" class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
 		<property name="passwordEncoder" ref="passwordEncoder" />
