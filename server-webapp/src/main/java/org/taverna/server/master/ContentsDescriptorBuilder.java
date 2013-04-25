@@ -161,8 +161,16 @@ public class ContentsDescriptorBuilder {
 			UriBuilder ub, OutputDescription descriptor)
 			throws FilesystemAccessException, NoDirectoryEntryException,
 			XPathExpressionException {
-		Collection<DirectoryEntry> outs = fileUtils.getDirectory(run, "out")
-				.getContents();
+		Collection<DirectoryEntry> outs;
+		try {
+			outs = fileUtils.getDirectory(run, "out").getContents();
+		} catch (FilesystemAccessException e) {
+			log.warn("unexpected failure in construction of output descriptor", e);
+			throw e;
+		} catch (NoDirectoryEntryException e) {
+			log.warn("unexpected failure in construction of output descriptor", e);
+			throw e;
+		}
 		for (Element output : outputPorts(dataflow)) {
 			OutputPort p = descriptor.addPort(portName(output));
 			p.output = constructValue(outs, ub, p.name);
