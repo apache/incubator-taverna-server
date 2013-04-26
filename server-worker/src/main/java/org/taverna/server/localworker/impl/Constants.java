@@ -18,8 +18,7 @@ public interface Constants {
 	 * Subdirectories of the working directory to create by default.
 	 */
 	static final String[] SUBDIR_LIST = { "conf", "externaltool", "feed",
-			"interactions", "lib", "logs", "plugins", "repository",
-			"t2-database", "var" };
+			"interactions", "lib", "logs", "plugins", "repository", "var" };
 
 	/** The name of the default encoding for characters on this machine. */
 	static final String SYSTEM_ENCODING = defaultCharset().name();
