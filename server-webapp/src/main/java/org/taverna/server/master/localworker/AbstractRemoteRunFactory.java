@@ -18,6 +18,7 @@ import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.URL;
 //import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -347,10 +348,10 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 			RemoteRunDelegate run = new RemoteRunDelegate(now, workflow, rsr,
 					state.getDefaultLifetime(), runDB, id, this);
 			run.setSecurityContext(securityFactory.create(run, creator));
-			rsr.setInteractionServiceDetails(
-					interactionFeedSupport.getFeedURI(run).toURL(),
-					baseurifactory.getRunUriBuilder(run)
-							.path("wd/interactions").build().toURL());
+			URL feedUrl = interactionFeedSupport.getFeedURI(run).toURL();
+			URL webdavUrl = baseurifactory.getRunUriBuilder(run)
+					.path("wd/interactions").build().toURL();
+			rsr.setInteractionServiceDetails(feedUrl, webdavUrl);
 			return run;
 		} catch (NoCreateException e) {
 			log.warn("failed to build run instance", e);
