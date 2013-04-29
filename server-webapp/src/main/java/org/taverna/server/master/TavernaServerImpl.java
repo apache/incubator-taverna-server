@@ -10,6 +10,7 @@ import static java.util.Collections.sort;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.created;
 import static javax.ws.rs.core.UriBuilder.fromUri;
+import static javax.xml.ws.handler.MessageContext.HTTP_REQUEST_HEADERS;
 import static javax.xml.ws.handler.MessageContext.PATH_INFO;
 import static org.apache.commons.io.IOUtils.toByteArray;
 import static org.apache.commons.logging.LogFactory.getLog;
@@ -899,15 +900,28 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		return fromUri(getRunUriBuilder().build(run.getId()));
 	}
 
+	private String getHostLocation() {
+		@java.lang.SuppressWarnings("unchecked")
+		Map<String, String> headers = (Map<String, String>) jaxws
+				.getMessageContext().get(HTTP_REQUEST_HEADERS);
+		if (headers != null) {
+			String host = headers.get("HOST");
+			if (host != null)
+				return host;
+		}
+		return "localhost:8080"; // Crappy default
+	}
+
 	@Override
 	public UriBuilder getBaseUriBuilder() {
 		if (jaxws == null || jaxws.getMessageContext() == null)
 			// Hack to make the test suite work
-			return secure(fromUri("/taverna-server/rest/"));
+			return secure(fromUri("http://localhost/taverna-server/rest/"));
 		String pathInfo = (String) jaxws.getMessageContext().get(PATH_INFO);
 		pathInfo = pathInfo.replaceFirst("/soap$", "/rest/");
 		pathInfo = pathInfo.replaceFirst("/rest/.+$", "/rest/");
-		return secure(fromUri(pathInfo));
+
+		return secure(fromUri("http://" + getHostLocation() + pathInfo));
 	}
 
 	@Override
