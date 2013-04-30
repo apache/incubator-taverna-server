@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlRootElement(name = "workflowOutputs")
 public class OutputDescription extends AbstractPortDescription {
+	private static final AbsentValue ABSENT_VALUE = new AbsentValue();
 	@XmlElement(name = "output")
 	public List<OutputPort> ports = new ArrayList<OutputPort>();
 
@@ -44,6 +45,7 @@ public class OutputDescription extends AbstractPortDescription {
 	public OutputPort addPort(String name) {
 		OutputPort p = new OutputPort();
 		p.name = name;
+		p.output = ABSENT_VALUE;
 		ports.add(p);
 		return p;
 	}
