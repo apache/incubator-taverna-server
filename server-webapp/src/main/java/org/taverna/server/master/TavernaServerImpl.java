@@ -902,12 +902,12 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	private String getHostLocation() {
 		@java.lang.SuppressWarnings("unchecked")
-		Map<String, String> headers = (Map<String, String>) jaxws
+		Map<String, List<String>> headers = (Map<String, List<String>>) jaxws
 				.getMessageContext().get(HTTP_REQUEST_HEADERS);
 		if (headers != null) {
-			String host = headers.get("HOST");
-			if (host != null)
-				return host;
+			List<String> host = headers.get("HOST");
+			if (host != null && !host.isEmpty())
+				return host.get(0);
 		}
 		return "localhost:8080"; // Crappy default
 	}
