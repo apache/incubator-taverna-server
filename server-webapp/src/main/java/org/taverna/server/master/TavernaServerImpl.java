@@ -146,6 +146,8 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	private Policy policy;
 	/** Where Atom events come from. */
 	EventDAO eventSource;
+	/** Reference to the main interaction feed. */
+	private String interactionFeed;
 
 	@Override
 	@Required
@@ -193,19 +195,22 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		this.eventSource = eventSource;
 	}
 
+	@Value("${taverna.interaction.feed_path}")
+	public void setInteractionFeed(String interactionFeed) {
+		if ("none".equals(interactionFeed))
+			interactionFeed = null;
+		else if (interactionFeed != null && interactionFeed.startsWith("${"))
+			interactionFeed = null;
+		this.interactionFeed = interactionFeed;
+	}
+	
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	// REST INTERFACE
-
-	@Value("${taverna.interaction.feed_path}")
-	private String interactionFeed;
 
 	@Override
 	@CallCounted
 	public ServerDescription describeService(UriInfo ui) {
-		String feed = interactionFeed;
-		if ("none".equals(feed))
-			feed = null;
-		return new ServerDescription(ui, resolve(feed));
+		return new ServerDescription(ui, resolve(interactionFeed));
 	}
 
 	@Override
