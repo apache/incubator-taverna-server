@@ -387,7 +387,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	@Override
 	@CallCounted
-	public void setRunStatus(String runName, Status s)
+	public String setRunStatus(String runName, Status s)
 			throws UnknownRunException, NoUpdateException {
 		TavernaRun w = support.getRun(runName);
 		support.permitUpdate(w);
@@ -395,12 +395,14 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 			if (!support.getAllowStartWorkflowRuns())
 				throw new OverloadedException();
 			String issue = w.setStatus(s);
-			if (issue != null) {
-				// LATER report partial state change
-				// (requires visible SOAP API change)
-			}
+			if (issue == null)
+				return "";
+			if (issue.isEmpty())
+				return "unknown reason for partial change";
+			return issue;
 		} else {
 			w.setStatus(s);
+			return "";
 		}
 	}
 

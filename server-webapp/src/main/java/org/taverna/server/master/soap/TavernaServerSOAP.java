@@ -450,6 +450,8 @@ public interface TavernaServerSOAP {
 	 * @param status
 	 *            The status to change to. Changing to the current status will
 	 *            always have no effect.
+	 * @return An empty string if the state change was completed, or a
+	 *         description (never empty) of why the state change is ongoing.
 	 * @throws UnknownRunException
 	 *             If the server doesn't know about the run or if the user is
 	 *             not permitted to see it.
@@ -458,8 +460,9 @@ public interface TavernaServerSOAP {
 	 * @throws BadStateChangeException
 	 *             If the state change requested is impossible.
 	 */
+	@WebResult(name = "PartialityReason")
 	@WSDLDocumentation("Set the status of a given workflow run.")
-	void setRunStatus(@WebParam(name = "runName") String runName,
+	String setRunStatus(@WebParam(name = "runName") String runName,
 			@WebParam(name = "status") Status status)
 			throws UnknownRunException, NoUpdateException,
 			BadStateChangeException;
