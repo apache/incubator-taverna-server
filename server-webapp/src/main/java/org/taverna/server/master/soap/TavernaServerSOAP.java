@@ -18,7 +18,6 @@ import javax.jws.WebService;
 
 import org.apache.cxf.annotations.WSDLDocumentation;
 import org.taverna.server.master.common.Credential;
-import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
 import org.taverna.server.master.common.Permission;
 import org.taverna.server.master.common.RunReference;
