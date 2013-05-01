@@ -21,6 +21,7 @@ import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.common.Status.Initialized;
 import static org.taverna.server.master.common.Uri.secure;
 import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
+import static org.taverna.server.master.soap.DirEntry.convert;
 
 import java.io.IOException;
 import java.net.URI;
@@ -49,7 +50,6 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
 import org.taverna.server.master.TavernaServerImpl.SupportAware;
 import org.taverna.server.master.common.Credential;
-import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
 import org.taverna.server.master.common.Permission;
 import org.taverna.server.master.common.RunReference;
@@ -86,6 +86,7 @@ import org.taverna.server.master.rest.TavernaServerREST.PermittedWorkflows;
 import org.taverna.server.master.rest.TavernaServerREST.PolicyView;
 import org.taverna.server.master.rest.TavernaServerRunREST;
 import org.taverna.server.master.rest.handler.T2FlowDocumentHandler;
+import org.taverna.server.master.soap.DirEntry;
 import org.taverna.server.master.soap.FileContents;
 import org.taverna.server.master.soap.PermissionList;
 import org.taverna.server.master.soap.TavernaServerSOAP;
@@ -203,7 +204,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 			interactionFeed = null;
 		this.interactionFeed = interactionFeed;
 	}
-	
+
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	// REST INTERFACE
 
@@ -603,24 +604,24 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	@Override
 	@CallCounted
-	public DirEntryReference[] getRunDirectoryContents(String runName,
-			DirEntryReference d) throws UnknownRunException,
-			FilesystemAccessException, NoDirectoryEntryException {
-		List<DirEntryReference> result = new ArrayList<DirEntryReference>();
+	public DirEntry[] getRunDirectoryContents(String runName, DirEntry d)
+			throws UnknownRunException, FilesystemAccessException,
+			NoDirectoryEntryException {
+		List<DirEntry> result = new ArrayList<DirEntry>();
 		for (DirectoryEntry e : fileUtils.getDirectory(support.getRun(runName),
-				d).getContents())
-			result.add(newInstance(null, e));
-		return result.toArray(new DirEntryReference[result.size()]);
+				convert(d)).getContents())
+			result.add(convert(newInstance(null, e)));
+		return result.toArray(new DirEntry[result.size()]);
 	}
 
 	@Override
 	@CallCounted
-	public byte[] getRunDirectoryAsZip(String runName, DirEntryReference d)
+	public byte[] getRunDirectoryAsZip(String runName, DirEntry d)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException {
 		try {
 			return toByteArray(fileUtils.getDirectory(support.getRun(runName),
-					d).getContentsAsZip());
+					convert(d)).getContentsAsZip());
 		} catch (IOException e) {
 			throw new FilesystemAccessException("problem serializing ZIP data",
 					e);
@@ -629,74 +630,72 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	@Override
 	@CallCounted
-	public ZippedDirectory getRunDirectoryAsZipMTOM(String runName,
-			DirEntryReference d) throws UnknownRunException,
-			FilesystemAccessException, NoDirectoryEntryException {
+	public ZippedDirectory getRunDirectoryAsZipMTOM(String runName, DirEntry d)
+			throws UnknownRunException, FilesystemAccessException,
+			NoDirectoryEntryException {
 		return new ZippedDirectory(fileUtils.getDirectory(
-				support.getRun(runName), d));
+				support.getRun(runName), convert(d)));
 	}
 
 	@Override
 	@CallCounted
-	public DirEntryReference makeRunDirectory(String runName,
-			DirEntryReference parent, String name) throws UnknownRunException,
-			NoUpdateException, FilesystemAccessException,
-			NoDirectoryEntryException {
+	public DirEntry makeRunDirectory(String runName, DirEntry parent,
+			String name) throws UnknownRunException, NoUpdateException,
+			FilesystemAccessException, NoDirectoryEntryException {
 		TavernaRun w = support.getRun(runName);
 		support.permitUpdate(w);
-		Directory dir = fileUtils.getDirectory(w, parent).makeSubdirectory(
-				support.getPrincipal(), name);
-		return newInstance(null, dir);
+		Directory dir = fileUtils.getDirectory(w, convert(parent))
+				.makeSubdirectory(support.getPrincipal(), name);
+		return convert(newInstance(null, dir));
 	}
 
 	@Override
 	@CallCounted
-	public DirEntryReference makeRunFile(String runName,
-			DirEntryReference parent, String name) throws UnknownRunException,
-			NoUpdateException, FilesystemAccessException,
-			NoDirectoryEntryException {
-		TavernaRun w = support.getRun(runName);
-		support.permitUpdate(w);
-		File f = fileUtils.getDirectory(w, parent).makeEmptyFile(
-				support.getPrincipal(), name);
-		return newInstance(null, f);
-	}
-
-	@Override
-	@CallCounted
-	public void destroyRunDirectoryEntry(String runName, DirEntryReference d)
+	public DirEntry makeRunFile(String runName, DirEntry parent, String name)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, NoDirectoryEntryException {
 		TavernaRun w = support.getRun(runName);
 		support.permitUpdate(w);
-		fileUtils.getDirEntry(w, d).destroy();
+		File f = fileUtils.getDirectory(w, convert(parent)).makeEmptyFile(
+				support.getPrincipal(), name);
+		return convert(newInstance(null, f));
 	}
 
 	@Override
 	@CallCounted
-	public byte[] getRunFileContents(String runName, DirEntryReference d)
+	public void destroyRunDirectoryEntry(String runName, DirEntry d)
+			throws UnknownRunException, NoUpdateException,
+			FilesystemAccessException, NoDirectoryEntryException {
+		TavernaRun w = support.getRun(runName);
+		support.permitUpdate(w);
+		fileUtils.getDirEntry(w, convert(d)).destroy();
+	}
+
+	@Override
+	@CallCounted
+	public byte[] getRunFileContents(String runName, DirEntry d)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException {
-		File f = fileUtils.getFile(support.getRun(runName), d);
+		File f = fileUtils.getFile(support.getRun(runName), convert(d));
 		return f.getContents(0, -1);
 	}
 
 	@Override
 	@CallCounted
-	public void setRunFileContents(String runName, DirEntryReference d,
+	public void setRunFileContents(String runName, DirEntry d,
 			byte[] newContents) throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, NoDirectoryEntryException {
 		TavernaRun w = support.getRun(runName);
 		support.permitUpdate(w);
-		fileUtils.getFile(w, d).setContents(newContents);
+		fileUtils.getFile(w, convert(d)).setContents(newContents);
 	}
 
 	@Override
 	@CallCounted
-	public FileContents getRunFileContentsMTOM(String runName,
-			DirEntryReference d) throws UnknownRunException,
-			FilesystemAccessException, NoDirectoryEntryException {
-		File f = fileUtils.getFile(support.getRun(runName), d);
+	public FileContents getRunFileContentsMTOM(String runName, DirEntry d)
+			throws UnknownRunException, FilesystemAccessException,
+			NoDirectoryEntryException {
+		File f = fileUtils.getFile(support.getRun(runName), convert(d));
 		FileContents fc = new FileContents();
 		fc.setFile(f, support.getEstimatedContentType(f));
 		return fc;
@@ -716,19 +715,28 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	@Override
 	@CallCounted
-	public String getRunFileType(String runName, DirEntryReference d)
+	public String getRunFileType(String runName, DirEntry d)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException {
 		return support.getEstimatedContentType(fileUtils.getFile(
-				support.getRun(runName), d));
+				support.getRun(runName), convert(d)));
 	}
 
 	@Override
 	@CallCounted
-	public long getRunFileLength(String runName, DirEntryReference d)
+	public long getRunFileLength(String runName, DirEntry d)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException {
-		return fileUtils.getFile(support.getRun(runName), d).getSize();
+		return fileUtils.getFile(support.getRun(runName), convert(d)).getSize();
+	}
+
+	@Override
+	@CallCounted
+	public Date getRunFileModified(String runName, DirEntry d)
+			throws UnknownRunException, FilesystemAccessException,
+			NoDirectoryEntryException {
+		return fileUtils.getFile(support.getRun(runName), convert(d))
+				.getModificationDate();
 	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

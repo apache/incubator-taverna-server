@@ -49,6 +49,7 @@ import org.taverna.server.master.rest.TavernaServerREST.ServerDescription;
 import org.taverna.server.master.rest.TavernaServerRunREST.RunDescription;
 import org.taverna.server.master.rest.TavernaServerSecurityREST;
 import org.taverna.server.master.rest.TavernaServerSecurityREST.CredentialHolder;
+import org.taverna.server.master.soap.DirEntry;
 import org.taverna.server.master.soap.FileContents;
 import org.taverna.server.master.soap.PermissionList;
 
@@ -242,6 +243,11 @@ public class JaxbSanityTest {
 	}
 
 	@Test
+	public void testJAXBForDirEntry() throws Exception {
+		testJAXB(DirEntry.class);
+	}
+
+	@Test
 	public void testJAXBForEverythingREST() throws Exception {
 		testJAXB(DirEntryReference.class, InputDescription.class,
 				RunReference.class, Workflow.class, Status.class,
@@ -262,7 +268,7 @@ public class JaxbSanityTest {
 
 	@Test
 	public void testJAXBForEverythingSOAP() throws Exception {
-		testJAXB(DirEntryReference.class, FileContents.class,
+		testJAXB(DirEntry.class, FileContents.class,
 				InputDescription.class, Permission.class, PermissionList.class,
 				PermissionList.SinglePermissionMapping.class,
 				RunReference.class, Status.class, Trust.class, Uri.class,
