@@ -3,7 +3,7 @@
  * 
  * See the file "LICENSE" for license terms.
  */
-package org.taverna.server.master.localworker;
+package org.taverna.server.master.worker;
 
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
@@ -26,6 +26,7 @@ import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.localworker.AbstractRemoteRunFactory;
 import org.taverna.server.master.notification.NotificationEngine;
 import org.taverna.server.master.utils.UsernamePrincipal;
 

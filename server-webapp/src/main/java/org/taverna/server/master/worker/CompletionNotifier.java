@@ -3,7 +3,8 @@
  * 
  * See the file "LICENSE" for license terms.
  */
-package org.taverna.server.master.localworker;
+package org.taverna.server.master.worker;
+
 
 /**
  * How to convert a notification about the completion of a job into a message.

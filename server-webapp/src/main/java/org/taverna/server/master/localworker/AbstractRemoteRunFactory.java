@@ -58,6 +58,8 @@ import org.taverna.server.master.interfaces.SecurityContextFactory;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.usage.UsageRecordRecorder;
 import org.taverna.server.master.utils.UsernamePrincipal;
+import org.taverna.server.master.worker.RemoteRunDelegate;
+import org.taverna.server.master.worker.RunDBSupport;
 
 /**
  * Bridge to remote runs via RMI.
@@ -321,7 +323,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		try {
 			RemoteRunDelegate rrd = runDB.pickArbitraryRun();
 			if (rrd != null)
-				return rrd.run.getListenerTypes();
+				return rrd.getListenerTypes();
 			log.warn("no remote runs; no listener types");
 		} catch (Exception e) {
 			log.warn("failed to get list of listener types", e);

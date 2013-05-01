@@ -3,7 +3,7 @@
  * 
  * See the file "LICENSE" for license terms.
  */
-package org.taverna.server.master.localworker;
+package org.taverna.server.master.worker;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Calendar.MINUTE;
@@ -12,7 +12,7 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.logging.LogFactory.getLog;
-import static org.taverna.server.master.localworker.RemoteRunDelegate.checkBadFilename;
+import static org.taverna.server.master.worker.RemoteRunDelegate.checkBadFilename;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -61,6 +61,7 @@ import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.SecurityContextFactory;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
+import org.taverna.server.master.localworker.AbstractRemoteRunFactory;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
@@ -84,7 +85,7 @@ public class RemoteRunDelegate implements TavernaRun {
 	transient AbstractRemoteRunFactory factory;
 	boolean doneTransitionToFinished;
 
-	RemoteRunDelegate(Date creationInstant, Workflow workflow,
+	public RemoteRunDelegate(Date creationInstant, Workflow workflow,
 			RemoteSingleRun rsr, int defaultLifetime, RunDBSupport db, UUID id,
 			AbstractRemoteRunFactory factory) {
 		if (rsr == null) {
@@ -103,6 +104,17 @@ public class RemoteRunDelegate implements TavernaRun {
 	}
 
 	RemoteRunDelegate() {
+	}
+
+	/**
+	 * Get the types of listener supported by this run.
+	 * 
+	 * @return A list of listener type names.
+	 * @throws RemoteException
+	 *             If anything goes wrong.
+	 */
+	public List<String> getListenerTypes() throws RemoteException {
+		return run.getListenerTypes();
 	}
 
 	@Override
@@ -448,7 +460,7 @@ public class RemoteRunDelegate implements TavernaRun {
 		run = ((MarshalledObject<RemoteSingleRun>) in.readObject()).get();
 	}
 
-	void setSecurityContext(TavernaSecurityContext tavernaSecurityContext) {
+	public void setSecurityContext(TavernaSecurityContext tavernaSecurityContext) {
 		secContext = tavernaSecurityContext;
 	}
 }

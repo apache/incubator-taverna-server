@@ -3,10 +3,11 @@
  * 
  * See the file "LICENSE" for license terms.
  */
-package org.taverna.server.master.localworker;
+package org.taverna.server.master.worker;
 
 import java.util.List;
 
+import org.taverna.server.master.localworker.AbstractRemoteRunFactory;
 import org.taverna.server.master.notification.NotificationEngine;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -76,5 +77,8 @@ public interface RunDBSupport {
 	 */
 	void setNotifier(CompletionNotifier notifier);
 
+	/**
+	 * @return A reference to the actual factory for remote runs.
+	 */
 	AbstractRemoteRunFactory getFactory();
 }

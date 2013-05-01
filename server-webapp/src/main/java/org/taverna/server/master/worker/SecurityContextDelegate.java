@@ -3,7 +3,7 @@
  * 
  * See the file "LICENSE" for license terms.
  */
-package org.taverna.server.master.localworker;
+package org.taverna.server.master.worker;
 
 import static java.lang.String.format;
 import static java.util.Arrays.fill;

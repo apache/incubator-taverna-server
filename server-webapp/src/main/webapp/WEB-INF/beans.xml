@@ -11,8 +11,8 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
 	<bean id="webapp" class="org.taverna.server.master.TavernaServerImpl">
-		<property name="policy" ref="localworker.policy" />
-		<property name="runStore" ref="localworker.rundb" />
+		<property name="policy" ref="worker.policy" />
+		<property name="runStore" ref="worker.rundb" />
 		<property name="fileUtils" ref="fileUtils" />
 		<property name="contentsDescriptorBuilder" ref="contentsDescriptorBuilder" />
 		<property name="notificationEngine" ref="notificationFabric" />
@@ -23,10 +23,10 @@
 	</bean>
 
 	<bean id="webapp.support" class="org.taverna.server.master.TavernaServerSupport">
-		<property name="policy" ref="localworker.policy" />
+		<property name="policy" ref="worker.policy" />
 		<property name="listenerFactory" ref="localworker.factory" />
 		<property name="runFactory" ref="localworker.factory" />
-		<property name="runStore" ref="localworker.rundb" />
+		<property name="runStore" ref="worker.rundb" />
 		<property name="stateModel" ref="webapp.state" />
 		<property name="idMapper" ref="IdentityMapper" />
 		<property name="invocationCounter" ref="webapp.invocationCounter" />
@@ -42,7 +42,7 @@
 
 	<bean id="webapp.policyView" class="org.taverna.server.master.PolicyREST">
 		<property name="support" ref="webapp.support" />
-		<property name="policy" ref="localworker.policy" />
+		<property name="policy" ref="worker.policy" />
 		<property name="listenerFactory" ref="localworker.factory" />
 		<property name="notificationEngine" ref="notificationFabric" />
 	</bean>
@@ -117,7 +117,7 @@
 	<bean id="admin" class="org.taverna.server.master.admin.AdminBean">
 		<property name="state" ref="webapp.state" />
 		<property name="counter" ref="webapp.invocationCounter" />
-		<property name="runDB" ref="localworker.rundb" />
+		<property name="runDB" ref="worker.rundb" />
 		<property name="factory" ref="localworker.factory" />
 		<property name="usageRecords" ref="usageRecordSink" />
 		<property name="userStore" ref="userStore" />
@@ -228,19 +228,19 @@
 	<!-- <bean id="localworker.factory" scope="singleton" lazy-init="false" 
 		class="${backEndFactory}"> <description> The simple policy manager and factory 
 		for the baseline localworker case. </description> <property name="state" 
-		ref="localworker.state" /> <property name="runDB" ref="localworker.rundb" 
+		ref="localworker.state" /> <property name="runDB" ref="worker.rundb" 
 		/> -->
 	<!-- Handled by autowiring to make type-resilient. -->
 	<!-- <property name="idMapper" ref="IdentityMapper" /> -->
-	<!-- <property name="securityContextFactory" ref="localworker.securityContext" 
+	<!-- <property name="securityContextFactory" ref="worker.securityContext" 
 		/> <property name="usageRecordSink" ref="usageRecordSink" /> <property name="URProcessorPool" 
 		ref="URThreads" /> </bean> -->
 
 	<task:executor id="URThreads" pool-size="${pool.size}" />
 
-	<bean id="localworker.securityContext"
-		class="org.taverna.server.master.localworker.SecurityContextFactory">
-		<property name="runDatabase" ref="localworker.rundb" />
+	<bean id="worker.securityContext"
+		class="org.taverna.server.master.worker.SecurityContextFactory">
+		<property name="runDatabase" ref="worker.rundb" />
 		<property name="filenameConverter" ref="fileUtils" />
 		<property name="x500Utils" ref="x500Utils" />
 	</bean>
@@ -289,32 +289,31 @@
 		<property name="defaultExecuteWorkflowScript" value="${executeWorkflowScript}" />
 	</bean>
 
-	<bean id="localworker.policy" class="org.taverna.server.master.localworker.PolicyImpl">
+	<bean id="worker.policy" class="org.taverna.server.master.worker.PolicyImpl">
 		<description>
-			The implementation of the access control policy
-			supported
+			The implementation of the access control policy supported
 			by the localworker run engine.
 		</description>
 		<property name="state" ref="localworker.state" />
-		<property name="runDB" ref="localworker.rundb" />
+		<property name="runDB" ref="worker.rundb" />
 	</bean>
-	<bean id="localworker.rundb" class="org.taverna.server.master.localworker.RunDatabase">
-		<property name="notifier" ref="localworker.notifier" />
+	<bean id="worker.rundb" class="org.taverna.server.master.worker.RunDatabase">
+		<property name="notifier" ref="worker.notifier" />
 		<property name="notificationEngine" ref="notificationFabric" />
-		<property name="dao" ref="localworker.runDAO" />
+		<property name="dao" ref="worker.runDAO" />
 	</bean>
-	<bean id="localworker.runDAO" class="org.taverna.server.master.localworker.RunDatabaseDAO">
+	<bean id="worker.runDAO" class="org.taverna.server.master.worker.RunDatabaseDAO">
 		<description>
 			The implementation of the catalog of workflow runs
 			supported by the localworker run engine.
 		</description>
 		<property name="persistenceManagerFactory" ref="pmf" />
-		<property name="facade" ref="localworker.rundb" />
+		<property name="facade" ref="worker.rundb" />
 	</bean>
 	<task:scheduled-tasks scheduler="taskScheduler">
-		<task:scheduled ref="localworker.rundb" method="cleanNow"
+		<task:scheduled ref="worker.rundb" method="cleanNow"
 			fixed-delay="${purge.interval}" />
-		<task:scheduled ref="localworker.rundb" method="checkForFinishNow"
+		<task:scheduled ref="worker.rundb" method="checkForFinishNow"
 			fixed-delay="${finish.interval}" />
 		<task:scheduled ref="dispatch.atom" method="deleteExpiredEvents"
 			fixed-delay="${atom.cleaninterval}" />
@@ -383,8 +382,8 @@
 		<property name="uriBuilderFactory" ref="feed" />
 	</bean>
 
-	<bean id="localworker.notifier"
-		class="org.taverna.server.master.localworker.SimpleFormattedCompletionNotifier">
+	<bean id="worker.notifier"
+		class="org.taverna.server.master.worker.SimpleFormattedCompletionNotifier">
 		<property name="subject" value="${message.termination.subject}" />
 		<property name="messageFormat" value="${message.termination.body}" />
 	</bean>

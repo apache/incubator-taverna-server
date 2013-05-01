@@ -3,7 +3,7 @@
  * 
  * See the file "LICENSE" for license terms.
  */
-package org.taverna.server.master.localworker;
+package org.taverna.server.master.worker;
 
 import static java.security.Security.addProvider;
 import static java.security.Security.getProvider;
@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
+import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.UsernamePrincipal;
 import org.taverna.server.master.utils.X500Utils;
@@ -115,10 +116,11 @@ public class SecurityContextFactory implements
 	}
 
 	@Override
-	public SecurityContextDelegate create(RemoteRunDelegate run,
+	public SecurityContextDelegate create(TavernaRun run,
 			UsernamePrincipal owner) throws Exception {
 		log().debug("constructing security context delegate for " + owner);
-		return new SecurityContextDelegateImpl(run, owner, this);
+		RemoteRunDelegate rrd = (RemoteRunDelegate) run;
+		return new HelioSecurityContextDelegateImpl(rrd, owner, this);
 	}
 
 	private Object readResolve() {

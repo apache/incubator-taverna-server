@@ -3,7 +3,7 @@
  * 
  * See the file "LICENSE" for license terms.
  */
-package org.taverna.server.master.localworker;
+package org.taverna.server.master.worker;
 
 import static org.taverna.server.master.defaults.Default.NOTIFY_MESSAGE_FORMAT;
 

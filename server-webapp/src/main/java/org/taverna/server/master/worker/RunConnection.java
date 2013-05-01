@@ -3,15 +3,15 @@
  * 
  * See the file "LICENSE" for license terms.
  */
-package org.taverna.server.master.localworker;
+package org.taverna.server.master.worker;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static org.taverna.server.master.localworker.RunConnection.COUNT_QUERY;
-import static org.taverna.server.master.localworker.RunConnection.NAMES_QUERY;
-import static org.taverna.server.master.localworker.RunConnection.SCHEMA;
-import static org.taverna.server.master.localworker.RunConnection.TABLE;
-import static org.taverna.server.master.localworker.RunConnection.TIMEOUT_QUERY;
+import static org.taverna.server.master.worker.RunConnection.COUNT_QUERY;
+import static org.taverna.server.master.worker.RunConnection.NAMES_QUERY;
+import static org.taverna.server.master.worker.RunConnection.SCHEMA;
+import static org.taverna.server.master.worker.RunConnection.TABLE;
+import static org.taverna.server.master.worker.RunConnection.TIMEOUT_QUERY;
 
 import java.io.IOException;
 import java.rmi.MarshalledObject;

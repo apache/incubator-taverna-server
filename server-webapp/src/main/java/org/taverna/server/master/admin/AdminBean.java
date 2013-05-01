@@ -28,9 +28,9 @@ import org.taverna.server.master.exceptions.GeneralFailureException;
 import org.taverna.server.master.factories.ConfigurableRunFactory;
 import org.taverna.server.master.identity.User;
 import org.taverna.server.master.identity.UserStore;
-import org.taverna.server.master.localworker.RunDBSupport;
 import org.taverna.server.master.usage.UsageRecordRecorder;
 import org.taverna.server.master.utils.InvocationCounter;
+import org.taverna.server.master.worker.RunDBSupport;
 
 /**
  * The administration interface to Taverna Server.

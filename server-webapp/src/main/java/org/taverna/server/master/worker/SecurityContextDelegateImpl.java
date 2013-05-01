@@ -3,7 +3,7 @@
  * 
  * See the file "LICENSE" for license terms.
  */
-package org.taverna.server.master.localworker;
+package org.taverna.server.master.worker;
 
 import static java.lang.String.format;
 import static javax.xml.ws.handler.MessageContext.HTTP_REQUEST_HEADERS;
@@ -43,17 +43,12 @@ import org.taverna.server.master.utils.X500Utils;
  * @author Donal Fellows
  */
 class SecurityContextDelegateImpl extends SecurityContextDelegate {
-	private Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
 	private static final char USERNAME_PASSWORD_SEPARATOR = '\u0000';
 	private static final String USERNAME_PASSWORD_KEY_ALGORITHM = "DUMMY";
 	/** What passwords are encoded as. */
 	private static final Charset UTF8 = Charset.forName("UTF-8");
-	// TODO Use agreed header name for HELIO CIS token
-	/** The name of the HTTP header holding the CIS token. */
-	private static final String HELIO_CIS_TOKEN = "X-Helio-CIS";
 
 	private X500Utils x500Utils;
-	private transient String helioToken;
 
 	/**
 	 * Initialise the context delegate.
@@ -75,7 +70,7 @@ class SecurityContextDelegateImpl extends SecurityContextDelegate {
 	public void validateCredential(Credential c)
 			throws InvalidCredentialException {
 		try {
-			if  (c instanceof Credential.Password)
+			if (c instanceof Credential.Password)
 				validatePasswordCredential((Credential.Password) c);
 			else if (c instanceof Credential.KeyPair)
 				validateKeyCredential((Credential.KeyPair) c);
@@ -239,8 +234,34 @@ class SecurityContextDelegateImpl extends SecurityContextDelegate {
 				x500Utils.getSerial(subjectCert));
 		addKeypairToKeystore(alias, c);
 	}
+}
 
-	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+/**
+ * Special subclass that adds support for HELIO project security tokens.
+ * 
+ * @author Donal Fellows
+ */
+class HelioSecurityContextDelegateImpl extends SecurityContextDelegateImpl {
+	/**
+	 * Initialise the context delegate.
+	 * 
+	 * @param run
+	 *            What workflow run is this for?
+	 * @param owner
+	 *            Who owns the workflow run?
+	 * @param factory
+	 *            What class built this object?
+	 */
+	protected HelioSecurityContextDelegateImpl(RemoteRunDelegate run,
+			UsernamePrincipal owner, SecurityContextFactory factory) {
+		super(run, owner, factory);
+	}
+
+	private Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
+	// TODO Use agreed header name for HELIO CIS token
+	/** The name of the HTTP header holding the CIS token. */
+	private static final String HELIO_CIS_TOKEN = "X-Helio-CIS";
+	private transient String helioToken;
 
 	@Override
 	public void initializeSecurityFromSOAPContext(MessageContext context) {
