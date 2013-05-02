@@ -224,7 +224,7 @@
 		</prop>
 	</util:properties>
 
-	<!-- This bean configuration replaced with org.taverna.server.master.localworker.ConfigBean -->
+	<!-- This bean configuration replaced with org.taverna.server.master.localworker.LocalWorkerFactory -->
 	<!-- <bean id="localworker.factory" scope="singleton" lazy-init="false" 
 		class="${backEndFactory}"> <description> The simple policy manager and factory 
 		for the baseline localworker case. </description> <property name="state" 
