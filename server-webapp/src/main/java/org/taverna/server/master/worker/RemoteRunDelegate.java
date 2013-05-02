@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 The University of Manchester
+ * Copyright (C) 2010-2013 The University of Manchester
  * 
  * See the file "LICENSE" for license terms.
  */
@@ -61,7 +61,6 @@ import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.SecurityContextFactory;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
-import org.taverna.server.master.localworker.AbstractRemoteRunFactory;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
@@ -71,7 +70,7 @@ import org.taverna.server.master.utils.UsernamePrincipal;
  */
 @edu.umd.cs.findbugs.annotations.SuppressWarnings("SE_NO_SERIALVERSIONID")
 public class RemoteRunDelegate implements TavernaRun {
-	private transient Log log = getLog("Taverna.Server.LocalWorker");
+	private transient Log log = getLog("Taverna.Server.Worker");
 	transient TavernaSecurityContext secContext;
 	Date creationInstant;
 	Workflow workflow;
@@ -82,12 +81,12 @@ public class RemoteRunDelegate implements TavernaRun {
 	transient String id;
 	transient RemoteSingleRun run;
 	transient RunDBSupport db;
-	transient AbstractRemoteRunFactory factory;
+	transient FactoryBean factory;
 	boolean doneTransitionToFinished;
 
 	public RemoteRunDelegate(Date creationInstant, Workflow workflow,
 			RemoteSingleRun rsr, int defaultLifetime, RunDBSupport db, UUID id,
-			AbstractRemoteRunFactory factory) {
+			FactoryBean factory) {
 		if (rsr == null) {
 			throw new IllegalArgumentException("remote run must not be null");
 		}
@@ -251,6 +250,9 @@ public class RemoteRunDelegate implements TavernaRun {
 				if (!factory.isAllowingRunsToStart())
 					throw new OverloadedException();
 				run.setStatus(RemoteStatus.Operating);
+				factory.getMasterEventFeed().started(this,
+						"started run execution",
+						"The execution of run " + id + " has started.");
 				break;
 			case Stopped:
 				run.setStatus(RemoteStatus.Stopped);
@@ -466,7 +468,7 @@ public class RemoteRunDelegate implements TavernaRun {
 }
 
 abstract class DEDelegate implements DirectoryEntry {
-	Log log = getLog("Taverna.Server.LocalWorker");
+	Log log = getLog("Taverna.Server.Worker");
 	private RemoteDirectoryEntry entry;
 	private String name;
 	private String full;
@@ -750,7 +752,7 @@ class FileDelegate extends DEDelegate implements File {
 }
 
 class ListenerDelegate implements Listener {
-	private Log log = getLog("Taverna.Server.LocalWorker");
+	private Log log = getLog("Taverna.Server.Worker");
 	private RemoteListener r;
 	String conf;
 

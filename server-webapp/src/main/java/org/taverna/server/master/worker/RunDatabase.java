@@ -26,7 +26,6 @@ import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.localworker.AbstractRemoteRunFactory;
 import org.taverna.server.master.notification.NotificationEngine;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
@@ -36,12 +35,12 @@ import org.taverna.server.master.utils.UsernamePrincipal;
  * @author Donal Fellows
  */
 public class RunDatabase implements RunStore, RunDBSupport {
-	private Log log = LogFactory.getLog("Taverna.Server.LocalWorker.RunDB");
+	private Log log = LogFactory.getLog("Taverna.Server.Worker.RunDB");
 	private RunDatabaseDAO dao;
 	private List<CompletionNotifier> notifier = new ArrayList<CompletionNotifier>();
 	private NotificationEngine notificationEngine;
 	@Autowired
-	private AbstractRemoteRunFactory factory;
+	private FactoryBean factory;
 
 	@Override
 	public void setNotifier(CompletionNotifier n) {
@@ -213,7 +212,7 @@ public class RunDatabase implements RunStore, RunDBSupport {
 	}
 
 	@Override
-	public AbstractRemoteRunFactory getFactory() {
+	public FactoryBean getFactory() {
 		return factory;
 	}
 }

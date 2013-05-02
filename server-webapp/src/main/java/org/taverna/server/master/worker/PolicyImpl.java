@@ -19,7 +19,6 @@ import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
-import org.taverna.server.master.localworker.LocalWorkerState;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -33,13 +32,13 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  */
 @SuppressWarnings("IS2_INCONSISTENT_SYNC")
 class PolicyImpl implements Policy {
-	Log log = LogFactory.getLog("Taverna.Server.LocalWorker.Policy");
-	private LocalWorkerState state;
+	Log log = LogFactory.getLog("Taverna.Server.Worker.Policy");
+	private PolicyLimits limits;
 	private RunDBSupport runDB;
 
 	@Required
-	public void setState(LocalWorkerState state) {
-		this.state = state;
+	public void setLimits(PolicyLimits limits) {
+		this.limits = limits;
 	}
 
 	@Required
@@ -49,7 +48,7 @@ class PolicyImpl implements Policy {
 
 	@Override
 	public int getMaxRuns() {
-		return state.getMaxRuns();
+		return limits.getMaxRuns();
 	}
 
 	@Override
@@ -59,7 +58,7 @@ class PolicyImpl implements Policy {
 
 	@Override
 	public int getOperatingLimit() {
-		return state.getOperatingLimit();
+		return limits.getOperatingLimit();
 	}
 
 	@Override

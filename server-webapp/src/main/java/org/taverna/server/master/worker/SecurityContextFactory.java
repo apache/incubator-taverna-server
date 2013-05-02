@@ -58,7 +58,7 @@ public class SecurityContextFactory implements
 	boolean logSecurityDetails;
 
 	private Log log() {
-		return getLog("Taverna.Server.LocalWorker.Security");
+		return getLog("Taverna.Server.Worker.Security");
 	}
 
 	@SuppressWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")

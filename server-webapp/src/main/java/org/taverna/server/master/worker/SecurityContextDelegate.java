@@ -56,7 +56,7 @@ import org.taverna.server.master.utils.UsernamePrincipal;
  * @author Donal Fellows
  */
 public abstract class SecurityContextDelegate implements TavernaSecurityContext {
-	Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
+	Log log = LogFactory.getLog("Taverna.Server.Worker");
 	private final UsernamePrincipal owner;
 	private final List<Credential> credentials = new ArrayList<Credential>();
 	private final List<Trust> trusted = new ArrayList<Trust>();

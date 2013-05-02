@@ -1,13 +1,13 @@
 /*
- * Copyright (C) 2010-2012 The University of Manchester
+ * Copyright (C) 2010-2013 The University of Manchester
  * 
  * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.localworker;
 
-//import static java.lang.System.getSecurityManager;
+import static java.lang.System.getSecurityManager;
 import static java.lang.System.setProperty;
-//import static java.lang.System.setSecurityManager;
+import static java.lang.System.setSecurityManager;
 import static java.net.InetAddress.getLocalHost;
 import static java.rmi.registry.LocateRegistry.createRegistry;
 import static java.rmi.registry.LocateRegistry.getRegistry;
@@ -19,7 +19,7 @@ import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URL;
-//import java.rmi.RMISecurityManager;
+import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -56,8 +56,10 @@ import org.taverna.server.master.interaction.InteractionFeedSupport;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.SecurityContextFactory;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.notification.atom.EventDAO;
 import org.taverna.server.master.usage.UsageRecordRecorder;
 import org.taverna.server.master.utils.UsernamePrincipal;
+import org.taverna.server.master.worker.FactoryBean;
 import org.taverna.server.master.worker.RemoteRunDelegate;
 import org.taverna.server.master.worker.RunDBSupport;
 
@@ -68,7 +70,7 @@ import org.taverna.server.master.worker.RunDBSupport;
  */
 @ManagedResource(objectName = JMX_ROOT + "Factory", description = "The factory for runs")
 public abstract class AbstractRemoteRunFactory implements ListenerFactory,
-		RunFactory, ConfigurableRunFactory {
+		RunFactory, ConfigurableRunFactory, FactoryBean {
 	/** The logger for writing messages out on. */
 	Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
 
@@ -224,6 +226,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	private SecurityContextFactory securityFactory;
 	UsageRecordRecorder usageRecordSink;
 	TaskExecutor urProcessorPool;
+	private EventDAO masterEventFeed;
 
 	@Autowired(required = true)
 	void setState(LocalWorkerState state) {
@@ -238,6 +241,11 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	@Autowired(required = true)
 	void setSecurityContextFactory(SecurityContextFactory factory) {
 		this.securityFactory = factory;
+	}
+
+	@Autowired(required = true)
+	void setMasterEventFeed(EventDAO masterEventFeed) {
+		this.masterEventFeed = masterEventFeed;
 	}
 
 	@ManagedAttribute(description = "The host holding the RMI registry to communicate via.")
@@ -287,13 +295,23 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		this.urProcessorPool = urProcessorPool;
 	}
 
+	/**
+	 * Configures the Java security model. Not currently used, as it is
+	 * viciously difficult to get right!
+	 */
+	@SuppressWarnings("unused")
+	@edu.umd.cs.findbugs.annotations.SuppressWarnings("UPM_UNCALLED_PRIVATE_METHOD")
+	private static void installSecurityManager() {
+		if (getSecurityManager() == null) {
+			setProperty("java.security.policy", AbstractRemoteRunFactory.class
+					.getClassLoader().getResource(SECURITY_POLICY_FILE)
+					.toExternalForm());
+			setSecurityManager(new RMISecurityManager());
+		}
+	}
+
 	// static {
-	// if (getSecurityManager() == null) {
-	// setProperty("java.security.policy", AbstractRemoteRunFactory.class
-	// .getClassLoader().getResource(SECURITY_POLICY_FILE)
-	// .toExternalForm());
-	// setSecurityManager(new RMISecurityManager());
-	// }
+	// installSecurityManager();
 	// }
 
 	/**
@@ -502,5 +520,10 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 			log.warn("failed to build usage record receiver", e);
 			return null;
 		}
+	}
+
+	@Override
+	public EventDAO getMasterEventFeed() {
+		return masterEventFeed;
 	}
 }

@@ -142,4 +142,13 @@ public class EventDAO extends JDOSupport<AbstractEvent> implements
 		persist(new TerminationEvent(ub.build(), owner, messageSubject,
 				messageContent));
 	}
+
+	@WithinSingleTransaction
+	public void started(TavernaRun originator, String messageSubject,
+			String messageContent) {
+		UsernamePrincipal owner = originator.getSecurityContext().getOwner();
+		UriBuilder ub = ubf.getRunUriBuilder(originator);
+		persist(new CommencementEvent(ub.build(), owner, messageSubject,
+				messageContent));
+	}
 }

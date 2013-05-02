@@ -138,6 +138,7 @@ class ManagementState extends JDOSupport<WebappState> implements
 	}
 }
 
+//WARNING! If you change the name of this class, update persistence.xml as well!
 @PersistenceCapable(table = "MANAGEMENTSTATE__WEBAPPSTATE")
 class WebappState implements ManagementModel {
 	public WebappState() {

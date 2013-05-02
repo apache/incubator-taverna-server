@@ -294,7 +294,7 @@
 			The implementation of the access control policy supported
 			by the localworker run engine.
 		</description>
-		<property name="state" ref="localworker.state" />
+		<property name="limits" ref="localworker.state" />
 		<property name="runDB" ref="worker.rundb" />
 	</bean>
 	<bean id="worker.rundb" class="org.taverna.server.master.worker.RunDatabase">

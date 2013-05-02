@@ -257,8 +257,7 @@ class HelioSecurityContextDelegateImpl extends SecurityContextDelegateImpl {
 		super(run, owner, factory);
 	}
 
-	private Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
-	// TODO Use agreed header name for HELIO CIS token
+	private Log log = LogFactory.getLog("Taverna.Server.Worker");
 	/** The name of the HTTP header holding the CIS token. */
 	private static final String HELIO_CIS_TOKEN = "X-Helio-CIS";
 	private transient String helioToken;

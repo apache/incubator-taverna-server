@@ -37,7 +37,7 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 		super(RunConnection.class);
 	}
 
-	private Log log = LogFactory.getLog("Taverna.Server.LocalWorker.RunDB");
+	private Log log = LogFactory.getLog("Taverna.Server.Worker.RunDB");
 	private RunDatabase facade;
 
 	@Required
