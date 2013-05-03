@@ -57,6 +57,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @see LocalWorker
  */
 @SuppressWarnings({ "SE_BAD_FIELD", "SE_NO_SERIALVERSIONID" })
+@java.lang.SuppressWarnings("serial")
 public class TavernaRunManager extends UnicastRemoteObject implements
 		RemoteRunFactory, RunAccounting, WorkerFactory {
 	DocumentBuilderFactory dbf;

@@ -14,6 +14,7 @@ import javax.xml.ws.WebFault;
  * @author Donal Fellows
  */
 @WebFault(name = "ImplementationFault", targetNamespace = "http://ns.taverna.org.uk/2010/xml/server/worker/")
+@SuppressWarnings("serial")
 public class ImplementationException extends Exception {
 	public ImplementationException(String message) {
 		super(message);

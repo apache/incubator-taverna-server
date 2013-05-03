@@ -69,6 +69,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @see WorkerCore
  */
 @SuppressWarnings({ "SE_BAD_FIELD", "SE_NO_SERIALVERSIONID" })
+@java.lang.SuppressWarnings("serial")
 public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun {
 	// ----------------------- CONSTANTS -----------------------
 
@@ -648,6 +649,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 				break;
 			case Finished:
 				throw new IllegalStateTransitionException("already finished");
+			default:
+				break;
 			}
 			status = Operating;
 			break;
@@ -666,6 +669,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 				break;
 			case Finished:
 				throw new IllegalStateTransitionException("already finished");
+			default:
+				break;
 			}
 			status = Stopped;
 			break;
@@ -681,6 +686,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 					throw new ImplementationException(
 							"problem killing workflow run", e);
 				}
+			default:
 				break;
 			}
 			status = Finished;

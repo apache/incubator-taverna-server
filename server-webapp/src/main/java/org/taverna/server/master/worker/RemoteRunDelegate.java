@@ -69,6 +69,7 @@ import org.taverna.server.master.utils.UsernamePrincipal;
  * @author Donal Fellows
  */
 @edu.umd.cs.findbugs.annotations.SuppressWarnings("SE_NO_SERIALVERSIONID")
+@SuppressWarnings("serial")
 public class RemoteRunDelegate implements TavernaRun {
 	private transient Log log = getLog("Taverna.Server.Worker");
 	transient TavernaSecurityContext secContext;
@@ -888,6 +889,7 @@ class RunInput implements Input {
 	}
 }
 
+@SuppressWarnings("serial")
 class SecurityContextReconstructionException extends RuntimeException {
 	public SecurityContextReconstructionException(Throwable t) {
 		super("failed to rebuild security context", t);

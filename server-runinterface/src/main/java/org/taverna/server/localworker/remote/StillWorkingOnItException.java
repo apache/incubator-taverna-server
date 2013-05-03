@@ -12,6 +12,7 @@ package org.taverna.server.localworker.remote;
  * 
  * @author Donal Fellows
  */
+@SuppressWarnings("serial")
 public class StillWorkingOnItException extends Exception {
 	public StillWorkingOnItException(String string) {
 		super(string);

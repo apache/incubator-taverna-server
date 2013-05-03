@@ -34,6 +34,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * @see FileDelegate
  */
 @edu.umd.cs.findbugs.annotations.SuppressWarnings("SE_NO_SERIALVERSIONID")
+@SuppressWarnings("serial")
 public class DirectoryDelegate extends UnicastRemoteObject implements
 		RemoteDirectory {
 	private File dir;

@@ -33,6 +33,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @see DirectoryDelegate
  */
 @SuppressWarnings("SE_NO_SERIALVERSIONID")
+@java.lang.SuppressWarnings("serial")
 public class FileDelegate extends UnicastRemoteObject implements RemoteFile {
 	private File file;
 	private DirectoryDelegate parent;

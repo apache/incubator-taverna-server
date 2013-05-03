@@ -44,6 +44,7 @@ import org.taverna.server.master.utils.UsernamePrincipal;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 @SuppressWarnings
+@java.lang.SuppressWarnings("serial")
 public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	String id;
 	List<Listener> listeners;
