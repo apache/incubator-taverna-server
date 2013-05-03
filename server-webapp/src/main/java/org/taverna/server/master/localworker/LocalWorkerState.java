@@ -42,7 +42,7 @@ import org.taverna.server.master.worker.PolicyLimits;
  */
 @PersistenceAware
 public class LocalWorkerState extends JDOSupport<PersistedState> implements
-		LocalWorkerModel {
+		LocalWorkerModel, PolicyLimits {
 	public LocalWorkerState() {
 		super(PersistedState.class);
 	}
@@ -393,7 +393,7 @@ public class LocalWorkerState extends JDOSupport<PersistedState> implements
 // WARNING! If you change the name of this class, update persistence.xml as
 // well!
 @PersistenceCapable(table = "LOCALWORKERSTATE__PERSISTEDSTATE")
-class PersistedState implements LocalWorkerModel {
+class PersistedState implements LocalWorkerModel, PolicyLimits {
 	static PersistedState makeInstance() {
 		PersistedState o = new PersistedState();
 		o.ID = KEY;
