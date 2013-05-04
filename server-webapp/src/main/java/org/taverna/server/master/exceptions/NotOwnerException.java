@@ -15,6 +15,7 @@ import javax.xml.ws.WebFault;
  * @author Donal Fellows
  */
 @WebFault(name = "NotOwnerFault")
+@SuppressWarnings("serial")
 public class NotOwnerException extends Exception {
 	public NotOwnerException() {
 		super("not permitted; not the owner");

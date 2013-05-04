@@ -13,6 +13,7 @@ package org.taverna.server.master.exceptions;
  * @author Donal Fellows
  * 
  */
+@SuppressWarnings("serial")
 public class InvalidCredentialException extends Exception {
 	private static final String MSG = "that credential is invalid";
 

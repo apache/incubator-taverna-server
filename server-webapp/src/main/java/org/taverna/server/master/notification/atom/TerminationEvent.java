@@ -25,6 +25,7 @@ import org.taverna.server.master.utils.UsernamePrincipal;
 @PersistenceCapable
 @XmlType(name = "TerminationEvent", propOrder = {})
 @XmlRootElement
+@SuppressWarnings("serial")
 public class TerminationEvent extends AbstractEvent {
 	/**
 	 * Initialize a termination event for a workflow run.

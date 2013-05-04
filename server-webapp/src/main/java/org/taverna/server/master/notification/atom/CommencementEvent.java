@@ -25,6 +25,7 @@ import org.taverna.server.master.utils.UsernamePrincipal;
 @PersistenceCapable
 @XmlType(name = "CommencementEvent", propOrder = {})
 @XmlRootElement
+@SuppressWarnings("serial")
 public class CommencementEvent extends AbstractEvent {
 	/**
 	 * Initialize a commencement event for a workflow run.

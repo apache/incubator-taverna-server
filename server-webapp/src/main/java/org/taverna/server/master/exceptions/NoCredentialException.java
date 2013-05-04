@@ -10,6 +10,7 @@ package org.taverna.server.master.exceptions;
  * 
  * @author Donal Fellows
  */
+@SuppressWarnings("serial")
 public class NoCredentialException extends Exception {
 	public NoCredentialException() {
 		super("no such credential");

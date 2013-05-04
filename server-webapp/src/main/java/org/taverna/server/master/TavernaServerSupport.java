@@ -456,6 +456,8 @@ public class TavernaServerSupport {
 			doWrite = true;
 		case Read:
 			doRead = true;
+		default:
+			break;
 		}
 
 		permSet = context.getPermittedReaders();

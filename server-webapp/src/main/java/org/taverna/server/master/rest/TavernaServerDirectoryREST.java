@@ -210,6 +210,7 @@ public interface TavernaServerDirectoryREST {
 	 * 
 	 * @author Donal Fellows
 	 */
+	@SuppressWarnings("serial")
 	public static class NegotiationFailedException extends Exception {
 		public List<Variant> accepted;
 

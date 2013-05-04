@@ -492,6 +492,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		try {
 			@edu.umd.cs.findbugs.annotations.SuppressWarnings({
 					"SE_BAD_FIELD_INNER_CLASS", "SE_NO_SERIALVERSIONID" })
+			@SuppressWarnings("serial")
 			class URReceiver extends UnicastRemoteObject implements
 					UsageRecordReceiver {
 				public URReceiver() throws RemoteException {

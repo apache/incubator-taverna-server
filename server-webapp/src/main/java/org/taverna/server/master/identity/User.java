@@ -32,6 +32,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Query(name = "users", language = "SQL", value = "SELECT id FROM USERS.LIST ORDER BY id", resultClass = String.class)
 @XmlRootElement
 @XmlType(name = "User", propOrder = {})
+@SuppressWarnings("serial")
 public class User implements UserDetails {
 	@XmlElement
 	@Persistent
@@ -120,6 +121,7 @@ public class User implements UserDetails {
 	}
 }
 
+@SuppressWarnings("serial")
 class LiteralGrantedAuthority implements GrantedAuthority {
 	private String auth;
 

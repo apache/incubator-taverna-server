@@ -18,4 +18,8 @@ public interface Roles {
 	 * normal user role as well.
 	 */
 	static final String ADMIN = "ROLE_tavernasuperuser";
+	/**
+	 * The role of a workflow accessing itself. Do not give users this role.
+	 */
+	static final String SELF = "ROLE_tavernaworkflow";
 }

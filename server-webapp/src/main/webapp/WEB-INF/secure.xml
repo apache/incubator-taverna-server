@@ -47,7 +47,7 @@
 		<security:intercept-url pattern="/admin/**"
 			requires-channel="https" access="hasRole('ROLE_tavernasuperuser')" />
 		<security:intercept-url pattern="/rest/**"
-			requires-channel="https" access="hasRole('ROLE_tavernauser')" />
+			requires-channel="https" access="hasAnyRole('ROLE_tavernauser','ROLE_tavernaworkflow')" />
 		<security:intercept-url pattern="/feed"
 			requires-channel="https" access="hasRole('ROLE_tavernauser')" />
 		<security:intercept-url pattern="/feed/**"
@@ -57,17 +57,8 @@
 		autowire="byType" id="URI-Rewriter-Thunk">
 		<property name="rewriteTarget" value="${default.webapp}" />
 	</bean>
-	<bean id="authProvider" class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
-		<property name="passwordEncoder" ref="passwordEncoder" />
-		<property name="saltSource">
-			<bean id="saltSource"
-				class="org.springframework.security.authentication.dao.ReflectionSaltSource">
-				<property name="userPropertyToUse" value="username" />
-			</bean>
-		</property>
-		<property name="userDetailsService" ref="userStore" />
-	</bean>
 	<security:authentication-manager>
+		<security:authentication-provider ref="workflowInternalAuthProvder" />
 		<security:authentication-provider ref="authProvider" />
 	</security:authentication-manager>
 </beans>

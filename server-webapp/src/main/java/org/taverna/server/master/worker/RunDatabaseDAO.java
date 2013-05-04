@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The University of Manchester
+ * Copyright (C) 2010-2013 The University of Manchester
  * 
  * See the file "LICENSE" for license terms.
  */
@@ -78,6 +78,12 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 			log.warn("problem in fetch", e);
 			throw e;
 		}
+	}
+
+	@WithinSingleTransaction
+	public String getSecurityToken(String name) {
+		RunConnection rc = getById(name);
+		return rc.getSecurityToken();
 	}
 
 	private void persist(RemoteRunDelegate rrd) throws IOException {

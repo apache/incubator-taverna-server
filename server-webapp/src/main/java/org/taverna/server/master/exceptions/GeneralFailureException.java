@@ -16,6 +16,7 @@ import javax.xml.ws.WebFault;
  * @author Donal Fellows
  */
 @WebFault(name = "GeneralFailureFault", targetNamespace = SERVER_SOAP)
+@SuppressWarnings("serial")
 public class GeneralFailureException extends RuntimeException {
 	public GeneralFailureException(Throwable cause) {
 		super(cause.getMessage(), cause);

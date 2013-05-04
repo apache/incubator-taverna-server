@@ -109,6 +109,7 @@ public class TwitterDispatcher extends RateLimitedDispatcher {
 	 * 
 	 * @author Donal Fellows
 	 */
+	@SuppressWarnings("serial")
 	public static class NotConfiguredException extends Exception {
 		NotConfiguredException() {
 			super("not configured with xAuth key and secret; "
@@ -121,6 +122,7 @@ public class TwitterDispatcher extends RateLimitedDispatcher {
 	 * 
 	 * @author Donal Fellows
 	 */
+	@SuppressWarnings("serial")
 	public static class NoCredentialsException extends Exception {
 		NoCredentialsException() {
 			super("no consumer key and secret present; "

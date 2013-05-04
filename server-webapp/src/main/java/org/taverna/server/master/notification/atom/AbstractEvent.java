@@ -30,6 +30,7 @@ import org.joda.time.DateTime;
  * 
  * @author Donal Fellows
  */
+@SuppressWarnings("serial")
 @PersistenceCapable(schema = "ATOM", table = "EVENTS")
 @Queries({
 		@Query(name = "eventsForUser", language = "SQL", value = "SELECT id FROM ATOM.EVENTS WHERE owner = ? ORDER BY published DESC", resultClass = String.class),
