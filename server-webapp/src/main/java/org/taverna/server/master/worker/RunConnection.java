@@ -97,7 +97,7 @@ public class RunConnection {
 	String owner;
 
 	@Persistent(defaultFetchGroup = "true")
-	@Column(length = 32)
+	@Column(length = 36)
 	private String securityToken;
 
 	@Persistent(defaultFetchGroup = "true", serialized = "true")
