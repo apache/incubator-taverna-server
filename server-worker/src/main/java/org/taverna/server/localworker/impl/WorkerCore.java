@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.ws.Holder;
 
 import org.ogf.usage.JobUsageRecord;
@@ -487,10 +488,19 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		}
 	}
 
+	private JobUsageRecord newUR() throws DatatypeConfigurationException {
+		try {
+			if (wd != null)
+				return new JobUsageRecord(wd.getName());
+		} catch (RuntimeException e) {
+		}
+		return new JobUsageRecord("unknown");
+	}
+
 	private void buildUR(Status status) {
 		try {
 			Date now = new Date();
-			ur = new JobUsageRecord(wd.getName());
+			ur = newUR();
 			ur.addUser(System.getProperty("user.name"), null);
 			ur.addStartAndEnd(start, now);
 			ur.addWallDuration(now.getTime() - start.getTime());
@@ -579,10 +589,10 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			try {
 				JobUsageRecord toReturn;
 				if (subprocess == null) {
-					toReturn = new JobUsageRecord(wd.getName());
+					toReturn = newUR();
 					toReturn.setStatus(Held.toString());
 				} else if (ur == null) {
-					toReturn = new JobUsageRecord(wd.getName());
+					toReturn = newUR();
 					toReturn.setStatus(Started.toString());
 					toReturn.addStartAndEnd(start, new Date());
 					toReturn.addUser(System.getProperty("user.name"), null);
