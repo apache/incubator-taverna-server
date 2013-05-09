@@ -192,6 +192,16 @@
 	<bean id="transactionAspect"
 		class="org.taverna.server.master.utils.JDOSupport.TransactionAspect" />
 
+	<bean id="systemPrereqs" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<description>http://stackoverflow.com/questions/3339736/set-system-property-with-spring-configuration-file</description>
+		<property name="targetObject" value="#{@systemProperties}" />
+		<property name="targetMethod" value="putAll" />
+		<property name="arguments">
+			<util:properties>
+				<prop key="derby.stream.error.field">org.taverna.server.master.utils.DerbyUtils.DEV_NULL</prop>
+			</util:properties>
+		</property>
+	</bean>
 	<!-- TODO: control the location of the database properly, or move to JNDI 
 		TODO: review whether what we are doing now is correct! -->
 	<bean id="dataSource" class="org.taverna.server.master.utils.WebappAwareDataSource">
@@ -220,8 +230,7 @@
 	<context:property-placeholder
 		ignore-unresolvable="true" order="2" properties-ref="default-factory-properties" />
 	<util:properties id="default-factory-properties">
-		<prop key="backEndFactory">org.taverna.server.master.localworker.IdAwareForkRunFactory
-		</prop>
+		<prop key="backEndFactory">org.taverna.server.master.localworker.IdAwareForkRunFactory</prop>
 	</util:properties>
 
 	<!-- This bean configuration replaced with org.taverna.server.master.localworker.LocalWorkerFactory -->
