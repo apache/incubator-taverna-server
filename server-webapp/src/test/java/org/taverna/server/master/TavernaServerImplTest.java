@@ -113,6 +113,11 @@ public class TavernaServerImplTest {
 						return new InputREST() {
 						};
 					}
+
+					@Override
+					protected InteractionFeed makeInteractionFeed() {
+						return null; // TODO...
+					}
 				};
 			}
 

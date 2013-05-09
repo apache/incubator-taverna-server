@@ -12,6 +12,7 @@ import static javax.ws.rs.core.Response.noContent;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.taverna.server.master.common.Roles.ADMIN;
 import static org.taverna.server.master.common.Uri.secure;
+import static org.taverna.server.master.utils.RestUtils.opt;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -131,18 +132,10 @@ public class AdminBean implements Admin {
 		return new AdminDescription(ui);
 	}
 
-	private Response readonly() {
-		return Response.ok().header("Allow", "GET, HEAD, OPTIONS").entity("").build();
-	}
-
-	private Response readwrite() {
-		return Response.ok().header("Allow", "GET, PUT, HEAD, OPTIONS").entity("").build();
-	}
-
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsRoot() {
-		return readonly();
+		return opt();
 	}
 
 	///////////////////////////////////////////////////////
@@ -163,7 +156,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsAllowNew() {
-		return readwrite();
+		return opt("PUT");
 	}
 
 	///////////////////////////////////////////////////////
@@ -184,7 +177,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsLogWorkflows() {
-		return readwrite();
+		return opt("PUT");
 	}
 
 	///////////////////////////////////////////////////////
@@ -205,7 +198,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsLogFaults() {
-		return readwrite();
+		return opt("PUT");
 	}
 
 	///////////////////////////////////////////////////////
@@ -226,7 +219,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsURFile() {
-		return readwrite();
+		return opt("PUT");
 	}
 
 	///////////////////////////////////////////////////////
@@ -242,7 +235,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsInvokationCount() {
-		return readonly();
+		return opt();
 	}
 
 	@RolesAllowed(ADMIN)
@@ -254,7 +247,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsRunCount() {
-		return readonly();
+		return opt();
 	}
 
 	///////////////////////////////////////////////////////
@@ -274,7 +267,7 @@ public class AdminBean implements Admin {
 
 	@Override
 	public Response optionsRegistryHost() {
-		return readwrite();
+		return opt("PUT");
 	}
 
 	///////////////////////////////////////////////////////
@@ -294,7 +287,7 @@ public class AdminBean implements Admin {
 
 	@Override
 	public Response optionsRegistryPort() {
-		return readwrite();
+		return opt("PUT");
 	}
 
 	///////////////////////////////////////////////////////
@@ -314,7 +307,7 @@ public class AdminBean implements Admin {
 
 	@Override
 	public Response optionsRunLimit() {
-		return readwrite();
+		return opt("PUT");
 	}
 
 	///////////////////////////////////////////////////////
@@ -334,7 +327,7 @@ public class AdminBean implements Admin {
 
 	@Override
 	public Response optionsDefaultLifetime() {
-		return readwrite();
+		return opt("PUT");
 	}
 
 	///////////////////////////////////////////////////////
@@ -350,7 +343,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsCurrentRuns() {
-		return readonly();
+		return opt();
 	}
 
 	///////////////////////////////////////////////////////
@@ -370,7 +363,7 @@ public class AdminBean implements Admin {
 
 	@Override
 	public Response optionsJavaBinary() {
-		return readwrite();
+		return opt("PUT");
 	}
 
 	///////////////////////////////////////////////////////
@@ -400,7 +393,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsExtraArguments() {
-		return readwrite();
+		return opt("PUT");
 	}
 
 	///////////////////////////////////////////////////////
@@ -421,7 +414,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsServerWorkerJar() {
-		return readwrite();
+		return opt("PUT");
 	}
 
 	///////////////////////////////////////////////////////
@@ -442,7 +435,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsExecuteWorkflowScript() {
-		return readwrite();
+		return opt("PUT");
 	}
 
 	///////////////////////////////////////////////////////
@@ -463,7 +456,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsRegistrationWaitSeconds() {
-		return readwrite();
+		return opt("PUT");
 	}
 
 	///////////////////////////////////////////////////////
@@ -484,7 +477,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsRegistrationPollMillis() {
-		return readwrite();
+		return opt("PUT");
 	}
 
 	///////////////////////////////////////////////////////
@@ -505,7 +498,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsRunasPasswordFile() {
-		return readwrite();
+		return opt("PUT");
 	}
 
 	///////////////////////////////////////////////////////
@@ -526,7 +519,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsServerForkerJar() {
-		return readwrite();
+		return opt("PUT");
 	}
 
 	///////////////////////////////////////////////////////
@@ -540,7 +533,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsStartupTime() {
-		return readonly();
+		return opt();
 	}
 
 	///////////////////////////////////////////////////////
@@ -554,7 +547,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsLastExitCode() {
-		return readonly();
+		return opt();
 	}
 
 	///////////////////////////////////////////////////////
@@ -570,7 +563,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsFactoryProcessMapping() {
-		return readonly();
+		return opt();
 	}
 
 	///////////////////////////////////////////////////////
@@ -586,7 +579,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsUsageRecords() {
-		return readonly();
+		return opt();
 	}
 
 	///////////////////////////////////////////////////////
@@ -604,7 +597,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsUsers() {
-		return Response.ok().header("Allow", "GET, HEAD, POST, OPTIONS").entity("").build();
+		return opt("POST");
 	}
 
 	@RolesAllowed(ADMIN)
@@ -622,7 +615,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsUser(String username) {
-		return Response.ok().header("Allow", "GET, HEAD, PUT, DELETE, OPTIONS").entity("").build();
+		return opt("PUT", "DELETE");
 	}
 
 	@RolesAllowed(ADMIN)
@@ -687,7 +680,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsOperatingCount() {
-		return readonly();
+		return opt();
 	}
 
 	///////////////////////////////////////////////////////
@@ -708,6 +701,6 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsOperatingLimit() {
-		return readwrite();
+		return opt("PUT");
 	}
 }

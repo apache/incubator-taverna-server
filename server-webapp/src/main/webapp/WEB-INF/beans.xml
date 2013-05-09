@@ -67,11 +67,11 @@
 		class="org.taverna.server.master.RunREST">
 		<property name="support" ref="webapp.support" />
 		<property name="cdBuilder" ref="contentsDescriptorBuilder" />
-		<property name="interactionFeed" ref="interactionFeed" />
 		<lookup-method name="makeSecurityInterface" bean="run.securityView.prototype" />
 		<lookup-method name="makeInputInterface" bean="run.inputView.prototype" />
 		<lookup-method name="makeListenersInterface" bean="run.listenersView.prototype" />
 		<lookup-method name="makeDirectoryInterface" bean="run.directoryView.prototype" />
+		<lookup-method name="makeInteractionFeed" bean="run.interactionFeed.prototype" />
 	</bean>
 
 	<bean id="run.directoryView.prototype" scope="prototype"
@@ -106,6 +106,11 @@
 	<bean id="run.securityView.prototype" scope="prototype"
 		class="org.taverna.server.master.RunSecurityREST">
 		<property name="support" ref="webapp.support" />
+	</bean>
+
+	<bean id="run.interactionFeed.prototype" scope="prototype"
+		class="org.taverna.server.master.InteractionFeed">
+		<property name="interactionFeedSupport" ref="interactionFeed" />
 	</bean>
 
 	<bean id="feed" class="org.taverna.server.master.notification.atom.AtomFeed">

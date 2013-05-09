@@ -7,9 +7,11 @@ package org.taverna.server.master;
 
 import static java.util.Arrays.asList;
 import static org.taverna.server.master.common.Uri.secure;
+import static org.taverna.server.master.utils.RestUtils.opt;
 
 import java.util.List;
 
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.taverna.server.master.exceptions.NoListenerException;
@@ -68,6 +70,24 @@ abstract class SingleListenerREST implements TavernaServerListenerREST,
 	}
 
 	protected abstract ListenerPropertyREST makePropertyInterface();
+
+	@Override
+	@CallCounted
+	public Response listenerOptions() {
+		return opt();
+	}
+
+	@Override
+	@CallCounted
+	public Response configurationOptions() {
+		return opt();
+	}
+
+	@Override
+	@CallCounted
+	public Response propertiesOptions() {
+		return opt();
+	}
 }
 
 /**

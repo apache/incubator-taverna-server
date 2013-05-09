@@ -10,6 +10,7 @@ import static javax.ws.rs.core.Response.created;
 import static javax.ws.rs.core.Response.noContent;
 import static org.taverna.server.master.common.Status.Initialized;
 import static org.taverna.server.master.common.Uri.secure;
+import static org.taverna.server.master.utils.RestUtils.opt;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -56,9 +57,8 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 	@Override
 	@CallCounted
 	public Descriptor describe(UriInfo ui) {
-		return new Descriptor(secure(ui).path("{element}"), context
-				.getOwner().getName(), context.getCredentials(),
-				context.getTrusted());
+		return new Descriptor(secure(ui).path("{element}"), context.getOwner()
+				.getName(), context.getCredentials(), context.getTrusted());
 	}
 
 	@Override
@@ -237,8 +237,55 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 	@CallCounted
 	public Response makePermission(PermissionDescription desc, UriInfo ui) {
 		support.setPermission(context, desc.userName, desc.permission);
-		return created(secure(ui).path("{user}").build(desc.userName))
-				.build();
+		return created(secure(ui).path("{user}").build(desc.userName)).build();
+	}
+
+	@Override
+	@CallCounted
+	public Response descriptionOptions() {
+		return opt();
+	}
+
+	@Override
+	@CallCounted
+	public Response ownerOptions() {
+		return opt();
+	}
+
+	@Override
+	@CallCounted
+	public Response credentialsOptions() {
+		return opt("POST", "DELETE");
+	}
+
+	@Override
+	@CallCounted
+	public Response credentialOptions(String id) {
+		return opt("PUT", "DELETE");
+	}
+
+	@Override
+	@CallCounted
+	public Response trustsOptions() {
+		return opt("POST", "DELETE");
+	}
+
+	@Override
+	@CallCounted
+	public Response trustOptions(String id) {
+		return opt("PUT", "DELETE");
+	}
+
+	@Override
+	@CallCounted
+	public Response permissionsOptions() {
+		return opt("POST");
+	}
+
+	@Override
+	@CallCounted
+	public Response permissionOptions(String id) {
+		return opt("PUT", "DELETE");
 	}
 }
 

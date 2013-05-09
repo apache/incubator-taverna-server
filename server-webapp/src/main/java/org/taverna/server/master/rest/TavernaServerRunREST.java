@@ -19,6 +19,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -85,6 +86,12 @@ public interface TavernaServerRunREST {
 	@NonNull
 	public Response destroy() throws NoUpdateException;
 
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("/")
+	@Description("Produces the description of the run.")
+	Response runOptions();
+
 	/**
 	 * Returns the workflow document used to create the workflow run.
 	 * 
@@ -96,6 +103,12 @@ public interface TavernaServerRunREST {
 	@Description("Gives the workflow document used to create the workflow run.")
 	@NonNull
 	public Workflow getWorkflow();
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("workflow")
+	@Description("Produces the description of the run workflow.")
+	Response workflowOptions();
 
 	/**
 	 * Returns a resource that represents the workflow run's security
@@ -143,6 +156,12 @@ public interface TavernaServerRunREST {
 	public String setExpiryTime(@NonNull String expiry)
 			throws NoUpdateException;
 
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("expiry")
+	@Description("Produces the description of the run expiry.")
+	Response expiryOptions();
+
 	/**
 	 * Returns the time when the workflow run was created.
 	 * 
@@ -154,6 +173,12 @@ public interface TavernaServerRunREST {
 	@Description("Gives the time when the workflow run was first submitted to the server.")
 	@NonNull
 	public String getCreateTime();
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("createTime")
+	@Description("Produces the description of the run create time.")
+	Response createTimeOptions();
 
 	/**
 	 * Returns the time when the workflow run was started (through a user-driven
@@ -168,6 +193,12 @@ public interface TavernaServerRunREST {
 	@NonNull
 	public String getStartTime();
 
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("startTime")
+	@Description("Produces the description of the run start time.")
+	Response startTimeOptions();
+
 	/**
 	 * Returns the time when the workflow run was detected to have finished.
 	 * 
@@ -179,6 +210,12 @@ public interface TavernaServerRunREST {
 	@Description("Gives the time when the workflow run was first detected as finished, or an empty string if it has not yet finished (including if it has never started).")
 	@NonNull
 	public String getFinishTime();
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("finishTime")
+	@Description("Produces the description of the run finish time.")
+	Response finishTimeOptions();
 
 	/**
 	 * Gets the current status of the workflow run.
@@ -213,6 +250,12 @@ public interface TavernaServerRunREST {
 	@NonNull
 	public Response setStatus(@NonNull String status) throws NoUpdateException,
 			BadStateChangeException;
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("status")
+	@Description("Produces the description of the run status.")
+	Response statusOptions();
 
 	/**
 	 * Get the working directory of this workflow run.
@@ -307,6 +350,12 @@ public interface TavernaServerRunREST {
 	public String setOutputFile(@NonNull String filename)
 			throws NoUpdateException, FilesystemAccessException,
 			BadStateChangeException;
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("output")
+	@Description("Produces the description of the run output.")
+	Response outputOptions();
 
 	/**
 	 * Get a handle to the interaction feed.

@@ -6,6 +6,9 @@
 package org.taverna.server.master;
 
 import static org.taverna.server.master.TavernaServerImpl.log;
+import static org.taverna.server.master.utils.RestUtils.opt;
+
+import javax.ws.rs.core.Response;
 
 import org.taverna.server.master.TavernaServerImpl.SupportAware;
 import org.taverna.server.master.exceptions.NoListenerException;
@@ -60,6 +63,12 @@ class ListenerPropertyREST implements TavernaServerListenersREST.Property,
 		support.permitUpdate(run);
 		listen.setProperty(propertyName, value);
 		return listen.getProperty(propertyName);
+	}
+
+	@Override
+	@CallCounted
+	public Response options() {
+		return opt("PUT");
 	}
 }
 

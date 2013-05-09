@@ -20,6 +20,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -74,6 +75,12 @@ public interface TavernaServerSecurityREST {
 	@NonNull
 	Descriptor describe(@NonNull @Context UriInfo ui);
 
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("/")
+	@Description("Produces the description of the run security.")
+	Response descriptionOptions();
+
 	/**
 	 * Gets the identity of who owns the workflow run.
 	 * 
@@ -85,6 +92,12 @@ public interface TavernaServerSecurityREST {
 	@Description("Gives the identity of who owns the workflow run.")
 	@NonNull
 	String getOwner();
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("owner")
+	@Description("Produces the description of the run owner.")
+	Response ownerOptions();
 
 	/*
 	 * @PUT @Path("/") @Consumes(APPLICATION_OCTET_STREAM) @CallCounted @NonNull
@@ -101,6 +114,18 @@ public interface TavernaServerSecurityREST {
 	@Description("Gives a list of credentials supplied to this workflow run.")
 	@NonNull
 	CredentialList listCredentials();
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("credentials")
+	@Description("Produces the description of the run credentials' operations.")
+	Response credentialsOptions();
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("credentials/{id}")
+	@Description("Produces the description of one run credential's operations.")
+	Response credentialOptions(@PathParam("id") String id);
 
 	/**
 	 * Describe a particular credential.
@@ -200,6 +225,18 @@ public interface TavernaServerSecurityREST {
 	@NonNull
 	Response deleteCredential(@NonNull @PathParam("id") String id,
 			@NonNull @Context UriInfo ui) throws BadStateChangeException;
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("trusts")
+	@Description("Produces the description of the run trusted certificates' operations.")
+	Response trustsOptions();
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("trusts/{id}")
+	@Description("Produces the description of one run trusted certificate's operations.")
+	Response trustOptions(@PathParam("id") String id);
 
 	/**
 	 * @return A list of trusted identities supplied to this workflow run.
@@ -307,6 +344,18 @@ public interface TavernaServerSecurityREST {
 	@NonNull
 	Response deleteTrust(@NonNull @PathParam("id") String id,
 			@NonNull @Context UriInfo ui) throws BadStateChangeException;
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("permissions")
+	@Description("Produces the description of the run permissions' operations.")
+	Response permissionsOptions();
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("permissions/{id}")
+	@Description("Produces the description of one run permission's operations.")
+	Response permissionOptions(@PathParam("id") String id);
 
 	/**
 	 * @return A list of (non-default) permissions associated with this workflow

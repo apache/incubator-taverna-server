@@ -13,16 +13,13 @@ import static org.joda.time.format.ISODateTimeFormat.dateTimeParser;
 import static org.taverna.server.master.TavernaServerImpl.log;
 import static org.taverna.server.master.common.Status.Initialized;
 import static org.taverna.server.master.common.Status.Operating;
+import static org.taverna.server.master.utils.RestUtils.opt;
 
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.util.Date;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.apache.abdera.model.Entry;
-import org.apache.abdera.model.Feed;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.TavernaServerImpl.SupportAware;
@@ -35,7 +32,6 @@ import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.NotOwnerException;
 import org.taverna.server.master.exceptions.OverloadedException;
 import org.taverna.server.master.exceptions.UnknownRunException;
-import org.taverna.server.master.interaction.InteractionFeedSupport;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
 import org.taverna.server.master.rest.InteractionFeedREST;
@@ -56,7 +52,6 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	private TavernaRun run;
 	private TavernaServerSupport support;
 	private ContentsDescriptorBuilder cdBuilder;
-	private InteractionFeedSupport interactionFeed;
 
 	@Override
 	@Required
@@ -70,12 +65,6 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 		this.cdBuilder = cdBuilder;
 	}
 
-	@Override
-	@Required
-	public void setInteractionFeed(InteractionFeedSupport interactionFeed) {
-		this.interactionFeed = interactionFeed;
-	}
-	
 	@Override
 	public void setRunName(String runName) {
 		this.runName = runName;
@@ -226,8 +215,10 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 		return cdBuilder.makeOutputDescriptor(run, ui);
 	}
 
+	@Override
+	@CallCounted
 	public InteractionFeedREST getInteractionFeed() {
-		return new InteractionFeed(interactionFeed, run);
+		return makeInteractionFeed().connect(run);
 	}
 
 	/**
@@ -257,6 +248,61 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	 * @return The handle to the interface, as decorated by Spring.
 	 */
 	protected abstract RunSecurityREST makeSecurityInterface();
+
+	/**
+	 * Construct a RESTful interface to a run's interaction feed.
+	 * 
+	 * @return The handle to the interaface, as decorated by Spring.
+	 */
+	protected abstract InteractionFeed makeInteractionFeed();
+
+	@Override
+	@CallCounted
+	public Response runOptions() {
+		return opt();
+	}
+
+	@Override
+	@CallCounted
+	public Response workflowOptions() {
+		return opt();
+	}
+
+	@Override
+	@CallCounted
+	public Response expiryOptions() {
+		return opt("PUT");
+	}
+
+	@Override
+	@CallCounted
+	public Response createTimeOptions() {
+		return opt();
+	}
+
+	@Override
+	@CallCounted
+	public Response startTimeOptions() {
+		return opt();
+	}
+
+	@Override
+	@CallCounted
+	public Response finishTimeOptions() {
+		return opt();
+	}
+
+	@Override
+	@CallCounted
+	public Response statusOptions() {
+		return opt("PUT");
+	}
+
+	@Override
+	@CallCounted
+	public Response outputOptions() {
+		return opt("PUT");
+	}
 }
 
 /**
@@ -267,46 +313,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 interface RunBean extends SupportAware {
 	void setCdBuilder(ContentsDescriptorBuilder cdBuilder);
 
-	void setInteractionFeed(InteractionFeedSupport interactionFeed);
-
 	void setRun(TavernaRun run);
 
 	void setRunName(String runName);
-}
-
-class InteractionFeed implements InteractionFeedREST {
-	private InteractionFeedSupport interactionFeed;
-	private TavernaRun run;
-
-	InteractionFeed(InteractionFeedSupport interactionFeed, TavernaRun run) {
-		this.interactionFeed = interactionFeed;
-		this.run = run;
-	}
-
-	@Override
-	public Feed getFeed() throws FilesystemAccessException,
-			NoDirectoryEntryException {
-		return interactionFeed.getRunFeed(run);
-	}
-
-	@Override
-	public Response addEntry(Entry entry) throws MalformedURLException,
-			FilesystemAccessException, NoDirectoryEntryException,
-			NoUpdateException {
-		String location = interactionFeed.addRunFeedEntry(run, entry);
-		return Response.created(URI.create(location)).build();
-	}
-
-	@Override
-	public Entry getEntry(String id) throws FilesystemAccessException,
-			NoDirectoryEntryException {
-		return interactionFeed.getRunFeedEntry(run, id);
-	}
-
-	@Override
-	public String deleteEntry(String id) throws FilesystemAccessException,
-			NoDirectoryEntryException, NoUpdateException {
-		interactionFeed.removeRunFeedEntry(run, id);
-		return "entry successfully deleted";
-	}
 }

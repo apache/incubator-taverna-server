@@ -15,6 +15,7 @@ import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -87,6 +88,12 @@ public interface TavernaServerListenersREST {
 			@NonNull @Context UriInfo ui) throws NoUpdateException,
 			NoListenerException;
 
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("/")
+	@Description("Produces the description of the run listeners' operations.")
+	Response listenersOptions();
+
 	/**
 	 * Resolve a particular listener from its name.
 	 * 
@@ -126,6 +133,12 @@ public interface TavernaServerListenersREST {
 		@NonNull
 		ListenerDescription getDescription(@NonNull @Context UriInfo ui);
 
+		/** Get an outline of the operations supported. */
+		@OPTIONS
+		@Path("/")
+		@Description("Produces the description of one run listener's operations.")
+		Response listenerOptions();
+
 		/**
 		 * Get the configuration for the given event listener that is attached
 		 * to a workflow run.
@@ -138,6 +151,12 @@ public interface TavernaServerListenersREST {
 		@Description("Get the configuration for the given event listener that is attached to a workflow run.")
 		@NonNull
 		String getConfiguration();
+
+		/** Get an outline of the operations supported. */
+		@OPTIONS
+		@Path("configuration")
+		@Description("Produces the description of one run listener's configuration's operations.")
+		Response configurationOptions();
 
 		/**
 		 * Get the list of properties supported by a given event listener
@@ -153,6 +172,12 @@ public interface TavernaServerListenersREST {
 		@Description("Get the list of properties supported by a given event listener attached to a workflow run.")
 		@NonNull
 		Properties getProperties(@NonNull @Context UriInfo ui);
+
+		/** Get an outline of the operations supported. */
+		@OPTIONS
+		@Path("properties")
+		@Description("Produces the description of one run listener's properties' operations.")
+		Response propertiesOptions();
 
 		/**
 		 * Get an object representing a particular property.
@@ -212,6 +237,12 @@ public interface TavernaServerListenersREST {
 		@NonNull
 		String setValue(@NonNull String value) throws NoUpdateException,
 				NoListenerException;
+
+		/** Get an outline of the operations supported. */
+		@OPTIONS
+		@Path("/")
+		@Description("Produces the description of one run listener's property's operations.")
+		Response options();
 	}
 
 	/**

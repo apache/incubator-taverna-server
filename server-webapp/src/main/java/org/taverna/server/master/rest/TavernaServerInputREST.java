@@ -13,10 +13,12 @@ import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -59,6 +61,12 @@ public interface TavernaServerInputREST {
 	@NonNull
 	InputsDescriptor get();
 
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("/")
+	@Description("Produces the description of one run's inputs' operations.")
+	Response options();
+
 	/**
 	 * @return A description of the various URIs to inputs associated with a
 	 *         workflow run.
@@ -69,6 +77,12 @@ public interface TavernaServerInputREST {
 	@Description("Describe the expected inputs of this workflow run.")
 	@NonNull
 	InputDescription getExpected();
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("expected")
+	@Description("Produces the description of the expected inputs' operations.")
+	Response expectedOptions();
 
 	/**
 	 * @return The Baclava file that will supply all the inputs to the workflow
@@ -103,6 +117,12 @@ public interface TavernaServerInputREST {
 	@NonNull
 	String setBaclavaFile(@NonNull String filename) throws NoUpdateException,
 			BadStateChangeException, FilesystemAccessException;
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("baclava")
+	@Description("Produces the description of the inputs' baclava operations.")
+	Response baclavaOptions();
 
 	/**
 	 * Get what input is set for the specific input.
@@ -151,6 +171,12 @@ public interface TavernaServerInputREST {
 			@NonNull InDesc inputDescriptor) throws NoUpdateException,
 			BadStateChangeException, FilesystemAccessException,
 			BadPropertyValueException, BadInputPortNameException;
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("input/{name}")
+	@Description("Produces the description of the one input's operations.")
+	Response inputOptions(@PathParam("name") String name);
 
 	/**
 	 * A description of the structure of inputs to a Taverna workflow run, done

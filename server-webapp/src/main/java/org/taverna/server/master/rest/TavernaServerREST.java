@@ -16,6 +16,7 @@ import java.util.Map;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -65,6 +66,11 @@ public interface TavernaServerREST {
 	@Description("Produces the description of the service.")
 	@NonNull
 	ServerDescription describeService(@NonNull @Context UriInfo ui);
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Description("Produces the description of the service.")
+	Response serviceOptions();
 
 	/**
 	 * Produces a description of the list of runs.
@@ -126,6 +132,12 @@ public interface TavernaServerREST {
 	Response submitWorkflowByURL(@NonNull List<URI> referenceList,
 			@NonNull @Context UriInfo ui) throws NoCreateException,
 			NoUpdateException;
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path("runs")
+	@Description("Produces the description of the operations on the collection of runs.")
+	Response runsOptions();
 
 	/**
 	 * @return A description of the policies supported by this server.

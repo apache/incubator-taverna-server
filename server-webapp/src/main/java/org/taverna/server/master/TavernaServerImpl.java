@@ -22,6 +22,7 @@ import static org.taverna.server.master.common.Status.Initialized;
 import static org.taverna.server.master.common.Uri.secure;
 import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 import static org.taverna.server.master.soap.DirEntry.convert;
+import static org.taverna.server.master.utils.RestUtils.opt;
 
 import java.io.IOException;
 import java.net.URI;
@@ -273,6 +274,18 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	@Override
 	@CallCounted
 	public abstract PolicyView getPolicyDescription();
+
+	@Override
+	@CallCounted
+	public Response serviceOptions() {
+		return opt();
+	}
+
+	@Override
+	@CallCounted
+	public Response runsOptions() {
+		return opt("POST");
+	}
 
 	/**
 	 * Construct a RESTful interface to a run.

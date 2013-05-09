@@ -6,10 +6,13 @@
 package org.taverna.server.master;
 
 import static java.util.UUID.randomUUID;
+import static org.taverna.server.master.utils.RestUtils.opt;
 
 import java.util.Date;
 
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.cxf.jaxrs.impl.MetadataMap;
@@ -203,14 +206,41 @@ class InputREST implements TavernaServerInputREST, InputBean {
 			return d;
 		}
 	}
+
+	@Override
+	@CallCounted
+	public Response options() {
+		return opt();
+	}
+
+	@Override
+	@CallCounted
+	public Response expectedOptions() {
+		return opt();
+	}
+
+	@Override
+	@CallCounted
+	public Response baclavaOptions() {
+		return opt("PUT");
+	}
+
+	@Override
+	@CallCounted
+	public Response inputOptions(@PathParam("name") String name) {
+		return opt("PUT");
+	}
 }
 
 /**
  * Description of properties supported by {@link InputREST}.
+ * 
  * @author Donal Fellows
  */
 interface InputBean extends SupportAware {
 	InputREST connect(TavernaRun run, UriInfo ui);
+
 	void setCdBuilder(ContentsDescriptorBuilder cd);
+
 	void setFileUtils(FilenameUtils fn);
 }
