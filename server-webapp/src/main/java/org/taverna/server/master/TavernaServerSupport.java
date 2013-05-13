@@ -38,6 +38,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.taverna.server.master.common.Permission;
+import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoCreateException;
@@ -98,10 +99,6 @@ public class TavernaServerSupport {
 	private static final int SAMPLE_SIZE = 1024;
 	/** Number of bytes to ask for when copying a stream to a file. */
 	private static final int TRANSFER_SIZE = 32768;
-	@Value("${tavernaserver.version}")
-	private String serverVersion = "unknown";
-	@Value("@{tavernaserver.revisionid}")
-	private String buildVersion = "unknown";
 
 	/**
 	 * @return Count of the number of external calls into this webapp.
@@ -173,11 +170,12 @@ public class TavernaServerSupport {
 	}
 
 	/**
-	 * @return The server's version.
+	 * @return The server's version identifier.
 	 */
 	@ManagedAttribute(description = "The installed version of the server.")
 	public String getServerVersion() {
-		return this.serverVersion + " build " + this.buildVersion;
+		return VersionedElement.VERSION + " " + VersionedElement.REVISION + " "
+				+ VersionedElement.TIMESTAMP;
 	}
 
 	public int getMaxSimultaneousRuns() {

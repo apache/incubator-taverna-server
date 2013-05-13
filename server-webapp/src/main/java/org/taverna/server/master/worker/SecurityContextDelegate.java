@@ -224,13 +224,15 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 		// do nothing in this implementation
 	}
 
-	private Credential.Password getLocalPasswordCredential() {
+	private Credential.Password getLocalPasswordCredential()
+			throws InvalidCredentialException {
 		Credential.Password pw = new Credential.Password();
 		pw.id = "run:self";
 		pw.username = PREFIX + run.id;
 		pw.password = ((RunDatabase) factory.db).dao.getSecurityToken(run.id);
 		pw.serviceURI = URI.create(factory.uriSource.getRunUriBuilder(run)
 				.build() + "#" + factory.httpRealm);
+		validateCredential(pw);
 		return pw;
 	}
 
@@ -251,7 +253,12 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 			IOException, ImplementationException {
 		RemoteSecurityContext rc = run.run.getSecurityContext();
 
-		credentials.add(getLocalPasswordCredential());
+		try {
+			credentials.add(getLocalPasswordCredential());
+		} catch (InvalidCredentialException e) {
+			log.warn("failed to construct local credential: "
+					+ "interaction service will fail", e);
+		}
 
 		char[] password = null;
 		try {
