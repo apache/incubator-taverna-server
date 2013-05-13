@@ -41,7 +41,7 @@ public class TerminationEvent extends AbstractEvent {
 	 */
 	public TerminationEvent(URI workflowLink, UsernamePrincipal owner,
 			String title, String message) {
-		super("termination");
+		super("finish");
 		this.owner = owner.getName();
 		this.title = title;
 		this.message = message;

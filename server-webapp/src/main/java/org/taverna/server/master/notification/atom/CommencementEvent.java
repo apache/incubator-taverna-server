@@ -41,7 +41,7 @@ public class CommencementEvent extends AbstractEvent {
 	 */
 	public CommencementEvent(URI workflowLink, UsernamePrincipal owner,
 			String title, String message) {
-		super("commencement");
+		super("start");
 		this.owner = owner.getName();
 		this.title = title;
 		this.message = message;
