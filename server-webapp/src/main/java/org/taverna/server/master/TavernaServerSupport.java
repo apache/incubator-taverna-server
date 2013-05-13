@@ -30,6 +30,7 @@ import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedMetric;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -97,6 +98,10 @@ public class TavernaServerSupport {
 	private static final int SAMPLE_SIZE = 1024;
 	/** Number of bytes to ask for when copying a stream to a file. */
 	private static final int TRANSFER_SIZE = 32768;
+	@Value("${tavernaserver.version}")
+	private String serverVersion = "unknown";
+	@Value("@{tavernaserver.revisionid}")
+	private String buildVersion = "unknown";
 
 	/**
 	 * @return Count of the number of external calls into this webapp.
@@ -165,6 +170,14 @@ public class TavernaServerSupport {
 	@ManagedAttribute(description = "Whether to permit any new workflow runs to be created; has no effect on existing runs.")
 	public void setAllowNewWorkflowRuns(boolean allowNewWorkflowRuns) {
 		stateModel.setAllowNewWorkflowRuns(allowNewWorkflowRuns);
+	}
+
+	/**
+	 * @return The server's version.
+	 */
+	@ManagedAttribute(description = "The installed version of the server.")
+	public String getServerVersion() {
+		return this.serverVersion + " build " + this.buildVersion;
 	}
 
 	public int getMaxSimultaneousRuns() {

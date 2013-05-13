@@ -413,12 +413,20 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		if (s == Status.Operating && w.getStatus() == Status.Initialized) {
 			if (!support.getAllowStartWorkflowRuns())
 				throw new OverloadedException();
-			String issue = w.setStatus(s);
-			if (issue == null)
-				return "";
-			if (issue.isEmpty())
-				return "unknown reason for partial change";
-			return issue;
+			try {
+				String issue = w.setStatus(s);
+				if (issue == null)
+					return "";
+				if (issue.isEmpty())
+					return "unknown reason for partial change";
+				return issue;
+			} catch (RuntimeException re) {
+				log.info("failed to start run " + runName, re);
+				throw re;
+			} catch (NoUpdateException nue) {
+				log.info("failed to start run " + runName, nue);
+				throw nue;
+			}
 		} else {
 			w.setStatus(s);
 			return "";
