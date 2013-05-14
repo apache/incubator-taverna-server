@@ -373,23 +373,23 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 				throw new IOException("input baclava file doesn't exist");
 		} else {
 			for (Entry<String, File> port : inputFiles.entrySet()) {
-				if (port.getValue() != null) {
-					pb.command().add("-inputfile");
-					pb.command().add(port.getKey());
-					pb.command().add(port.getValue().getAbsolutePath());
-					if (!port.getValue().exists())
-						throw new IOException("input file for port \"" + port
-								+ "\" doesn't exist");
-				}
+				if (port.getValue() == null)
+					continue;
+				pb.command().add("-inputfile");
+				pb.command().add(port.getKey());
+				pb.command().add(port.getValue().getAbsolutePath());
+				if (!port.getValue().exists())
+					throw new IOException("input file for port \"" + port
+							+ "\" doesn't exist");
 			}
 			for (Entry<String, String> port : inputValues.entrySet()) {
-				if (port.getValue() != null) {
-					pb.command().add("-inputfile");
-					pb.command().add(port.getKey());
-					File f = createTempFile(".tav_in_", null, workingDir);
-					pb.command().add(f.getAbsolutePath());
-					write(f, port.getValue(), "UTF-8");
-				}
+				if (port.getValue() == null)
+					continue;
+				pb.command().add("-inputfile");
+				pb.command().add(port.getKey());
+				File f = createTempFile(".tav_in_", null, workingDir);
+				pb.command().add(f.getAbsolutePath());
+				write(f, port.getValue(), "UTF-8");
 			}
 		}
 
@@ -404,9 +404,8 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 				throw new IOException("output baclava file exists");
 		} else {
 			File out = new File(workingDir, "out");
-			if (!out.mkdir()) {
+			if (!out.mkdir())
 				throw new IOException("failed to make output directory \"out\"");
-			}
 			// Taverna needs the dir to *not* exist now
 			forceDelete(out);
 			pb.command().add("-outputdir");
@@ -416,6 +415,9 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		// Add an argument holding the workflow
 		workflowFile = createTempFile(".wf_", ".t2flow", workingDir);
 		write(workflowFile, workflow, "UTF-8");
+		if (!workflowFile.exists())
+			throw new IOException("failed to instantiate workflow file at "
+					+ workflowFile);
 		pb.command().add(workflowFile.getAbsolutePath());
 
 		// Indicate what working directory to use
@@ -654,7 +656,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	@Override
 	public void deleteLocalResources() throws ImplementationException {
 		try {
-			if (workflowFile != null)
+			if (workflowFile != null && workflowFile.getParentFile().exists())
 				forceDelete(workflowFile);
 		} catch (IOException e) {
 			throw new ImplementationException("problem deleting workflow file",
