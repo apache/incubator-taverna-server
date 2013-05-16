@@ -359,6 +359,8 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 	 */
 	protected final void addKeypairToKeystore(String alias, Credential c)
 			throws KeyStoreException {
+		if (c.loadedKey == null)
+			throw new KeyStoreException("critical: credential was not verified");
 		if (uriToAliasMap.containsKey(c.serviceURI))
 			log.warn("duplicate URI in alias mapping: " + c.serviceURI);
 		keystore.addKey(alias, c.loadedKey, c.loadedTrustChain);
