@@ -372,6 +372,22 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	@Override
 	@CallCounted
+	public String getRunDescriptiveName(String runName)
+			throws UnknownRunException {
+		return support.getRun(runName).getName();
+	}
+
+	@Override
+	@CallCounted
+	public void setRunDescriptiveName(String runName, String descriptiveName)
+			throws UnknownRunException, NoUpdateException {
+		TavernaRun run = support.getRun(runName);
+		support.permitUpdate(run);
+		run.setName(descriptiveName);
+	}
+
+	@Override
+	@CallCounted
 	public Workflow getRunWorkflow(String runName) throws UnknownRunException {
 		return support.getRun(runName).getWorkflow();
 	}

@@ -30,7 +30,6 @@ import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedMetric;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -590,6 +589,7 @@ public class TavernaServerSupport {
 			TavernaSecurityContext c = run.getSecurityContext();
 			c.initializeSecurityFromContext(SecurityContextHolder.getContext());
 			webapp.initObsoleteSecurity(c);
+			run.setName(workflow.getName() + " " + run.getCreationTimestamp());
 		} catch (Exception e) {
 			log.error("failed to build workflow run worker", e);
 			throw new NoCreateException("failed to build workflow run worker");

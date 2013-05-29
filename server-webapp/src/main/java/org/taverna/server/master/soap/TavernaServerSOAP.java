@@ -149,6 +149,42 @@ public interface TavernaServerSOAP {
 			throws UnknownRunException;
 
 	/**
+	 * Get the descriptive name of the workflow run. The descriptive name
+	 * carries no deep information.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @return The descriptive name of the run.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 */
+	@WebResult(name = "DescriptiveName")
+	@WSDLDocumentation("Get the descriptive name of the workflow run. Carries no deep information.")
+	String getRunDescriptiveName(@WebParam(name = "runName") String runName)
+			throws UnknownRunException;
+
+	/**
+	 * Set the descriptive name of the workflow run. The descriptive name
+	 * carries no deep information.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @param descriptiveName
+	 *            The new descriptive name to set. Note that the implementation
+	 *            is allowed to arbitrarily truncate this value.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 * @throws NoUpdateException
+	 *             If the user is not permitted to update this run.
+	 */
+	@WSDLDocumentation("Set the descriptive name of the workflow run. Carries no deep information.")
+	void setRunDescriptiveName(@WebParam(name = "runName") String runName,
+			@WebParam(name = "descriptiveName") String descriptiveName)
+			throws UnknownRunException, NoUpdateException;
+
+	/**
 	 * Get the description of the inputs to the workflow run.
 	 * 
 	 * @param runName

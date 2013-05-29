@@ -303,6 +303,23 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	public Response outputOptions() {
 		return opt("PUT");
 	}
+
+	@Override
+	public String getName() {
+		return run.getName();
+	}
+
+	@Override
+	public String setName(String name) throws NoUpdateException {
+		support.permitUpdate(run);
+		run.setName(name);
+		return run.getName();
+	}
+
+	@Override
+	public Response nameOptions() {
+		return opt("PUT");
+	}
 }
 
 /**

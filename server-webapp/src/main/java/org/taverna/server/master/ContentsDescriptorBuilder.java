@@ -133,7 +133,7 @@ public class ContentsDescriptorBuilder {
 
 	private Element fillInFromWorkflow(TavernaRun run, UriBuilder ub,
 			AbstractPortDescription portDesc) throws XPathExpressionException {
-		Element elem = run.getWorkflow().content[0];
+		Element elem = run.getWorkflow().getWorkflowRoot();
 		portDesc.fillInBaseData(elem.getAttribute("id"), run.getId(),
 				ub.build());
 		return dataflow(elem);

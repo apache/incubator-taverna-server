@@ -63,6 +63,8 @@ import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 /**
  * Bridging shim between the WebApp world and the RMI world.
  * 
@@ -84,6 +86,7 @@ public class RemoteRunDelegate implements TavernaRun {
 	transient RunDBSupport db;
 	transient FactoryBean factory;
 	boolean doneTransitionToFinished;
+	String name;
 
 	public RemoteRunDelegate(Date creationInstant, Workflow workflow,
 			RemoteSingleRun rsr, int defaultLifetime, RunDBSupport db, UUID id,
@@ -465,6 +468,20 @@ public class RemoteRunDelegate implements TavernaRun {
 
 	public void setSecurityContext(TavernaSecurityContext tavernaSecurityContext) {
 		secContext = tavernaSecurityContext;
+	}
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public void setName(@NonNull String name) {
+		if (name.length() > RunConnection.NAME_LENGTH)
+			this.name = name.substring(0, RunConnection.NAME_LENGTH);
+		else
+			this.name = name;
+		db.flushToDisk(this);
 	}
 }
 

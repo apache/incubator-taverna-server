@@ -58,10 +58,15 @@ public class RunConnection {
 	static final String NAMES_QUERY = "SELECT ID FROM " + FULL_NAME;
 	static final String TIMEOUT_QUERY = "SELECT ID FROM " + FULL_NAME
 			+ "   WHERE expiry < CURRENT_TIMESTAMP";
+	static final int NAME_LENGTH = 48; 
 
 	@PrimaryKey
 	@Column(length = 40)
 	private String id;
+
+	@Persistent(defaultFetchGroup = "true")
+	@Column(length = NAME_LENGTH)
+	private String name;
 
 	@Persistent(defaultFetchGroup = "true")
 	private Date creationInstant;
@@ -177,6 +182,7 @@ public class RunConnection {
 		((SecurityContextDelegate)rrd.secContext).setCredentialsAndTrust(credentials,trust);
 		rrd.db = db;
 		rrd.factory = db.getFactory();
+		rrd.name = name;
 		return rrd;
 	}
 
@@ -206,6 +212,7 @@ public class RunConnection {
 		destroyers = rrd.getDestroyers().toArray(STRING_ARY);
 		credentials = rrd.getSecurityContext().getCredentials();
 		trust = rrd.getSecurityContext().getTrusted();
+		this.name = rrd.name;
 		setFinished(rrd.doneTransitionToFinished);
 	}
 

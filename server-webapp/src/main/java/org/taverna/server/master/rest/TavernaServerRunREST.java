@@ -9,6 +9,19 @@ import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.joda.time.format.ISODateTimeFormat.basicDateTime;
 import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.interaction.InteractionFeedSupport.FEED_URL_DIR;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.DIR;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.IN;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.LISTEN;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.OUT;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.SEC;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.STATUS;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.T_CREATE;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.T_EXPIRE;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.NAME;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.ROOT;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.T_FINISH;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.T_START;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.WF;
 import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 
 import java.net.URI;
@@ -67,7 +80,7 @@ public interface TavernaServerRunREST {
 	 * @return The description.
 	 */
 	@GET
-	@Path("/")
+	@Path(ROOT)
 	@Description("Describes a workflow run.")
 	@Produces({ "application/xml", "application/json" })
 	@NonNull
@@ -81,14 +94,14 @@ public interface TavernaServerRunREST {
 	 *             If the user may see the handle but may not delete it.
 	 */
 	@DELETE
-	@Path("/")
+	@Path(ROOT)
 	@Description("Deletes a workflow run.")
 	@NonNull
 	public Response destroy() throws NoUpdateException;
 
 	/** Get an outline of the operations supported. */
 	@OPTIONS
-	@Path("/")
+	@Path(ROOT)
 	@Description("Produces the description of the run.")
 	Response runOptions();
 
@@ -98,7 +111,7 @@ public interface TavernaServerRunREST {
 	 * @return The workflow document.
 	 */
 	@GET
-	@Path("workflow")
+	@Path(WF)
 	@Produces({ T2FLOW, "application/xml", "application/json" })
 	@Description("Gives the workflow document used to create the workflow run.")
 	@NonNull
@@ -106,9 +119,39 @@ public interface TavernaServerRunREST {
 
 	/** Get an outline of the operations supported. */
 	@OPTIONS
-	@Path("workflow")
+	@Path(WF)
 	@Description("Produces the description of the run workflow.")
 	Response workflowOptions();
+
+	/** Get the workflow name. */
+	@GET
+	@Path(NAME)
+	@Produces("text/plain")
+	@Description("Gives the descriptive name of the workflow run.")
+	@NonNull
+	public String getName();
+
+	/**
+	 * Set the workflow name.
+	 * 
+	 * @throws NoUpdateException
+	 *             If the user is not permitted to change the workflow.
+	 */
+	@PUT
+	@Path(NAME)
+	@Consumes("text/plain")
+	@Produces("text/plain")
+	@Description("Set the descriptive name of the workflow run. "
+			+ "Note that this value may be arbitrarily truncated by the implementation.")
+	@NonNull
+	public String setName(String name) throws NoUpdateException;
+
+	/** Produce the workflow name HTTP operations. */
+	@OPTIONS
+	@Path(NAME)
+	@Description("Produces the description of the operations on the run's descriptive name.")
+	@NonNull
+	Response nameOptions();
 
 	/**
 	 * Returns a resource that represents the workflow run's security
@@ -118,7 +161,7 @@ public interface TavernaServerRunREST {
 	 * @throws NotOwnerException
 	 *             If the accessing principal isn't the owning principal.
 	 */
-	@Path("security")
+	@Path(SEC)
 	@Description("Access the workflow run's security.")
 	@NonNull
 	public TavernaServerSecurityREST getSecurity() throws NotOwnerException;
@@ -130,7 +173,7 @@ public interface TavernaServerRunREST {
 	 * @return When the run expires.
 	 */
 	@GET
-	@Path("expiry")
+	@Path(T_EXPIRE)
 	@Produces("text/plain")
 	@Description("Gives the time when the workflow run becomes eligible for automatic deletion.")
 	@NonNull
@@ -148,7 +191,7 @@ public interface TavernaServerRunREST {
 	 *             of the run.
 	 */
 	@PUT
-	@Path("expiry")
+	@Path(T_EXPIRE)
 	@Consumes("text/plain")
 	@Produces("text/plain")
 	@Description("Sets the time when the workflow run becomes eligible for automatic deletion.")
@@ -158,7 +201,7 @@ public interface TavernaServerRunREST {
 
 	/** Get an outline of the operations supported. */
 	@OPTIONS
-	@Path("expiry")
+	@Path(T_EXPIRE)
 	@Description("Produces the description of the run expiry.")
 	Response expiryOptions();
 
@@ -168,7 +211,7 @@ public interface TavernaServerRunREST {
 	 * @return When the run was first submitted to the server.
 	 */
 	@GET
-	@Path("createTime")
+	@Path(T_CREATE)
 	@Produces("text/plain")
 	@Description("Gives the time when the workflow run was first submitted to the server.")
 	@NonNull
@@ -176,7 +219,7 @@ public interface TavernaServerRunREST {
 
 	/** Get an outline of the operations supported. */
 	@OPTIONS
-	@Path("createTime")
+	@Path(T_CREATE)
 	@Description("Produces the description of the run create time.")
 	Response createTimeOptions();
 
@@ -187,7 +230,7 @@ public interface TavernaServerRunREST {
 	 * @return When the run was started, or <tt>null</tt>.
 	 */
 	@GET
-	@Path("startTime")
+	@Path(T_START)
 	@Produces("text/plain")
 	@Description("Gives the time when the workflow run was started, or an empty string if the run has not yet started.")
 	@NonNull
@@ -195,7 +238,7 @@ public interface TavernaServerRunREST {
 
 	/** Get an outline of the operations supported. */
 	@OPTIONS
-	@Path("startTime")
+	@Path(T_START)
 	@Description("Produces the description of the run start time.")
 	Response startTimeOptions();
 
@@ -205,7 +248,7 @@ public interface TavernaServerRunREST {
 	 * @return When the run finished, or <tt>null</tt>.
 	 */
 	@GET
-	@Path("finishTime")
+	@Path(T_FINISH)
 	@Produces("text/plain")
 	@Description("Gives the time when the workflow run was first detected as finished, or an empty string if it has not yet finished (including if it has never started).")
 	@NonNull
@@ -213,7 +256,7 @@ public interface TavernaServerRunREST {
 
 	/** Get an outline of the operations supported. */
 	@OPTIONS
-	@Path("finishTime")
+	@Path(T_FINISH)
 	@Description("Produces the description of the run finish time.")
 	Response finishTimeOptions();
 
@@ -223,7 +266,7 @@ public interface TavernaServerRunREST {
 	 * @return The status code.
 	 */
 	@GET
-	@Path("status")
+	@Path(STATUS)
 	@Produces("text/plain")
 	@Description("Gives the current status of the workflow run.")
 	@NonNull
@@ -243,7 +286,7 @@ public interface TavernaServerRunREST {
 	 *             If the state cannot be modified in the manner requested.
 	 */
 	@PUT
-	@Path("status")
+	@Path(STATUS)
 	@Consumes("text/plain")
 	@Produces("text/plain")
 	@Description("Attempts to update the status of the workflow run.")
@@ -253,7 +296,7 @@ public interface TavernaServerRunREST {
 
 	/** Get an outline of the operations supported. */
 	@OPTIONS
-	@Path("status")
+	@Path(STATUS)
 	@Description("Produces the description of the run status.")
 	Response statusOptions();
 
@@ -262,7 +305,7 @@ public interface TavernaServerRunREST {
 	 * 
 	 * @return A RESTful delegate for the working directory.
 	 */
-	@Path("wd")
+	@Path(DIR)
 	@Description("Get the working directory of this workflow run.")
 	@NonNull
 	public TavernaServerDirectoryREST getWorkingDirectory();
@@ -272,7 +315,7 @@ public interface TavernaServerRunREST {
 	 * 
 	 * @return A RESTful delegate for the list of listeners.
 	 */
-	@Path("listeners")
+	@Path(LISTEN)
 	@Description("Get the event listeners attached to this workflow run.")
 	@NonNull
 	public TavernaServerListenersREST getListeners();
@@ -284,7 +327,7 @@ public interface TavernaServerRunREST {
 	 *            About the URI used to access this resource.
 	 * @return A RESTful delegate for the inputs.
 	 */
-	@Path("input")
+	@Path(IN)
 	@Description("Get the inputs to this workflow run.")
 	@NonNull
 	public TavernaServerInputREST getInputs(@NonNull @Context UriInfo ui);
@@ -296,7 +339,7 @@ public interface TavernaServerRunREST {
 	 *         be written to the <tt>out</tt> directory.
 	 */
 	@GET
-	@Path("output")
+	@Path(OUT)
 	@Produces("text/plain")
 	@Description("Gives the Baclava file where output will be written; empty means use multiple simple files in the out directory.")
 	@NonNull
@@ -317,7 +360,7 @@ public interface TavernaServerRunREST {
 	 *             If things are odd in the filesystem.
 	 */
 	@GET
-	@Path("output")
+	@Path(OUT)
 	@Produces({ "application/xml", "application/json" })
 	@Description("Gives a description of the outputs, as currently understood")
 	@NonNull
@@ -342,7 +385,7 @@ public interface TavernaServerRunREST {
 	 *             If the workflow is not in the Initialized state.
 	 */
 	@PUT
-	@Path("output")
+	@Path(OUT)
 	@Consumes("text/plain")
 	@Produces("text/plain")
 	@Description("Sets the Baclava file where output will be written; empty means use multiple simple files in the out directory.")
@@ -353,7 +396,7 @@ public interface TavernaServerRunREST {
 
 	/** Get an outline of the operations supported. */
 	@OPTIONS
-	@Path("output")
+	@Path(OUT)
 	@Description("Produces the description of the run output.")
 	Response outputOptions();
 
@@ -365,6 +408,28 @@ public interface TavernaServerRunREST {
 	@Description("Access the interaction feed for the workflow run.")
 	@NonNull
 	InteractionFeedREST getInteractionFeed();
+
+	/**
+	 * Factored out path names used in the {@link TavernaServerRunREST}
+	 * interface and related places.
+	 * 
+	 * @author Donal Fellows
+	 */
+	interface PathNames {
+		public static final String ROOT = "/";
+		public static final String WF = "workflow";
+		public static final String DIR = "wd";
+		public static final String NAME = "name";
+		public static final String T_EXPIRE = "expiry";
+		public static final String T_CREATE = "createTime";
+		public static final String T_START = "startTime";
+		public static final String T_FINISH = "finishTime";
+		public static final String STATUS = "status";
+		public static final String IN = "input";
+		public static final String OUT = "output";
+		public static final String LISTEN = "listeners";
+		public static final String SEC = "security";
+	}
 
 	/**
 	 * The description of where everything is in a RESTful view of a workflow
@@ -402,6 +467,8 @@ public interface TavernaServerRunREST {
 		public ListenerList listeners;
 		/** The location of the interaction feed. */
 		public Uri interaction;
+		/** The name of the run. */
+		public Uri name;
 
 		/**
 		 * How to describe a run's expiry.
@@ -503,18 +570,19 @@ public interface TavernaServerRunREST {
 		 */
 		public RunDescription(TavernaRun run, UriInfo ui) {
 			super(true);
-			creationWorkflow = new Uri(ui, "workflow");
-			expiry = new Expiry(run, ui, "expiry");
-			status = new Uri(ui, "status");
-			workingDirectory = new Uri(ui, "wd");
-			listeners = new ListenerList(run, ui, "listeners");
-			securityContext = new Uri(ui, "security");
-			inputs = new Uri(ui, "input");
-			output = new Uri(ui, "output");
-			createTime = new Uri(ui, "createTime");
-			startTime = new Uri(ui, "startTime");
-			finishTime = new Uri(ui, "finishTime");
+			creationWorkflow = new Uri(ui, WF);
+			expiry = new Expiry(run, ui, T_EXPIRE);
+			status = new Uri(ui, STATUS);
+			workingDirectory = new Uri(ui, DIR);
+			listeners = new ListenerList(run, ui, LISTEN);
+			securityContext = new Uri(ui, SEC);
+			inputs = new Uri(ui, IN);
+			output = new Uri(ui, OUT);
+			createTime = new Uri(ui, T_CREATE);
+			startTime = new Uri(ui, T_START);
+			finishTime = new Uri(ui, T_FINISH);
 			interaction = new Uri(ui, FEED_URL_DIR);
+			name = new Uri(ui, NAME);
 			owner = run.getSecurityContext().getOwner().getName();
 		}
 	}

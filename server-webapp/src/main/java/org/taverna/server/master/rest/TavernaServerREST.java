@@ -6,6 +6,13 @@
 package org.taverna.server.master.rest;
 
 import static org.taverna.server.master.common.Roles.USER;
+import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL;
+import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_NOTIFIERS;
+import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_PERM_LIST;
+import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_PERM_WF;
+import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_RUN_LIMIT;
+import static org.taverna.server.master.rest.TavernaServerREST.PathNames.ROOT;
+import static org.taverna.server.master.rest.TavernaServerREST.PathNames.RUNS;
 import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 
 import java.net.URI;
@@ -28,7 +35,6 @@ import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.cxf.jaxrs.model.wadl.Description;
@@ -62,6 +68,7 @@ public interface TavernaServerREST {
 	 * @return The description.
 	 */
 	@GET
+	@Path(ROOT)
 	@Produces({ "application/xml", "application/json" })
 	@Description("Produces the description of the service.")
 	@NonNull
@@ -69,6 +76,7 @@ public interface TavernaServerREST {
 
 	/** Get an outline of the operations supported. */
 	@OPTIONS
+	@Path(ROOT)
 	@Description("Produces the description of the service.")
 	Response serviceOptions();
 
@@ -80,7 +88,7 @@ public interface TavernaServerREST {
 	 * @return A description of the list of runs that are available.
 	 */
 	@GET
-	@Path("runs")
+	@Path(RUNS)
 	@Produces({ "application/xml", "application/json" })
 	@RolesAllowed(USER)
 	@Description("Produces a list of all runs visible to the user.")
@@ -100,7 +108,7 @@ public interface TavernaServerREST {
 	 *             If the POST failed.
 	 */
 	@POST
-	@Path("runs")
+	@Path(RUNS)
 	@Consumes({ T2FLOW, "application/xml" })
 	@RolesAllowed(USER)
 	@Description("Accepts (or not) a request to create a new run executing the given workflow.")
@@ -124,7 +132,7 @@ public interface TavernaServerREST {
 	 *             engine rejects it.
 	 */
 	@POST
-	@Path("runs")
+	@Path(RUNS)
 	@Consumes("text/uri-list")
 	@RolesAllowed(USER)
 	@Description("Accepts a URL to a workflow to download and run. The URL must be hosted on a publicly-accessible service.")
@@ -135,14 +143,14 @@ public interface TavernaServerREST {
 
 	/** Get an outline of the operations supported. */
 	@OPTIONS
-	@Path("runs")
+	@Path(RUNS)
 	@Description("Produces the description of the operations on the collection of runs.")
 	Response runsOptions();
 
 	/**
 	 * @return A description of the policies supported by this server.
 	 */
-	@Path("policy")
+	@Path(POL)
 	@Description("The policies supported by this server.")
 	@NonNull
 	PolicyView getPolicyDescription();
@@ -156,13 +164,29 @@ public interface TavernaServerREST {
 	 * @throws UnknownRunException
 	 *             If the run handle is unknown to the current user.
 	 */
-	@Path("runs/{runName}")
+	@Path(RUNS + "/{runName}")
 	@RolesAllowed(USER)
 	@Description("Get a particular named run resource to dispatch to.")
 	@NonNull
 	TavernaServerRunREST getRunResource(
 			@NonNull @PathParam("runName") String runName)
 			throws UnknownRunException;
+
+	/**
+	 * Factored out path names used in the {@link TavernaServerREST} interface
+	 * and related places.
+	 * 
+	 * @author Donal Fellows
+	 */
+	interface PathNames {
+		public static final String ROOT = "/";
+		public static final String RUNS = "runs";
+		public static final String POL = "policy";
+		public static final String POL_RUN_LIMIT = "runLimit";
+		public static final String POL_PERM_WF = "permittedWorkflows";
+		public static final String POL_PERM_LIST = "permittedListenerTypes";
+		public static final String POL_NOTIFIERS = "enabledNotificationFabrics";
+	}
 
 	/**
 	 * Helper class for describing the server's user-facing management API via
@@ -204,8 +228,8 @@ public interface TavernaServerREST {
 		public ServerDescription(UriInfo ui, String interactionFeed) {
 			super(true);
 			String base = ui.getBaseUri().toString();
-			runs = new Uri(ui, "runs");
-			policy = new Uri(ui, false, "policy");
+			runs = new Uri(ui, RUNS);
+			policy = new Uri(ui, false, POL);
 			feed = new Uri(java.net.URI.create(base.replaceFirst("/rest$",
 					"/feed")));
 			if (interactionFeed != null && !interactionFeed.isEmpty())
@@ -228,7 +252,7 @@ public interface TavernaServerREST {
 		 * @return The description, which may be serialised as XML or JSON.
 		 */
 		@GET
-		@Path("/")
+		@Path(ROOT)
 		@Produces({ "application/xml", "application/json" })
 		@Description("Describe the parts of this policy.")
 		@NonNull
@@ -243,7 +267,7 @@ public interface TavernaServerREST {
 		 * @return The maximum number of runs.
 		 */
 		@GET
-		@Path("runLimit")
+		@Path(POL_RUN_LIMIT)
 		@Produces("text/plain")
 		@RolesAllowed(USER)
 		@Description("Gets the maximum number of simultaneous runs that the user may create.")
@@ -258,7 +282,7 @@ public interface TavernaServerREST {
 		 * @return The list of workflow documents.
 		 */
 		@GET
-		@Path("permittedWorkflows")
+		@Path(POL_PERM_WF)
 		@Produces({ "application/xml", "application/json" })
 		@RolesAllowed(USER)
 		@Description("Gets the list of permitted workflows.")
@@ -272,7 +296,7 @@ public interface TavernaServerREST {
 		 * @return The types of event listeners allowed.
 		 */
 		@GET
-		@Path("permittedListenerTypes")
+		@Path(POL_PERM_LIST)
 		@Produces({ "application/xml", "application/json" })
 		@RolesAllowed(USER)
 		@Description("Gets the list of permitted event listener types.")
@@ -287,7 +311,7 @@ public interface TavernaServerREST {
 		 *         destination URI.
 		 */
 		@GET
-		@Path("enabledNotificationFabrics")
+		@Path(POL_NOTIFIERS)
 		@Produces({ "application/xml", "application/json" })
 		@RolesAllowed(USER)
 		@Description("Gets the list of supported, enabled notification fabrics. Each corresponds (approximately) to a protocol, e.g., email.")
@@ -331,12 +355,10 @@ public interface TavernaServerREST {
 			 */
 			public PolicyDescription(UriInfo ui) {
 				super(true);
-				runLimit = new Uri(ui, false, "runLimit");
-				permittedWorkflows = new Uri(ui, false, "permittedWorkflows");
-				permittedListenerTypes = new Uri(ui, false,
-						"permittedListenerTypes");
-				this.enabledNotificationFabrics = new Uri(ui, false,
-						"enabledNotificationFabrics");
+				runLimit = new Uri(ui, false, POL_RUN_LIMIT);
+				permittedWorkflows = new Uri(ui, false, POL_PERM_WF);
+				permittedListenerTypes = new Uri(ui, false, POL_PERM_LIST);
+				enabledNotificationFabrics = new Uri(ui, false, POL_NOTIFIERS);
 			}
 		}
 	}

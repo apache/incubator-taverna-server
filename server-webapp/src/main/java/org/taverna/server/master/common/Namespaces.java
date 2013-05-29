@@ -25,6 +25,10 @@ public interface Namespaces {
 	 */
 	public static final String UR = "http://schema.ogf.org/urf/2003/09/urf";
 	/**
+	 * The T2flow document format's namespace name.
+	 */
+	public static final String T2FLOW = "http://taverna.sf.net/2008/xml/t2flow";
+	/**
 	 * The namespace for the server.
 	 */
 	public static final String SERVER = "http://ns.taverna.org.uk/2010/xml/server/";

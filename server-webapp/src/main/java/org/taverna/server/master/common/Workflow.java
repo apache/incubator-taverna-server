@@ -8,6 +8,7 @@ package org.taverna.server.master.common;
 import static javax.xml.bind.Marshaller.JAXB_ENCODING;
 import static javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT;
 import static org.apache.commons.logging.LogFactory.getLog;
+import static org.taverna.server.master.common.Namespaces.T2FLOW;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -30,9 +31,12 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Encapsulation of a T2flow document.
@@ -111,5 +115,58 @@ public class Workflow implements Serializable,Externalizable {
 		} catch (JAXBException e) {
 			throw new IOException("failed to marshal", e);
 		}
+	}
+
+	/**
+	 * Make up for the lack of an integrated XPath engine.
+	 * 
+	 * @param name
+	 *            The element names to look up from the root of the contained
+	 *            document.
+	 * @return The looked up element, or <tt>null</tt> if it doesn't exist.
+	 */
+	private Element getEl(String... name) {
+		Element el = null;
+		for (Element e : content)
+			if (e.getNamespaceURI().equals(T2FLOW)
+					&& e.getLocalName().equals(name[0])) {
+				el = e;
+				break;
+			}
+		boolean skip = true;
+		for (String n : name) {
+			if (skip) {
+				skip = false;
+				continue;
+			}
+			if (el == null)
+				return null;
+			NodeList nl = el.getElementsByTagNameNS(T2FLOW, n);
+			if (nl.getLength() == 0)
+				return null;
+			Node node = nl.item(0);
+			if (node instanceof Element)
+				el = (Element) node;
+			else
+				return null;
+		}
+		return el;
+	}
+
+	/**
+	 * @return The content of the embedded
+	 *         <tt>&lt;workflow&gt;&lt;dataflow&gt;&lt;name&gt;</tt> element.
+	 */
+	@XmlTransient
+	public String getName() {
+		return getEl("workflow", "dataflow", "name").getTextContent();
+	}
+
+	/**
+	 * @return The embedded <tt>&lt;workflow&gt;</tt> element.
+	 */
+	@XmlTransient
+	public Element getWorkflowRoot() {
+		return getEl("workflow");
 	}
 }

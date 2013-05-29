@@ -56,6 +56,7 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	String outputBaclava;
 	java.io.File realRoot;
 	List<Input> inputs;
+	String name;
 
 	public ExampleRun(UsernamePrincipal creator, Workflow workflow, Date expiry) {
 		this.id = randomUUID().toString();
@@ -422,5 +423,15 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 			throws Exception {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public void setName(String name) {
+		this.name = name.substring(0, 5);
 	}
 }

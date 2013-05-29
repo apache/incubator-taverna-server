@@ -32,6 +32,16 @@ public interface TavernaRun extends Serializable {
 	Workflow getWorkflow();
 
 	/**
+	 * @return The name of the run.
+	 */
+	String getName();
+
+	/**
+	 * @param name The new name of the run. May be truncated.
+	 */
+	void setName(String name);
+
+	/**
 	 * @return The name of the Baclava file to use for all inputs, or
 	 *         <tt>null</tt> if no Baclava file is set.
 	 */
