@@ -589,7 +589,13 @@ public class TavernaServerSupport {
 			TavernaSecurityContext c = run.getSecurityContext();
 			c.initializeSecurityFromContext(SecurityContextHolder.getContext());
 			webapp.initObsoleteSecurity(c);
-			run.setName(workflow.getName() + " " + run.getCreationTimestamp());
+			String name = "";
+			try {
+				name = workflow.getName() + " " + run.getCreationTimestamp();
+			} catch (Exception e) {
+				// Ignore; it's just a name, not something important.
+			}
+			run.setName(name);
 		} catch (Exception e) {
 			log.error("failed to build workflow run worker", e);
 			throw new NoCreateException("failed to build workflow run worker");
