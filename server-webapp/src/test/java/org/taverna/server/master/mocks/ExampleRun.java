@@ -313,13 +313,11 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	@Override
 	public void addCredential(Credential toAdd) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void deleteCredential(Credential toDelete) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -331,44 +329,37 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	@Override
 	public void addTrusted(Trust toAdd) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void deleteTrusted(Trust toDelete) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void validateCredential(Credential c)
 			throws InvalidCredentialException {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void validateTrusted(Trust t) throws InvalidCredentialException {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void initializeSecurityFromSOAPContext(MessageContext context) {
-		// TODO Auto-generated method stub
-		
+		// Do nothing
 	}
 
 	@Override
 	public void initializeSecurityFromRESTContext(HttpHeaders headers) {
-		// TODO Auto-generated method stub
-		
+		// Do nothing
 	}
 
 	@Override
 	public void conveySecurity() throws GeneralSecurityException, IOException {
-		// TODO Auto-generated method stub
-		
+		// Do nothing
 	}
 
 	@Override
@@ -386,7 +377,6 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	@Override
 	public void setPermittedDestroyers(Set<String> destroyers) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -398,7 +388,6 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	@Override
 	public void setPermittedUpdaters(Set<String> updaters) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -410,7 +399,6 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	@Override
 	public void setPermittedReaders(Set<String> readers) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -422,7 +410,6 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	public void initializeSecurityFromContext(SecurityContext securityContext)
 			throws Exception {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -432,6 +419,6 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 
 	@Override
 	public void setName(String name) {
-		this.name = name.substring(0, 5);
+		this.name = (name.length() > 5 ? name.substring(0, 5) : name);
 	}
 }
