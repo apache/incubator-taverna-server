@@ -1,7 +1,7 @@
 A Beginner's Installation Guide to Taverna Server
 =================================================
 
-When installing Taverna Server 2.4, you *need* to decide whether to
+When installing Taverna Server 2.5, you *need* to decide whether to
 install in secure or insecure mode. In secure mode, the server
 enforces logins, ensures that they are done over HTTPS, and applies
 strong restrictions to what users can see of other users'
@@ -19,7 +19,7 @@ You will need:
 
 * **Tomcat 6** (recent version).
 
-* **Taverna Server 2.4**. Either the "full installation" or WAR will do
+* **Taverna Server 2.5**. Either the "full installation" or WAR will do
   (the "full installation" zip contains a copy of the WAR) - see the
   [Taverna website](http://www.taverna.org.uk/download/server/2-4/) for details on downloading the file.
 
@@ -40,7 +40,7 @@ If you are installing in secured mode (default) you will also need:
 Stick to the Factory Defaults
 -----------------------------
 
-Taverna Server 2.4 has a long list of things that may be configured,
+Taverna Server 2.5 has a long list of things that may be configured,
 but it comes with “factory” settings that are correct in the majority
 of cases. Leave them alone for your first installation.
 
@@ -167,7 +167,7 @@ uncommented. The overall XML file **must** be valid.
 
 Installing a Secured Taverna Server
 -----------------------------------
-Taverna Server 2.4 is installed in secure mode by doing this:
+Taverna Server 2.5 is installed in secure mode by doing this:
 
 ### First you need to enable SSL on Tomcat.
 

@@ -1,13 +1,14 @@
-Taverna 2.4.1 Server Release Notes
-==================================
+Taverna 2.5 Server Release Notes
+================================
 
-This is the second release of the new Taverna 2.4 Server. We welcome feedback
+This is the first release of Taverna 2.5 Server. We welcome feedback
 on both the things that are there and the things that are not.
 
 Key Features
 ------------
  * Runs arbitrary Taverna 2 workflows
-   * Based on Taverna 2.4
+   * Based on Taverna 2.4 Workflow Engine
+   * Includes support for Components and Interaction processors
  * REST and SOAP interfaces
    * All functionality available through both interfaces
  * Manages files for workflows
