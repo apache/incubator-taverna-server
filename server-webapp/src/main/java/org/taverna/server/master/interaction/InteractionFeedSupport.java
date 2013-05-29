@@ -19,7 +19,6 @@ import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.ContentsDescriptorBuilder.UriBuilderFactory;
 import org.taverna.server.master.TavernaServerSupport;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
@@ -28,6 +27,7 @@ import org.taverna.server.master.interfaces.Directory;
 import org.taverna.server.master.interfaces.DirectoryEntry;
 import org.taverna.server.master.interfaces.File;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.interfaces.UriBuilderFactory;
 import org.taverna.server.master.utils.FilenameUtils;
 
 /**

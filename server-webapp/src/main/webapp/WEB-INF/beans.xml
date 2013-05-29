@@ -10,7 +10,8 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-	<bean id="webapp" class="org.taverna.server.master.TavernaServerImpl">
+	<bean id="webapp"
+		class="org.taverna.server.master.TavernaServerImpl">
 		<property name="policy" ref="worker.policy" />
 		<property name="runStore" ref="worker.rundb" />
 		<property name="fileUtils" ref="fileUtils" />
@@ -18,6 +19,7 @@
 		<property name="notificationEngine" ref="notificationFabric" />
 		<property name="support" ref="webapp.support" />
 		<property name="eventSource" ref="dispatch.atom" />
+		<property name="interactionFeed" value="${taverna.interaction.feed_path}" />
 		<lookup-method name="makeRunInterface" bean="run.coreView.prototype" />
 		<lookup-method name="getPolicyDescription" bean="webapp.policyView" />
 	</bean>

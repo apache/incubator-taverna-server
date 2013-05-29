@@ -17,9 +17,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.ContentsDescriptorBuilder.UriBuilderFactory;
 import org.taverna.server.master.interfaces.MessageDispatcher;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.interfaces.UriBuilderFactory;
 import org.taverna.server.master.utils.JDOSupport;
 import org.taverna.server.master.utils.UsernamePrincipal;
 

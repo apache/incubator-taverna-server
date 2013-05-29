@@ -17,8 +17,8 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.springframework.web.context.ServletContextAware;
 import org.taverna.server.master.TavernaServerSupport;
-import org.taverna.server.master.ContentsDescriptorBuilder.UriBuilderFactory;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.interfaces.UriBuilderFactory;
 import org.taverna.server.master.rest.TavernaServerREST.EventFeed;
 import org.taverna.server.master.rest.TavernaServerREST.Events;
 import org.taverna.server.master.utils.UsernamePrincipal;
@@ -118,6 +118,8 @@ public class AtomFeed implements EventFeed, UriBuilderFactory,
 
 	@Override
 	public String resolve(String uri) {
+		if (uri == null)
+			return null;
 		return baseURI.resolve(uri).toString();
 	}
 

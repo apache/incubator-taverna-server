@@ -14,7 +14,6 @@ import static org.taverna.server.master.TavernaServerSupport.log;
 import static org.taverna.server.master.common.Uri.secure;
 
 import java.io.ByteArrayInputStream;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -36,6 +35,7 @@ import org.taverna.server.master.interfaces.Directory;
 import org.taverna.server.master.interfaces.DirectoryEntry;
 import org.taverna.server.master.interfaces.File;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.interfaces.UriBuilderFactory;
 import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.port_description.AbsentValue;
 import org.taverna.server.port_description.AbstractPortDescription;
@@ -381,38 +381,5 @@ public class ContentsDescriptorBuilder {
 			log.info("failure in XPath evaluation", e);
 		}
 		return desc;
-	}
-
-	/**
-	 * How to manufacture URIs to workflow runs.
-	 * 
-	 * @author Donal Fellows
-	 */
-	public interface UriBuilderFactory {
-		/**
-		 * Given a run, get a factory for RESTful URIs to resources associated
-		 * with it.
-		 * 
-		 * @param run
-		 *            The run in question.
-		 * @return The {@link URI} factory.
-		 */
-		UriBuilder getRunUriBuilder(TavernaRun run);
-
-		/**
-		 * @return a URI factory that is preconfigured to point to the base of
-		 *         the webapp.
-		 */
-		UriBuilder getBaseUriBuilder();
-
-		/**
-		 * Resolves a URI with respect to the base URI of the factory.
-		 * 
-		 * @param uri
-		 *            The URI to resolve, or <tt>null</tt>.
-		 * @return The resolved URI, or <tt>null</tt> if <b>uri</b> is
-		 *         <tt>null</tt>.
-		 */
-		String resolve(String uri);
 	}
 }

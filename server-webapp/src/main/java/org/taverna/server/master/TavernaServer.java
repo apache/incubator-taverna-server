@@ -6,10 +6,10 @@
 package org.taverna.server.master;
 
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.ContentsDescriptorBuilder.UriBuilderFactory;
 import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
+import org.taverna.server.master.interfaces.UriBuilderFactory;
 import org.taverna.server.master.notification.NotificationEngine;
 import org.taverna.server.master.notification.atom.EventDAO;
 import org.taverna.server.master.rest.TavernaServerREST;

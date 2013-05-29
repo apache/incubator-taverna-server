@@ -190,12 +190,6 @@ public interface TavernaServerREST {
 		 * Reference to the interaction feed for this server.
 		 */
 		public Uri interactionFeed;
-		/**
-		 * Where to go to make queries on the provenance database. Not yet
-		 * supported, so not handled by JAXB.
-		 */
-		@XmlTransient
-		public Uri database;
 
 		/** Make a blank server description. */
 		public ServerDescription() {
@@ -217,8 +211,6 @@ public interface TavernaServerREST {
 			if (interactionFeed != null && !interactionFeed.isEmpty())
 				this.interactionFeed = new Uri(
 						java.net.URI.create(interactionFeed));
-			// database = new Uri(ui, "database");
-			// TODO TAVSERV-69: Make the database point to something real
 		}
 	}
 
