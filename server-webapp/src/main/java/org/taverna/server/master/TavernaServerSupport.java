@@ -39,6 +39,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.taverna.server.master.common.Permission;
 import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.common.Workflow;
+import org.taverna.server.master.common.version.Version;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoDestroyException;
@@ -68,7 +69,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @author Donal Fellows
  */
 @ManagedResource(objectName = JMX_ROOT + "Webapp", description = "The main Taverna Server "
-		+ TavernaServerImpl.VERSION + " web-application interface.")
+		+ Version.JAVA + " web-application interface.")
 public class TavernaServerSupport {
 	/** The main webapp log. */
 	public static final Log log = getLog("Taverna.Server.Webapp");
