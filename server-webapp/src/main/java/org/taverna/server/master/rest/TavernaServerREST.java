@@ -42,6 +42,7 @@ import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.common.Workflow;
+import org.taverna.server.master.common.version.Version;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.UnknownRunException;
@@ -52,13 +53,14 @@ import org.taverna.server.master.soap.TavernaServerSOAP;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
- * The REST service interface to Taverna 2.5 Server Release &alpha;.
+ * The REST service interface to Taverna 2.5&alpha; Server.
  * 
  * @author Donal Fellows
  * @see TavernaServerSOAP
  */
 @RolesAllowed(USER)
-@Description("This is REST service interface to Taverna 2.5 Server Release alpha.")
+@Description("This is REST service interface to Taverna " + Version.JAVA
+		+ " Server.")
 public interface TavernaServerREST {
 	/**
 	 * Produces the description of the service.

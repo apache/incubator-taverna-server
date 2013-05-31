@@ -24,6 +24,7 @@ import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.common.Workflow;
+import org.taverna.server.master.common.version.Version;
 import org.taverna.server.master.exceptions.BadPropertyValueException;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
@@ -39,14 +40,15 @@ import org.taverna.server.master.rest.TavernaServerREST;
 import org.taverna.server.port_description.OutputDescription;
 
 /**
- * The SOAP service interface to Taverna 2.5 Server Release &alpha;.
+ * The SOAP service interface to Taverna 2.5&alpha; Server.
  * 
  * @author Donal Fellows
  * @see TavernaServerREST
  */
 @RolesAllowed(USER)
 @WebService(name = "tavernaService", targetNamespace = SERVER_SOAP)
-@WSDLDocumentation("The SOAP service interface to Taverna 2.5 Server Release alpha.")
+@WSDLDocumentation("The SOAP service interface to Taverna " + Version.JAVA
+		+ " Server.")
 public interface TavernaServerSOAP {
 	/**
 	 * Make a run for a particular workflow.

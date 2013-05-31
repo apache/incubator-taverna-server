@@ -67,7 +67,8 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * 
  * @author Donal Fellows
  */
-@ManagedResource(objectName = JMX_ROOT + "Webapp", description = "The main web-application interface to Taverna Server.")
+@ManagedResource(objectName = JMX_ROOT + "Webapp", description = "The main Taverna Server "
+		+ TavernaServerImpl.VERSION + " web-application interface.")
 public class TavernaServerSupport {
 	/** The main webapp log. */
 	public static final Log log = getLog("Taverna.Server.Webapp");

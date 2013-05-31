@@ -4,7 +4,7 @@
 	<groupId>uk.org.taverna.server</groupId>
 	<artifactId>server</artifactId>
 	<packaging>pom</packaging>
-	<version>2.5-SNAPSHOT</version>
+	<version>2.5.alpha-SNAPSHOT</version>
 	<name>Taverna Server</name>
 	<description>Taverna Server is a service that provides execution of Taverna Workflows, provided they do not access the user interface while executing.</description>
 	<url>http://www.taverna.org.uk/</url>
@@ -46,8 +46,8 @@
 	<scm>
 		<connection>scm:git://github.com/myGrid/taverna-server.git</connection>
 		<developerConnection>scm:https://github.com/myGrid/taverna-server.git</developerConnection>
-		<url>https://github.com/myGrid/taverna-server/tree/2.4.1i-branch/</url>
-		<tag>2.4.1i-branch</tag>
+		<url>https://github.com/myGrid/taverna-server/tree/2.5-branch/</url>
+		<tag>2.5-branch</tag>
 	</scm>
 	<organization>
 		<name>University of Manchester</name>
@@ -125,7 +125,7 @@
 	</contributors>
 	<ciManagement>
 		<system>Jenkins</system>
-		<url>http://build.mygrid.org.uk/ci/job/taverna-server-2.4.2/</url>
+		<url>http://build.mygrid.org.uk/ci/job/taverna-server-2.5/</url>
 		<notifiers>
 			<notifier>
 				<type>mail</type>

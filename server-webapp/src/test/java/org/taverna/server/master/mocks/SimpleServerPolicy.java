@@ -4,8 +4,6 @@ import static java.util.Collections.emptyList;
 
 import java.util.List;
 
-import org.springframework.jmx.export.annotation.ManagedAttribute;
-import org.springframework.jmx.export.annotation.ManagedResource;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoDestroyException;
@@ -26,18 +24,15 @@ import org.taverna.server.master.utils.UsernamePrincipal;
  * 
  * @author Donal Fellows
  */
-@ManagedResource(objectName = "Taverna:group=Server,name=Policy", description = "Policies enforced by the server")
 public class SimpleServerPolicy implements Policy {
 	private int maxRuns = 10;
 	private int cleanerInterval;
 	SimpleNonpersistentRunStore store;
 
-	@ManagedAttribute(description = "The maximum number of simultaneous runs supported by the server.", currencyTimeLimit = 300)
 	public void setMaxRuns(int maxRuns) {
 		this.maxRuns = maxRuns;
 	}
 
-	@ManagedAttribute(description = "The maximum number of simultaneous runs supported by the server.", currencyTimeLimit = 300)
 	@Override
 	public int getMaxRuns() {
 		return maxRuns;
@@ -48,7 +43,6 @@ public class SimpleServerPolicy implements Policy {
 		return null; // No per-user limits
 	}
 
-	@ManagedAttribute(description = "The time (in seconds) between cleanup activities", currencyTimeLimit = 300)
 	public int getCleanerInterval() {
 		return cleanerInterval;
 	}
@@ -59,7 +53,6 @@ public class SimpleServerPolicy implements Policy {
 	 * 
 	 * @param intervalInSeconds
 	 */
-	@ManagedAttribute(description = "The time (in seconds) between cleanup activities", currencyTimeLimit = 300)
 	public void setCleanerInterval(int intervalInSeconds) {
 		cleanerInterval = intervalInSeconds;
 		if (store != null)

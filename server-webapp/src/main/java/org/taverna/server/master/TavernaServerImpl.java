@@ -56,6 +56,7 @@ import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.common.Workflow;
+import org.taverna.server.master.common.version.Version;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.InvalidCredentialException;
@@ -106,13 +107,13 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 @Path("/")
 @DeclareRoles({ USER, ADMIN })
 @WebService(endpointInterface = "org.taverna.server.master.soap.TavernaServerSOAP", serviceName = "TavernaServer", targetNamespace = SERVER_SOAP)
-@WSDLDocumentation("An instance of Taverna 2.5 Server Release alpha.")
+@WSDLDocumentation("An instance of Taverna " + Version.JAVA + " Server.")
 public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		TavernaServerREST, TavernaServer {
 	/**
 	 * The root of descriptions of the server in JMX.
 	 */
-	public static final String JMX_ROOT = "Taverna:group=Server-v2,name=";
+	public static final String JMX_ROOT = "Taverna:group=Server-"+Version.JAVA+",name=";
 
 	/** The logger for the server framework. */
 	public static final Log log = getLog("Taverna.Server.Webapp");
