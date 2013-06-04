@@ -102,6 +102,12 @@ public class RemoteRunDelegate implements TavernaRun {
 		this.run = rsr;
 		this.db = db;
 		this.factory = factory;
+		try {
+			this.name = "";
+			this.name = workflow.getName() + " " + creationInstant;
+		} catch (Exception e) {
+			// Ignore; it's just a name, not something important.
+		}
 		if (id != null)
 			this.id = id.toString();
 	}
