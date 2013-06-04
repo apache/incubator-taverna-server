@@ -6,11 +6,11 @@
 	<parent>
 		<groupId>uk.org.taverna.server</groupId>
 		<artifactId>server</artifactId>
-		<version>2.5.beta-SNAPSHOT</version>
+		<version>2.5alpha1-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<scm>
-		<url>https://github.com/myGrid/taverna-server/tree/2.5-branch/server-worker</url>
+		<url>${scmBrowseRoot}/server-worker</url>
 	</scm>
 
 	<properties>

@@ -4,7 +4,7 @@
 	<groupId>uk.org.taverna.server</groupId>
 	<artifactId>server</artifactId>
 	<packaging>pom</packaging>
-	<version>2.5.beta-SNAPSHOT</version>
+	<version>2.5alpha1-SNAPSHOT</version>
 	<name>Taverna Server</name>
 	<description>Taverna Server is a service that provides execution of Taverna Workflows, provided they do not access the user interface while executing.</description>
 	<url>http://www.taverna.org.uk/</url>
@@ -14,6 +14,8 @@
 		<signing.keystore>${project.parent.basedir}/src/main/signing/signing.jks</signing.keystore>
 		<signing.user>taverna</signing.user>
 		<signing.password>taverna</signing.password>
+		<scmBrowseRoot>https://github.com/myGrid/taverna-server/tree/2.5-branch</scmBrowseRoot>
+		<jenkinsJob>taverna-server-2.5-auto</jenkinsJob>
 	</properties>
 
 	<!-- Having to edit anything below here is probably indicative of a bug. -->
@@ -46,7 +48,7 @@
 	<scm>
 		<connection>scm:git://github.com/myGrid/taverna-server.git</connection>
 		<developerConnection>scm:https://github.com/myGrid/taverna-server.git</developerConnection>
-		<url>https://github.com/myGrid/taverna-server/tree/2.5-branch/</url>
+		<url>${scmBrowseRoot}/</url>
 	</scm>
 	<organization>
 		<name>University of Manchester</name>
@@ -124,7 +126,7 @@
 	</contributors>
 	<ciManagement>
 		<system>Jenkins</system>
-		<url>http://build.mygrid.org.uk/ci/job/taverna-server-2.5/</url>
+		<url>http://build.mygrid.org.uk/ci/job/${jenkinsJob}/</url>
 		<notifiers>
 			<notifier>
 				<type>mail</type>

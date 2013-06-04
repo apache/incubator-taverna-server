@@ -1,7 +1,7 @@
-Taverna 2.5a Server Release Notes
-=================================
+Taverna 2.5a1 Server Release Notes
+==================================
 
-This is the alpha release of Taverna 2.5 Server. We welcome feedback
+This is the first alpha release of Taverna 2.5 Server. We welcome feedback
 on both the things that are there and the things that are not.
 
 Key Features
@@ -56,4 +56,4 @@ TAVSERV-293	A HEAD or OPTIONS to the wsdl address returns a 500 error
 TAVSERV-301 Interaction feed address is not a full URI
 TAVSERV-309 Failure in getRunOutputDescription SOAP operation
 TAVSERV-310	Support OPTIONS in main interface
----- 2.5 alpha release ----
+---- 2.5alpha1 release ----
