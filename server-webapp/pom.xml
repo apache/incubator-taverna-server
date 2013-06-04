@@ -572,6 +572,7 @@
 							<goal>enhance</goal>
 						</goals>
 					</execution>
+					<!--
 					<execution>
 						<id>gen-db-schema</id>
 						<phase>process-classes</phase>
@@ -583,6 +584,7 @@
 							<ddlFile>${util.dir}/schema.sql</ddlFile>
 						</configuration>
 					</execution>
+					-->
 				</executions>
 			</plugin>
 			<plugin>
