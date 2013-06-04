@@ -8,6 +8,7 @@ package org.taverna.server.master.common;
 import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.common.Namespaces.XLINK;
 
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Map;
 
@@ -20,7 +21,6 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.logging.Log;
-import org.apache.cxf.jaxrs.impl.UriBuilderImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.security.web.PortMapper;
@@ -165,6 +165,12 @@ public class Uri {
 				this.rewriteTarget = "://" + rewriteTarget;
 		}
 
+		private Integer lookupHttpsPort(URI uri) {
+			if (portMapper != null)
+				return portMapper.lookupHttpsPort(uri.getPort());
+			return null;
+		}
+
 		@SuppressWarnings
 		public Rewriter() {
 			instance = this;
@@ -178,14 +184,15 @@ public class Uri {
 
 		@NonNull
 		static URI rewrite(@NonNull URI uri) {
-			return rewrite(uri.toString());
+			if (instance == null)
+				return uri;
+			return instance.rewrite(uri.toString());
 		}
 
 		@NonNull
-		static URI rewrite(@NonNull String url) {
-			if (instance != null && instance.rewriteTarget != null)
-				url = url.replaceFirst(instance.rewriteRE,
-						instance.rewriteTarget);
+		URI rewrite(@NonNull String url) {
+			if (rewriteTarget != null)
+				url = url.replaceFirst(rewriteRE, rewriteTarget);
 			return URI.create(url);
 		}
 
@@ -195,34 +202,38 @@ public class Uri {
 		 * 
 		 * @author Donal Fellows
 		 */
-		static class RewritingBuilder extends UriBuilderImpl {
+		class RewritingUriBuilder extends UriBuilder {
 			private UriBuilder wrapped;
 
-			RewritingBuilder(UriBuilder builder) {
-				wrapped = builder;
+			RewritingUriBuilder(UriBuilder builder) {
+				wrapped = builder.clone();
+			}
+
+			private URI rewrite(URI uri) {
+				return Rewriter.this.rewrite(uri.toString());
 			}
 
 			@Override
 			public UriBuilder clone() {
-				return new RewritingBuilder(wrapped.clone());
+				return new RewritingUriBuilder(wrapped);
 			}
 
 			@Override
 			public URI buildFromMap(Map<String, ? extends Object> values)
 					throws IllegalArgumentException, UriBuilderException {
-				return Rewriter.rewrite(wrapped.buildFromMap(values));
+				return rewrite(wrapped.buildFromMap(values));
 			}
 
 			@Override
 			public URI buildFromEncodedMap(Map<String, ? extends Object> values)
 					throws IllegalArgumentException, UriBuilderException {
-				return Rewriter.rewrite(wrapped.buildFromEncodedMap(values));
+				return rewrite(wrapped.buildFromEncodedMap(values));
 			}
 
 			@Override
 			public URI build(Object... values) throws IllegalArgumentException,
 					UriBuilderException {
-				return Rewriter.rewrite(wrapped.build(values));
+				return rewrite(wrapped.build(values));
 			}
 
 			@Override
@@ -230,27 +241,154 @@ public class Uri {
 					throws IllegalArgumentException, UriBuilderException {
 				return Rewriter.rewrite(wrapped.buildFromEncoded(values));
 			}
+
+			@Override
+			public UriBuilder uri(URI uri) throws IllegalArgumentException {
+				wrapped.uri(uri);
+				return this;
+			}
+
+			@Override
+			public UriBuilder scheme(String scheme)
+					throws IllegalArgumentException {
+				wrapped.scheme(scheme);
+				return this;
+			}
+
+			@Override
+			public UriBuilder schemeSpecificPart(String ssp)
+					throws IllegalArgumentException {
+				wrapped.schemeSpecificPart(ssp);
+				return this;
+			}
+
+			@Override
+			public UriBuilder userInfo(String ui) {
+				wrapped.userInfo(ui);
+				return this;
+			}
+
+			@Override
+			public UriBuilder host(String host) throws IllegalArgumentException {
+				wrapped.host(host);
+				return this;
+			}
+
+			@Override
+			public UriBuilder port(int port) throws IllegalArgumentException {
+				wrapped.port(port);
+				return this;
+			}
+
+			@Override
+			public UriBuilder replacePath(String path) {
+				wrapped.replacePath(path);
+				return this;
+			}
+
+			@Override
+			public UriBuilder path(String path) throws IllegalArgumentException {
+				wrapped.path(path);
+				return this;
+			}
+
+			@Override
+			public UriBuilder path(
+					@java.lang.SuppressWarnings("rawtypes") Class resource)
+					throws IllegalArgumentException {
+				wrapped.path(resource);
+				return this;
+			}
+
+			@Override
+			public UriBuilder path(
+					@java.lang.SuppressWarnings("rawtypes") Class resource,
+					String method) throws IllegalArgumentException {
+				wrapped.path(resource, method);
+				return this;
+			}
+
+			@Override
+			public UriBuilder path(Method method)
+					throws IllegalArgumentException {
+				wrapped.path(method);
+				return this;
+			}
+
+			@Override
+			public UriBuilder segment(String... segments)
+					throws IllegalArgumentException {
+				wrapped.segment(segments);
+				return this;
+			}
+
+			@Override
+			public UriBuilder replaceMatrix(String matrix)
+					throws IllegalArgumentException {
+				wrapped.replaceMatrix(matrix);
+				return this;
+			}
+
+			@Override
+			public UriBuilder matrixParam(String name, Object... values)
+					throws IllegalArgumentException {
+				wrapped.matrixParam(name, values);
+				return this;
+			}
+
+			@Override
+			public UriBuilder replaceMatrixParam(String name, Object... values)
+					throws IllegalArgumentException {
+				wrapped.replaceMatrixParam(name, values);
+				return this;
+			}
+
+			@Override
+			public UriBuilder replaceQuery(String query)
+					throws IllegalArgumentException {
+				wrapped.replaceQuery(query);
+				return this;
+			}
+
+			@Override
+			public UriBuilder queryParam(String name, Object... values)
+					throws IllegalArgumentException {
+				wrapped.queryParam(name, values);
+				return this;
+			}
+
+			@Override
+			public UriBuilder replaceQueryParam(String name, Object... values)
+					throws IllegalArgumentException {
+				wrapped.replaceQueryParam(name, values);
+				return this;
+			}
+
+			@Override
+			public UriBuilder fragment(String fragment) {
+				wrapped.fragment(fragment);
+				return this;
+			}
 		}
 
 		@NonNull
 		public static UriBuilder getSecuredUriBuilder(@NonNull UriBuilder uribuilder) {
-			UriBuilder ub = new RewritingBuilder(uribuilder.clone());
-			if (instance != null && instance.suppress)
-				return ub;
+			if (instance == null || instance.suppress)
+				return uribuilder.clone();
+			UriBuilder ub = instance.new RewritingUriBuilder(uribuilder);
 			Integer secPort = null;
-			if (instance != null && instance.portMapper != null)
-				try {
-					secPort = instance.portMapper.lookupHttpsPort(ub.build()
-							.getPort());
-				} catch (Exception e) {
-					/*
-					 * Do not log this; we know why it happens and don't
-					 * actually care to do anything about it. All it does is
-					 * fill up the log with pointless scariness!
-					 */
+			try {
+				if (instance != null)
+					secPort = instance.lookupHttpsPort(ub.build());
+			} catch (Exception e) {
+				/*
+				 * Do not log this; we know why it happens and don't actually
+				 * care to do anything about it. All it does is fill up the log
+				 * with pointless scariness!
+				 */
 
-					// log.debug("failed to extract current URI port", e);
-				}
+				// log.debug("failed to extract current URI port", e);
+			}
 			if (secPort == null || secPort.intValue() == -1)
 				return ub.scheme(SECURE_SCHEME);
 			return ub.scheme(SECURE_SCHEME).port(secPort);
