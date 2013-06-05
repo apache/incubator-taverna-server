@@ -94,6 +94,8 @@
 			<ref bean="MessagingProvider.Permission" />
 			<ref bean="MessagingProvider.ZipStream"/>
 			<ref bean="jsonProvider" />
+			<ref bean="interactionEntryHandler" />
+			<ref bean="interactionFeedHandler" />
 		</jaxrs:providers>
 		<jaxrs:outInterceptors>
 			<ref bean="Interceptor.FlushThreadLocalCache" />

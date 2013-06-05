@@ -414,12 +414,16 @@
 
 	<bean class="org.taverna.server.master.interaction.InteractionFeedSupport"
 		id="interactionFeed" scope="singleton">
-		<property name="abdera">
-			<bean class="org.apache.abdera.Abdera" />
-		</property>
+		<property name="abdera" ref="abdera" />
 		<property name="support" ref="webapp.support" />
 		<property name="uriBuilder" ref="webapp" />
 		<property name="utils" ref="fileUtils" />
+	</bean>
+	<bean class="org.taverna.server.master.interaction.FeedHandler" id="interactionFeedHandler">
+		<property name="abdera" ref="abdera" />
+	</bean>
+	<bean class="org.taverna.server.master.interaction.EntryHandler" id="interactionEntryHandler">
+		<property name="abdera" ref="abdera" />
 	</bean>
 
 	<bean id="authProvider"
@@ -437,4 +441,5 @@
 		class="org.taverna.server.master.identity.WorkflowInternalAuthProvider">
 		<property name="dao" ref="worker.runDAO" />
 	</bean>
+	<bean id="abdera" class="org.apache.abdera.Abdera"/>
 </beans>
