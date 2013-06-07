@@ -20,6 +20,11 @@ import org.springframework.mail.javamail.JavaMailSender;
  * @author Donal Fellows
  */
 public class EmailDispatcher extends RateLimitedDispatcher {
+	@Override
+	public String getName() {
+		return "mailto";
+	}
+
 	/**
 	 * @param from
 	 *            Email address that the notification is to come from.

@@ -6,14 +6,23 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.springframework.beans.factory.annotation.Required;
+import org.taverna.server.master.common.version.Version;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.interfaces.Listener;
+import org.taverna.server.master.interfaces.UriBuilderFactory;
 
 public class VelocityCompletionNotifier implements CompletionNotifier {
 	private String subject;
 	private VelocityEngine engine;
 	private Template template;
+	private String name;
 	private String templateName;
+	private UriBuilderFactory ubf;
+
+	@Override
+	public String getName() {
+		return name;
+	}
 
 	/**
 	 * @param subject
@@ -34,12 +43,13 @@ public class VelocityCompletionNotifier implements CompletionNotifier {
 	}
 
 	/**
-	 * @param templateName
+	 * @param name
 	 *            The name of the template.
 	 */
 	@Required
-	public void setTemplate(String templateName) {
-		this.templateName = templateName;
+	public void setName(String name) {
+		this.name = name;
+		this.templateName = getClass().getName() + "_" + name + ".vtmpl";
 	}
 
 	private Template getTemplate() {
@@ -56,11 +66,13 @@ public class VelocityCompletionNotifier implements CompletionNotifier {
 			int code) {
 		VelocityContext ctxt = new VelocityContext();
 		ctxt.put("id", name);
+		ctxt.put("uriBuilder", ubf.getRunUriBuilder(run));
 		ctxt.put("name", run.getName());
 		ctxt.put("creationTime", run.getCreationTimestamp());
 		ctxt.put("startTime", run.getStartTimestamp());
 		ctxt.put("finishTime", run.getFinishTimestamp());
 		ctxt.put("expiryTime", run.getExpiry());
+		ctxt.put("serverVersion", Version.JAVA);
 		for (Listener l : run.getListeners())
 			if (l.getName().equals("io")) {
 				for (String p : l.listProperties())

@@ -13,6 +13,11 @@ package org.taverna.server.master.worker;
  */
 public interface CompletionNotifier {
 	/**
+	 * @return The name of this notifier.
+	 */
+	String getName();
+
+	/**
 	 * Called to get the content of a message that a workflow run has finished.
 	 * 
 	 * @param name

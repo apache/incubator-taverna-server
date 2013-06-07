@@ -317,6 +317,15 @@
 	</bean>
 	<bean id="worker.rundb" class="org.taverna.server.master.worker.RunDatabase">
 		<property name="notifier" ref="worker.notifier" />
+		<property name="typeNotifiers">
+			<list>
+				<bean class="org.taverna.server.master.worker.VelocityCompletionNotifier">
+					<property name="name" value="email"/>
+					<property name="velocityEngine" ref="velocity" />
+					<property name="subject" value="Workflow run finished executing" />
+				</bean>
+			</list>
+		</property>
 		<property name="notificationEngine" ref="notificationFabric" />
 		<property name="dao" ref="worker.runDAO" />
 	</bean>
@@ -340,20 +349,12 @@
 	<bean id="notificationFabric"
 		class="org.taverna.server.master.notification.NotificationEngine">
 		<property name="dispatchers">
-			<map>
-				<entry key="mailto">
-					<ref bean="dispatch.email" />
-				</entry>
-				<entry key="twitter">
-					<ref bean="dispatch.twitter" />
-				</entry>
-				<entry key="xmpp">
-					<ref bean="dispatch.xmpp" />
-				</entry>
-				<entry key="sms">
-					<ref bean="dispatch.sms" />
-				</entry>
-			</map>
+			<list>
+				<ref bean="dispatch.email" />
+				<ref bean="dispatch.twitter" />
+				<ref bean="dispatch.xmpp" />
+				<ref bean="dispatch.sms" />
+			</list>
 		</property>
 		<property name="universalDispatchers">
 			<list>
@@ -440,6 +441,20 @@
 	<bean id="workflowInternalAuthProvder"
 		class="org.taverna.server.master.identity.WorkflowInternalAuthProvider">
 		<property name="dao" ref="worker.runDAO" />
+	</bean>
+	<bean id="velocity" class="org.apache.velocity.app.VelocityEngine"
+		init-method="init" lazy-init="false">
+		<constructor-arg>
+			<props>
+				<prop key="input.encoding">UTF-8</prop>
+				<prop key="output.encoding">UTF-8</prop>
+				<prop key="runtime.log.logsystem.class">org.apache.velocity.runtime.log.Log4JLogChute</prop>
+				<prop key="runtime.log.logsystem.log4j.logger">org.taverna.server.master.worker.VelocityCompletionNotifier</prop>
+				<prop key="resource.loader">class</prop>
+				<prop key="class.resource.loader.description">Velocity Classpath Resource Loader</prop>
+				<prop key="class.resource.loader.class">org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader</prop>
+			</props>
+		</constructor-arg>
 	</bean>
 	<bean id="abdera" class="org.apache.abdera.Abdera"/>
 </beans>

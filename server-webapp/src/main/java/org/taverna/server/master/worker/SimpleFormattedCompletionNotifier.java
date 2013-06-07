@@ -17,6 +17,11 @@ import org.springframework.beans.factory.annotation.Required;
  * @author Donal Fellows
  */
 public class SimpleFormattedCompletionNotifier implements CompletionNotifier {
+	@Required
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	/**
 	 * @param subject
 	 *            The subject of the notification email.
@@ -36,6 +41,7 @@ public class SimpleFormattedCompletionNotifier implements CompletionNotifier {
 		this.format = new MessageFormat(messageFormat);
 	}
 
+	private String name;
 	private String subject;
 	private MessageFormat format = new MessageFormat(NOTIFY_MESSAGE_FORMAT);
 
@@ -49,5 +55,10 @@ public class SimpleFormattedCompletionNotifier implements CompletionNotifier {
 	public String makeMessageSubject(String name, RemoteRunDelegate run,
 			int code) {
 		return subject;
+	}
+
+	@Override
+	public String getName() {
+		return name;
 	}
 }

@@ -25,6 +25,11 @@ import org.taverna.server.master.interfaces.TavernaRun;
  * @author Donal Fellows
  */
 public class JabberDispatcher implements MessageDispatcher {
+	@Override
+	public String getName() {
+		return "xmpp";
+	}
+
 	private Log log = LogFactory.getLog("Taverna.Server.Notification");
 	private XMPPConnection conn;
 	private String resource = "TavernaServer";

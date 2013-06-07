@@ -1,18 +1,17 @@
 /*
- * Copyright (C) 2010-2011 The University of Manchester
+ * Copyright (C) 2010-2013 The University of Manchester
  * 
  * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.worker;
 
 import static java.lang.Integer.parseInt;
-import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -27,6 +26,7 @@ import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.notification.NotificationEngine;
+import org.taverna.server.master.notification.NotificationEngine.Message;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
@@ -37,14 +37,22 @@ import org.taverna.server.master.utils.UsernamePrincipal;
 public class RunDatabase implements RunStore, RunDBSupport {
 	private Log log = LogFactory.getLog("Taverna.Server.Worker.RunDB");
 	RunDatabaseDAO dao;
-	private List<CompletionNotifier> notifier = new ArrayList<CompletionNotifier>();
+	CompletionNotifier backupNotifier;
+	Map<String, CompletionNotifier> typedNotifiers;
 	private NotificationEngine notificationEngine;
 	@Autowired
 	private FactoryBean factory;
 
 	@Override
+	@Required
 	public void setNotifier(CompletionNotifier n) {
-		notifier = asList(n);
+		backupNotifier = n;
+	}
+
+	public void setTypeNotifiers(List<CompletionNotifier> notifiers) {
+		typedNotifiers = new HashMap<String, CompletionNotifier>();
+		for (CompletionNotifier n : notifiers)
+			typedNotifiers.put(n.getName(), n);
 	}
 
 	@Required
@@ -192,12 +200,10 @@ public class RunDatabase implements RunStore, RunDBSupport {
 	 * @throws Exception
 	 *             If anything goes wrong.
 	 */
-	private void notifyFinished(String name, Listener io, RemoteRunDelegate run)
-			throws Exception {
-		if (notifier == null)
-			return;
+	private void notifyFinished(final String name, Listener io,
+			final RemoteRunDelegate run) throws Exception {
 		String to = io.getProperty("notificationAddress");
-		int code;
+		final int code;
 		try {
 			code = parseInt(io.getProperty("exitcode"));
 		} catch (NumberFormatException nfe) {
@@ -205,10 +211,24 @@ public class RunDatabase implements RunStore, RunDBSupport {
 			return;
 		}
 
-		for (CompletionNotifier n : notifier)
-			notificationEngine.dispatchMessage(run, to,
-					n.makeMessageSubject(name, run, code),
-					n.makeCompletionMessage(name, run, code));
+		notificationEngine.dispatchMessage(run, to, new Message() {
+			private CompletionNotifier getNotifier(String type) {
+				CompletionNotifier n = typedNotifiers.get(type);
+				if (n == null)
+					n = backupNotifier;
+				return n;
+			}
+
+			@Override
+			public String getContent(String type) {
+				return getNotifier(type).makeCompletionMessage(name, run, code);
+			}
+
+			@Override
+			public String getTitle(String type) {
+				return getNotifier(type).makeMessageSubject(name, run, code);
+			}
+		});
 	}
 
 	@Override

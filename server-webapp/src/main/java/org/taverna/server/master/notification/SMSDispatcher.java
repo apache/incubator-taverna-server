@@ -33,6 +33,11 @@ import org.springframework.beans.factory.annotation.Required;
  * @author Donal Fellows
  */
 public class SMSDispatcher extends RateLimitedDispatcher {
+	@Override
+	public String getName() {
+		return "sms";
+	}
+
 	private HttpClient client;
 	private URI service;
 	private String user = "", pass = "";

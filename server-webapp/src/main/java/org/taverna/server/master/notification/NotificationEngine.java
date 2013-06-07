@@ -8,6 +8,7 @@ package org.taverna.server.master.notification;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,12 +29,14 @@ public class NotificationEngine {
 	private List<MessageDispatcher> universalDispatchers;
 
 	/**
-	 * @param dispatcherMap
-	 *            A mapping from names to dispatch objects.
+	 * @param dispatchers
+	 *            The various dispatchers we want to install.
 	 */
 	@Required
-	public void setDispatchers(Map<String, MessageDispatcher> dispatcherMap) {
-		dispatchers = dispatcherMap;
+	public void setDispatchers(List<MessageDispatcher> dispatchers) {
+		this.dispatchers = new HashMap<String, MessageDispatcher>();
+		for (MessageDispatcher d : dispatchers)
+			this.dispatchers.put(d.getName(), d);
 	}
 
 	/**
@@ -46,11 +49,12 @@ public class NotificationEngine {
 	}
 
 	private void dispatchToChosenTarget(TavernaRun originator, String scheme,
-			String target, String subject, String message) throws Exception {
+			String target, Message message) throws Exception {
 		try {
 			MessageDispatcher d = dispatchers.get(scheme);
 			if (d != null && d.isAvailable())
-				d.dispatch(originator, subject, message, target);
+				d.dispatch(originator, message.getTitle(scheme),
+						message.getContent(scheme), target);
 			else
 				log.warn("no such notification dispatcher for " + scheme);
 		} catch (URISyntaxException e) {
@@ -59,8 +63,9 @@ public class NotificationEngine {
 			for (MessageDispatcher d : dispatchers.values())
 				try {
 					if (d.isAvailable()) {
-						d.dispatch(originator, subject, message, scheme + ":"
-								+ target);
+						d.dispatch(originator, message.getTitle(d.getName()),
+								message.getContent(d.getName()), scheme + ":"
+										+ target);
 						return;
 					}
 				} catch (Exception ex) {
@@ -73,12 +78,12 @@ public class NotificationEngine {
 		}
 	}
 
-	private void dispatchUniversally(TavernaRun originator, String subject,
-			String message) throws Exception {
+	private void dispatchUniversally(TavernaRun originator, Message message) throws Exception {
 		for (MessageDispatcher d : universalDispatchers)
 			try {
 				if (d.isAvailable())
-					d.dispatch(originator, subject, message, null);
+					d.dispatch(originator, message.getTitle(d.getName()),
+							message.getContent(d.getName()), null);
 			} catch (Exception e) {
 				log.warn("problem in universal dispatcher", e);
 			}
@@ -102,18 +107,17 @@ public class NotificationEngine {
 	 * @throws Exception
 	 *             If anything goes wrong with the dispatch process.
 	 */
-	public void dispatchMessage(TavernaRun originator, String destination,
-			String subject, String message) throws Exception {
+	public void dispatchMessage(TavernaRun originator, String destination, Message message) throws Exception {
 		if (destination != null && !destination.trim().isEmpty()) {
 			try {
 				URI toURI = new URI(destination.trim());
 				dispatchToChosenTarget(originator, toURI.getScheme(),
-						toURI.getSchemeSpecificPart(), subject, message);
+						toURI.getSchemeSpecificPart(), message);
 			} catch (java.net.URISyntaxException e) {
 				// Ignore
 			}
 		}
-		dispatchUniversally(originator, subject, message);
+		dispatchUniversally(originator, message);
 	}
 
 	/**
@@ -128,5 +132,10 @@ public class NotificationEngine {
 				result.add(entry.getKey());
 		}
 		return result;
+	}
+
+	public interface Message {
+		String getContent(String type);
+		String getTitle(String type);
 	}
 }

@@ -27,6 +27,11 @@ import twitter4j.auth.AuthorizationFactory;
  * @author Donal Fellows
  */
 public class TwitterDispatcher extends RateLimitedDispatcher {
+	@Override
+	public String getName() {
+		return "twitter";
+	}
+
 	public static final int MAX_MESSAGE_LENGTH = 140;
 	public static final char ELLIPSIS = '\u2026';
 

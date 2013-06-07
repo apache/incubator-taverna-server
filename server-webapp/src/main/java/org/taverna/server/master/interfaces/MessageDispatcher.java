@@ -19,6 +19,13 @@ public interface MessageDispatcher {
 	boolean isAvailable();
 
 	/**
+	 * @return The name of this dispatcher, which must match the protocol
+	 *         supported by it (for a non-universal dispatcher) and the name of
+	 *         the message generator used to produce the message.
+	 */
+	String getName();
+
+	/**
 	 * Dispatch a message to a recipient.
 	 * 
 	 * @param originator

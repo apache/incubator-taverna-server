@@ -37,6 +37,11 @@ public class EventDAO extends JDOSupport<AbstractEvent> implements
 		super(AbstractEvent.class);
 	}
 
+	@Override
+	public String getName() {
+		return "atom";
+	}
+
 	private Log log = LogFactory.getLog("Taverna.Server.Atom");
 	private UriBuilderFactory ubf;
 	private int expiryAgeDays;
