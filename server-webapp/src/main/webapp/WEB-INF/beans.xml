@@ -422,6 +422,7 @@
 		class="org.taverna.server.master.worker.SimpleFormattedCompletionNotifier">
 		<property name="subject" value="${message.termination.subject}" />
 		<property name="messageFormat" value="${message.termination.body}" />
+		<property name="name" value="fallback"/>
 	</bean>
 
 	<bean id="fileUtils" class="org.taverna.server.master.utils.FilenameUtils" />
