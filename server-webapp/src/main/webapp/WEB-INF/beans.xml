@@ -35,8 +35,7 @@
 		<property name="webapp" ref="webapp" />
 		<property name="contentTypeMap">
 			<map key-type="java.lang.String" value-type="java.lang.String">
-				<description>Maps suffixes (post '.') to content types.
-				</description>
+				<description>Maps suffixes (post '.') to content types.</description>
 				<entry key="baclava" value="application/vnd.taverna.baclava+xml" />
 			</map>
 		</property>
@@ -319,16 +318,34 @@
 		<property name="notifier" ref="worker.notifier" />
 		<property name="typeNotifiers">
 			<list>
-				<bean class="org.taverna.server.master.worker.VelocityCompletionNotifier">
-					<property name="name" value="email"/>
-					<property name="velocityEngine" ref="velocity" />
-					<property name="subject" value="Workflow run finished executing" />
-				</bean>
+				<ref bean="cn.email" />
+				<ref bean="cn.sms" />
+				<ref bean="cn.twitter" />
+				<!-- <ref bean="cn.xmpp"/> -->
 			</list>
 		</property>
 		<property name="notificationEngine" ref="notificationFabric" />
 		<property name="dao" ref="worker.runDAO" />
 	</bean>
+	<bean id="cn.email"
+		class="org.taverna.server.master.worker.VelocityCompletionNotifier">
+		<property name="name" value="email" />
+		<property name="velocityEngine" ref="velocity" />
+		<property name="subject" value="Workflow run finished executing" />
+	</bean>
+	<bean id="cn.sms"
+		class="org.taverna.server.master.worker.VelocityCompletionNotifier">
+		<property name="name" value="sms" />
+		<property name="velocityEngine" ref="velocity" />
+		<property name="subject" value="Run finished" />
+	</bean>
+	<bean id="cn.twitter"
+		class="org.taverna.server.master.worker.VelocityCompletionNotifier">
+		<property name="name" value="twitter" />
+		<property name="velocityEngine" ref="velocity" />
+		<property name="subject" value="Run finished" />
+	</bean>
+	
 	<bean id="worker.runDAO" class="org.taverna.server.master.worker.RunDatabaseDAO">
 		<description>
 			The implementation of the catalog of workflow runs
