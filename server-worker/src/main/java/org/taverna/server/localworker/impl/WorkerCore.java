@@ -42,6 +42,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.InetAddress;
+import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Arrays;
@@ -440,21 +441,33 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		env.put("TAVERNA_RUN_ID", token);
 		if (interactionHost != null || local.interactionFeedURL != null
 				|| local.webdavURL != null) {
-			env.put("INTERACTION_HOST",
-					local.interactionFeedURL != null ? local.interactionFeedURL
-							.getHost() : interactionHost);
-			env.put("INTERACTION_PORT",
-					local.interactionFeedURL != null ? Integer
-							.toString(local.interactionFeedURL.getPort())
-							: interactionPort);
-			env.put("INTERACTION_FEED",
-					local.interactionFeedURL != null ? local.interactionFeedURL
-							.getPath() : interactionFeedPath);
+			env.put("INTERACTION_HOST", makeInterHost(local.interactionFeedURL));
+			env.put("INTERACTION_PORT", makeInterPort(local.interactionFeedURL));
+			env.put("INTERACTION_FEED", makeInterPath(local.interactionFeedURL));
 			env.put("INTERACTION_WEBDAV",
 					local.webdavURL != null ? local.webdavURL.getPath()
 							: interactionWebdavPath);
 		}
 		return pb;
+	}
+
+	private static String makeInterHost(URL url) {
+		if (url == null)
+			return interactionHost;
+		return url.getProtocol() + "://" + url.getHost();
+	}
+	private static String makeInterPort(URL url) {
+		if (url == null)
+			return interactionPort;
+		int port = url.getPort();
+		if (port == -1)
+			port = url.getDefaultPort();
+		return Integer.toString(port);
+	}
+	private static String makeInterPath(URL url) {
+		if (url == null)
+			return interactionFeedPath;
+		return url.getPath();
 	}
 
 	/**
