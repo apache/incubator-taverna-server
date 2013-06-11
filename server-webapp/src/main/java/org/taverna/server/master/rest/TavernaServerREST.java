@@ -162,6 +162,8 @@ public interface TavernaServerREST {
 	 * 
 	 * @param runName
 	 *            The name of the run.
+	 * @param uriInfo
+	 *            About the URI used to access this run.
 	 * @return A RESTful delegate for the run.
 	 * @throws UnknownRunException
 	 *             If the run handle is unknown to the current user.
@@ -171,8 +173,8 @@ public interface TavernaServerREST {
 	@Description("Get a particular named run resource to dispatch to.")
 	@NonNull
 	TavernaServerRunREST getRunResource(
-			@NonNull @PathParam("runName") String runName)
-			throws UnknownRunException;
+			@NonNull @PathParam("runName") String runName,
+			@NonNull @Context UriInfo uriInfo) throws UnknownRunException;
 
 	/**
 	 * Factored out path names used in the {@link TavernaServerREST} interface

@@ -57,7 +57,7 @@ public class Uri {
 	 *            Where to point to.
 	 */
 	public Uri(@NonNull URI ref) {
-		this.ref = Rewriter.rewrite(ref);
+		this.ref = Rewriter.getInstance().rewrite(ref.toString());
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class Uri {
 	 *            The parameters to the factory.
 	 */
 	public Uri(@NonNull UriBuilder ub, String... strings) {
-		ref = Rewriter.getSecuredUriBuilder(ub).build((Object[]) strings);
+		ref = Rewriter.getInstance().getSecuredUriBuilder(ub).build((Object[]) strings);
 	}
 
 	/**
@@ -102,17 +102,21 @@ public class Uri {
 			String... strings) {
 		UriBuilder ub = ui.getAbsolutePathBuilder();
 		if (secure) {
-			ub = Rewriter.getSecuredUriBuilder(ub);
+			ub = Rewriter.getInstance().getSecuredUriBuilder(ub);
 		}
 		ref = ub.path(path).build((Object[]) strings);
 	}
 
 	public static UriBuilder secure(UriBuilder ub) {
-		return Rewriter.getSecuredUriBuilder(ub);
+		return Rewriter.getInstance().getSecuredUriBuilder(ub);
 	}
 
 	public static UriBuilder secure(UriInfo ui) {
-		return Rewriter.getSecuredUriBuilder(ui.getAbsolutePathBuilder());
+		return Rewriter.getInstance().getSecuredUriBuilder(ui.getAbsolutePathBuilder());
+	}
+
+	public static URI secure(URI uri) {
+		return Rewriter.getInstance().rewrite(uri.toString());
 	}
 
 	/**
@@ -127,6 +131,12 @@ public class Uri {
 		private boolean suppress;
 		private String rewriteRE = "://[^/]+/[^/]+";
 		private String rewriteTarget;
+
+		static Rewriter getInstance() {
+			if (instance == null)
+				new Rewriter();
+			return instance;
+		}
 
 		@Autowired
 		@Required
@@ -183,13 +193,6 @@ public class Uri {
 		}
 
 		@NonNull
-		static URI rewrite(@NonNull URI uri) {
-			if (instance == null)
-				return uri;
-			return instance.rewrite(uri.toString());
-		}
-
-		@NonNull
 		URI rewrite(@NonNull String url) {
 			if (rewriteTarget != null)
 				url = url.replaceFirst(rewriteRE, rewriteTarget);
@@ -239,7 +242,7 @@ public class Uri {
 			@Override
 			public URI buildFromEncoded(Object... values)
 					throws IllegalArgumentException, UriBuilderException {
-				return Rewriter.rewrite(wrapped.buildFromEncoded(values));
+				return rewrite(wrapped.buildFromEncoded(values));
 			}
 
 			@Override
@@ -372,14 +375,13 @@ public class Uri {
 		}
 
 		@NonNull
-		public static UriBuilder getSecuredUriBuilder(@NonNull UriBuilder uribuilder) {
-			if (instance == null || instance.suppress)
+		public UriBuilder getSecuredUriBuilder(@NonNull UriBuilder uribuilder) {
+			if (suppress)
 				return uribuilder.clone();
-			UriBuilder ub = instance.new RewritingUriBuilder(uribuilder);
+			UriBuilder ub = new RewritingUriBuilder(uribuilder);
 			Integer secPort = null;
 			try {
-				if (instance != null)
-					secPort = instance.lookupHttpsPort(ub.build());
+				secPort = lookupHttpsPort(ub.build());
 			} catch (Exception e) {
 				/*
 				 * Do not log this; we know why it happens and don't actually

@@ -25,6 +25,8 @@ import static org.taverna.server.master.soap.DirEntry.convert;
 import static org.taverna.server.master.utils.RestUtils.opt;
 
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -222,12 +224,14 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	@Override
 	@CallCounted
 	public ServerDescription describeService(UriInfo ui) {
+		jaxrsUriInfo.set(new WeakReference<UriInfo>(ui));
 		return new ServerDescription(ui, resolve(interactionFeed));
 	}
 
 	@Override
 	@CallCounted
 	public RunList listUsersRuns(UriInfo ui) {
+		jaxrsUriInfo.set(new WeakReference<UriInfo>(ui));
 		return new RunList(runs(), secure(ui).path("{name}"));
 	}
 
@@ -235,6 +239,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	@CallCounted
 	public Response submitWorkflow(Workflow workflow, UriInfo ui)
 			throws NoUpdateException {
+		jaxrsUriInfo.set(new WeakReference<UriInfo>(ui));
 		String name = support.buildWorkflow(workflow);
 		return created(secure(ui).path("{uuid}").build(name)).build();
 	}
@@ -246,6 +251,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	@CallCounted
 	public Response submitWorkflowByURL(List<URI> referenceList, UriInfo ui)
 			throws NoCreateException {
+		jaxrsUriInfo.set(new WeakReference<UriInfo>(ui));
 		if (referenceList == null || referenceList.size() == 0)
 			throw new NoCreateException("no workflow URI supplied");
 		URI u = referenceList.get(0);
@@ -273,12 +279,21 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	@Override
 	@CallCounted
-	public TavernaServerRunREST getRunResource(final String runName)
+	public TavernaServerRunREST getRunResource(final String runName, UriInfo ui)
 			throws UnknownRunException {
+		jaxrsUriInfo.set(new WeakReference<UriInfo>(ui));
 		RunREST rr = makeRunInterface();
 		rr.setRun(support.getRun(runName));
 		rr.setRunName(runName);
 		return rr;
+	}
+
+	private ThreadLocal<Reference<UriInfo>> jaxrsUriInfo = new InheritableThreadLocal<Reference<UriInfo>>();
+
+	private UriInfo getUriInfo() {
+		if (jaxrsUriInfo.get() == null)
+			return null;
+		return jaxrsUriInfo.get().get();
 	}
 
 	@Override
@@ -962,6 +977,8 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		return fromUri(getRunUriBuilder().build(run.getId()));
 	}
 
+	private final String DEFAULT_HOST = "localhost:8080"; // Crappy default
+
 	private String getHostLocation() {
 		@java.lang.SuppressWarnings("unchecked")
 		Map<String, List<String>> headers = (Map<String, List<String>>) jaxws
@@ -971,19 +988,25 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 			if (host != null && !host.isEmpty())
 				return host.get(0);
 		}
-		return "localhost:8080"; // Crappy default
+		return DEFAULT_HOST;
+	}
+
+	private URI getPossiblyInsecureBaseUri() {
+		if (getUriInfo() != null && getUriInfo().getBaseUri() != null)
+			return getUriInfo().getBaseUri();
+		if (jaxws == null || jaxws.getMessageContext() == null)
+			// Hack to make the test suite work
+			return URI.create("http://" + DEFAULT_HOST
+					+ "/taverna-server/rest/");
+		String pathInfo = (String) jaxws.getMessageContext().get(PATH_INFO);
+		pathInfo = pathInfo.replaceFirst("/soap$", "/rest/");
+		pathInfo = pathInfo.replaceFirst("/rest/.+$", "/rest/");
+		return URI.create("http://" + getHostLocation() + pathInfo);
 	}
 
 	@Override
 	public UriBuilder getBaseUriBuilder() {
-		if (jaxws == null || jaxws.getMessageContext() == null)
-			// Hack to make the test suite work
-			return secure(fromUri("http://localhost/taverna-server/rest/"));
-		String pathInfo = (String) jaxws.getMessageContext().get(PATH_INFO);
-		pathInfo = pathInfo.replaceFirst("/soap$", "/rest/");
-		pathInfo = pathInfo.replaceFirst("/rest/.+$", "/rest/");
-
-		return secure(fromUri("http://" + getHostLocation() + pathInfo));
+		return secure(fromUri(getPossiblyInsecureBaseUri()));
 	}
 
 	@Override
@@ -991,7 +1014,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	public String resolve(@Nullable String uri) {
 		if (uri == null)
 			return null;
-		return getBaseUriBuilder().build().resolve(uri).toString();
+		return secure(getPossiblyInsecureBaseUri().resolve(uri)).toString();
 	}
 
 	private Map<String, TavernaRun> runs() {
