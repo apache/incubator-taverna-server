@@ -250,7 +250,8 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 
 					// Start the subprocess
 					out.println("starting " + pb.command() + " in directory "
-							+ workingDir);
+							+ pb.directory() + " with environment "
+							+ pb.environment());
 					subprocess = pb.start();
 					if (subprocess == null)
 						throw new IOException(
