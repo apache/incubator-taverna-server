@@ -100,24 +100,21 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 	@WithinSingleTransaction
 	@PostConstruct
 	void initDB() {
-		if (base == null || base.isEmpty()) {
+		if (base == null || base.isEmpty())
 			log.warn("no baseline user collection");
-			return;
-		}
-		if (!getUsers().isEmpty()) {
+		else if (!getUsers().isEmpty())
 			log.info("using existing users from database");
-			return;
-		}
-		for (String username : base.keySet()) {
-			BootstrapUserInfo ud = base.get(username);
-			if (ud == null)
-				continue;
-			User u = ud.get(encoder);
-			if (u == null)
-				continue;
-			log.info("bootstrapping user " + username + " in the database");
-			persist(u);
-		}
+		else
+			for (String username : base.keySet()) {
+				BootstrapUserInfo ud = base.get(username);
+				if (ud == null)
+					continue;
+				User u = ud.get(encoder);
+				if (u == null)
+					continue;
+				log.info("bootstrapping user " + username + " in the database");
+				persist(u);
+			}
 		base = null;
 	}
 
