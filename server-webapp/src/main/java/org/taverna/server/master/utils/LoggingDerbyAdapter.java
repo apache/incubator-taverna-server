@@ -1,9 +1,11 @@
 package org.taverna.server.master.utils;
 
+import static org.apache.commons.logging.LogFactory.getLog;
+
 import java.sql.DatabaseMetaData;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
 import org.datanucleus.store.mapped.DatastoreContainerObject;
 import org.datanucleus.store.mapped.DatastoreIdentifier;
 import org.datanucleus.store.mapped.IdentifierFactory;
@@ -23,7 +25,7 @@ import org.datanucleus.store.rdbms.table.ViewImpl;
  * @author Donal Fellows
  */
 public class LoggingDerbyAdapter extends DerbyAdapter {
-	private Logger log = Logger.getLogger("Taverna.Server.SQL");
+	Log log = getLog("Taverna.Server.SQL");
 
 	/**
 	 * Creates an Apache Derby adapter based on the given metadata which logs
