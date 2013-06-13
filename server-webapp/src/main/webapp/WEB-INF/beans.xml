@@ -192,7 +192,7 @@
 				<prop key="datanucleus.validateConstraints">true</prop>
 				<prop key="datanucleus.autoCreateSchema">true</prop>
 				<prop key="datanucleus.PersistenceUnitName">TavernaServer</prop>
-				<prop key="org.datanucleus.rdbms.datastoreAdapterClassName"
+				<prop key="datanucleus.rdbms.datastoreAdapterClassName"
 					>org.taverna.server.master.utils.LoggingDerbyAdapter</prop>
 			</props>
 		</property>
