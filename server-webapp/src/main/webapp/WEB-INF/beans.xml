@@ -262,7 +262,10 @@
 		<property name="x500Utils" ref="x500Utils" />
 		<property name="httpRealm" value="${http.realmName}" />
 		<property name="uriSource" ref="webapp" />
+		<property name="certificateFetcher" ref="certificateChainFetcher" />
 	</bean>
+
+	<bean id="certificateChainFetcher" class="org.taverna.server.master.utils.CertificateChainFetcher"/>
 
 	<bean id="localworker.state" class="org.taverna.server.master.localworker.LocalWorkerState"
 		scope="singleton" lazy-init="false">

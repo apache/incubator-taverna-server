@@ -7,10 +7,16 @@ package org.taverna.server.master.identity;
 
 import static org.taverna.server.master.common.Roles.SELF;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,6 +36,7 @@ import org.taverna.server.master.worker.RunDatabaseDAO;
  */
 public class WorkflowInternalAuthProvider extends
 		AbstractUserDetailsAuthenticationProvider {
+	private static final Log log = LogFactory.getLog("Taverna.Server.UserDB");
 	public static final String PREFIX = "wfrun_";
 	private RunDatabaseDAO dao;
 
@@ -44,12 +51,22 @@ public class WorkflowInternalAuthProvider extends
 			authorizedAddresses.add(s);
 	}
 
+	@PostConstruct
+	public void logConfig() {
+		log.info("authorized addresses for automatic access: " + authorizedAddresses);
+	}
+
 	private final Set<String> localAddresses = new HashSet<String>();
 	private Set<String> authorizedAddresses;
 	{
 		localAddresses.add("127.0.0.1");
 		localAddresses.add("localhost");
 		localAddresses.add("::1");
+		try {
+			localAddresses.add(InetAddress.getLocalHost().getHostName());
+		} catch (UnknownHostException e) {
+			// Ignore the exception
+		}
 		authorizedAddresses = new HashSet<String>(localAddresses);
 	}
 

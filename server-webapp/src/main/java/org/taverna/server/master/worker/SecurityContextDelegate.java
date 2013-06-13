@@ -43,12 +43,14 @@ import org.springframework.security.core.context.SecurityContext;
 import org.taverna.server.localworker.remote.ImplementationException;
 import org.taverna.server.localworker.remote.RemoteSecurityContext;
 import org.taverna.server.master.common.Credential;
+import org.taverna.server.master.common.Credential.Password;
 import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.InvalidCredentialException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.interfaces.File;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
+import org.taverna.server.master.utils.CertificateChainFetcher;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
@@ -254,8 +256,12 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 		RemoteSecurityContext rc = run.run.getSecurityContext();
 
 		try {
-			credentials.add(getLocalPasswordCredential());
-		} catch (InvalidCredentialException e) {
+			Password p = getLocalPasswordCredential();
+			credentials.add(p);
+			Trust t = new Trust();
+			t.loadedCertificates = factory.certFetcher.getTrustsForURI(p.serviceURI);
+			trusted.add(t);
+		} catch (Exception e) {
 			log.warn("failed to construct local credential: "
 					+ "interaction service will fail", e);
 		}

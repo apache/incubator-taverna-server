@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.UriBuilderFactory;
+import org.taverna.server.master.utils.CertificateChainFetcher;
 import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.UsernamePrincipal;
 import org.taverna.server.master.utils.X500Utils;
@@ -45,6 +46,7 @@ public class SecurityContextFactory implements
 	transient FilenameUtils fileUtils;
 	transient X500Utils x500Utils;
 	transient UriBuilderFactory uriSource;
+	transient CertificateChainFetcher certFetcher;
 	transient String httpRealm;
 	private transient BouncyCastleProvider provider;
 
@@ -106,6 +108,11 @@ public class SecurityContextFactory implements
 	@Required
 	public void setRunDatabase(RunDBSupport db) {
 		this.db = db;
+	}
+
+	@Required
+	public void setCertificateFetcher(CertificateChainFetcher fetcher) {
+		this.certFetcher = fetcher;
 	}
 
 	@Required
