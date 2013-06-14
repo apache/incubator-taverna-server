@@ -50,7 +50,6 @@ import org.taverna.server.master.exceptions.InvalidCredentialException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.interfaces.File;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
-import org.taverna.server.master.utils.CertificateChainFetcher;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
@@ -235,6 +234,8 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 		pw.serviceURI = URI.create(factory.uriSource.getRunUriBuilder(run)
 				.build() + "#" + factory.httpRealm);
 		validateCredential(pw);
+		log.info("issuing credential for " + pw.serviceURI + " as "
+				+ pw.username + ":" + pw.password);
 		return pw;
 	}
 
