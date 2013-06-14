@@ -225,17 +225,26 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 		// do nothing in this implementation
 	}
 
+	private URI resolve(String uri) {
+		return URI.create(factory.uriSource.resolve(uri));
+	}
+
+	private RunDatabaseDAO getDAO() {
+		return ((RunDatabase) factory.db).dao;
+	}
+	private static final boolean logSynthesis = true;
+
 	private Credential.Password getLocalPasswordCredential()
 			throws InvalidCredentialException {
 		Credential.Password pw = new Credential.Password();
 		pw.id = "run:self";
 		pw.username = PREFIX + run.id;
-		pw.password = ((RunDatabase) factory.db).dao.getSecurityToken(run.id);
-		pw.serviceURI = URI.create(factory.uriSource.getRunUriBuilder(run)
-				.build() + "#" + factory.httpRealm);
+		pw.password = getDAO().getSecurityToken(run.id);
+		pw.serviceURI = resolve("/#" + factory.httpRealm);
 		validateCredential(pw);
-		log.info("issuing credential for " + pw.serviceURI + " as "
-				+ pw.username + ":" + pw.password);
+		if (logSynthesis)
+			log.info("issuing credential for " + pw.serviceURI + " as "
+					+ pw.username + ":" + pw.password);
 		return pw;
 	}
 
