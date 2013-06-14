@@ -118,6 +118,8 @@ class SecurityContextDelegateImpl extends SecurityContextDelegate {
 		if (passwordDescriptor.username == null
 				|| passwordDescriptor.username.trim().isEmpty())
 			throw new InvalidCredentialException("absent or empty username");
+		if (passwordDescriptor.serviceURI == null)
+			throw new InvalidCredentialException("absent service URI");
 		String keyToSave = passwordDescriptor.username
 				+ USERNAME_PASSWORD_SEPARATOR + passwordDescriptor.password;
 		passwordDescriptor.loadedKey = encodeKey(keyToSave);
