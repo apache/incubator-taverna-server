@@ -43,6 +43,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 public class WorkflowInternalAuthProvider extends
 		AbstractUserDetailsAuthenticationProvider {
 	private static final Log log = LogFactory.getLog("Taverna.Server.UserDB");
+	private static final boolean logDecisions = true;
 	public static final String PREFIX = "wfrun_";
 	private RunDatabaseDAO dao;
 
@@ -89,12 +90,30 @@ public class WorkflowInternalAuthProvider extends
 
 		// Are we coming from a "local" address?
 		if (!req.getLocalAddr().equals(wad.getRemoteAddress())
-				&& !authorizedAddresses.contains(wad.getRemoteAddress()))
+				&& !authorizedAddresses.contains(wad.getRemoteAddress())) {
+			if (logDecisions)
+				log.info("attempt to use workflow magic token from untrusted address:"
+						+ " token="
+						+ userRecord.getUsername()
+						+ ", address="
+						+ wad.getRemoteAddress());
 			throw new BadCredentialsException("bad login token");
+		}
 
 		// Does the password match?
-		if (!token.getCredentials().equals(userRecord.getPassword()))
+		if (!token.getCredentials().equals(userRecord.getPassword())) {
+			if (logDecisions)
+				log.info("workflow magic token is untrusted due to password mismatch:"
+						+ " wanted="
+						+ userRecord.getPassword()
+						+ ", got="
+						+ token.getCredentials());
 			throw new BadCredentialsException("bad login token");
+		}
+
+		if (logDecisions)
+			log.info("granted role " + SELF + " to user "
+					+ userRecord.getUsername());
 	}
 
 	@Override
@@ -108,6 +127,8 @@ public class WorkflowInternalAuthProvider extends
 		if (!username.startsWith(PREFIX))
 			throw new UsernameNotFoundException(
 					"unsupported username for this provider");
+		if (logDecisions)
+			log.info("request for auth for user " + username);
 		String securityToken = dao.getSecurityToken(username.substring(PREFIX
 				.length()));
 		if (securityToken == null)
