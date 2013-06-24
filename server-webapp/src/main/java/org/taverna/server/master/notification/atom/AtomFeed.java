@@ -7,6 +7,7 @@ package org.taverna.server.master.notification.atom;
 
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.taverna.server.master.common.Roles.USER;
+import static org.taverna.server.master.common.Uri.secure;
 
 import java.net.URI;
 import java.util.List;
@@ -17,6 +18,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.springframework.web.context.ServletContextAware;
 import org.taverna.server.master.TavernaServerSupport;
+import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.UriBuilderFactory;
 import org.taverna.server.master.rest.TavernaServerREST.EventFeed;
@@ -107,20 +109,20 @@ public class AtomFeed implements EventFeed, UriBuilderFactory,
 
 	@Override
 	public UriBuilder getRunUriBuilder(TavernaRun run) {
-		return fromUri(getBaseUriBuilder().path("runs/{uuid}").build(
-				run.getId()));
+		return secure(fromUri(getBaseUriBuilder().path("runs/{uuid}").build(
+				run.getId())));
 	}
 
 	@Override
 	public UriBuilder getBaseUriBuilder() {
-		return fromUri(baseURI);
+		return secure(fromUri(baseURI));
 	}
 
 	@Override
 	public String resolve(String uri) {
 		if (uri == null)
 			return null;
-		return baseURI.resolve(uri).toString();
+		return secure(baseURI, uri).toString();
 	}
 
 	@Override

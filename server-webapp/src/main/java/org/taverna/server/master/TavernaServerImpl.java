@@ -992,8 +992,11 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	}
 
 	private URI getPossiblyInsecureBaseUri() {
-		if (getUriInfo() != null && getUriInfo().getBaseUri() != null)
-			return getUriInfo().getBaseUri();
+		// See if JAX-RS can supply the info
+		UriInfo ui = getUriInfo();
+		if (ui != null && ui.getBaseUri() != null)
+			return ui.getBaseUri();
+		// See if JAX-WS *cannot* supply the info
 		if (jaxws == null || jaxws.getMessageContext() == null)
 			// Hack to make the test suite work
 			return URI.create("http://" + DEFAULT_HOST
@@ -1014,7 +1017,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	public String resolve(@Nullable String uri) {
 		if (uri == null)
 			return null;
-		return secure(getPossiblyInsecureBaseUri().resolve(uri)).toString();
+		return secure(getPossiblyInsecureBaseUri(), uri).toString();
 	}
 
 	private Map<String, TavernaRun> runs() {

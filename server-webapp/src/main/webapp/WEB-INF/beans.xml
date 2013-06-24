@@ -335,20 +335,23 @@
 	<bean id="cn.email"
 		class="org.taverna.server.master.worker.VelocityCompletionNotifier">
 		<property name="name" value="email" />
-		<property name="velocityEngine" ref="velocity" />
 		<property name="subject" value="Workflow run finished executing" />
+		<property name="velocityEngine" ref="velocity" />
+		<property name="uriBuilderFactory" ref="webapp" />
 	</bean>
 	<bean id="cn.sms"
 		class="org.taverna.server.master.worker.VelocityCompletionNotifier">
 		<property name="name" value="sms" />
-		<property name="velocityEngine" ref="velocity" />
 		<property name="subject" value="Run finished" />
+		<property name="velocityEngine" ref="velocity" />
+		<property name="uriBuilderFactory" ref="webapp" />
 	</bean>
 	<bean id="cn.twitter"
 		class="org.taverna.server.master.worker.VelocityCompletionNotifier">
 		<property name="name" value="twitter" />
-		<property name="velocityEngine" ref="velocity" />
 		<property name="subject" value="Run finished" />
+		<property name="velocityEngine" ref="velocity" />
+		<property name="uriBuilderFactory" ref="webapp" />
 	</bean>
 	
 	<bean id="worker.runDAO" class="org.taverna.server.master.worker.RunDatabaseDAO">

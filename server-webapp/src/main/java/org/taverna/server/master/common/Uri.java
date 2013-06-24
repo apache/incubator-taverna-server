@@ -5,6 +5,7 @@
  */
 package org.taverna.server.master.common;
 
+import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.common.Namespaces.XLINK;
 
@@ -57,7 +58,7 @@ public class Uri {
 	 *            Where to point to.
 	 */
 	public Uri(@NonNull URI ref) {
-		this.ref = Rewriter.getInstance().rewrite(ref.toString());
+		this.ref = secure(ref);
 	}
 
 	/**
@@ -69,7 +70,7 @@ public class Uri {
 	 *            The parameters to the factory.
 	 */
 	public Uri(@NonNull UriBuilder ub, String... strings) {
-		ref = Rewriter.getInstance().getSecuredUriBuilder(ub).build((Object[]) strings);
+		ref = secure(ub).build((Object[]) strings);
 	}
 
 	/**
@@ -102,7 +103,7 @@ public class Uri {
 			String... strings) {
 		UriBuilder ub = ui.getAbsolutePathBuilder();
 		if (secure) {
-			ub = Rewriter.getInstance().getSecuredUriBuilder(ub);
+			ub = secure(ub);
 		}
 		ref = ub.path(path).build((Object[]) strings);
 	}
@@ -112,11 +113,18 @@ public class Uri {
 	}
 
 	public static UriBuilder secure(UriInfo ui) {
-		return Rewriter.getInstance().getSecuredUriBuilder(ui.getAbsolutePathBuilder());
+		return secure(ui.getAbsolutePathBuilder());
 	}
 
 	public static URI secure(URI uri) {
-		return Rewriter.getInstance().rewrite(uri.toString());
+		URI newURI = secure(fromUri(uri)).build();
+		log.debug("rewrote " + uri + " to " + newURI);
+		return newURI;
+	}
+	public static URI secure(URI base, String uri) {
+		URI newURI = secure(fromUri(base.resolve(uri))).build();
+		log.debug("rewrote " + uri + " to " + newURI);
+		return newURI;
 	}
 
 	/**
@@ -197,6 +205,28 @@ public class Uri {
 			if (rewriteTarget != null)
 				url = url.replaceFirst(rewriteRE, rewriteTarget);
 			return URI.create(url);
+		}
+
+		@NonNull
+		public UriBuilder getSecuredUriBuilder(@NonNull UriBuilder uribuilder) {
+			if (suppress)
+				return uribuilder.clone();
+			UriBuilder ub = new RewritingUriBuilder(uribuilder);
+			Integer secPort = null;
+			try {
+				secPort = lookupHttpsPort(ub.build());
+			} catch (Exception e) {
+				/*
+				 * Do not log this; we know why it happens and don't actually
+				 * care to do anything about it. All it does is fill up the log
+				 * with pointless scariness!
+				 */
+
+				// log.debug("failed to extract current URI port", e);
+			}
+			if (secPort == null || secPort.intValue() == -1)
+				return ub.scheme(SECURE_SCHEME);
+			return ub.scheme(SECURE_SCHEME).port(secPort);
 		}
 
 		/**
@@ -372,28 +402,6 @@ public class Uri {
 				wrapped.fragment(fragment);
 				return this;
 			}
-		}
-
-		@NonNull
-		public UriBuilder getSecuredUriBuilder(@NonNull UriBuilder uribuilder) {
-			if (suppress)
-				return uribuilder.clone();
-			UriBuilder ub = new RewritingUriBuilder(uribuilder);
-			Integer secPort = null;
-			try {
-				secPort = lookupHttpsPort(ub.build());
-			} catch (Exception e) {
-				/*
-				 * Do not log this; we know why it happens and don't actually
-				 * care to do anything about it. All it does is fill up the log
-				 * with pointless scariness!
-				 */
-
-				// log.debug("failed to extract current URI port", e);
-			}
-			if (secPort == null || secPort.intValue() == -1)
-				return ub.scheme(SECURE_SCHEME);
-			return ub.scheme(SECURE_SCHEME).port(secPort);
 		}
 	}
 }

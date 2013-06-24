@@ -43,6 +43,15 @@ public class VelocityCompletionNotifier implements CompletionNotifier {
 	}
 
 	/**
+	 * @param uriBuilderFactory
+	 *            The configured URI builder factory.
+	 */
+	@Required
+	public void setUriBuilderFactory(UriBuilderFactory uriBuilderFactory) {
+		this.ubf = uriBuilderFactory;
+	}
+
+	/**
 	 * @param name
 	 *            The name of the template.
 	 */
