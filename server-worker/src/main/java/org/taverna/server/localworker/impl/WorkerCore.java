@@ -108,6 +108,15 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		Aborted, Completed, Failed, Held, Queued, Started, Suspended
 	}
 
+	/**
+	 * Environment variables to remove before any fork (because they're large or
+	 * potentially leaky).
+	 */
+	// TODO Conduct a proper survey of what to remove
+	private static final String[] ENVIRONMENT_TO_REMOVE = { "SUDO_COMMAND",
+			"SUDO_USER", "SUDO_GID", "SUDO_UID", "DISPLAY", "LS_COLORS",
+			"XFILESEARCHPATH", "SSH_AGENT_PID", "SSH_AUTH_SOCK" };
+
 	Process subprocess;
 	StringWriter stdout;
 	StringWriter stderr;
@@ -427,6 +436,8 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		wd = workingDir;
 
 		Map<String, String> env = pb.environment();
+		for (String name : ENVIRONMENT_TO_REMOVE)
+			env.remove(name);
 
 		// Merge any options we have had imposed on us from outside
 		env.putAll(environment);
