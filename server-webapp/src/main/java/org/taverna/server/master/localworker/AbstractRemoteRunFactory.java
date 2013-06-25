@@ -15,6 +15,7 @@ import static java.rmi.registry.Registry.REGISTRY_PORT;
 import static java.rmi.server.RMISocketFactory.getDefaultSocketFactory;
 import static java.util.UUID.randomUUID;
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.DIR;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -370,7 +371,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 			run.setSecurityContext(securityFactory.create(run, creator));
 			URL feedUrl = interactionFeedSupport.getFeedURI(run).toURL();
 			URL webdavUrl = baseurifactory.getRunUriBuilder(run)
-					.path("wd/interactions").build().toURL();
+					.path(DIR + "/interactions").build().toURL();
 			rsr.setInteractionServiceDetails(feedUrl, webdavUrl);
 			return run;
 		} catch (NoCreateException e) {

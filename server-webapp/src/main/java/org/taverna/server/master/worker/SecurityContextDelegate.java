@@ -12,6 +12,8 @@ import static org.taverna.server.master.defaults.Default.CERTIFICATE_FIELD_NAMES
 import static org.taverna.server.master.defaults.Default.CERTIFICATE_TYPE;
 import static org.taverna.server.master.defaults.Default.CREDENTIAL_FILE_SIZE_LIMIT;
 import static org.taverna.server.master.identity.WorkflowInternalAuthProvider.PREFIX;
+import static org.taverna.server.master.interaction.InteractionFeedSupport.FEED_URL_DIR;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.DIR;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -34,6 +36,7 @@ import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.UriBuilder;
 import javax.xml.ws.handler.MessageContext;
 
 import org.apache.commons.logging.Log;
@@ -43,7 +46,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.taverna.server.localworker.remote.ImplementationException;
 import org.taverna.server.localworker.remote.RemoteSecurityContext;
 import org.taverna.server.master.common.Credential;
-import org.taverna.server.master.common.Credential.Password;
 import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.InvalidCredentialException;
@@ -225,28 +227,41 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 		// do nothing in this implementation
 	}
 
-	private URI resolve(String uri) {
-		return URI.create(factory.uriSource.resolve(uri));
+	private UriBuilder getUB() {
+		return factory.uriSource.getRunUriBuilder(run);
 	}
-
 	private RunDatabaseDAO getDAO() {
 		return ((RunDatabase) factory.db).dao;
 	}
+	private List<X509Certificate> getCerts(URI uri) throws IOException, GeneralSecurityException {
+		return factory.certFetcher.getTrustsForURI(uri);
+	}
 	private static final boolean logSynthesis = true;
 
-	private Credential.Password getLocalPasswordCredential()
-			throws InvalidCredentialException {
+	private void installLocalPasswordCredential(String path,
+			List<Credential> credentials, List<Trust> trusts)
+			throws InvalidCredentialException, IOException, GeneralSecurityException {
 		Credential.Password pw = new Credential.Password();
 		pw.id = "run:self";
 		pw.username = PREFIX + run.id;
 		pw.password = getDAO().getSecurityToken(run.id);
-		pw.serviceURI = resolve("/#" + factory.httpRealm);
+		UriBuilder ub = getUB().fragment(factory.httpRealm);
+		if (path != null)
+			ub.path(path);
+		pw.serviceURI = ub.build();
 		validateCredential(pw);
 		if (logSynthesis)
 			log.info("issuing credential for " + pw.serviceURI + " as "
 					+ pw.username + ":" + pw.password);
-		return pw;
+		credentials.add(pw);
+		Trust t = new Trust();
+		t.loadedCertificates = getCerts(pw.serviceURI);
+		trusts.add(t);
 	}
+
+	private static final String[] PATHS = {
+		FEED_URL_DIR + "/", DIR + "/interactions/"
+	};
 
 	/**
 	 * Builds and transfers a keystore with suitable credentials to the back-end
@@ -265,12 +280,14 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 			IOException, ImplementationException {
 		RemoteSecurityContext rc = run.run.getSecurityContext();
 
+		List<Trust> trusted = new ArrayList<Trust>(this.trusted);
+		this.trusted.clear();
+		List<Credential> credentials = new ArrayList<Credential>(this.credentials);
+		this.credentials.clear();
+
 		try {
-			Password p = getLocalPasswordCredential();
-			credentials.add(p);
-			Trust t = new Trust();
-			t.loadedCertificates = factory.certFetcher.getTrustsForURI(p.serviceURI);
-			trusted.add(t);
+			for (String path : PATHS)
+				installLocalPasswordCredential(path, credentials, trusted);
 		} catch (Exception e) {
 			log.warn("failed to construct local credential: "
 					+ "interaction service will fail", e);
