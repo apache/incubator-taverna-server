@@ -140,6 +140,12 @@
 						has &quot;LOCALUSER_foo&quot;, they will be executing as the local
 						user id &quot;foo&quot;.</description>
 				</bean>
+				<bean id="SelfAccess"
+					class="org.taverna.server.master.identity.WorkflowInternalAuthProvider.WorkflowSelfIDMapper">
+					<description>Handles the case where a workflow is accessing itself for
+						the purpose of publishing interactions.</description>
+					<property name="runStore" ref="worker.rundb" />
+				</bean>
 				<bean id="Extracting" class="org.taverna.server.master.identity.NameIDMapper">
 					<description>An alternate mechanism for mapping users. This tries
 						to use an RE to extract the user name from the principal name.

@@ -23,12 +23,19 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.taverna.server.master.exceptions.UnknownRunException;
+import org.taverna.server.master.interfaces.LocalIdentityMapper;
+import org.taverna.server.master.interfaces.RunStore;
+import org.taverna.server.master.utils.UsernamePrincipal;
 import org.taverna.server.master.worker.RunDatabaseDAO;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -151,6 +158,38 @@ public class WorkflowInternalAuthProvider extends
 		@Override
 		public String toString() {
 			return "WORKFLOW(" + getAuthority() + ")";
+		}
+	}
+
+	public static class WorkflowSelfIDMapper implements LocalIdentityMapper {
+		private static final Log log = LogFactory.getLog("Taverna.Server.UserDB");
+		private RunStore runStore;
+
+		@Required
+		public void setRunStore(RunStore runStore) {
+			this.runStore = runStore;
+		}
+
+		private String getUsernameForSelfAccess(WorkflowSelfAuthority authority)
+				throws UnknownRunException {
+			return runStore.getRun(authority.getWorkflowID()).getSecurityContext()
+					.getOwner().getName();
+		}
+
+		@Override
+		public String getUsernameForPrincipal(UsernamePrincipal user) {
+			Authentication auth = SecurityContextHolder.getContext()
+					.getAuthentication();
+			if (auth == null || !auth.isAuthenticated())
+				return null;
+			try {
+				for (GrantedAuthority authority : auth.getAuthorities())
+					if (authority instanceof WorkflowSelfAuthority)
+						return getUsernameForSelfAccess((WorkflowSelfAuthority) authority);
+			} catch (UnknownRunException e) {
+				log.warn("workflow run disappeared during computation of workflow map identity");
+			}
+			return null;
 		}
 	}
 }
