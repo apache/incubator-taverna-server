@@ -129,12 +129,28 @@ public class WorkflowInternalAuthProvider extends
 					"unsupported username for this provider");
 		if (logDecisions)
 			log.info("request for auth for user " + username);
-		String securityToken = dao.getSecurityToken(username.substring(PREFIX
-				.length()));
+		String wfid = username.substring(PREFIX.length());
+		String securityToken = dao.getSecurityToken(wfid);
 		if (securityToken == null)
 			throw new UsernameNotFoundException("no such user");
 		return new User(username, securityToken, true, true, true, true,
 				Arrays.asList(new LiteralGrantedAuthority(SELF),
-						new LiteralGrantedAuthority(username)));
+						new WorkflowSelfAuthority(wfid)));
+	}
+
+	@SuppressWarnings("serial")
+	public static class WorkflowSelfAuthority extends LiteralGrantedAuthority {
+		public WorkflowSelfAuthority(String wfid) {
+			super(wfid);
+		}
+
+		public String getWorkflowID() {
+			return getAuthority();
+		}
+
+		@Override
+		public String toString() {
+			return "WORKFLOW(" + getAuthority() + ")";
+		}
 	}
 }

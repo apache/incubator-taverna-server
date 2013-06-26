@@ -133,4 +133,9 @@ class LiteralGrantedAuthority implements GrantedAuthority {
 	public String getAuthority() {
 		return auth;
 	}
+
+	@Override
+	public String toString() {
+		return "AUTHORITY(" + auth + ")";
+	}
 }

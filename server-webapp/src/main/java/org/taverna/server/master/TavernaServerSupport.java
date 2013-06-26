@@ -34,6 +34,7 @@ import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedMetric;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.taverna.server.master.common.Permission;
@@ -48,6 +49,8 @@ import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.factories.ListenerFactory;
 import org.taverna.server.master.factories.RunFactory;
+import org.taverna.server.master.identity.WorkflowInternalAuthProvider;
+import org.taverna.server.master.identity.WorkflowInternalAuthProvider.WorkflowSelfAuthority;
 import org.taverna.server.master.interfaces.File;
 import org.taverna.server.master.interfaces.Input;
 import org.taverna.server.master.interfaces.Listener;
@@ -304,6 +307,10 @@ public class TavernaServerSupport {
 					.warn("check for admin powers passed; elevated access rights granted for update");
 			return; // Superusers are fully authorized to access others things
 		}
+		if (getSelfAuthority() != null) {
+			// At this point, must already be accessing self as that is checked in getRun().
+			return;
+		}
 		policy.permitUpdate(getPrincipal(), run);
 	}
 
@@ -322,6 +329,8 @@ public class TavernaServerSupport {
 					.warn("check for admin powers passed; elevated access rights granted for destroy");
 			return; // Superusers are fully authorized to access others things
 		}
+		if (getSelfAuthority() != null)
+			throw new NoDestroyException();
 		policy.permitDestroy(getPrincipal(), run);
 	}
 
@@ -349,6 +358,18 @@ public class TavernaServerSupport {
 		}
 	}
 
+	private WorkflowSelfAuthority getSelfAuthority() {
+		try {
+			Authentication a = SecurityContextHolder.getContext()
+					.getAuthentication();
+			for (GrantedAuthority ga : a.getAuthorities())
+				if (ga instanceof WorkflowSelfAuthority)
+					return (WorkflowSelfAuthority) ga;
+		} catch (RuntimeException e) {
+		}
+		return null;
+	}
+
 	/**
 	 * Obtain the workflow run with a particular name.
 	 * 
@@ -366,6 +387,12 @@ public class TavernaServerSupport {
 			accessLog
 					.info("check for admin powers passed; elevated access rights granted for read");
 			return runStore.getRun(name);
+		}
+		WorkflowSelfAuthority wsa = getSelfAuthority();
+		if (wsa != null) {
+			if (wsa.getWorkflowID().equals(name))
+				return runStore.getRun(name);
+			throw new UnknownRunException();
 		}
 		return runStore.getRun(getPrincipal(), policy, name);
 	}
@@ -529,7 +556,7 @@ public class TavernaServerSupport {
 			throws NoDestroyException, UnknownRunException {
 		if (run == null)
 			run = getRun(runName);
-		policy.permitDestroy(getPrincipal(), run);
+		permitDestroy(run);
 		runStore.unregisterRun(runName);
 		run.destroy();
 	}
@@ -551,7 +578,7 @@ public class TavernaServerSupport {
 	@NonNull
 	public Date updateExpiry(@NonNull TavernaRun run, @NonNull Date date)
 			throws NoDestroyException {
-		policy.permitDestroy(getPrincipal(), run);
+		permitDestroy(run);
 		run.setExpiry(date);
 		return run.getExpiry();
 	}
@@ -567,6 +594,8 @@ public class TavernaServerSupport {
 	 */
 	public String buildWorkflow(Workflow workflow) throws NoCreateException {
 		UsernamePrincipal p = getPrincipal();
+		if (getSelfAuthority() != null)
+			throw new NoCreateException("runs may not create workflows on their host server");
 		if (!stateModel.getAllowNewWorkflowRuns())
 			throw new NoCreateException("run creation not currently enabled");
 		try {
