@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
@@ -88,61 +89,69 @@ public class WorkflowInternalAuthProvider extends
 
 	@Override
 	protected void additionalAuthenticationChecks(UserDetails userRecord,
-			UsernamePasswordAuthenticationToken token)
-			throws AuthenticationException {
-		WebAuthenticationDetails wad = (WebAuthenticationDetails) token
-				.getDetails();
-		HttpServletRequest req = ((ServletRequestAttributes) getRequestAttributes())
-				.getRequest();
+			UsernamePasswordAuthenticationToken token) {
+		try {
+			WebAuthenticationDetails wad = (WebAuthenticationDetails) token
+					.getDetails();
+			HttpServletRequest req = ((ServletRequestAttributes) getRequestAttributes())
+					.getRequest();
 
-		// Are we coming from a "local" address?
-		if (!req.getLocalAddr().equals(wad.getRemoteAddress())
-				&& !authorizedAddresses.contains(wad.getRemoteAddress())) {
+			// Are we coming from a "local" address?
+			if (!req.getLocalAddr().equals(wad.getRemoteAddress())
+					&& !authorizedAddresses.contains(wad.getRemoteAddress())) {
+				if (logDecisions)
+					log.info("attempt to use workflow magic token from untrusted address:"
+							+ " token=" + userRecord.getUsername()
+							+ ", address=" + wad.getRemoteAddress());
+				throw new BadCredentialsException("bad login token");
+			}
+
+			// Does the password match?
+			if (!token.getCredentials().equals(userRecord.getPassword())) {
+				if (logDecisions)
+					log.info("workflow magic token is untrusted due to password mismatch:"
+							+ " wanted=" + userRecord.getPassword()
+							+ ", got=" + token.getCredentials());
+				throw new BadCredentialsException("bad login token");
+			}
+
 			if (logDecisions)
-				log.info("attempt to use workflow magic token from untrusted address:"
-						+ " token="
-						+ userRecord.getUsername()
-						+ ", address="
-						+ wad.getRemoteAddress());
-			throw new BadCredentialsException("bad login token");
+				log.info("granted role " + SELF + " to user "
+						+ userRecord.getUsername());
+		} catch (AuthenticationException e) {
+			throw e;
+		} catch (Exception e) {
+			log.warn("unexpected failure in authentication", e);
+			throw new AuthenticationServiceException("unexpected failure in authentication", e);
 		}
-
-		// Does the password match?
-		if (!token.getCredentials().equals(userRecord.getPassword())) {
-			if (logDecisions)
-				log.info("workflow magic token is untrusted due to password mismatch:"
-						+ " wanted="
-						+ userRecord.getPassword()
-						+ ", got="
-						+ token.getCredentials());
-			throw new BadCredentialsException("bad login token");
-		}
-
-		if (logDecisions)
-			log.info("granted role " + SELF + " to user "
-					+ userRecord.getUsername());
 	}
 
 	@Override
 	@NonNull
 	protected UserDetails retrieveUser(String username,
-			UsernamePasswordAuthenticationToken token)
-			throws AuthenticationException {
-		if (token.getDetails() == null
-				|| !(token.getDetails() instanceof WebAuthenticationDetails))
-			throw new UsernameNotFoundException("context unsupported");
-		if (!username.startsWith(PREFIX))
-			throw new UsernameNotFoundException(
-					"unsupported username for this provider");
-		if (logDecisions)
-			log.info("request for auth for user " + username);
-		String wfid = username.substring(PREFIX.length());
-		String securityToken = dao.getSecurityToken(wfid);
-		if (securityToken == null)
-			throw new UsernameNotFoundException("no such user");
-		return new User(username, securityToken, true, true, true, true,
-				Arrays.asList(new LiteralGrantedAuthority(SELF),
-						new WorkflowSelfAuthority(wfid)));
+			UsernamePasswordAuthenticationToken token) {
+		try {
+			if (token.getDetails() == null
+					|| !(token.getDetails() instanceof WebAuthenticationDetails))
+				throw new UsernameNotFoundException("context unsupported");
+			if (!username.startsWith(PREFIX))
+				throw new UsernameNotFoundException(
+						"unsupported username for this provider");
+			if (logDecisions)
+				log.info("request for auth for user " + username);
+			String wfid = username.substring(PREFIX.length());
+			String securityToken = dao.getSecurityToken(wfid);
+			if (securityToken == null)
+				throw new UsernameNotFoundException("no such user");
+			return new User(username, securityToken, true, true, true, true,
+					Arrays.asList(new LiteralGrantedAuthority(SELF),
+							new WorkflowSelfAuthority(wfid)));
+		} catch (AuthenticationException e) {
+			throw e;
+		} catch (Exception e) {
+			log.warn("unexpected failure in authentication", e);
+			throw new AuthenticationServiceException("unexpected failure in authentication", e);
+		}
 	}
 
 	@SuppressWarnings("serial")
