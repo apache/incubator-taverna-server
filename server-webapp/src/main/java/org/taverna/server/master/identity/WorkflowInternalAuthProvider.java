@@ -5,7 +5,7 @@
  */
 package org.taverna.server.master.identity;
 
-import static org.springframework.web.context.request.RequestContextHolder.getRequestAttributes;
+import static org.springframework.web.context.request.RequestContextHolder.currentRequestAttributes;
 import static org.taverna.server.master.common.Roles.SELF;
 
 import java.net.InetAddress;
@@ -95,8 +95,6 @@ public class WorkflowInternalAuthProvider extends
 	 *            as retrieved from the
 	 *            {@link #retrieveUser(String, UsernamePasswordAuthenticationToken)}
 	 *            or <code>UserCache</code>
-	 * @param details
-	 *            the details of the authentication
 	 * @param principal
 	 *            the principal that is trying to authenticate (and that we're
 	 *            trying to bind)
@@ -112,19 +110,19 @@ public class WorkflowInternalAuthProvider extends
 	 *             generic AuthenticationException.
 	 */
 	protected void additionalAuthenticationChecks(UserDetails userRecord,
-			Object details, Object principal, Object credentials)
+			@NonNull Object principal, @NonNull Object credentials)
 			throws Exception {
-		WebAuthenticationDetails wad = (WebAuthenticationDetails) details;
-		HttpServletRequest req = ((ServletRequestAttributes) getRequestAttributes())
+		@NonNull
+		HttpServletRequest req = ((ServletRequestAttributes) currentRequestAttributes())
 				.getRequest();
 
 		// Are we coming from a "local" address?
-		if (!req.getLocalAddr().equals(wad.getRemoteAddress())
-				&& !authorizedAddresses.contains(wad.getRemoteAddress())) {
+		if (!req.getLocalAddr().equals(req.getRemoteAddr())
+				&& !authorizedAddresses.contains(req.getRemoteAddr())) {
 			if (logDecisions)
 				log.info("attempt to use workflow magic token from untrusted address:"
 						+ " token=" + userRecord.getUsername()
-						+ ", address=" + wad.getRemoteAddress());
+						+ ", address=" + req.getRemoteAddr());
 			throw new BadCredentialsException("bad login token");
 		}
 
@@ -187,8 +185,8 @@ public class WorkflowInternalAuthProvider extends
 	protected final void additionalAuthenticationChecks(UserDetails userRecord,
 			UsernamePasswordAuthenticationToken token) {
 		try {
-			additionalAuthenticationChecks(userRecord, token.getDetails(),
-					token.getPrincipal(), token.getCredentials());
+			additionalAuthenticationChecks(userRecord, token.getPrincipal(),
+					token.getCredentials());
 		} catch (AuthenticationException e) {
 			throw e;
 		} catch (Exception e) {
