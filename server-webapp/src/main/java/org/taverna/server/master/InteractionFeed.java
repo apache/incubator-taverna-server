@@ -9,6 +9,7 @@ import static org.taverna.server.master.utils.RestUtils.opt;
 
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.ws.rs.core.Response;
 
@@ -53,8 +54,16 @@ public class InteractionFeed implements InteractionFeedREST, FeedBean {
 	public Response addEntry(Entry entry) throws MalformedURLException,
 			FilesystemAccessException, NoDirectoryEntryException,
 			NoUpdateException {
-		String location = interactionFeed.addRunFeedEntry(run, entry);
-		return Response.created(URI.create(location)).build();
+		Entry realEntry = interactionFeed.addRunFeedEntry(run, entry);
+		URI location;
+		try {
+			location = realEntry.getSelfLink().getHref().toURI();
+		} catch (URISyntaxException e) {
+			throw new RuntimeException("failed to make URI from link?!", e);
+		}
+		return Response.created(location)
+				.type("application/atom+xml;type=entry").entity(realEntry)
+				.build();
 	}
 
 	@Override

@@ -64,6 +64,7 @@ public interface InteractionFeedREST {
 	@POST
 	@Path("/")
 	@Consumes("application/atom+xml")
+	@Produces("application/atom+xml")
 	@Description("Adds an entry to this ATOM feed.")
 	Response addEntry(Entry entry) throws MalformedURLException,
 			FilesystemAccessException, NoDirectoryEntryException,

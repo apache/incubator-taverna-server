@@ -55,6 +55,8 @@ public class InteractionFeedSupport {
 	private static final boolean STRIP_CONTENTS = false;
 	/** Maximum size of an entry before truncation. */
 	private static final long MAX_ENTRY_SIZE = 50 * 1024;
+	/** Extension for entry files. */
+	private static final String EXT = ".entry";
 
 	private TavernaServerSupport support;
 	private FilenameUtils utils;
@@ -182,7 +184,7 @@ public class InteractionFeedSupport {
 	public Entry getRunFeedEntry(TavernaRun run, String entryID)
 			throws FilesystemAccessException, NoDirectoryEntryException {
 		File entryFile = utils
-				.getFile(run, FEED_DIR + "/" + entryID + ".entry");
+				.getFile(run, FEED_DIR + "/" + entryID + EXT);
 		return getEntryFromFile(entryFile);
 	}
 
@@ -205,7 +207,7 @@ public class InteractionFeedSupport {
 	 * @throws MalformedURLException
 	 *             If a generated URL is illegal (shouldn't happen).
 	 */
-	public String addRunFeedEntry(TavernaRun run, Entry entry)
+	public Entry addRunFeedEntry(TavernaRun run, Entry entry)
 			throws FilesystemAccessException, NoDirectoryEntryException,
 			NoUpdateException, MalformedURLException {
 		support.permitUpdate(run);
@@ -215,9 +217,9 @@ public class InteractionFeedSupport {
 		String selfLink = getEntryURI(run, localId).toURL().toString();
 		entry.addLink(selfLink);
 		entry.setUpdated(new Date());
-		putEntryInFile(utils.getDirectory(run, FEED_DIR), localId + ".entry",
-				entry);
-		return selfLink;
+		putEntryInFile(utils.getDirectory(run, FEED_DIR), localId + EXT, entry);
+		return getEntryFromFile(utils.getFile(run, FEED_DIR + "/" + localId
+				+ EXT));
 	}
 
 	/**
@@ -239,6 +241,6 @@ public class InteractionFeedSupport {
 			throws FilesystemAccessException, NoDirectoryEntryException,
 			NoUpdateException {
 		support.permitUpdate(run);
-		utils.getFile(run, FEED_DIR + "/" + entryID + ".entry").destroy();
+		utils.getFile(run, FEED_DIR + "/" + entryID + EXT).destroy();
 	}
 }

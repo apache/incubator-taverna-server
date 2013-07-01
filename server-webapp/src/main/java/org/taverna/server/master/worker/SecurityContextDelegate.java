@@ -12,8 +12,6 @@ import static org.taverna.server.master.defaults.Default.CERTIFICATE_FIELD_NAMES
 import static org.taverna.server.master.defaults.Default.CERTIFICATE_TYPE;
 import static org.taverna.server.master.defaults.Default.CREDENTIAL_FILE_SIZE_LIMIT;
 import static org.taverna.server.master.identity.WorkflowInternalAuthProvider.PREFIX;
-import static org.taverna.server.master.interaction.InteractionFeedSupport.FEED_URL_DIR;
-import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.DIR;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -236,36 +234,23 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 	private List<X509Certificate> getCerts(URI uri) throws IOException, GeneralSecurityException {
 		return factory.certFetcher.getTrustsForURI(uri);
 	}
-	private static final boolean logSynthesis = true;
 
-	//TODO clean up
-	private void installLocalPasswordCredential(String path,
+	private void installLocalPasswordCredential(
 			List<Credential> credentials, List<Trust> trusts)
 			throws InvalidCredentialException, IOException, GeneralSecurityException {
 		Credential.Password pw = new Credential.Password();
 		pw.id = "run:self";
 		pw.username = PREFIX + run.id;
 		pw.password = getDAO().getSecurityToken(run.id);
-		UriBuilder ub = getUB().fragment(factory.httpRealm);
-		if (path != null)
-			ub.path(path);
-		else
-			ub.segment("");
+		UriBuilder ub = getUB().segment("").fragment(factory.httpRealm);
 		pw.serviceURI = ub.build();
 		validateCredential(pw);
-		if (logSynthesis)
-			log.info("issuing credential for " + pw.serviceURI + " as "
-					+ pw.username + ":" + pw.password);
+		log.info("issuing self-referential credential for " + pw.serviceURI);
 		credentials.add(pw);
 		Trust t = new Trust();
 		t.loadedCertificates = getCerts(pw.serviceURI);
 		trusts.add(t);
 	}
-
-	//TODO clean up
-	//private static final String[] PATHS = {
-	//	FEED_URL_DIR + "/", DIR + "/interactions/"
-	//};
 
 	/**
 	 * Builds and transfers a keystore with suitable credentials to the back-end
@@ -290,9 +275,7 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 		this.credentials.clear();
 
 		try {
-			//TODO clean up
-			//for (String path : PATHS)
-			installLocalPasswordCredential(/*path*/null, credentials, trusted);
+			installLocalPasswordCredential(credentials, trusted);
 		} catch (Exception e) {
 			log.warn("failed to construct local credential: "
 					+ "interaction service will fail", e);
