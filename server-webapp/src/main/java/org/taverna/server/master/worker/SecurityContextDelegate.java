@@ -248,6 +248,8 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 		UriBuilder ub = getUB().fragment(factory.httpRealm);
 		if (path != null)
 			ub.path(path);
+		else
+			ub.segment("");
 		pw.serviceURI = ub.build();
 		validateCredential(pw);
 		if (logSynthesis)
