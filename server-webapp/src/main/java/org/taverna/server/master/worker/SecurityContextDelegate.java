@@ -259,9 +259,9 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 		trusts.add(t);
 	}
 
-	private static final String[] PATHS = {
-		FEED_URL_DIR + "/", DIR + "/interactions/"
-	};
+	//private static final String[] PATHS = {
+	//	FEED_URL_DIR + "/", DIR + "/interactions/"
+	//};
 
 	/**
 	 * Builds and transfers a keystore with suitable credentials to the back-end
@@ -286,8 +286,8 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 		this.credentials.clear();
 
 		try {
-			for (String path : PATHS)
-				installLocalPasswordCredential(path, credentials, trusted);
+			//for (String path : PATHS)
+			installLocalPasswordCredential(/*path*/null, credentials, trusted);
 		} catch (Exception e) {
 			log.warn("failed to construct local credential: "
 					+ "interaction service will fail", e);
