@@ -238,6 +238,7 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 	}
 	private static final boolean logSynthesis = true;
 
+	//TODO clean up
 	private void installLocalPasswordCredential(String path,
 			List<Credential> credentials, List<Trust> trusts)
 			throws InvalidCredentialException, IOException, GeneralSecurityException {
@@ -261,6 +262,7 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 		trusts.add(t);
 	}
 
+	//TODO clean up
 	//private static final String[] PATHS = {
 	//	FEED_URL_DIR + "/", DIR + "/interactions/"
 	//};
@@ -288,6 +290,7 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 		this.credentials.clear();
 
 		try {
+			//TODO clean up
 			//for (String path : PATHS)
 			installLocalPasswordCredential(/*path*/null, credentials, trusted);
 		} catch (Exception e) {
