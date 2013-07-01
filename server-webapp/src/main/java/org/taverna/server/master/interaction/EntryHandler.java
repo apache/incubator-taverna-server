@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -30,6 +31,7 @@ import org.springframework.beans.factory.annotation.Required;
 
 @Provider
 @Produces({ "application/atom+xml", "application/atom+xml;type=entry" })
+@Consumes({ "application/atom+xml", "application/atom+xml;type=entry" })
 public class EntryHandler implements MessageBodyWriter<Entry>, MessageBodyReader<Entry> {
 	private static final MediaType ENTRY = new MediaType("application", "atom+xml",
 			new HashMap<String, String>() {{
@@ -64,7 +66,7 @@ public class EntryHandler implements MessageBodyWriter<Entry>, MessageBodyReader
 			MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
 			throws IOException, WebApplicationException {
 		Document<Entry> doc = parser.parse(entityStream);
-		if (!Entry.class.isAssignableFrom(doc.getClass())) {
+		if (!Entry.class.isAssignableFrom(doc.getRoot().getClass())) {
 			throw new WebApplicationException(Response
 					.notAcceptable(asList(new Variant(ENTRY, null, null)))
 					.entity("not really a feed entry").build());

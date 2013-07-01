@@ -61,9 +61,8 @@ public class InteractionFeed implements InteractionFeedREST, FeedBean {
 		} catch (URISyntaxException e) {
 			throw new RuntimeException("failed to make URI from link?!", e);
 		}
-		return Response.created(location)
-				.type("application/atom+xml;type=entry").entity(realEntry)
-				.build();
+		return Response.created(location).entity(realEntry)
+				.type("application/atom+xml;type=entry").build();
 	}
 
 	@Override
