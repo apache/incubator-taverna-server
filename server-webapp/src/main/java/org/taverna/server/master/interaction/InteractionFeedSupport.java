@@ -5,19 +5,22 @@
  */
 package org.taverna.server.master.interaction;
 
-import static java.lang.System.currentTimeMillis;
-import static java.util.UUID.randomUUID;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.abdera.Abdera;
+import org.apache.abdera.factory.Factory;
+import org.apache.abdera.i18n.iri.IRI;
+import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
+import org.apache.abdera.parser.Parser;
+import org.apache.abdera.writer.Writer;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.TavernaServerSupport;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
@@ -56,12 +59,16 @@ public class InteractionFeedSupport {
 	/** Maximum size of an entry before truncation. */
 	private static final long MAX_ENTRY_SIZE = 50 * 1024;
 	/** Extension for entry files. */
-	private static final String EXT = ".entry";
+	private static final String EXT = ".atom";
 
 	private TavernaServerSupport support;
 	private FilenameUtils utils;
-	private Abdera abdera;
+	private Writer writer;
+	private Parser parser;
+	private Factory factory;
 	private UriBuilderFactory uriBuilder;
+
+	private AtomicInteger counter = new AtomicInteger();
 
 	@Required
 	public void setSupport(TavernaServerSupport support) {
@@ -75,7 +82,9 @@ public class InteractionFeedSupport {
 
 	@Required
 	public void setAbdera(Abdera abdera) {
-		this.abdera = abdera;
+		this.factory = abdera.getFactory();
+		this.parser = abdera.getParser();
+		this.writer = abdera.getWriterFactory().getWriter("prettyxml");
 	}
 
 	@Required
@@ -110,15 +119,15 @@ public class InteractionFeedSupport {
 		if (size > MAX_ENTRY_SIZE)
 			throw new FilesystemAccessException("entry larger than 50kB");
 		byte[] contents = f.getContents(0, (int) size);
-		return (Entry) abdera.getParser()
-				.parse(new ByteArrayInputStream(contents)).getRoot();
+		Document<Entry> doc = parser.parse(new ByteArrayInputStream(contents));
+		return doc.getRoot();
 	}
 
 	private void putEntryInFile(Directory dir, String name, Entry contents)
 			throws FilesystemAccessException, NoUpdateException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
-			abdera.getWriter().writeTo(contents, baos);
+			writer.writeTo(contents, baos);
 		} catch (IOException e) {
 			throw new NoUpdateException("failed to serialize the ATOM entry", e);
 		}
@@ -142,13 +151,9 @@ public class InteractionFeedSupport {
 			NoDirectoryEntryException {
 		Directory feedDir = utils.getDirectory(run, FEED_DIR);
 		URI feedURI = getFeedURI(run);
-		Feed feed = abdera.newFeed();
+		Feed feed = factory.newFeed();
 		feed.setTitle("Interactions for Taverna Run #" + run.getId());
-		try {
-			feed.addLink(feedURI.toURL().toString(), "self");
-		} catch (MalformedURLException e) {
-			// Should be impossible; ignore...
-		}
+		feed.addLink(new IRI(feedURI).toString(), "self");
 		Date d = null;
 		for (DirectoryEntry de : feedDir.getContentsByDate()) {
 			if (!(de instanceof File))
@@ -209,14 +214,15 @@ public class InteractionFeedSupport {
 	 */
 	public Entry addRunFeedEntry(TavernaRun run, Entry entry)
 			throws FilesystemAccessException, NoDirectoryEntryException,
-			NoUpdateException, MalformedURLException {
+			NoUpdateException {
 		support.permitUpdate(run);
-		// TODO Should this id be generated like this?
-		String localId = "interact_" + currentTimeMillis();
-		entry.setId("urn:uuid:" + randomUUID());
-		String selfLink = getEntryURI(run, localId).toURL().toString();
-		entry.addLink(selfLink);
-		entry.setUpdated(new Date());
+		Date now = new Date();
+		entry.newId();
+		String localId = "entry_" + counter.incrementAndGet();
+		IRI selfLink = new IRI(getEntryURI(run, localId));
+		entry.addLink(selfLink.toString(), "self");
+		entry.setUpdated(now);
+		entry.setPublished(now);
 		putEntryInFile(utils.getDirectory(run, FEED_DIR), localId + EXT, entry);
 		return getEntryFromFile(utils.getFile(run, FEED_DIR + "/" + localId
 				+ EXT));

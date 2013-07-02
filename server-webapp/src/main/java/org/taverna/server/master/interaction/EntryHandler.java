@@ -7,9 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
