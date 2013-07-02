@@ -5,6 +5,8 @@
  */
 package org.taverna.server.master;
 
+import static eu.medsea.util.MimeUtil.UNKNOWN_MIME_TYPE;
+import static eu.medsea.util.MimeUtil.getExtensionMimeTypes;
 import static eu.medsea.util.MimeUtil.getMimeType;
 import static java.lang.Math.min;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
@@ -65,6 +67,7 @@ import org.taverna.server.master.utils.UsernamePrincipal;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import eu.medsea.util.MimeUtil;
 
 /**
  * Web application support utilities.
@@ -700,12 +703,15 @@ public class TavernaServerSupport {
 			if (mt != null)
 				return mt;
 		}
+		@NonNull
+		String type = getExtensionMimeTypes(name);
+		if (!type.equals(UNKNOWN_MIME_TYPE))
+			return type;
 		try {
 			return getMimeType(new ByteArrayInputStream(f.getContents(0,
 					SAMPLE_SIZE)));
 		} catch (FilesystemAccessException e) {
-			// Ignore; fall back to just serving as bytes
-			return APPLICATION_OCTET_STREAM;
+			return type;
 		}
 	}
 
