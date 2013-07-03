@@ -9,6 +9,9 @@ import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.joda.time.format.ISODateTimeFormat.basicDateTime;
 import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.interaction.InteractionFeedSupport.FEED_URL_DIR;
+import static org.taverna.server.master.rest.ContentTypes.JSON;
+import static org.taverna.server.master.rest.ContentTypes.TEXT;
+import static org.taverna.server.master.rest.ContentTypes.XML;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.DIR;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.IN;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.LISTEN;
@@ -69,7 +72,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * 
  * @author Donal Fellows.
  */
-@Description("This represents how a Taverna Server workflow run looks to a RESTful API.")
+@Description("This represents how a Taverna Server workflow run looks to a "
+		+ "RESTful API.")
 @RolesAllowed(USER)
 public interface TavernaServerRunREST {
 	/**
@@ -82,7 +86,7 @@ public interface TavernaServerRunREST {
 	@GET
 	@Path(ROOT)
 	@Description("Describes a workflow run.")
-	@Produces({ "application/xml", "application/json" })
+	@Produces({ XML, JSON })
 	@NonNull
 	public RunDescription getDescription(@NonNull @Context UriInfo ui);
 
@@ -112,7 +116,7 @@ public interface TavernaServerRunREST {
 	 */
 	@GET
 	@Path(WF)
-	@Produces({ T2FLOW, "application/xml", "application/json" })
+	@Produces({ T2FLOW, XML, JSON })
 	@Description("Gives the workflow document used to create the workflow run.")
 	@NonNull
 	public Workflow getWorkflow();
@@ -126,7 +130,7 @@ public interface TavernaServerRunREST {
 	/** Get the workflow name. */
 	@GET
 	@Path(NAME)
-	@Produces("text/plain")
+	@Produces(TEXT)
 	@Description("Gives the descriptive name of the workflow run.")
 	@NonNull
 	public String getName();
@@ -139,17 +143,18 @@ public interface TavernaServerRunREST {
 	 */
 	@PUT
 	@Path(NAME)
-	@Consumes("text/plain")
-	@Produces("text/plain")
-	@Description("Set the descriptive name of the workflow run. "
-			+ "Note that this value may be arbitrarily truncated by the implementation.")
+	@Consumes(TEXT)
+	@Produces(TEXT)
+	@Description("Set the descriptive name of the workflow run. Note that "
+			+ "this value may be arbitrarily truncated by the implementation.")
 	@NonNull
 	public String setName(String name) throws NoUpdateException;
 
 	/** Produce the workflow name HTTP operations. */
 	@OPTIONS
 	@Path(NAME)
-	@Description("Produces the description of the operations on the run's descriptive name.")
+	@Description("Produces the description of the operations on the run's "
+			+ "descriptive name.")
 	@NonNull
 	Response nameOptions();
 
@@ -174,8 +179,9 @@ public interface TavernaServerRunREST {
 	 */
 	@GET
 	@Path(T_EXPIRE)
-	@Produces("text/plain")
-	@Description("Gives the time when the workflow run becomes eligible for automatic deletion.")
+	@Produces(TEXT)
+	@Description("Gives the time when the workflow run becomes eligible for "
+			+ "automatic deletion.")
 	@NonNull
 	public String getExpiryTime();
 
@@ -192,9 +198,10 @@ public interface TavernaServerRunREST {
 	 */
 	@PUT
 	@Path(T_EXPIRE)
-	@Consumes("text/plain")
-	@Produces("text/plain")
-	@Description("Sets the time when the workflow run becomes eligible for automatic deletion.")
+	@Consumes(TEXT)
+	@Produces(TEXT)
+	@Description("Sets the time when the workflow run becomes eligible for "
+			+ "automatic deletion.")
 	@NonNull
 	public String setExpiryTime(@NonNull String expiry)
 			throws NoUpdateException;
@@ -212,8 +219,9 @@ public interface TavernaServerRunREST {
 	 */
 	@GET
 	@Path(T_CREATE)
-	@Produces("text/plain")
-	@Description("Gives the time when the workflow run was first submitted to the server.")
+	@Produces(TEXT)
+	@Description("Gives the time when the workflow run was first submitted "
+			+ "to the server.")
 	@NonNull
 	public String getCreateTime();
 
@@ -231,8 +239,9 @@ public interface TavernaServerRunREST {
 	 */
 	@GET
 	@Path(T_START)
-	@Produces("text/plain")
-	@Description("Gives the time when the workflow run was started, or an empty string if the run has not yet started.")
+	@Produces(TEXT)
+	@Description("Gives the time when the workflow run was started, or an "
+			+ "empty string if the run has not yet started.")
 	@NonNull
 	public String getStartTime();
 
@@ -249,8 +258,10 @@ public interface TavernaServerRunREST {
 	 */
 	@GET
 	@Path(T_FINISH)
-	@Produces("text/plain")
-	@Description("Gives the time when the workflow run was first detected as finished, or an empty string if it has not yet finished (including if it has never started).")
+	@Produces(TEXT)
+	@Description("Gives the time when the workflow run was first detected as "
+			+ "finished, or an empty string if it has not yet finished "
+			+ "(including if it has never started).")
 	@NonNull
 	public String getFinishTime();
 
@@ -267,7 +278,7 @@ public interface TavernaServerRunREST {
 	 */
 	@GET
 	@Path(STATUS)
-	@Produces("text/plain")
+	@Produces(TEXT)
 	@Description("Gives the current status of the workflow run.")
 	@NonNull
 	public String getStatus();
@@ -287,8 +298,8 @@ public interface TavernaServerRunREST {
 	 */
 	@PUT
 	@Path(STATUS)
-	@Consumes("text/plain")
-	@Produces("text/plain")
+	@Consumes(TEXT)
+	@Produces(TEXT)
 	@Description("Attempts to update the status of the workflow run.")
 	@NonNull
 	public Response setStatus(@NonNull String status) throws NoUpdateException,
@@ -340,8 +351,9 @@ public interface TavernaServerRunREST {
 	 */
 	@GET
 	@Path(OUT)
-	@Produces("text/plain")
-	@Description("Gives the Baclava file where output will be written; empty means use multiple simple files in the out directory.")
+	@Produces(TEXT)
+	@Description("Gives the Baclava file where output will be written; empty "
+			+ "means use multiple simple files in the out directory.")
 	@NonNull
 	public String getOutputFile();
 
@@ -361,7 +373,7 @@ public interface TavernaServerRunREST {
 	 */
 	@GET
 	@Path(OUT)
-	@Produces({ "application/xml", "application/json" })
+	@Produces({ XML, JSON })
 	@Description("Gives a description of the outputs, as currently understood")
 	@NonNull
 	public OutputDescription getOutputDescription(@NonNull @Context UriInfo ui)
@@ -386,9 +398,10 @@ public interface TavernaServerRunREST {
 	 */
 	@PUT
 	@Path(OUT)
-	@Consumes("text/plain")
-	@Produces("text/plain")
-	@Description("Sets the Baclava file where output will be written; empty means use multiple simple files in the out directory.")
+	@Consumes(TEXT)
+	@Produces(TEXT)
+	@Description("Sets the Baclava file where output will be written; empty "
+			+ "means use multiple simple files in the out directory.")
 	@NonNull
 	public String setOutputFile(@NonNull String filename)
 			throws NoUpdateException, FilesystemAccessException,
@@ -402,6 +415,7 @@ public interface TavernaServerRunREST {
 
 	/**
 	 * Get a handle to the interaction feed.
+	 * 
 	 * @return
 	 */
 	@Path(FEED_URL_DIR)

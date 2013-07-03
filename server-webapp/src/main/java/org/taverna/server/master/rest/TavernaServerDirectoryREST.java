@@ -1,13 +1,18 @@
 /*
- * Copyright (C) 2010-2011 The University of Manchester
+ * Copyright (C) 2010-2013 The University of Manchester
  * 
  * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.rest;
 
 import static java.util.Collections.unmodifiableList;
-import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
+import static javax.ws.rs.core.MediaType.WILDCARD;
 import static org.taverna.server.master.common.Roles.USER;
+import static org.taverna.server.master.rest.ContentTypes.BYTES;
+import static org.taverna.server.master.rest.ContentTypes.JSON;
+import static org.taverna.server.master.rest.ContentTypes.URI_LIST;
+import static org.taverna.server.master.rest.ContentTypes.XML;
+import static org.taverna.server.master.rest.ContentTypes.ZIP;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -45,8 +50,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * @author Donal Fellows
  */
 @RolesAllowed(USER)
-@Produces({ "application/xml", "application/json" })
-@Consumes({ "application/xml", "application/json" })
+@Produces({ XML, JSON })
+@Consumes({ XML, JSON })
 @Description("Representation of how a workflow run's working directory tree looks.")
 public interface TavernaServerDirectoryREST {
 	/**
@@ -92,9 +97,9 @@ public interface TavernaServerDirectoryREST {
 	 */
 	@GET
 	@Path("{path:.+}")
-	@Produces({ "application/xml", "application/json",
-			"application/octet-stream", "application/zip", "*/*" })
-	@Description("Gives a description of the named entity in or beneath the working directory of the workflow run (either a Directory or File).")
+	@Produces({ XML, JSON, BYTES, ZIP, WILDCARD })
+	@Description("Gives a description of the named entity in or beneath the "
+			+ "working directory of the workflow run (either a Directory or File).")
 	@NonNull
 	Response getDirectoryOrFileContents(
 			@NonNull @PathParam("path") List<PathSegment> path,
@@ -124,7 +129,10 @@ public interface TavernaServerDirectoryREST {
 	 */
 	@POST
 	@Path("{path:.*}")
-	@Description("Creates a directory in the filesystem beneath the working directory of the workflow run, or creates or updates a file's contents, where that file is in or below the working directory of a workflow run.")
+	@Description("Creates a directory in the filesystem beneath the working "
+			+ "directory of the workflow run, or creates or updates a file's "
+			+ "contents, where that file is in or below the working directory "
+			+ "of a workflow run.")
 	@NonNull
 	Response makeDirectoryOrUpdateFile(
 			@NonNull @PathParam("path") List<PathSegment> parent,
@@ -153,8 +161,10 @@ public interface TavernaServerDirectoryREST {
 	 */
 	@POST
 	@Path("{path:(.*)}")
-	@Consumes("text/uri-list")
-	@Description("Creates or updates a file in a particular location beneath the working directory of the workflow run with the contents of a publicly readable URL.")
+	@Consumes(URI_LIST)
+	@Description("Creates or updates a file in a particular location beneath the "
+			+ "working directory of the workflow run with the contents of a "
+			+ "publicly readable URL.")
 	@NonNull
 	Response setFileContentsFromURL(@PathParam("path") List<PathSegment> file,
 			List<URI> referenceList, @Context UriInfo ui)
@@ -181,8 +191,9 @@ public interface TavernaServerDirectoryREST {
 	 */
 	@PUT
 	@Path("{path:(.*)}")
-	@Consumes(APPLICATION_OCTET_STREAM)
-	@Description("Creates or updates a file in a particular location beneath the working directory of the workflow run.")
+	@Consumes({ BYTES, WILDCARD })
+	@Description("Creates or updates a file in a particular location beneath the "
+			+ "working directory of the workflow run.")
 	@NonNull
 	Response setFileContents(@PathParam("path") List<PathSegment> file,
 			InputStream contents, @Context UriInfo ui)
@@ -205,7 +216,8 @@ public interface TavernaServerDirectoryREST {
 	 */
 	@DELETE
 	@Path("{path:.*}")
-	@Description("Deletes a file or directory that is in or below the working directory of a workflow run.")
+	@Description("Deletes a file or directory that is in or below the working "
+			+ "directory of a workflow run.")
 	@NonNull
 	Response destroyDirectoryEntry(@PathParam("path") List<PathSegment> path)
 			throws NoUpdateException, FilesystemAccessException,

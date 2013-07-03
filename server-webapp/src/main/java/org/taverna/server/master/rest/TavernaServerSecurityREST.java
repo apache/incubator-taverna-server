@@ -9,6 +9,9 @@ import static java.util.Collections.emptyList;
 import static org.taverna.server.master.common.Namespaces.SERVER;
 import static org.taverna.server.master.common.Namespaces.XLINK;
 import static org.taverna.server.master.common.Roles.USER;
+import static org.taverna.server.master.rest.ContentTypes.JSON;
+import static org.taverna.server.master.rest.ContentTypes.TEXT;
+import static org.taverna.server.master.rest.ContentTypes.XML;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -58,7 +61,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * @author Donal Fellows
  */
 @RolesAllowed(USER)
-@Description("Manages the security of the workflow run. In general, only the owner of a run may access this resource.")
+@Description("Manages the security of the workflow run. In general, only the "
+		+ "owner of a run may access this resource.")
 public interface TavernaServerSecurityREST {
 	/**
 	 * Gets a description of the security information supported by the workflow
@@ -70,8 +74,9 @@ public interface TavernaServerSecurityREST {
 	 */
 	@GET
 	@Path("/")
-	@Produces({ "application/xml", "application/json" })
-	@Description("Gives a description of the security information supported by the workflow run.")
+	@Produces({ XML, JSON })
+	@Description("Gives a description of the security information supported "
+			+ "by the workflow run.")
 	@NonNull
 	Descriptor describe(@NonNull @Context UriInfo ui);
 
@@ -88,7 +93,7 @@ public interface TavernaServerSecurityREST {
 	 */
 	@GET
 	@Path("owner")
-	@Produces("text/plain")
+	@Produces(TEXT)
 	@Description("Gives the identity of who owns the workflow run.")
 	@NonNull
 	String getOwner();
@@ -100,7 +105,7 @@ public interface TavernaServerSecurityREST {
 	Response ownerOptions();
 
 	/*
-	 * @PUT @Path("/") @Consumes(APPLICATION_OCTET_STREAM) @CallCounted @NonNull
+	 * @PUT @Path("/") @Consumes(ContentTypes.BYTES) @CallCounted @NonNull
 	 * public void set(@NonNull InputStream contents, @NonNull @Context UriInfo
 	 * ui);
 	 */
@@ -110,7 +115,7 @@ public interface TavernaServerSecurityREST {
 	 */
 	@GET
 	@Path("credentials")
-	@Produces({ "application/xml", "application/json" })
+	@Produces({ XML, JSON })
 	@Description("Gives a list of credentials supplied to this workflow run.")
 	@NonNull
 	CredentialList listCredentials();
@@ -138,7 +143,7 @@ public interface TavernaServerSecurityREST {
 	 */
 	@GET
 	@Path("credentials/{id}")
-	@Produces({ "application/xml", "application/json" })
+	@Produces({ XML, JSON })
 	@Description("Describes a particular credential.")
 	@NonNull
 	CredentialHolder getParticularCredential(@NonNull @PathParam("id") String id)
@@ -161,8 +166,8 @@ public interface TavernaServerSecurityREST {
 	 */
 	@PUT
 	@Path("credentials/{id}")
-	@Consumes({ "application/xml", "application/json" })
-	@Produces({ "application/xml", "application/json" })
+	@Consumes({ XML, JSON })
+	@Produces({ XML, JSON })
 	@Description("Updates a particular credential.")
 	@NonNull
 	CredentialHolder setParticularCredential(
@@ -185,7 +190,7 @@ public interface TavernaServerSecurityREST {
 	 */
 	@POST
 	@Path("credentials")
-	@Consumes({ "application/xml", "application/json" })
+	@Consumes({ XML, JSON })
 	@Description("Creates a new credential.")
 	@NonNull
 	Response addCredential(@NonNull CredentialHolder c,
@@ -229,13 +234,15 @@ public interface TavernaServerSecurityREST {
 	/** Get an outline of the operations supported. */
 	@OPTIONS
 	@Path("trusts")
-	@Description("Produces the description of the run trusted certificates' operations.")
+	@Description("Produces the description of the run trusted certificates' "
+			+ "operations.")
 	Response trustsOptions();
 
 	/** Get an outline of the operations supported. */
 	@OPTIONS
 	@Path("trusts/{id}")
-	@Description("Produces the description of one run trusted certificate's operations.")
+	@Description("Produces the description of one run trusted certificate's "
+			+ "operations.")
 	Response trustOptions(@PathParam("id") String id);
 
 	/**
@@ -243,8 +250,9 @@ public interface TavernaServerSecurityREST {
 	 */
 	@GET
 	@Path("trusts")
-	@Produces({ "application/xml", "application/json" })
-	@Description("Gives a list of trusted identities supplied to this workflow run.")
+	@Produces({ XML, JSON })
+	@Description("Gives a list of trusted identities supplied to this "
+			+ "workflow run.")
 	@NonNull
 	TrustList listTrusted();
 
@@ -259,7 +267,7 @@ public interface TavernaServerSecurityREST {
 	 */
 	@GET
 	@Path("trusts/{id}")
-	@Produces({ "application/xml", "application/json" })
+	@Produces({ XML, JSON })
 	@Description("Describes a particular trusted identity.")
 	@NonNull
 	Trust getParticularTrust(@NonNull @PathParam("id") String id)
@@ -282,8 +290,8 @@ public interface TavernaServerSecurityREST {
 	 */
 	@PUT
 	@Path("trusts/{id}")
-	@Consumes({ "application/xml", "application/json" })
-	@Produces({ "application/xml", "application/json" })
+	@Consumes({ XML, JSON })
+	@Produces({ XML, JSON })
 	@Description("Updates a particular trusted identity.")
 	@NonNull
 	Trust setParticularTrust(@NonNull @PathParam("id") String id,
@@ -305,7 +313,7 @@ public interface TavernaServerSecurityREST {
 	 */
 	@POST
 	@Path("trusts")
-	@Consumes({ "application/xml", "application/json" })
+	@Consumes({ XML, JSON })
 	@Description("Adds a new trusted identity.")
 	@NonNull
 	Response addTrust(@NonNull Trust t, @NonNull @Context UriInfo ui)
@@ -365,8 +373,10 @@ public interface TavernaServerSecurityREST {
 	 */
 	@GET
 	@Path("permissions")
-	@Produces({ "application/xml", "application/json" })
-	@Description("Gives a list of all non-default permissions associated with the enclosing workflow run. By default, nobody has any access at all except for the owner of the run.")
+	@Produces({ XML, JSON })
+	@Description("Gives a list of all non-default permissions associated with "
+			+ "the enclosing workflow run. By default, nobody has any access "
+			+ "at all except for the owner of the run.")
 	@NonNull
 	PermissionsDescription describePermissions(@NonNull @Context UriInfo ui);
 
@@ -379,7 +389,7 @@ public interface TavernaServerSecurityREST {
 	 */
 	@GET
 	@Path("permissions/{id}")
-	@Produces("text/plain")
+	@Produces(TEXT)
 	@Description("Describes the permission granted to a particular user.")
 	@NonNull
 	Permission describePermission(@NonNull @PathParam("id") String id);
@@ -395,8 +405,8 @@ public interface TavernaServerSecurityREST {
 	 * @return The permission level that has actually been set.
 	 */
 	@PUT
-	@Consumes("text/plain")
-	@Produces("text/plain")
+	@Consumes(TEXT)
+	@Produces(TEXT)
 	@Path("permissions/{id}")
 	@Description("Updates the permissions granted to a particular user.")
 	@NonNull
@@ -415,7 +425,8 @@ public interface TavernaServerSecurityREST {
 	 */
 	@DELETE
 	@Path("permissions/{id}")
-	@Description("Deletes (by resetting to default) the permissions associated with a particular user.")
+	@Description("Deletes (by resetting to default) the permissions "
+			+ "associated with a particular user.")
 	@NonNull
 	Response deletePermission(@NonNull @PathParam("id") String id,
 			@NonNull @Context UriInfo ui);
@@ -432,7 +443,7 @@ public interface TavernaServerSecurityREST {
 	 */
 	@POST
 	@Path("permissions")
-	@Consumes({ "application/xml", "application/json" })
+	@Consumes({ XML, JSON })
 	@Description("Creates a new assignment of permissions to a particular user.")
 	@NonNull
 	Response makePermission(@NonNull PermissionDescription desc,
@@ -683,7 +694,8 @@ public interface TavernaServerSecurityREST {
 			 * Initialise a description of one user's permissions.
 			 * 
 			 * @param ub
-			 *            How to build the URI to this permission. Already secured.
+			 *            How to build the URI to this permission. Already
+			 *            secured.
 			 * @param userName
 			 *            Who this relates to.
 			 * @param permission

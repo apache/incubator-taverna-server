@@ -6,6 +6,9 @@
 package org.taverna.server.master.rest;
 
 import static org.taverna.server.master.common.Roles.USER;
+import static org.taverna.server.master.rest.ContentTypes.JSON;
+import static org.taverna.server.master.rest.ContentTypes.URI_LIST;
+import static org.taverna.server.master.rest.ContentTypes.XML;
 import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL;
 import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_NOTIFIERS;
 import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_PERM_LIST;
@@ -71,7 +74,7 @@ public interface TavernaServerREST {
 	 */
 	@GET
 	@Path(ROOT)
-	@Produces({ "application/xml", "application/json" })
+	@Produces({ XML, JSON })
 	@Description("Produces the description of the service.")
 	@NonNull
 	ServerDescription describeService(@NonNull @Context UriInfo ui);
@@ -91,7 +94,7 @@ public interface TavernaServerREST {
 	 */
 	@GET
 	@Path(RUNS)
-	@Produces({ "application/xml", "application/json" })
+	@Produces({ XML, JSON })
 	@RolesAllowed(USER)
 	@Description("Produces a list of all runs visible to the user.")
 	@NonNull
@@ -111,9 +114,10 @@ public interface TavernaServerREST {
 	 */
 	@POST
 	@Path(RUNS)
-	@Consumes({ T2FLOW, "application/xml" })
+	@Consumes({ T2FLOW, XML })
 	@RolesAllowed(USER)
-	@Description("Accepts (or not) a request to create a new run executing the given workflow.")
+	@Description("Accepts (or not) a request to create a new run executing "
+			+ "the given workflow.")
 	@NonNull
 	Response submitWorkflow(@NonNull Workflow workflow,
 			@NonNull @Context UriInfo ui) throws NoUpdateException;
@@ -135,9 +139,10 @@ public interface TavernaServerREST {
 	 */
 	@POST
 	@Path(RUNS)
-	@Consumes("text/uri-list")
+	@Consumes(URI_LIST)
 	@RolesAllowed(USER)
-	@Description("Accepts a URL to a workflow to download and run. The URL must be hosted on a publicly-accessible service.")
+	@Description("Accepts a URL to a workflow to download and run. The URL "
+			+ "must be hosted on a publicly-accessible service.")
 	@NonNull
 	Response submitWorkflowByURL(@NonNull List<URI> referenceList,
 			@NonNull @Context UriInfo ui) throws NoCreateException,
@@ -146,7 +151,8 @@ public interface TavernaServerREST {
 	/** Get an outline of the operations supported. */
 	@OPTIONS
 	@Path(RUNS)
-	@Description("Produces the description of the operations on the collection of runs.")
+	@Description("Produces the description of the operations on the "
+			+ "collection of runs.")
 	Response runsOptions();
 
 	/**
@@ -257,7 +263,7 @@ public interface TavernaServerREST {
 		 */
 		@GET
 		@Path(ROOT)
-		@Produces({ "application/xml", "application/json" })
+		@Produces({ XML, JSON })
 		@Description("Describe the parts of this policy.")
 		@NonNull
 		public PolicyDescription getDescription(@NonNull @Context UriInfo ui);
@@ -274,7 +280,8 @@ public interface TavernaServerREST {
 		@Path(POL_RUN_LIMIT)
 		@Produces("text/plain")
 		@RolesAllowed(USER)
-		@Description("Gets the maximum number of simultaneous runs that the user may create.")
+		@Description("Gets the maximum number of simultaneous runs that the "
+				+ "user may create.")
 		@NonNull
 		public int getMaxSimultaneousRuns();
 
@@ -287,7 +294,7 @@ public interface TavernaServerREST {
 		 */
 		@GET
 		@Path(POL_PERM_WF)
-		@Produces({ "application/xml", "application/json" })
+		@Produces({ XML, JSON })
 		@RolesAllowed(USER)
 		@Description("Gets the list of permitted workflows.")
 		@NonNull
@@ -301,7 +308,7 @@ public interface TavernaServerREST {
 		 */
 		@GET
 		@Path(POL_PERM_LIST)
-		@Produces({ "application/xml", "application/json" })
+		@Produces({ XML, JSON })
 		@RolesAllowed(USER)
 		@Description("Gets the list of permitted event listener types.")
 		@NonNull
@@ -316,9 +323,11 @@ public interface TavernaServerREST {
 		 */
 		@GET
 		@Path(POL_NOTIFIERS)
-		@Produces({ "application/xml", "application/json" })
+		@Produces({ XML, JSON })
 		@RolesAllowed(USER)
-		@Description("Gets the list of supported, enabled notification fabrics. Each corresponds (approximately) to a protocol, e.g., email.")
+		@Description("Gets the list of supported, enabled notification "
+				+ "fabrics. Each corresponds (approximately) to a protocol, "
+				+ "e.g., email.")
 		@NonNull
 		public EnabledNotificationFabrics getEnabledNotifiers();
 
@@ -504,8 +513,7 @@ public interface TavernaServerREST {
 		 */
 		@GET
 		@Path("/")
-		@Produces({ "application/xml", "application/json",
-				"application/atom+xml;type=feed" })
+		@Produces({ XML, JSON, "application/atom+xml;type=feed" })
 		@Description("Get an Atom feed for the user's events.")
 		@NonNull
 		Events getFeed();
@@ -517,8 +525,7 @@ public interface TavernaServerREST {
 		 */
 		@GET
 		@Path("{id}")
-		@Produces({ "application/xml", "application/json",
-				"application/atom+xml;type=entry" })
+		@Produces({ XML, JSON, "application/atom+xml;type=entry" })
 		@Description("Get a particular Atom event.")
 		@NonNull
 		AbstractEvent getEvent(@NonNull @PathParam("id") String id);

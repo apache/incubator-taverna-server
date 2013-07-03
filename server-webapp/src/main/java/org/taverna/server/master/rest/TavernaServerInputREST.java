@@ -6,6 +6,9 @@
 package org.taverna.server.master.rest;
 
 import static org.taverna.server.master.common.Roles.USER;
+import static org.taverna.server.master.rest.ContentTypes.JSON;
+import static org.taverna.server.master.rest.ContentTypes.TEXT;
+import static org.taverna.server.master.rest.ContentTypes.XML;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +51,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * @author Donal Fellows.
  */
 @RolesAllowed(USER)
-@Description("This represents how a Taverna Server workflow run's inputs looks to a RESTful API.")
+@Description("This represents how a Taverna Server workflow run's inputs "
+		+ "looks to a RESTful API.")
 public interface TavernaServerInputREST {
 	/**
 	 * @return A description of the various URIs to inputs associated with a
@@ -56,7 +60,7 @@ public interface TavernaServerInputREST {
 	 */
 	@GET
 	@Path("/")
-	@Produces({ "application/xml", "application/json" })
+	@Produces({ XML, JSON })
 	@Description("Describe the sub-URIs of this resource.")
 	@NonNull
 	InputsDescriptor get();
@@ -73,7 +77,7 @@ public interface TavernaServerInputREST {
 	 */
 	@GET
 	@Path("expected")
-	@Produces({ "application/xml", "application/json" })
+	@Produces({ XML, JSON })
 	@Description("Describe the expected inputs of this workflow run.")
 	@NonNull
 	InputDescription getExpected();
@@ -90,8 +94,9 @@ public interface TavernaServerInputREST {
 	 */
 	@GET
 	@Path("baclava")
-	@Produces("text/plain")
-	@Description("Gives the Baclava file describing the inputs, or empty if individual files are used.")
+	@Produces(TEXT)
+	@Description("Gives the Baclava file describing the inputs, or empty if "
+			+ "individual files are used.")
 	@NonNull
 	String getBaclavaFile();
 
@@ -111,8 +116,8 @@ public interface TavernaServerInputREST {
 	 */
 	@PUT
 	@Path("baclava")
-	@Consumes("text/plain")
-	@Produces("text/plain")
+	@Consumes(TEXT)
+	@Produces(TEXT)
 	@Description("Sets the Baclava file describing the inputs.")
 	@NonNull
 	String setBaclavaFile(@NonNull String filename) throws NoUpdateException,
@@ -135,8 +140,9 @@ public interface TavernaServerInputREST {
 	 */
 	@GET
 	@Path("input/{name}")
-	@Produces({ "application/xml", "application/json" })
-	@Description("Gives a description of what is used to supply a particular input.")
+	@Produces({ XML, JSON })
+	@Description("Gives a description of what is used to supply a particular "
+			+ "input.")
 	@NonNull
 	InDesc getInput(@NonNull @PathParam("name") String name)
 			throws BadInputPortNameException;
@@ -163,8 +169,8 @@ public interface TavernaServerInputREST {
 	 */
 	@PUT
 	@Path("input/{name}")
-	@Consumes({ "application/xml", "application/json" })
-	@Produces({ "application/xml", "application/json" })
+	@Consumes({ XML, JSON })
+	@Produces({ XML, JSON })
 	@Description("Sets the source for a particular input port.")
 	@NonNull
 	InDesc setInput(@NonNull @PathParam("name") String name,

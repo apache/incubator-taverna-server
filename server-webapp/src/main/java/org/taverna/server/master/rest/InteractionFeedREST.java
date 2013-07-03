@@ -5,6 +5,8 @@
  */
 package org.taverna.server.master.rest;
 
+import static org.taverna.server.master.rest.ContentTypes.ATOM;
+
 import java.net.MalformedURLException;
 
 import javax.ws.rs.Consumes;
@@ -41,7 +43,7 @@ public interface InteractionFeedREST {
 	 */
 	@GET
 	@Path("/")
-	@Produces("application/atom+xml")
+	@Produces(ATOM)
 	@Description("Get the feed document for this ATOM feed.")
 	Feed getFeed() throws FilesystemAccessException, NoDirectoryEntryException;
 
@@ -63,8 +65,8 @@ public interface InteractionFeedREST {
 	 */
 	@POST
 	@Path("/")
-	@Consumes("application/atom+xml")
-	@Produces("application/atom+xml")
+	@Consumes(ATOM)
+	@Produces(ATOM)
 	@Description("Adds an entry to this ATOM feed.")
 	Response addEntry(Entry entry) throws MalformedURLException,
 			FilesystemAccessException, NoDirectoryEntryException,
@@ -89,7 +91,7 @@ public interface InteractionFeedREST {
 	 */
 	@GET
 	@Path("{id}")
-	@Produces("application/atom+xml")
+	@Produces(ATOM)
 	@Description("Get the entry with a particular ID within this ATOM feed.")
 	Entry getEntry(@PathParam("id") String id)
 			throws FilesystemAccessException, NoDirectoryEntryException;

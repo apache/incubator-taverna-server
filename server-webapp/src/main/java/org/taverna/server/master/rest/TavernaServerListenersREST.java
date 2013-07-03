@@ -7,6 +7,9 @@ package org.taverna.server.master.rest;
 
 import static org.taverna.server.master.common.Namespaces.XLINK;
 import static org.taverna.server.master.common.Roles.USER;
+import static org.taverna.server.master.rest.ContentTypes.JSON;
+import static org.taverna.server.master.rest.ContentTypes.TEXT;
+import static org.taverna.server.master.rest.ContentTypes.XML;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -48,7 +51,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * @see TavernaServerListenerREST
  */
 @RolesAllowed(USER)
-@Description("This represents all the event listeners attached to a workflow run.")
+@Description("This represents all the event listeners attached to a workflow "
+		+ "run.")
 public interface TavernaServerListenersREST {
 	/**
 	 * Get the listeners installed in the workflow run.
@@ -59,7 +63,7 @@ public interface TavernaServerListenersREST {
 	 */
 	@GET
 	@Path("/")
-	@Produces({ "application/xml", "application/json" })
+	@Produces({ XML, JSON })
 	@Description("Get the listeners installed in the workflow run.")
 	@NonNull
 	Listeners getDescription(@NonNull @Context UriInfo ui);
@@ -81,7 +85,7 @@ public interface TavernaServerListenersREST {
 	 */
 	@POST
 	@Path("/")
-	@Consumes({ "application/xml", "application/json" })
+	@Consumes({ XML, JSON })
 	@Description("Add a new event listener to the named workflow run.")
 	@NonNull
 	Response addListener(@NonNull ListenerDefinition typeAndConfiguration,
@@ -117,7 +121,8 @@ public interface TavernaServerListenersREST {
 	 * @see Property
 	 */
 	@RolesAllowed(USER)
-	@Description("This represents a single event listener attached to a workflow run.")
+	@Description("This represents a single event listener attached to a "
+			+ "workflow run.")
 	public interface TavernaServerListenerREST {
 		/**
 		 * Get the description of this listener.
@@ -128,7 +133,7 @@ public interface TavernaServerListenersREST {
 		 */
 		@GET
 		@Path("/")
-		@Produces({ "application/xml", "application/json" })
+		@Produces({ XML, JSON })
 		@Description("Get the description of this listener.")
 		@NonNull
 		ListenerDescription getDescription(@NonNull @Context UriInfo ui);
@@ -147,15 +152,17 @@ public interface TavernaServerListenersREST {
 		 */
 		@GET
 		@Path("configuration")
-		@Produces("text/plain")
-		@Description("Get the configuration for the given event listener that is attached to a workflow run.")
+		@Produces(TEXT)
+		@Description("Get the configuration for the given event listener that "
+				+ "is attached to a workflow run.")
 		@NonNull
 		String getConfiguration();
 
 		/** Get an outline of the operations supported. */
 		@OPTIONS
 		@Path("configuration")
-		@Description("Produces the description of one run listener's configuration's operations.")
+		@Description("Produces the description of one run listener's "
+				+ "configuration's operations.")
 		Response configurationOptions();
 
 		/**
@@ -168,15 +175,17 @@ public interface TavernaServerListenersREST {
 		 */
 		@GET
 		@Path("properties")
-		@Produces({ "application/xml", "application/json" })
-		@Description("Get the list of properties supported by a given event listener attached to a workflow run.")
+		@Produces({ XML, JSON })
+		@Description("Get the list of properties supported by a given event "
+				+ "listener attached to a workflow run.")
 		@NonNull
 		Properties getProperties(@NonNull @Context UriInfo ui);
 
 		/** Get an outline of the operations supported. */
 		@OPTIONS
 		@Path("properties")
-		@Description("Produces the description of one run listener's properties' operations.")
+		@Description("Produces the description of one run listener's "
+				+ "properties' operations.")
 		Response propertiesOptions();
 
 		/**
@@ -201,7 +210,8 @@ public interface TavernaServerListenersREST {
 	 * @author Donal Fellows
 	 */
 	@RolesAllowed(USER)
-	@Description("This represents a single property attached of an event listener.")
+	@Description("This represents a single property attached of an event "
+			+ "listener.")
 	public interface Property {
 		/**
 		 * Get the value of the particular property of an event listener
@@ -211,8 +221,9 @@ public interface TavernaServerListenersREST {
 		 */
 		@GET
 		@Path("/")
-		@Produces("text/plain")
-		@Description("Get the value of the particular property of an event listener attached to a workflow run.")
+		@Produces(TEXT)
+		@Description("Get the value of the particular property of an event "
+				+ "listener attached to a workflow run.")
 		@NonNull
 		String getValue();
 
@@ -231,9 +242,10 @@ public interface TavernaServerListenersREST {
 		 */
 		@PUT
 		@Path("/")
-		@Consumes("text/plain")
-		@Produces("text/plain")
-		@Description("Set the value of the particular property of an event listener attached to a workflow run.")
+		@Consumes(TEXT)
+		@Produces(TEXT)
+		@Description("Set the value of the particular property of an event "
+				+ "listener attached to a workflow run.")
 		@NonNull
 		String setValue(@NonNull String value) throws NoUpdateException,
 				NoListenerException;
@@ -241,7 +253,8 @@ public interface TavernaServerListenersREST {
 		/** Get an outline of the operations supported. */
 		@OPTIONS
 		@Path("/")
-		@Description("Produces the description of one run listener's property's operations.")
+		@Description("Produces the description of one run listener's "
+				+ "property's operations.")
 		Response options();
 	}
 
