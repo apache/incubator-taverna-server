@@ -5,12 +5,16 @@
  */
 package org.taverna.server.master.interaction;
 
+import static java.util.Collections.reverse;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.abdera.Abdera;
@@ -135,6 +139,18 @@ public class InteractionFeedSupport {
 		f.appendContents(baos.toByteArray());
 	}
 
+	private List<DirectoryEntry> listPossibleEntries(TavernaRun run)
+			throws FilesystemAccessException, NoDirectoryEntryException {
+		List<DirectoryEntry> entries = new ArrayList<DirectoryEntry>(utils
+				.getDirectory(run, FEED_DIR).getContentsByDate());
+		reverse(entries);
+		return entries;
+	}
+
+	private String getRunURL(TavernaRun run) {
+		return new IRI(uriBuilder.getRunUriBuilder(run).build()).toString();
+	}
+
 	/**
 	 * Get the interaction feed for a partciular run.
 	 * 
@@ -149,13 +165,13 @@ public class InteractionFeedSupport {
 	 */
 	public Feed getRunFeed(TavernaRun run) throws FilesystemAccessException,
 			NoDirectoryEntryException {
-		Directory feedDir = utils.getDirectory(run, FEED_DIR);
 		URI feedURI = getFeedURI(run);
 		Feed feed = factory.newFeed();
-		feed.setTitle("Interactions for Taverna Run #" + run.getId());
+		feed.setTitle("Interactions for Taverna Run \"" + run.getName() + "\"");
 		feed.addLink(new IRI(feedURI).toString(), "self");
+		feed.addLink(getRunURL(run), "workflowrun");
 		Date d = null;
-		for (DirectoryEntry de : feedDir.getContentsByDate()) {
+		for (DirectoryEntry de : listPossibleEntries(run)) {
 			if (!(de instanceof File))
 				continue;
 			try {
@@ -163,13 +179,12 @@ public class InteractionFeedSupport {
 				if (STRIP_CONTENTS)
 					e.setContentElement(null);
 				feed.addEntry(e);
-				d = de.getModificationDate();
+				if (d == null)
+					feed.setUpdated(d = de.getModificationDate());
 			} catch (FilesystemAccessException e) {
 				// Can't do anything about it, so we'll just drop the entry.
 			}
 		}
-		if (d != null)
-			feed.setUpdated(d);
 		return feed;
 	}
 
@@ -188,8 +203,7 @@ public class InteractionFeedSupport {
 	 */
 	public Entry getRunFeedEntry(TavernaRun run, String entryID)
 			throws FilesystemAccessException, NoDirectoryEntryException {
-		File entryFile = utils
-				.getFile(run, FEED_DIR + "/" + entryID + EXT);
+		File entryFile = utils.getFile(run, FEED_DIR + "/" + entryID + EXT);
 		return getEntryFromFile(entryFile);
 	}
 
@@ -221,6 +235,7 @@ public class InteractionFeedSupport {
 		String localId = "entry_" + counter.incrementAndGet();
 		IRI selfLink = new IRI(getEntryURI(run, localId));
 		entry.addLink(selfLink.toString(), "self");
+		entry.addLink(getRunURL(run), "workflowrun");
 		entry.setUpdated(now);
 		entry.setPublished(now);
 		putEntryInFile(utils.getDirectory(run, FEED_DIR), localId + EXT, entry);
