@@ -170,7 +170,7 @@ public class InteractionFeedSupport {
 		feed.setTitle("Interactions for Taverna Run \"" + run.getName() + "\"");
 		feed.addLink(new IRI(feedURI).toString(), "self");
 		feed.addLink(getRunURL(run), "workflowrun");
-		Date d = null;
+		boolean fetchedDate = false;
 		for (DirectoryEntry de : listPossibleEntries(run)) {
 			if (!(de instanceof File))
 				continue;
@@ -179,8 +179,15 @@ public class InteractionFeedSupport {
 				if (STRIP_CONTENTS)
 					e.setContentElement(null);
 				feed.addEntry(e);
-				if (d == null)
-					feed.setUpdated(d = de.getModificationDate());
+				if (!fetchedDate) {
+					Date last = e.getUpdated();
+					if (last == null)
+						last = e.getPublished();
+					if (last == null)
+						last = de.getModificationDate();
+					feed.setUpdated(last);
+					fetchedDate = true;
+				}
 			} catch (FilesystemAccessException e) {
 				// Can't do anything about it, so we'll just drop the entry.
 			}
