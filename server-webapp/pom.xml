@@ -614,8 +614,9 @@
 					</execution>
 				</executions>
 				<configuration>
-					<dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+					<dotGitDirectory>${project.basedir}/../.git</dotGitDirectory>
 					<prefix>git</prefix>
+					<verbose>true</verbose>
 				</configuration>
 			</plugin>
 			<plugin>
