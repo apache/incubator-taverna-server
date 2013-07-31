@@ -8,6 +8,7 @@ package org.taverna.server.localworker.impl;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;
 import static java.lang.System.out;
+import static java.lang.management.ManagementFactory.getRuntimeMXBean;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -20,6 +21,7 @@ import static org.taverna.server.localworker.impl.Constants.HELIO_TOKEN_NAME;
 import static org.taverna.server.localworker.impl.Constants.KEYSTORE_FILE;
 import static org.taverna.server.localworker.impl.Constants.KEYSTORE_PASSWORD;
 import static org.taverna.server.localworker.impl.Constants.SECURITY_DIR_NAME;
+import static org.taverna.server.localworker.impl.Constants.SHARED_DIR_PROP;
 import static org.taverna.server.localworker.impl.Constants.SUBDIR_LIST;
 import static org.taverna.server.localworker.impl.Constants.SYSTEM_ENCODING;
 import static org.taverna.server.localworker.impl.Constants.TRUSTSTORE_FILE;
@@ -75,13 +77,14 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 
 	/** Handle to the directory containing the security info. */
 	static final File SECURITY_DIR;
+	static final String SLASHTEMP;
 	static {
+		SLASHTEMP = getProperty("java.io.tmpdir");
 		File home = new File(getProperty("user.home"));
 		// If we can't write to $HOME (i.e., we're in an odd deployment) use
 		// the official version of /tmp/$PID as a fallback.
 		if (!home.canWrite())
-			home = new File(getProperty("java.io.tmpdir"), ManagementFactory
-					.getRuntimeMXBean().getName());
+			home = new File(SLASHTEMP, getRuntimeMXBean().getName());
 		SECURITY_DIR = new File(home, SECURITY_DIR_NAME);
 	}
 
@@ -202,7 +205,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		masterToken = id.toString();
 		this.workflow = workflow;
 		this.executeWorkflowCommand = executeWorkflowCommand;
-		base = new File(getProperty("java.io.tmpdir"), masterToken);
+		String sharedDir = getProperty(SHARED_DIR_PROP, SLASHTEMP);
+		base = new File(sharedDir, masterToken);
 		out.println("about to create " + base);
 		try {
 			forceMkdir(base);

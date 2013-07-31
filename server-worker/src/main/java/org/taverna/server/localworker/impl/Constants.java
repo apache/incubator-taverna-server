@@ -113,4 +113,9 @@ public interface Constants {
 	 * Time to wait during closing down this process. In milliseconds.
 	 */
 	static final int DEATH_DELAY = 500;
+	/**
+	 * The name of the property describing where shared directories should be
+	 * located.
+	 */
+	static final String SHARED_DIR_PROP = "taverna.sharedDirectory";
 }
