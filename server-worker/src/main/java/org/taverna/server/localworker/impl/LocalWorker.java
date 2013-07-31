@@ -33,7 +33,6 @@ import static org.taverna.server.localworker.remote.RemoteStatus.Stopped;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.net.URL;
 import java.rmi.RemoteException;
