@@ -5,7 +5,7 @@
  */
 package org.taverna.server.master.rest.handler;
 
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -18,6 +18,6 @@ public class BadPropertyValueHandler extends HandlerCore implements
 		ExceptionMapper<BadPropertyValueException> {
 	@Override
 	public Response toResponse(BadPropertyValueException exn) {
-		return respond(FORBIDDEN, exn);
+		return respond(BAD_REQUEST, exn);
 	}
 }
