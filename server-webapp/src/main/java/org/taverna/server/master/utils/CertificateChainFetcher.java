@@ -1,4 +1,12 @@
+/*
+ * Copyright (C) 2013 The University of Manchester
+ * 
+ * See the file "LICENSE" for license terms.
+ */
 package org.taverna.server.master.utils;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableList;
 
 import java.io.IOException;
 import java.net.URI;
@@ -8,6 +16,10 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
@@ -16,15 +28,14 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import javax.xml.ws.Holder;
 
+/**
+ * Obtains the certificate chain for an arbitrary SSL service. Maintains a
+ * cache.
+ * 
+ * @author Donal Fellows
+ */
 public class CertificateChainFetcher {
 	public String getProtocol() {
 		return protocol;
@@ -63,8 +74,32 @@ public class CertificateChainFetcher {
 	private String algorithm = TrustManagerFactory.getDefaultAlgorithm();
 	private int timeout = 10000;
 
-	private X509Certificate[] getCertificateChainForService(String host, int port)
-			throws NoSuchAlgorithmException, KeyStoreException,
+	/**
+	 * Get the certificate chain for a service.
+	 * 
+	 * @param host
+	 *            The host (name or IP address) to contact the service on.
+	 * @param port
+	 *            The port to contact the service on.
+	 * @return The certificate chain, or <tt>null</tt> if no credentials are
+	 *         available.
+	 * @throws NoSuchAlgorithmException
+	 *             If the trust manager cannot be set up because of algorithm
+	 *             problems.
+	 * @throws KeyStoreException
+	 *             If the trust manager cannot be set up because of problems
+	 *             with the keystore type.
+	 * @throws CertificateException
+	 *             If a bad certificate is present in the default keystore;
+	 *             <i>should be impossible</i>.
+	 * @throws IOException
+	 *             If problems happen when trying to contact the service.
+	 * @throws KeyManagementException
+	 *             If the SSL context can't have its special context manager
+	 *             installed.
+	 */
+	private X509Certificate[] getCertificateChainForService(String host,
+			int port) throws NoSuchAlgorithmException, KeyStoreException,
 			CertificateException, IOException, KeyManagementException {
 		KeyStore ks = KeyStore.getInstance(keystoreType);
 		SSLContext context = SSLContext.getInstance(protocol);
@@ -105,17 +140,43 @@ public class CertificateChainFetcher {
 		return chain.value;
 	}
 
-	private Map<URI,List<X509Certificate>> cache = new HashMap<URI,List<X509Certificate>>();
+	private Map<URI, List<X509Certificate>> cache = new HashMap<URI, List<X509Certificate>>();
 
-	public List<X509Certificate> getTrustsForURI(URI uri) throws IOException, GeneralSecurityException {
-		synchronized(this) {
-			if (!cache.containsKey(uri))
-				cache.put(uri, Collections.unmodifiableList(Arrays.asList(getCertificateChainForService(uri.getHost(), uri.getPort()))));
+	/**
+	 * Gets the certificate chain for a service identified by URI.
+	 * 
+	 * @param uri
+	 *            The URI of the (secure) service to identify.
+	 * @return The certificate chain. Will be <tt>null</tt> if the service is
+	 *         not secure.
+	 * @throws IOException
+	 *             If the service is unreachable or other connection problems
+	 *             occur.
+	 * @throws GeneralSecurityException
+	 *             If any of a number of security-related problems occur, such
+	 *             as an inability to match detailed security protocols.
+	 */
+	public List<X509Certificate> getTrustsForURI(URI uri) throws IOException,
+			GeneralSecurityException {
+		synchronized (this) {
+			if (!cache.containsKey(uri)) {
+				X509Certificate[] chain = getCertificateChainForService(
+						uri.getHost(), uri.getPort());
+				if (chain != null)
+					cache.put(uri, unmodifiableList(asList(chain)));
+				else
+					cache.put(uri, null);
+			}
 			return cache.get(uri);
 		}
 	}
 
+	/**
+	 * Flushes the cache.
+	 */
 	public void flushCache() {
-		cache.clear();
+		synchronized (this) {
+			cache.clear();
+		}
 	}
 }
