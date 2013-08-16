@@ -2,6 +2,7 @@ package org.taverna.server.master.mocks;
 
 import static java.util.Collections.emptyList;
 
+import java.net.URI;
 import java.util.List;
 
 import org.taverna.server.master.common.Workflow;
@@ -101,5 +102,10 @@ public class SimpleServerPolicy implements Policy {
 	@Override
 	public int getOperatingLimit() {
 		return 1;
+	}
+
+	@Override
+	public List<URI> listPermittedWorkflowURIs(UsernamePrincipal user) {
+		return null;
 	}
 }

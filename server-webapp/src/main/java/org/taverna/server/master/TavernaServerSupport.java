@@ -9,18 +9,20 @@ import static eu.medsea.util.MimeUtil.UNKNOWN_MIME_TYPE;
 import static eu.medsea.util.MimeUtil.getExtensionMimeTypes;
 import static eu.medsea.util.MimeUtil.getMimeType;
 import static java.lang.Math.min;
-import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static org.apache.commons.logging.LogFactory.getLog;
 import static org.springframework.jmx.support.MetricType.COUNTER;
 import static org.springframework.jmx.support.MetricType.GAUGE;
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 import static org.taverna.server.master.common.Roles.ADMIN;
+import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -28,9 +30,11 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.activation.DataHandler;
+import javax.ws.rs.WebApplicationException;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedMetric;
@@ -51,7 +55,6 @@ import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.factories.ListenerFactory;
 import org.taverna.server.master.factories.RunFactory;
-import org.taverna.server.master.identity.WorkflowInternalAuthProvider;
 import org.taverna.server.master.identity.WorkflowInternalAuthProvider.WorkflowSelfAuthority;
 import org.taverna.server.master.interfaces.File;
 import org.taverna.server.master.interfaces.Input;
@@ -61,13 +64,13 @@ import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
+import org.taverna.server.master.rest.handler.T2FlowDocumentHandler;
 import org.taverna.server.master.utils.InvocationCounter;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-import eu.medsea.util.MimeUtil;
 
 /**
  * Web application support utilities.
@@ -193,7 +196,34 @@ public class TavernaServerSupport {
 	}
 
 	public List<Workflow> getPermittedWorkflows() {
-		return policy.listPermittedWorkflows(getPrincipal());
+		List<Workflow> permitted = policy.listPermittedWorkflows(getPrincipal());
+		if (permitted == null)
+			permitted = new ArrayList<Workflow>();
+		else
+			permitted = new ArrayList<Workflow>(permitted);
+		List<URI> permURI = policy.listPermittedWorkflowURIs(getPrincipal());
+		if (permURI != null)
+			for (URI uri: permURI)
+				try {
+					permitted.add(getWorkflowDocumentFromURI(uri));
+				} catch (Exception e) {
+					log.info("failed to read permitted workflow from URI " + uri, e);
+				}
+		return permitted;
+	}
+
+	@Autowired
+	private T2FlowDocumentHandler t2flowHandler;
+
+	public Workflow getWorkflowDocumentFromURI(URI uri)
+			throws WebApplicationException, IOException {
+		URLConnection conn = uri.toURL().openConnection();
+		conn.setRequestProperty("Accept", T2FLOW);
+		conn.connect();
+		// Tricky point: we know the reader part of the handler only cares
+		// about the stream argument.
+		return t2flowHandler.readFrom(null, null, null, null, null,
+				conn.getInputStream());
 	}
 
 	public List<String> getListenerTypes() {

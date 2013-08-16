@@ -5,6 +5,7 @@
  */
 package org.taverna.server.master.interfaces;
 
+import java.net.URI;
 import java.util.List;
 
 import org.taverna.server.master.common.Status;
@@ -23,7 +24,7 @@ public interface Policy {
 	/**
 	 * @return The maximum number of runs that the system can support.
 	 */
-	public int getMaxRuns();
+	int getMaxRuns();
 
 	/**
 	 * Get the limit on the number of runs for this user.
@@ -34,7 +35,7 @@ public interface Policy {
 	 *         per-user limit is imposed and only system-wide limits are to be
 	 *         enforced.
 	 */
-	public Integer getMaxRuns(UsernamePrincipal user);
+	Integer getMaxRuns(UsernamePrincipal user);
 
 	/**
 	 * Test whether the user can create an instance of the given workflow.
@@ -46,7 +47,7 @@ public interface Policy {
 	 * @throws NoCreateException
 	 *             If they may not instantiate it.
 	 */
-	public void permitCreate(UsernamePrincipal user, Workflow workflow)
+	void permitCreate(UsernamePrincipal user, Workflow workflow)
 			throws NoCreateException;
 
 	/**
@@ -60,7 +61,7 @@ public interface Policy {
 	 * @throws NoDestroyException
 	 *             If they may not destroy it.
 	 */
-	public void permitDestroy(UsernamePrincipal user, TavernaRun run)
+	void permitDestroy(UsernamePrincipal user, TavernaRun run)
 			throws NoDestroyException;
 
 	/**
@@ -75,7 +76,7 @@ public interface Policy {
 	 *         before testing whether the workflow can be updated or deleted by
 	 *         the user.
 	 */
-	public boolean permitAccess(UsernamePrincipal user, TavernaRun run);
+	boolean permitAccess(UsernamePrincipal user, TavernaRun run);
 
 	/**
 	 * Test whether the user can modify a workflow run (other than for its
@@ -88,7 +89,7 @@ public interface Policy {
 	 * @throws NoUpdateException
 	 *             If they may not modify it.
 	 */
-	public void permitUpdate(UsernamePrincipal user, TavernaRun run)
+	void permitUpdate(UsernamePrincipal user, TavernaRun run)
 			throws NoUpdateException;
 
 	/**
@@ -99,7 +100,17 @@ public interface Policy {
 	 * @return A list of workflows that they may instantiate, or <tt>null</tt>
 	 *         if any workflow may be submitted.
 	 */
-	public List<Workflow> listPermittedWorkflows(UsernamePrincipal user);
+	List<Workflow> listPermittedWorkflows(UsernamePrincipal user);
+
+	/**
+	 * Get the URIs of the workflows that the given user may execute.
+	 * 
+	 * @param user
+	 *            Who are we finding out on behalf of.
+	 * @return A list of workflow URIs that they may instantiate, or
+	 *         <tt>null</tt> if any workflow may be submitted.
+	 */
+	List<URI> listPermittedWorkflowURIs(UsernamePrincipal user);
 
 	/**
 	 * @return The maximum number of {@linkplain Status#Operating operating}

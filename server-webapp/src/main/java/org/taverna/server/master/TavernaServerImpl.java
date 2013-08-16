@@ -20,7 +20,6 @@ import static org.taverna.server.master.common.Roles.ADMIN;
 import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.common.Status.Initialized;
 import static org.taverna.server.master.common.Uri.secure;
-import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 import static org.taverna.server.master.soap.DirEntry.convert;
 import static org.taverna.server.master.utils.RestUtils.opt;
 
@@ -28,7 +27,6 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URI;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -48,7 +46,6 @@ import javax.xml.ws.WebServiceContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.cxf.annotations.WSDLDocumentation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.TavernaServerImpl.SupportAware;
 import org.taverna.server.master.common.Credential;
@@ -88,7 +85,6 @@ import org.taverna.server.master.rest.TavernaServerREST.PermittedListeners;
 import org.taverna.server.master.rest.TavernaServerREST.PermittedWorkflows;
 import org.taverna.server.master.rest.TavernaServerREST.PolicyView;
 import org.taverna.server.master.rest.TavernaServerRunREST;
-import org.taverna.server.master.rest.handler.T2FlowDocumentHandler;
 import org.taverna.server.master.soap.DirEntry;
 import org.taverna.server.master.soap.FileContents;
 import org.taverna.server.master.soap.PermissionList;
@@ -240,12 +236,13 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	public Response submitWorkflow(Workflow workflow, UriInfo ui)
 			throws NoUpdateException {
 		jaxrsUriInfo.set(new WeakReference<UriInfo>(ui));
+		// TODO: check policy.listPermittedWorkflows()
+		if (policy.listPermittedWorkflowURIs(support.getPrincipal()) != null)
+			throw new NoCreateException("server policy: will only start "
+					+ "workflows sourced from permitted URI list");
 		String name = support.buildWorkflow(workflow);
 		return created(secure(ui).path("{uuid}").build(name)).build();
 	}
-
-	@Autowired
-	private T2FlowDocumentHandler t2flowHandler;
 
 	@Override
 	@CallCounted
@@ -255,15 +252,12 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		if (referenceList == null || referenceList.size() == 0)
 			throw new NoCreateException("no workflow URI supplied");
 		URI u = referenceList.get(0);
+		List<URI> restriction = policy.listPermittedWorkflowURIs(support.getPrincipal());
+		if (restriction != null && !restriction.contains(u))
+			throw new NoCreateException("workflow URI not on permitted list");
 		Workflow workflow;
 		try {
-			URLConnection conn = u.toURL().openConnection();
-			conn.setRequestProperty("Accept", T2FLOW);
-			conn.connect();
-			// Tricky point: we know the reader part of the handler only cares
-			// about the stream argument.
-			workflow = t2flowHandler.readFrom(null, null, null, null, null,
-					conn.getInputStream());
+			workflow = support.getWorkflowDocumentFromURI(u);
 		} catch (IOException e) {
 			throw new NoCreateException("could not read workflow", e);
 		}

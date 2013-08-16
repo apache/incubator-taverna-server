@@ -5,9 +5,9 @@
  */
 package org.taverna.server.master.worker;
 
-import static java.util.Collections.emptyList;
 import static org.taverna.server.master.identity.WorkflowInternalAuthProvider.PREFIX;
 
+import java.net.URI;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -68,7 +68,12 @@ class PolicyImpl implements Policy {
 
 	@Override
 	public List<Workflow> listPermittedWorkflows(UsernamePrincipal user) {
-		return emptyList();
+		return null;
+	}
+
+	@Override
+	public List<URI> listPermittedWorkflowURIs(UsernamePrincipal user) {
+		return null;
 	}
 
 	private boolean isSelfAccess(String runId) {
