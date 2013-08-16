@@ -15,15 +15,19 @@ import static org.taverna.server.master.rest.ContentTypes.XML;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.DIR;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.IN;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.LISTEN;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.LOG;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.OUT;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.SEC;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.STATUS;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.STDERR;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.STDOUT;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.T_CREATE;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.T_EXPIRE;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.NAME;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.ROOT;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.T_FINISH;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.T_START;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.USAGE;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.WF;
 import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 
@@ -424,6 +428,64 @@ public interface TavernaServerRunREST {
 	InteractionFeedREST getInteractionFeed();
 
 	/**
+	 * @return The stdout for the workflow run, or empty string if the run has
+	 *         not yet started.
+	 */
+	@GET
+	@Path(STDOUT)
+	@Description("Return the stdout for the workflow run.")
+	@Produces(TEXT)
+	@NonNull
+	String getStdout();
+	@OPTIONS
+	@Path(STDOUT)
+	@Description("Return the stdout for the workflow run.")
+	Response stdoutOptions();
+	/**
+	 * @return The stderr for the workflow run, or empty string if the run has
+	 *         not yet started.
+	 */
+	@GET
+	@Path(STDERR)
+	@Description("Return the stderr for the workflow run.")
+	@Produces(TEXT)
+	@NonNull
+	String getStderr();
+	@OPTIONS
+	@Path(STDERR)
+	@Description("Return the stderr for the workflow run.")
+	Response stderrOptions();
+
+	/**
+	 * @return The usage record for the workflow run, wrapped in a Response, or
+	 *         "empty content" if the run has not yet finished.
+	 */
+	@GET
+	@Path(USAGE)
+	@Description("Return the usage record for the workflow run.")
+	@Produces(XML)
+	@NonNull
+	Response getUsage();
+	@OPTIONS
+	@Path(USAGE)
+	@Description("Return the usage record for the workflow run.")
+	Response usageOptions();
+	/**
+	 * @return The log for the workflow run, or empty string if the run has
+	 *         not yet started.
+	 */
+	@GET
+	@Path(LOG)
+	@Description("Return the log for the workflow run.")
+	@Produces(TEXT)
+	@NonNull
+	String getLog();
+	@OPTIONS
+	@Path(LOG)
+	@Description("Return the log for the workflow run.")
+	Response logOptions();
+
+	/**
 	 * Factored out path names used in the {@link TavernaServerRunREST}
 	 * interface and related places.
 	 * 
@@ -443,6 +505,10 @@ public interface TavernaServerRunREST {
 		public static final String OUT = "output";
 		public static final String LISTEN = "listeners";
 		public static final String SEC = "security";
+		public static final String STDOUT = "stdout";
+		public static final String STDERR = "stderr";
+		public static final String USAGE = "usage";
+		public static final String LOG = "log";
 	}
 
 	/**
@@ -483,6 +549,14 @@ public interface TavernaServerRunREST {
 		public Uri interaction;
 		/** The name of the run. */
 		public Uri name;
+		/** The stdout of the run. */
+		public Uri stdout;
+		/** The stderr of the run. */
+		public Uri stderr;
+		/** The usage record for the run. */ 
+		public Uri usage;
+		/** The log from the run. */
+		public Uri log;
 
 		/**
 		 * How to describe a run's expiry.
@@ -598,6 +672,10 @@ public interface TavernaServerRunREST {
 			interaction = new Uri(ui, FEED_URL_DIR);
 			name = new Uri(ui, NAME);
 			owner = run.getSecurityContext().getOwner().getName();
+			stdout = new Uri(ui, STDOUT);
+			stderr = new Uri(ui, STDERR);
+			usage = new Uri(ui, USAGE);
+			log = new Uri(ui, LOG);
 		}
 	}
 }
