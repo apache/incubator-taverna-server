@@ -239,8 +239,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	public Response submitWorkflow(Workflow workflow, UriInfo ui)
 			throws NoUpdateException {
 		jaxrsUriInfo.set(new WeakReference<UriInfo>(ui));
-		// TODO: check policy.listPermittedWorkflows()
-		if (policy.listPermittedWorkflowURIs(support.getPrincipal()) != null)
+		if (!permittedToCreate(workflow))
 			throw new NoCreateException("server policy: will only start "
 					+ "workflows sourced from permitted URI list");
 		String name = support.buildWorkflow(workflow);
@@ -347,10 +346,19 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		return ws.toArray(new RunReference[ws.size()]);
 	}
 
+	private boolean permittedToCreate(Workflow workflow) {
+		// TODO: check policy.listPermittedWorkflows()
+		List<URI> pwu = policy.listPermittedWorkflowURIs(support.getPrincipal());
+		return pwu == null || pwu.size() == 0 || pwu.contains(workflow);
+	}
+
 	@Override
 	@CallCounted
 	public RunReference submitWorkflow(Workflow workflow)
 			throws NoUpdateException {
+		if (!permittedToCreate(workflow))
+			throw new NoCreateException("server policy: will only start "
+					+ "workflows sourced from permitted URI list");
 		String name = support.buildWorkflow(workflow);
 		return new RunReference(name, getRunUriBuilder());
 	}
