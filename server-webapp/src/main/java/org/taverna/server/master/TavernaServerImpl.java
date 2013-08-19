@@ -24,6 +24,7 @@ import static org.taverna.server.master.soap.DirEntry.convert;
 import static org.taverna.server.master.utils.RestUtils.opt;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URI;
@@ -42,10 +43,12 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import javax.xml.bind.JAXBException;
 import javax.xml.ws.WebServiceContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.cxf.annotations.WSDLDocumentation;
+import org.ogf.usage.JobUsageRecord;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.TavernaServerImpl.SupportAware;
 import org.taverna.server.master.common.Credential;
@@ -464,6 +467,60 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 			}
 		} else {
 			w.setStatus(s);
+			return "";
+		}
+	}
+
+	@Override
+	@CallCounted
+	public String getRunStdout(String runName) throws UnknownRunException {
+		try {
+			return support.getListener(runName, "io").getProperty("stdout");
+		} catch (NoListenerException e) {
+			return "";
+		}
+	}
+
+	@Override
+	@CallCounted
+	public String getRunStderr(String runName) throws UnknownRunException {
+		try {
+			return support.getListener(runName, "io").getProperty("stderr");
+		} catch (NoListenerException e) {
+			return "";
+		}
+	}
+
+	@Override
+	@CallCounted
+	public JobUsageRecord getRunUsageRecord(String runName) throws UnknownRunException {
+		try {
+			String ur = support.getListener(runName, "io").getProperty("usageRecord");
+			if (ur == null || ur.isEmpty())
+				return null;
+			return JobUsageRecord.unmarshal(ur);
+		} catch (NoListenerException e) {
+			return null;
+		} catch (JAXBException e) {
+			log.info("failed to deserialize non-empty usage record", e);
+			return null;
+		}
+	}
+
+	@Override
+	@CallCounted
+	public String getRunLog(String runName) throws UnknownRunException {
+		try {
+			File f = fileUtils.getFile(support.getRun(runName), "logs/detail.log");
+			return new String(f.getContents(0, -1), "UTF-8");
+		} catch (FilesystemAccessException e) {
+			// Ignore this; normal during some parts of lifecycle
+			return "";
+		} catch (NoDirectoryEntryException e) {
+			// Ignore this; normal during some parts of lifecycle
+			return "";
+		} catch (UnsupportedEncodingException e) {
+			log.warn("unexpected encoding problem", e);
 			return "";
 		}
 	}

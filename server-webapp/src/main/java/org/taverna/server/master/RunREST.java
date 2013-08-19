@@ -5,6 +5,8 @@
  */
 package org.taverna.server.master;
 
+import static javax.ws.rs.core.MediaType.APPLICATION_XML;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.noContent;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.status;
@@ -19,8 +21,10 @@ import java.util.Date;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import javax.xml.bind.JAXBException;
 
 import org.joda.time.DateTime;
+import org.ogf.usage.JobUsageRecord;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.TavernaServerImpl.SupportAware;
 import org.taverna.server.master.common.Status;
@@ -28,6 +32,7 @@ import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
+import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.NotOwnerException;
 import org.taverna.server.master.exceptions.OverloadedException;
@@ -39,6 +44,7 @@ import org.taverna.server.master.rest.TavernaServerInputREST;
 import org.taverna.server.master.rest.TavernaServerListenersREST;
 import org.taverna.server.master.rest.TavernaServerRunREST;
 import org.taverna.server.master.rest.TavernaServerSecurityREST;
+import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 import org.taverna.server.port_description.OutputDescription;
 
@@ -52,6 +58,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	private TavernaRun run;
 	private TavernaServerSupport support;
 	private ContentsDescriptorBuilder cdBuilder;
+	private FilenameUtils fileUtils;
 
 	@Override
 	@Required
@@ -63,6 +70,12 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	@Required
 	public void setCdBuilder(ContentsDescriptorBuilder cdBuilder) {
 		this.cdBuilder = cdBuilder;
+	}
+
+	@Override
+	@Required
+	public void setFileUtils(FilenameUtils converter) {
+		this.fileUtils = converter;
 	}
 
 	@Override
@@ -305,11 +318,13 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	}
 
 	@Override
+	@CallCounted
 	public String getName() {
 		return run.getName();
 	}
 
 	@Override
+	@CallCounted
 	public String setName(String name) throws NoUpdateException {
 		support.permitUpdate(run);
 		run.setName(name);
@@ -317,8 +332,67 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	}
 
 	@Override
+	@CallCounted
 	public Response nameOptions() {
 		return opt("PUT");
+	}
+
+	@Override
+	@CallCounted
+	public String getStdout() throws NoListenerException {
+		return support.getListener(run, "io").getProperty("stdout");
+	}
+
+	@Override
+	@CallCounted
+	public Response stdoutOptions() {
+		return opt();
+	}
+
+	@Override
+	@CallCounted
+	public String getStderr() throws NoListenerException {
+		return support.getListener(run, "io").getProperty("stderr");
+	}
+
+	@Override
+	@CallCounted
+	public Response stderrOptions() {
+		return opt();
+	}
+
+	@Override
+	@CallCounted
+	public Response getUsage() throws NoListenerException, JAXBException {
+		String ur = support.getListener(run, "io").getProperty("usageRecord");
+		if (ur == null || ur.isEmpty())
+			return noContent().build();
+		return ok(JobUsageRecord.unmarshal(ur), APPLICATION_XML).build();
+	}
+
+	@Override
+	@CallCounted
+	public Response usageOptions() {
+		return opt();
+	}
+
+	@Override
+	@CallCounted
+	public Response getLogContents() {
+		try {
+			return Response.ok(fileUtils.getFile(run, "logs/detail.log"),
+					TEXT_PLAIN).build();
+		} catch (FilesystemAccessException e) {
+			return Response.noContent().build();
+		} catch (NoDirectoryEntryException e) {
+			return Response.noContent().build();
+		}
+	}
+
+	@Override
+	@CallCounted
+	public Response logOptions() {
+		return opt();
 	}
 }
 
@@ -329,6 +403,8 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
  */
 interface RunBean extends SupportAware {
 	void setCdBuilder(ContentsDescriptorBuilder cdBuilder);
+
+	void setFileUtils(FilenameUtils converter);
 
 	void setRun(TavernaRun run);
 

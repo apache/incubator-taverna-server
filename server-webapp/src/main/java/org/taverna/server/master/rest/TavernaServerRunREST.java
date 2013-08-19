@@ -47,6 +47,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
@@ -63,6 +64,7 @@ import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
+import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.NotOwnerException;
 import org.taverna.server.master.interfaces.Listener;
@@ -430,27 +432,34 @@ public interface TavernaServerRunREST {
 	/**
 	 * @return The stdout for the workflow run, or empty string if the run has
 	 *         not yet started.
+	 * @throws NoListenerException 
 	 */
 	@GET
 	@Path(STDOUT)
 	@Description("Return the stdout for the workflow run.")
 	@Produces(TEXT)
 	@NonNull
-	String getStdout();
+	String getStdout() throws NoListenerException;
+
+	/** Get an outline of the operations supported. */
 	@OPTIONS
 	@Path(STDOUT)
 	@Description("Return the stdout for the workflow run.")
 	Response stdoutOptions();
+
 	/**
 	 * @return The stderr for the workflow run, or empty string if the run has
 	 *         not yet started.
+	 * @throws NoListenerException 
 	 */
 	@GET
 	@Path(STDERR)
 	@Description("Return the stderr for the workflow run.")
 	@Produces(TEXT)
 	@NonNull
-	String getStderr();
+	String getStderr() throws NoListenerException;
+
+	/** Get an outline of the operations supported. */
 	@OPTIONS
 	@Path(STDERR)
 	@Description("Return the stderr for the workflow run.")
@@ -459,27 +468,34 @@ public interface TavernaServerRunREST {
 	/**
 	 * @return The usage record for the workflow run, wrapped in a Response, or
 	 *         "empty content" if the run has not yet finished.
+	 * @throws NoListenerException
+	 * @throws JAXBException
 	 */
 	@GET
 	@Path(USAGE)
 	@Description("Return the usage record for the workflow run.")
 	@Produces(XML)
 	@NonNull
-	Response getUsage();
+	Response getUsage() throws NoListenerException, JAXBException;
+
+	/** Get an outline of the operations supported. */
 	@OPTIONS
 	@Path(USAGE)
 	@Description("Return the usage record for the workflow run.")
 	Response usageOptions();
+
 	/**
-	 * @return The log for the workflow run, or empty string if the run has
-	 *         not yet started.
+	 * @return The log for the workflow run, or empty string if the run has not
+	 *         yet started.
 	 */
 	@GET
 	@Path(LOG)
 	@Description("Return the log for the workflow run.")
 	@Produces(TEXT)
 	@NonNull
-	String getLog();
+	Response getLogContents();
+
+	/** Get an outline of the operations supported. */
 	@OPTIONS
 	@Path(LOG)
 	@Description("Return the log for the workflow run.")
@@ -553,7 +569,7 @@ public interface TavernaServerRunREST {
 		public Uri stdout;
 		/** The stderr of the run. */
 		public Uri stderr;
-		/** The usage record for the run. */ 
+		/** The usage record for the run. */
 		public Uri usage;
 		/** The log from the run. */
 		public Uri log;
