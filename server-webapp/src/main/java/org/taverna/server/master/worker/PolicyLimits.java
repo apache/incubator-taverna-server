@@ -5,6 +5,9 @@
  */
 package org.taverna.server.master.worker;
 
+import java.net.URI;
+import java.util.List;
+
 import org.taverna.server.master.common.Status;
 
 /**
@@ -24,4 +27,10 @@ public interface PolicyLimits {
 	 *         {@linkplain Status#Operating operating} state.
 	 */
 	int getOperatingLimit();
+
+	/**
+	 * @return the list of URIs to workflows that may be used to create workflow
+	 *         runs. If empty or <tt>null</tt>, no restriction is present.
+	 */
+	List<URI> getPermittedWorkflowURIs();
 }

@@ -5,6 +5,9 @@
  */
 package org.taverna.server.master.localworker;
 
+import java.net.URI;
+import java.util.List;
+
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.worker.PolicyLimits;
 
@@ -170,4 +173,6 @@ public interface LocalWorkerModel extends PolicyLimits {
 	 *            {@linkplain Status#Operating operating} state at once
 	 */
 	public abstract void setOperatingLimit(int operatingLimit);
+
+	void setPermittedWorkflowURIs(List<URI> permittedWorkflows);
 }

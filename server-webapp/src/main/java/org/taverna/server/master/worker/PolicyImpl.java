@@ -73,7 +73,7 @@ class PolicyImpl implements Policy {
 
 	@Override
 	public List<URI> listPermittedWorkflowURIs(UsernamePrincipal user) {
-		return null;
+		return limits.getPermittedWorkflowURIs();
 	}
 
 	private boolean isSelfAccess(String runId) {

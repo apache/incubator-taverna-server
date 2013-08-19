@@ -8,6 +8,9 @@ package org.taverna.server.master.localworker;
 import static java.io.File.separator;
 import static java.lang.System.getProperty;
 import static java.rmi.registry.Registry.REGISTRY_PORT;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
 import static org.taverna.server.master.defaults.Default.EXTRA_ARGUMENTS;
 import static org.taverna.server.master.defaults.Default.PASSWORD_FILE;
 import static org.taverna.server.master.defaults.Default.RMI_PREFIX;
@@ -22,6 +25,8 @@ import static org.taverna.server.master.localworker.PersistedState.makeInstance;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.net.URI;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.jdo.annotations.PersistenceAware;
@@ -117,6 +122,8 @@ public class LocalWorkerState extends JDOSupport<PersistedState> implements
 	int registryPort;
 
 	int operatingLimit;
+
+	URI[] permittedWorkflows;
 
 	@Override
 	public void setDefaultLifetime(int defaultLifetime) {
@@ -325,6 +332,24 @@ public class LocalWorkerState extends JDOSupport<PersistedState> implements
 		return registryPort == 0 ? REGISTRY_PORT : registryPort;
 	}
 
+	@Override
+	public List<URI> getPermittedWorkflowURIs() {
+		if (permittedWorkflows == null || permittedWorkflows.length == 0)
+			return emptyList();
+		return unmodifiableList(asList(permittedWorkflows));
+	}
+
+	@Override
+	public void setPermittedWorkflowURIs(List<URI> permittedWorkflows) {
+		if (permittedWorkflows == null || permittedWorkflows.isEmpty())
+			this.permittedWorkflows = new URI[0];
+		else
+			this.permittedWorkflows = permittedWorkflows
+					.toArray(new URI[permittedWorkflows.size()]);
+		if (loadedState)
+			self.store();
+	}
+
 	// --------------------------------------------------------------
 
 	private boolean loadedState;
@@ -354,6 +379,8 @@ public class LocalWorkerState extends JDOSupport<PersistedState> implements
 		registryHost = state.getRegistryHost();
 		registryPort = state.getRegistryPort();
 		operatingLimit = state.getOperatingLimit();
+		List<URI> pwu = state.getPermittedWorkflowURIs();
+		permittedWorkflows = (URI[]) pwu.toArray(new URI[pwu.size()]);
 
 		loadedState = true;
 	}
@@ -381,6 +408,8 @@ public class LocalWorkerState extends JDOSupport<PersistedState> implements
 		state.setRegistryHost(registryHost);
 		state.setRegistryPort(registryPort);
 		state.setOperatingLimit(operatingLimit);
+		if (permittedWorkflows != null)
+			state.setPermittedWorkflowURIs(asList(permittedWorkflows));
 
 		loadedState = true;
 	}

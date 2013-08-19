@@ -255,7 +255,8 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		if (referenceList == null || referenceList.size() == 0)
 			throw new NoCreateException("no workflow URI supplied");
 		URI u = referenceList.get(0);
-		List<URI> restriction = policy.listPermittedWorkflowURIs(support.getPrincipal());
+		List<URI> restriction = policy.listPermittedWorkflowURIs(support
+				.getPrincipal());
 		if (restriction != null && !restriction.contains(u))
 			throw new NoCreateException("workflow URI not on permitted list");
 		Workflow workflow;
@@ -350,6 +351,24 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	@CallCounted
 	public RunReference submitWorkflow(Workflow workflow)
 			throws NoUpdateException {
+		String name = support.buildWorkflow(workflow);
+		return new RunReference(name, getRunUriBuilder());
+	}
+
+	@Override
+	@CallCounted
+	public RunReference submitWorkflowByURI(URI workflowURI)
+			throws NoCreateException {
+		List<URI> permittedWFs = policy.listPermittedWorkflowURIs(support
+				.getPrincipal());
+		if (!permittedWFs.isEmpty() && !permittedWFs.contains(workflowURI))
+			throw new NoCreateException("workflow URI not on permitted list");
+		Workflow workflow;
+		try {
+			workflow = support.getWorkflowDocumentFromURI(workflowURI);
+		} catch (IOException e) {
+			throw new NoCreateException("could not read workflow", e);
+		}
 		String name = support.buildWorkflow(workflow);
 		return new RunReference(name, getRunUriBuilder());
 	}

@@ -5,6 +5,12 @@
  */
 package org.taverna.server.master.localworker;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.jdo.annotations.Join;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
@@ -16,8 +22,9 @@ import javax.jdo.annotations.PrimaryKey;
  */
 // WARNING! If you change the name of this class, update persistence.xml as
 // well!
-@PersistenceCapable(table = "LOCALWORKERSTATE__PERSISTEDSTATE")
+@PersistenceCapable(table = PersistedState.TABLE)
 class PersistedState implements LocalWorkerModel {
+	static final String TABLE = "LOCALWORKERSTATE__PERSISTEDSTATE";
 	static PersistedState makeInstance() {
 		PersistedState o = new PersistedState();
 		o.ID = KEY;
@@ -57,6 +64,9 @@ class PersistedState implements LocalWorkerModel {
 	private String registryHost;
 	@Persistent
 	private int operatingLimit;
+	@Persistent(defaultFetchGroup = "true")
+	@Join(table = TABLE + "_PERMWFURI", column = "ID")
+	private String[] permittedWorkflows;
 
 	@Override
 	public void setDefaultLifetime(int defaultLifetime) {
@@ -196,5 +206,25 @@ class PersistedState implements LocalWorkerModel {
 	@Override
 	public int getOperatingLimit() {
 		return operatingLimit;
+	}
+
+	@Override
+	public List<URI> getPermittedWorkflowURIs() {
+		List<URI> uris = new ArrayList<URI>();
+		if (permittedWorkflows != null)
+			for (String uri : permittedWorkflows)
+				try {
+					uris.add(new URI(uri));
+				} catch (URISyntaxException e) {
+					// Ignore; should be impossible at this point
+				}
+		return uris;
+	}
+
+	@Override
+	public void setPermittedWorkflowURIs(List<URI> permittedWorkflows) {
+		this.permittedWorkflows = new String[permittedWorkflows.size()];
+		for (int i = 0 ; i<this.permittedWorkflows.length ; i++)
+			this.permittedWorkflows[i] = permittedWorkflows.get(i).toString();
 	}
 }

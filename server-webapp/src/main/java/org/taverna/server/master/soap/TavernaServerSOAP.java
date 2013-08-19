@@ -8,6 +8,7 @@ package org.taverna.server.master.soap;
 import static org.taverna.server.master.common.Namespaces.SERVER_SOAP;
 import static org.taverna.server.master.common.Roles.USER;
 
+import java.net.URI;
 import java.util.Date;
 
 import javax.annotation.security.RolesAllowed;
@@ -64,6 +65,22 @@ public interface TavernaServerSOAP {
 	@WSDLDocumentation("Make a run for a particular workflow.")
 	RunReference submitWorkflow(@WebParam(name = "workflow") Workflow workflow)
 			throws NoUpdateException, NoCreateException;
+
+	/**
+	 * Make a run for a particular workflow, where that workflow will be
+	 * downloaded from elsewhere. The URI <i>must</i> be publicly readable.
+	 * 
+	 * @param workflowURI
+	 *            The URI to the workflow to instantiate.
+	 * @return Annotated handle for created run.
+	 * @throws NoUpdateException
+	 * @throws NoCreateException
+	 */
+	@WebResult(name = "Run")
+	@WSDLDocumentation("Make a run for a particular workflow where that workflow is given by publicly readable URI.")
+	RunReference submitWorkflowByURI(
+			@WebParam(name = "workflowURI") URI workflowURI)
+			throws NoCreateException, NoUpdateException;
 
 	/**
 	 * Get the list of existing runs owned by the user.
