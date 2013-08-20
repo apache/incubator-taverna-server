@@ -16,6 +16,9 @@ import static org.taverna.server.master.utils.RestUtils.opt;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.core.Response;
@@ -29,6 +32,7 @@ import org.taverna.server.master.exceptions.GeneralFailureException;
 import org.taverna.server.master.factories.ConfigurableRunFactory;
 import org.taverna.server.master.identity.User;
 import org.taverna.server.master.identity.UserStore;
+import org.taverna.server.master.localworker.LocalWorkerModel;
 import org.taverna.server.master.usage.UsageRecordRecorder;
 import org.taverna.server.master.utils.InvocationCounter;
 import org.taverna.server.master.worker.RunDBSupport;
@@ -69,6 +73,11 @@ public class AdminBean implements Admin {
 		this.userStore = userStore;
 	}
 
+	@Required
+	public void setLocalWorkerModel(LocalWorkerModel worker) {
+		localWorker = worker;
+	}
+
 	public void setAdminHtmlFile(String filename) {
 		this.adminHtmlFile = filename;
 	}
@@ -89,6 +98,7 @@ public class AdminBean implements Admin {
 	private ConfigurableRunFactory factory;
 	private UsageRecordRecorder usageRecords;
 	private UserStore userStore;
+	private LocalWorkerModel localWorker;
 	private String adminHtmlFile = "/admin.html";
 	private String resourceRoot = "/static/";
 
@@ -138,7 +148,7 @@ public class AdminBean implements Admin {
 		return opt();
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -159,7 +169,7 @@ public class AdminBean implements Admin {
 		return opt("PUT");
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -180,7 +190,7 @@ public class AdminBean implements Admin {
 		return opt("PUT");
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -201,7 +211,7 @@ public class AdminBean implements Admin {
 		return opt("PUT");
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -222,7 +232,7 @@ public class AdminBean implements Admin {
 		return opt("PUT");
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -230,7 +240,7 @@ public class AdminBean implements Admin {
 		return counter.getCount();
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -250,7 +260,7 @@ public class AdminBean implements Admin {
 		return opt();
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -270,7 +280,7 @@ public class AdminBean implements Admin {
 		return opt("PUT");
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -290,7 +300,7 @@ public class AdminBean implements Admin {
 		return opt("PUT");
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -310,7 +320,7 @@ public class AdminBean implements Admin {
 		return opt("PUT");
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -330,7 +340,7 @@ public class AdminBean implements Admin {
 		return opt("PUT");
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -346,7 +356,7 @@ public class AdminBean implements Admin {
 		return opt();
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -366,7 +376,7 @@ public class AdminBean implements Admin {
 		return opt("PUT");
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -396,7 +406,7 @@ public class AdminBean implements Admin {
 		return opt("PUT");
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -417,7 +427,7 @@ public class AdminBean implements Admin {
 		return opt("PUT");
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -438,7 +448,7 @@ public class AdminBean implements Admin {
 		return opt("PUT");
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -459,7 +469,7 @@ public class AdminBean implements Admin {
 		return opt("PUT");
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -480,7 +490,7 @@ public class AdminBean implements Admin {
 		return opt("PUT");
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -501,7 +511,7 @@ public class AdminBean implements Admin {
 		return opt("PUT");
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -522,7 +532,7 @@ public class AdminBean implements Admin {
 		return opt("PUT");
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -536,7 +546,7 @@ public class AdminBean implements Admin {
 		return opt();
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -550,7 +560,7 @@ public class AdminBean implements Admin {
 		return opt();
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -566,7 +576,7 @@ public class AdminBean implements Admin {
 		return opt();
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -582,7 +592,7 @@ public class AdminBean implements Admin {
 		return opt();
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -665,7 +675,7 @@ public class AdminBean implements Admin {
 		return noContent().build();
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -683,7 +693,7 @@ public class AdminBean implements Admin {
 		return opt();
 	}
 
-	///////////////////////////////////////////////////////
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -701,6 +711,36 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsOperatingLimit() {
+		return opt("PUT");
+	}
+
+	@Override
+	public StringList getPermittedWorkflowURIs() {
+		StringList sl = new StringList();
+		List<URI> uris = localWorker.getPermittedWorkflowURIs();
+		if (uris != null)
+			for (URI uri : uris)
+				sl.string.add(uri.toString());
+		return sl;
+	}
+
+	private static final URI myExp = URI.create("http://www.myexperment.org/");
+
+	@Override
+	public StringList setPermittedWorkflowURIs(StringList permitted) {
+		List<URI> uris = new ArrayList<URI>();
+		for (String uri: permitted.string)
+			try {
+				uris.add(myExp.resolve(uri));
+			} catch (Exception e) {
+				// Ignore
+			}
+		localWorker.setPermittedWorkflowURIs(uris);
+		return getPermittedWorkflowURIs();
+	}
+
+	@Override
+	public Response optionsPermittedWorkflowURIs() {
 		return opt("PUT");
 	}
 }

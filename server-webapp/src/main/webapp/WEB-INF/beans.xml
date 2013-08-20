@@ -122,13 +122,14 @@
 	</bean>
 
 	<bean id="admin" class="org.taverna.server.master.admin.AdminBean">
-		<property name="state" ref="webapp.state" />
+		<property name="adminHtmlFile" value="/admin.html" />
 		<property name="counter" ref="webapp.invocationCounter" />
-		<property name="runDB" ref="worker.rundb" />
 		<property name="factory" ref="localworker.factory" />
+		<property name="localWorkerModel" ref="localworker.state" />
+		<property name="runDB" ref="worker.rundb" />
+		<property name="state" ref="webapp.state" />
 		<property name="usageRecords" ref="usageRecordSink" />
 		<property name="userStore" ref="userStore" />
-		<property name="adminHtmlFile" value="/admin.html" />
 	</bean>
 
 	<bean id="IdentityMapper" class="org.taverna.server.master.identity.CompositeIDMapper">
