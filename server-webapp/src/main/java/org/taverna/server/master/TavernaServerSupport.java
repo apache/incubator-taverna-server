@@ -23,6 +23,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -188,6 +189,22 @@ public class TavernaServerSupport {
 				+ VersionedElement.TIMESTAMP;
 	}
 
+	@ManagedAttribute(description = "The URIs of the workfows that this server will allow to be instantiated.")
+	public URI[] getPermittedWorkflowURIs() {
+		List<URI> pw = policy.listPermittedWorkflowURIs(null);
+		if (pw == null)
+			return new URI[0];
+		return pw.toArray(new URI[pw.size()]);
+	}
+
+	@ManagedAttribute(description = "The URIs of the workfows that this server will allow to be instantiated.")
+	public void setPermittedWorkflowURIs(URI[] pw) {
+		if (pw == null)
+			policy.setPermittedWorkflowURIs(null, new ArrayList<URI>());
+		else
+			policy.setPermittedWorkflowURIs(null, Arrays.asList(pw));
+	}
+
 	public int getMaxSimultaneousRuns() {
 		Integer limit = policy.getMaxRuns(getPrincipal());
 		if (limit == null)
@@ -196,18 +213,20 @@ public class TavernaServerSupport {
 	}
 
 	public List<Workflow> getPermittedWorkflows() {
-		List<Workflow> permitted = policy.listPermittedWorkflows(getPrincipal());
+		List<Workflow> permitted = policy
+				.listPermittedWorkflows(getPrincipal());
 		if (permitted == null)
 			permitted = new ArrayList<Workflow>();
 		else
 			permitted = new ArrayList<Workflow>(permitted);
 		List<URI> permURI = policy.listPermittedWorkflowURIs(getPrincipal());
 		if (permURI != null)
-			for (URI uri: permURI)
+			for (URI uri : permURI)
 				try {
 					permitted.add(getWorkflowDocumentFromURI(uri));
 				} catch (Exception e) {
-					log.info("failed to read permitted workflow from URI " + uri, e);
+					log.info("failed to read permitted workflow from URI "
+							+ uri, e);
 				}
 		return permitted;
 	}
@@ -341,7 +360,8 @@ public class TavernaServerSupport {
 			return; // Superusers are fully authorized to access others things
 		}
 		if (getSelfAuthority() != null) {
-			// At this point, must already be accessing self as that is checked in getRun().
+			// At this point, must already be accessing self as that is checked
+			// in getRun().
 			return;
 		}
 		policy.permitUpdate(getPrincipal(), run);
@@ -628,7 +648,8 @@ public class TavernaServerSupport {
 	public String buildWorkflow(Workflow workflow) throws NoCreateException {
 		UsernamePrincipal p = getPrincipal();
 		if (getSelfAuthority() != null)
-			throw new NoCreateException("runs may not create workflows on their host server");
+			throw new NoCreateException(
+					"runs may not create workflows on their host server");
 		if (!stateModel.getAllowNewWorkflowRuns())
 			throw new NoCreateException("run creation not currently enabled");
 		try {

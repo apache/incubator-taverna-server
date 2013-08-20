@@ -117,4 +117,14 @@ public interface Policy {
 	 *         runs that the system can support.
 	 */
 	int getOperatingLimit();
+
+	/**
+	 * Set the URIs of the workflows that the given user may execute.
+	 * 
+	 * @param user
+	 *            Who are we finding out on behalf of.
+	 * @param permitted
+	 *            A list of workflow URIs that they may instantiate.
+	 */
+	void setPermittedWorkflowURIs(UsernamePrincipal user, List<URI> permitted);
 }

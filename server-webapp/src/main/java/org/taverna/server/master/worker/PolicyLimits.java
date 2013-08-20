@@ -33,4 +33,11 @@ public interface PolicyLimits {
 	 *         runs. If empty or <tt>null</tt>, no restriction is present.
 	 */
 	List<URI> getPermittedWorkflowURIs();
+
+	/**
+	 * @param permitted
+	 *            the list of URIs to workflows that may be used to create
+	 *            workflow runs.
+	 */
+	void setPermittedWorkflowURIs(List<URI> permitted);
 }

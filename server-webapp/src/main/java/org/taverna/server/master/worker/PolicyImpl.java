@@ -157,4 +157,10 @@ class PolicyImpl implements Policy {
 			throw new NoUpdateException(
 					"workflow run not owned by you and you're not granted access");
 	}
+
+	@Override
+	public void setPermittedWorkflowURIs(UsernamePrincipal user,
+			List<URI> permitted) {
+		limits.setPermittedWorkflowURIs(permitted);
+	}
 }

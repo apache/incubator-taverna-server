@@ -108,4 +108,10 @@ public class SimpleServerPolicy implements Policy {
 	public List<URI> listPermittedWorkflowURIs(UsernamePrincipal user) {
 		return null;
 	}
+
+	@Override
+	public void setPermittedWorkflowURIs(UsernamePrincipal user,
+			List<URI> permitted) {
+		// Ignore
+	}
 }
