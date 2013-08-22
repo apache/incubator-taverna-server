@@ -18,6 +18,7 @@
 <ul>
   <li><a href="#t-global">Global Settings</a></li>
   <li><a href="#t-users">Users</a></li>
+  <li><a href="#t-workflows">Workflows</a></li>
   <li><a href="#t-usage">Usage Records</a></li>
   <li><a href="#t-worker">Local Worker Configuration</a></li>
 </ul>
@@ -84,6 +85,14 @@
   </td></tr>
 </table>
 </div><!-- t-users -->
+
+<div id="t-workflows">
+<label title="Workflow URIs to limit execution to." for="workflows">Workflow URIs (one per line)</label>
+<br>
+<textarea title="Workflow URIs to limit execution to." rows="5" cols="60" id="workflows"></textarea>
+<p>
+<button id="saveWorkflows">Save</button> <button id="refreshWorkflows">Refresh</button>
+</div>
 
 <div id="t-usage">
 Download <a href="#" id="ur">usage records</a> (warning: may be slow!)

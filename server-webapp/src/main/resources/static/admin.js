@@ -188,6 +188,31 @@ function userRowHTML(idx) {
 			+ "' class='userrows'>" + content + "</tr>";
 }
 
+/** How to get the list of permitted workflows; called on demand */
+function refreshWorkflows() {
+	var wftable = $("#workflows"), wfbut = $("#saveWorkflows"), wfref = $("#refreshWorkflows");
+	wfbut.button("disable");
+	wfref.button("disable");
+	getJSON(where("permittedWorkflowURIs"), function(data) {
+		var s = "";
+		$.each(data.stringList.string || [], function(idx, str) {
+			s += $.trim(str) + "\n";
+		});
+		wftable.val($.trim(s));
+		wfbut.button("enable");
+		wfref.button("enable");
+	});
+}
+/** How to set the list of permitted workflows; called when the user clicks */
+function saveWorkflows() {
+	var wftable = $("#workflows"), wfbut = $("#saveWorkflows");
+	var xml = NodeAll("stringList", "string", wftable.val().split("\n"));
+	wfbut.button("disable");
+	putXML(where("permittedWorkflowURIs"), xml, function() {
+		refreshWorkflows();
+	});
+}
+
 /** How to update the table of users; called on demand */
 function refreshUsers() {
 	var usertable = $("#userList");
@@ -456,6 +481,18 @@ $(function() {
 	$("#body").tabs({
 		selected : 0
 	});
+	$("#saveWorkflows").button({
+		disabled : true
+	}).click(function(event) {
+		saveWorkflows();
+		event.preventDefault();
+	});
+	$("#refreshWorkflows").button({
+		disabled : true
+	}).click(function(event) {
+		refreshWorkflows();
+		event.preventDefault();
+	});
 
 	// Make the link to the list of usage records point correctly
 	// Original plan called for browsable table, but that's too slow
@@ -465,6 +502,7 @@ $(function() {
 	updateRO();
 	setInterval(updateRO, 30000);
 	refreshUsers();
+	refreshWorkflows();
 	$("#newEnabled").button();
 	$("#newAdmin").button({
 		icons : {
