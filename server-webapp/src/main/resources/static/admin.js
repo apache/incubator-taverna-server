@@ -110,7 +110,7 @@ var NodeAll;
 			node.appendChild(child);
 		}
 		return node;
-	}
+	};
 	NodeAll = function(wrapperElem, wrappedElem, elements) {
 		var node = doc.createElementNS(adminNS, wrapperElem);
 		for ( var i = 0; i < elements.length; i++) {
@@ -120,7 +120,7 @@ var NodeAll;
 			node.appendChild(child);
 		}
 		return node;
-	}
+	};
 })();
 
 var buttonlist = [ "allowNew", "logFaults", "logWorkflows" ];
@@ -329,7 +329,7 @@ function connectButtonsAndEntries() {
 				widget.val(data);
 				return true;
 			});
-		})
+		});
 	});
 }
 
@@ -369,7 +369,6 @@ function loadExtraArgs() {
 				if ((typeof rows) == "string")
 					rows = [ rows ];
 				$(".extraargrow").remove();
-				var prop = "", env = "", run = "";
 				extraAry = rows;
 				var i;
 				function row() {
@@ -415,7 +414,7 @@ function loadExtraArgs() {
 											function() {
 												loadExtraArgs();
 											});
-								}
+								};
 							})(i));
 				}
 			});
@@ -473,7 +472,7 @@ $(function() {
 		}
 	});
 	$("#makeNewUser").button().click(function() {
-		makeNewUser()
+		makeNewUser();
 	});
 	$("#extra-prop-add").button().click(function() {
 		addExtraArg("#dialog-property", "-D", "#prop-key", "#prop-value");
