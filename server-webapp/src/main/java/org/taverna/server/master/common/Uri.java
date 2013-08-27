@@ -37,7 +37,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  */
 @XmlType(name = "Location")
 public class Uri {
-	static final Log log = getLog("Taverna.Server.UriRewriter");
+	static Log log = getLog("Taverna.Server.UriRewriter");
 	private static final String SECURE_SCHEME = "https";
 	/**
 	 * This type is characterised by an attribute that is the reference to some
@@ -198,6 +198,7 @@ public class Uri {
 		@SuppressWarnings
 		public void done() {
 			instance = null;
+			Uri.log = null;
 		}
 
 		@NonNull

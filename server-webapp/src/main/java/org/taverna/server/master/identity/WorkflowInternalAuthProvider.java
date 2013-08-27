@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
@@ -50,7 +51,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  */
 public class WorkflowInternalAuthProvider extends
 		AbstractUserDetailsAuthenticationProvider {
-	private static final Log log = LogFactory.getLog("Taverna.Server.UserDB");
+	private static Log log = LogFactory.getLog("Taverna.Server.UserDB");
 	private static final boolean logDecisions = true;
 	public static final String PREFIX = "wfrun_";
 	private RunDatabaseDAO dao;
@@ -70,6 +71,11 @@ public class WorkflowInternalAuthProvider extends
 	public void logConfig() {
 		log.info("authorized addresses for automatic access: "
 				+ authorizedAddresses);
+	}
+
+	@PreDestroy
+	void closeLog() {
+		log = null;
 	}
 
 	private final Set<String> localAddresses = new HashSet<String>();
@@ -227,8 +233,13 @@ public class WorkflowInternalAuthProvider extends
 	}
 
 	public static class WorkflowSelfIDMapper implements LocalIdentityMapper {
-		private static final Log log = LogFactory.getLog("Taverna.Server.UserDB");
+		private static Log log = LogFactory.getLog("Taverna.Server.UserDB");
 		private RunStore runStore;
+
+		@PreDestroy
+		void closeLog() {
+			log = null;
+		}
 
 		@Required
 		public void setRunStore(RunStore runStore) {

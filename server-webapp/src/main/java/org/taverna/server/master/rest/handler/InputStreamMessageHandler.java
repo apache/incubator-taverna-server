@@ -57,7 +57,7 @@ public class InputStreamMessageHandler implements
  * @author Donal Fellows
  */
 class TransferStream extends InputStream {
-	private static final Log log = getLog("Taverna.Server.Handlers");
+	private Log log = getLog("Taverna.Server.Handlers");
 
 	public TransferStream(InputStream entityStream, List<String> contentLength) {
 		this.entityStream = new BufferedInputStream(entityStream);

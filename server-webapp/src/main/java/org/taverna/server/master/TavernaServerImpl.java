@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.jws.WebService;
@@ -117,7 +118,12 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	public static final String JMX_ROOT = "Taverna:group=Server-"+Version.JAVA+",name=";
 
 	/** The logger for the server framework. */
-	public static final Log log = getLog("Taverna.Server.Webapp");
+	public static Log log = getLog("Taverna.Server.Webapp");
+
+	@PreDestroy
+	void closeLog() {
+		log = null;
+	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	// CONNECTIONS TO JMX, SPRING AND CXF

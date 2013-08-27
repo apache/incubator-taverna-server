@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.activation.DataHandler;
+import javax.annotation.PreDestroy;
 import javax.ws.rs.WebApplicationException;
 import javax.xml.bind.JAXBException;
 
@@ -82,7 +83,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 		+ Version.JAVA + " web-application interface.")
 public class TavernaServerSupport {
 	/** The main webapp log. */
-	public static final Log log = getLog("Taverna.Server.Webapp");
+	public static Log log = getLog("Taverna.Server.Webapp");
 	private Log accessLog = getLog("Taverna.Server.Webapp.Access");;
 	/** Bean used to log counts of external calls. */
 	private InvocationCounter counter;
@@ -110,6 +111,11 @@ public class TavernaServerSupport {
 	private static final int SAMPLE_SIZE = 1024;
 	/** Number of bytes to ask for when copying a stream to a file. */
 	private static final int TRANSFER_SIZE = 32768;
+
+	@PreDestroy
+	void closeLog() {
+		log = null;
+	}
 
 	/**
 	 * @return Count of the number of external calls into this webapp.

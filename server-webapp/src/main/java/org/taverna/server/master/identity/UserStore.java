@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.jdo.annotations.PersistenceAware;
 
 import org.apache.commons.logging.Log;
@@ -46,10 +47,15 @@ import org.taverna.server.master.utils.JDOSupport;
 @ManagedResource(objectName = JMX_ROOT + "Users", description = "The user database.")
 public class UserStore extends JDOSupport<User> implements UserDetailsService {
 	/** The logger for the user store. */
-	private static final Log log = getLog("Taverna.Server.UserDB");
+	private static Log log = getLog("Taverna.Server.UserDB");
 
 	public UserStore() {
 		super(User.class);
+	}
+
+	@PreDestroy
+	void closeLog() {
+		log = null;
 	}
 
 	private Map<String, BootstrapUserInfo> base = new HashMap<String, BootstrapUserInfo>();
