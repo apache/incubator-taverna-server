@@ -632,13 +632,13 @@
 							<content><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <beansProjectDescription>
 	<version>1</version>
-	<pluginVersion>2.7.2.201109122348-RELEASE></pluginVersion>
+	<pluginVersion>3.3.0.201307091516-RELEASE</pluginVersion>
 	<configSuffixes>
 		<configSuffix>xml</configSuffix>
 	</configSuffixes>
 	<enableImports>true</enableImports>
 	<configs>
-		<config>src/main/webapp/WEB-INF/windows.xml</config>
+		<config>src/main/webapp/WEB-INF/partsecure.xml</config>
 		<config>src/main/webapp/WEB-INF/beans.xml</config>
 		<config>src/main/webapp/WEB-INF/insecure.xml</config>
 		<config>src/main/webapp/WEB-INF/providers.xml</config>
@@ -673,14 +673,14 @@
 			</profiles>
 		</configSet>
 		<configSet>
-			<name>Semi-Secure (Windows) Configuration</name>
+			<name>Semi-Secure Configuration</name>
 			<allowBeanDefinitionOverriding>true</allowBeanDefinitionOverriding>
 			<incomplete>false</incomplete>
 			<configs>
 				<config>src/main/webapp/WEB-INF/beans.xml</config>
 				<config>src/main/webapp/WEB-INF/providers.xml</config>
 				<config>src/main/webapp/WEB-INF/webappBeans.xml</config>
-				<config>src/main/webapp/WEB-INF/windows.xml</config>
+				<config>src/main/webapp/WEB-INF/partsecure.xml</config>
 			</configs>
 			<profiles>
 			</profiles>

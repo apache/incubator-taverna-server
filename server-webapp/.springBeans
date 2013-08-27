@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beansProjectDescription>
 	<version>1</version>
-	<pluginVersion><![CDATA[2.9.2.201205070117-RELEASE]]></pluginVersion>
+	<pluginVersion><![CDATA[3.3.0.201307091516-RELEASE]]></pluginVersion>
 	<configSuffixes>
 		<configSuffix><![CDATA[xml]]></configSuffix>
 	</configSuffixes>
@@ -13,7 +13,7 @@
 		<config>src/main/webapp/WEB-INF/providers.xml</config>
 		<config>src/main/webapp/WEB-INF/secure.xml</config>
 		<config>src/main/webapp/WEB-INF/webappBeans.xml</config>
-		<config>src/main/webapp/WEB-INF/windows.xml</config>
+		<config>src/main/webapp/WEB-INF/partsecure.xml</config>
 	</configs>
 	<configSets>
 		<configSet>
@@ -43,14 +43,14 @@
 			</profiles>
 		</configSet>
 		<configSet>
-			<name><![CDATA[Windows Configuration]]></name>
+			<name><![CDATA[Semi-Secure Configuration]]></name>
 			<allowBeanDefinitionOverriding>true</allowBeanDefinitionOverriding>
 			<incomplete>false</incomplete>
 			<configs>
 				<config>src/main/webapp/WEB-INF/beans.xml</config>
 				<config>src/main/webapp/WEB-INF/providers.xml</config>
 				<config>src/main/webapp/WEB-INF/webappBeans.xml</config>
-				<config>src/main/webapp/WEB-INF/windows.xml</config>
+				<config>src/main/webapp/WEB-INF/partsecure.xml</config>
 			</configs>
 			<profiles>
 			</profiles>
