@@ -246,9 +246,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	public Response submitWorkflow(Workflow workflow, UriInfo ui)
 			throws NoUpdateException {
 		jaxrsUriInfo.set(new WeakReference<UriInfo>(ui));
-		if (!permittedToCreate(workflow))
-			throw new NoCreateException("server policy: will only start "
-					+ "workflows sourced from permitted URI list");
+		checkCreatePolicy(workflow);
 		String name = support.buildWorkflow(workflow);
 		return created(secure(ui).path("{uuid}").build(name)).build();
 	}
@@ -260,14 +258,11 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		jaxrsUriInfo.set(new WeakReference<UriInfo>(ui));
 		if (referenceList == null || referenceList.size() == 0)
 			throw new NoCreateException("no workflow URI supplied");
-		URI u = referenceList.get(0);
-		List<URI> restriction = policy.listPermittedWorkflowURIs(support
-				.getPrincipal());
-		if (restriction != null && !restriction.contains(u))
-			throw new NoCreateException("workflow URI not on permitted list");
+		URI workflowURI = referenceList.get(0);
+		checkCreatePolicy(workflowURI);
 		Workflow workflow;
 		try {
-			workflow = support.getWorkflowDocumentFromURI(u);
+			workflow = support.getWorkflowDocumentFromURI(workflowURI);
 		} catch (IOException e) {
 			throw new NoCreateException("could not read workflow", e);
 		}
@@ -353,20 +348,27 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		return ws.toArray(new RunReference[ws.size()]);
 	}
 
-	private boolean permittedToCreate(Workflow workflow) {
-		// TODO: check policy.listPermittedWorkflows()
+	private void checkCreatePolicy(Workflow workflow) throws NoCreateException {
 		List<URI> pwu = policy
 				.listPermittedWorkflowURIs(support.getPrincipal());
-		return pwu == null || pwu.size() == 0 || pwu.contains(workflow);
+		if (pwu == null || pwu.size() == 0) return;
+		throw new NoCreateException("server policy: will only start "
+				+ "workflows sourced from permitted URI list");
+	}
+
+	private void checkCreatePolicy(URI workflowURI) throws NoCreateException {
+		List<URI> pwu = policy
+				.listPermittedWorkflowURIs(support.getPrincipal());
+		if (pwu == null || pwu.size() == 0 || pwu.contains(workflowURI))
+			return;
+		throw new NoCreateException("workflow URI not on permitted list");
 	}
 
 	@Override
 	@CallCounted
 	public RunReference submitWorkflow(Workflow workflow)
 			throws NoUpdateException {
-		if (!permittedToCreate(workflow))
-			throw new NoCreateException("server policy: will only start "
-					+ "workflows sourced from permitted URI list");
+		checkCreatePolicy(workflow);
 		String name = support.buildWorkflow(workflow);
 		return new RunReference(name, getRunUriBuilder());
 	}
@@ -375,11 +377,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	@CallCounted
 	public RunReference submitWorkflowByURI(URI workflowURI)
 			throws NoCreateException {
-		List<URI> permittedWFs = policy.listPermittedWorkflowURIs(support
-				.getPrincipal());
-		if (permittedWFs != null && !permittedWFs.isEmpty()
-				&& !permittedWFs.contains(workflowURI))
-			throw new NoCreateException("workflow URI not on permitted list");
+		checkCreatePolicy(workflowURI);
 		Workflow workflow;
 		try {
 			workflow = support.getWorkflowDocumentFromURI(workflowURI);
@@ -392,10 +390,8 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	@Override
 	@CallCounted
-	public Workflow[] getAllowedWorkflows() {
-		// TODO: Report as collection of URIs, not workflows
-		List<Workflow> workflows = support.getPermittedWorkflows();
-		return workflows.toArray(new Workflow[workflows.size()]);
+	public URI[] getAllowedWorkflows() {
+		return support.getPermittedWorkflowURIs();
 	}
 
 	@Override
@@ -1165,7 +1161,7 @@ class PolicyREST implements PolicyView, SupportAware {
 	@Override
 	@CallCounted
 	public PermittedWorkflows getPermittedWorkflows() {
-		return new PermittedWorkflows(policy.listPermittedWorkflows(support
+		return new PermittedWorkflows(policy.listPermittedWorkflowURIs(support
 				.getPrincipal()));
 	}
 

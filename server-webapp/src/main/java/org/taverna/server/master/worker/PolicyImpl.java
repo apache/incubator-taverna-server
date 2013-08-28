@@ -67,11 +67,6 @@ class PolicyImpl implements Policy {
 	}
 
 	@Override
-	public List<Workflow> listPermittedWorkflows(UsernamePrincipal user) {
-		return null;
-	}
-
-	@Override
 	public List<URI> listPermittedWorkflowURIs(UsernamePrincipal user) {
 		return limits.getPermittedWorkflowURIs();
 	}

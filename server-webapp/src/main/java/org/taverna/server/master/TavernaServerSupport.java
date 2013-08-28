@@ -219,25 +219,6 @@ public class TavernaServerSupport {
 		return min(limit.intValue(), policy.getMaxRuns());
 	}
 
-	public List<Workflow> getPermittedWorkflows() {
-		List<Workflow> permitted = policy
-				.listPermittedWorkflows(getPrincipal());
-		if (permitted == null)
-			permitted = new ArrayList<Workflow>();
-		else
-			permitted = new ArrayList<Workflow>(permitted);
-		List<URI> permURI = policy.listPermittedWorkflowURIs(getPrincipal());
-		if (permURI != null)
-			for (URI uri : permURI)
-				try {
-					permitted.add(getWorkflowDocumentFromURI(uri));
-				} catch (Exception e) {
-					log.info("failed to read permitted workflow from URI "
-							+ uri, e);
-				}
-		return permitted;
-	}
-
 	@Autowired
 	private T2FlowDocumentHandler t2flowHandler;
 

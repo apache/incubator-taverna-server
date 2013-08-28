@@ -1,7 +1,5 @@
 package org.taverna.server.master.mocks;
 
-import static java.util.Collections.emptyList;
-
 import java.net.URI;
 import java.util.List;
 
@@ -58,11 +56,6 @@ public class SimpleServerPolicy implements Policy {
 		cleanerInterval = intervalInSeconds;
 		if (store != null)
 			store.cleanerIntervalUpdated(intervalInSeconds);
-	}
-
-	@Override
-	public List<Workflow> listPermittedWorkflows(UsernamePrincipal p) {
-		return emptyList();
 	}
 
 	@Override

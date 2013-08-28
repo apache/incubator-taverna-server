@@ -93,16 +93,6 @@ public interface Policy {
 			throws NoUpdateException;
 
 	/**
-	 * Get the workflows that the given user may execute.
-	 * 
-	 * @param user
-	 *            Who are we finding out on behalf of.
-	 * @return A list of workflows that they may instantiate, or <tt>null</tt>
-	 *         if any workflow may be submitted.
-	 */
-	List<Workflow> listPermittedWorkflows(UsernamePrincipal user);
-
-	/**
 	 * Get the URIs of the workflows that the given user may execute.
 	 * 
 	 * @param user

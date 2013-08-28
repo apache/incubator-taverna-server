@@ -109,10 +109,10 @@ public interface TavernaServerSOAP {
 	 * 
 	 * @return A list of workflow documents.
 	 */
-	@WebMethod(operationName = "getPermittedWorkflows")
-	@WebResult(name = "PermittedWorkflow")
-	@WSDLDocumentation("Get the list of allowed workflows. If the list is empty, any workflow may be used.")
-	Workflow[] getAllowedWorkflows();
+	@WebMethod(operationName = "getPermittedWorkflowURIs")
+	@WebResult(name = "PermittedWorkflowURI")
+	@WSDLDocumentation("Get the list of URIs to allowed workflows. If the list is empty, any workflow may be used including those not submitted via URI.")
+	URI[] getAllowedWorkflows();
 
 	/**
 	 * Get the list of allowed event listeners.

@@ -386,13 +386,13 @@ public interface TavernaServerREST {
 	public static class PermittedWorkflows {
 		/** The workflows that are permitted. */
 		@XmlElement
-		public List<Workflow> workflow;
+		public List<URI> workflow;
 
 		/**
 		 * Make an empty list of permitted workflows.
 		 */
 		public PermittedWorkflows() {
-			workflow = new ArrayList<Workflow>();
+			workflow = new ArrayList<URI>();
 		}
 
 		/**
@@ -400,11 +400,11 @@ public interface TavernaServerREST {
 		 * 
 		 * @param permitted
 		 */
-		public PermittedWorkflows(List<Workflow> permitted) {
+		public PermittedWorkflows(List<URI> permitted) {
 			if (permitted == null)
-				workflow = new ArrayList<Workflow>();
+				workflow = new ArrayList<URI>();
 			else
-				workflow = new ArrayList<Workflow>(permitted);
+				workflow = new ArrayList<URI>(permitted);
 		}
 	}
 
