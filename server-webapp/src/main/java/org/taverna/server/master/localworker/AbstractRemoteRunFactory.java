@@ -75,10 +75,8 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	/** The logger for writing messages out on. */
 	Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
 
-	@SuppressWarnings("unused")
 	@PreDestroy
-	@edu.umd.cs.findbugs.annotations.SuppressWarnings("UPM_UNCALLED_PRIVATE_METHOD")
-	private void closeLog() {
+	void closeLog() {
 		log = null;
 	}
 

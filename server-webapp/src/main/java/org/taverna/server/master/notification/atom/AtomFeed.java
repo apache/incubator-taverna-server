@@ -18,13 +18,12 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.springframework.web.context.ServletContextAware;
 import org.taverna.server.master.TavernaServerSupport;
-import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.UriBuilderFactory;
 import org.taverna.server.master.rest.TavernaServerREST.EventFeed;
 import org.taverna.server.master.rest.TavernaServerREST.Events;
-import org.taverna.server.master.utils.UsernamePrincipal;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 
