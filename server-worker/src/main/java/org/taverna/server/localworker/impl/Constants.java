@@ -71,7 +71,6 @@ public interface Constants {
 	 * workflows.
 	 */
 	// This technique is known to be insecure; bite me.
-	// TODO Use agreed environment name for HELIO CIS token
 	static final String HELIO_TOKEN_NAME = "HELIO_CIS_TOKEN";
 
 	/**
