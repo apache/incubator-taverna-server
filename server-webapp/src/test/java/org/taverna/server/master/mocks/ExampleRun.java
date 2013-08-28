@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -286,65 +287,55 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 		outputBaclava = filename;
 	}
 
+	private Date created = new Date();
 	@Override
 	public Date getCreationTimestamp() {
-		// TODO Auto-generated method stub
-		return null;
+		return created;
 	}
 
 	@Override
 	public Date getFinishTimestamp() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Date getStartTimestamp() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Credential[] getCredentials() {
-		// TODO Auto-generated method stub
 		return new Credential[0];
 	}
 
 	@Override
 	public void addCredential(Credential toAdd) {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
 	public void deleteCredential(Credential toDelete) {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
 	public Trust[] getTrusted() {
-		// TODO Auto-generated method stub
 		return new Trust[0];
 	}
 
 	@Override
 	public void addTrusted(Trust toAdd) {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
 	public void deleteTrusted(Trust toDelete) {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
 	public void validateCredential(Credential c)
 			throws InvalidCredentialException {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
 	public void validateTrusted(Trust t) throws InvalidCredentialException {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
@@ -364,41 +355,46 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 
 	@Override
 	public SecurityContextFactory getFactory() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
+	private Set<String> destroyers = new HashSet<String>();
+	private Set<String> updaters = new HashSet<String>();
+	private Set<String> readers = new HashSet<String>();
 	@Override
 	public Set<String> getPermittedDestroyers() {
-		// TODO Auto-generated method stub
-		return null;
+		return destroyers;
 	}
 
 	@Override
 	public void setPermittedDestroyers(Set<String> destroyers) {
-		// TODO Auto-generated method stub
+		this.destroyers = destroyers;
+		updaters.addAll(destroyers);
+		readers.addAll(destroyers);
 	}
 
 	@Override
 	public Set<String> getPermittedUpdaters() {
-		// TODO Auto-generated method stub
-		return null;
+		return updaters;
 	}
 
 	@Override
 	public void setPermittedUpdaters(Set<String> updaters) {
-		// TODO Auto-generated method stub
+		this.updaters = updaters;
+		this.updaters.addAll(destroyers);
+		readers.addAll(updaters);
 	}
 
 	@Override
 	public Set<String> getPermittedReaders() {
-		// TODO Auto-generated method stub
-		return null;
+		return readers;
 	}
 
 	@Override
 	public void setPermittedReaders(Set<String> readers) {
-		// TODO Auto-generated method stub
+		this.readers = readers;
+		this.readers.addAll(destroyers);
+		this.readers.addAll(updaters);
 	}
 
 	@Override
@@ -409,7 +405,7 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	@Override
 	public void initializeSecurityFromContext(SecurityContext securityContext)
 			throws Exception {
-		// TODO Auto-generated method stub
+		// Do nothing
 	}
 
 	@Override
