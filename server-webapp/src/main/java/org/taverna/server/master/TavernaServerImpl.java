@@ -115,7 +115,8 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	/**
 	 * The root of descriptions of the server in JMX.
 	 */
-	public static final String JMX_ROOT = "Taverna:group=Server-"+Version.JAVA+",name=";
+	public static final String JMX_ROOT = "Taverna:group=Server-"
+			+ Version.JAVA + ",name=";
 
 	/** The logger for the server framework. */
 	public static Log log = getLog("Taverna.Server.Webapp");
@@ -354,7 +355,8 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	private boolean permittedToCreate(Workflow workflow) {
 		// TODO: check policy.listPermittedWorkflows()
-		List<URI> pwu = policy.listPermittedWorkflowURIs(support.getPrincipal());
+		List<URI> pwu = policy
+				.listPermittedWorkflowURIs(support.getPrincipal());
 		return pwu == null || pwu.size() == 0 || pwu.contains(workflow);
 	}
 
@@ -375,7 +377,8 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 			throws NoCreateException {
 		List<URI> permittedWFs = policy.listPermittedWorkflowURIs(support
 				.getPrincipal());
-		if (!permittedWFs.isEmpty() && !permittedWFs.contains(workflowURI))
+		if (permittedWFs != null && !permittedWFs.isEmpty()
+				&& !permittedWFs.contains(workflowURI))
 			throw new NoCreateException("workflow URI not on permitted list");
 		Workflow workflow;
 		try {
@@ -390,6 +393,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	@Override
 	@CallCounted
 	public Workflow[] getAllowedWorkflows() {
+		// TODO: Report as collection of URIs, not workflows
 		List<Workflow> workflows = support.getPermittedWorkflows();
 		return workflows.toArray(new Workflow[workflows.size()]);
 	}
@@ -526,9 +530,11 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 
 	@Override
 	@CallCounted
-	public JobUsageRecord getRunUsageRecord(String runName) throws UnknownRunException {
+	public JobUsageRecord getRunUsageRecord(String runName)
+			throws UnknownRunException {
 		try {
-			String ur = support.getListener(runName, "io").getProperty("usageRecord");
+			String ur = support.getListener(runName, "io").getProperty(
+					"usageRecord");
 			if (ur == null || ur.isEmpty())
 				return null;
 			return JobUsageRecord.unmarshal(ur);
@@ -544,7 +550,8 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	@CallCounted
 	public String getRunLog(String runName) throws UnknownRunException {
 		try {
-			File f = fileUtils.getFile(support.getRun(runName), "logs/detail.log");
+			File f = fileUtils.getFile(support.getRun(runName),
+					"logs/detail.log");
 			return new String(f.getContents(0, -1), "UTF-8");
 		} catch (FilesystemAccessException e) {
 			// Ignore this; normal during some parts of lifecycle
