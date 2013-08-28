@@ -1,13 +1,13 @@
 package org.taverna.server.master.interaction;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonMap;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.util.HashMap;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
@@ -31,10 +31,8 @@ import org.springframework.beans.factory.annotation.Required;
 @Produces({ "application/atom+xml", "application/atom+xml;type=entry" })
 @Consumes({ "application/atom+xml", "application/atom+xml;type=entry" })
 public class EntryHandler implements MessageBodyWriter<Entry>, MessageBodyReader<Entry> {
-	private static final MediaType ENTRY = new MediaType("application", "atom+xml",
-			new HashMap<String, String>() {{
-		put("type", "entry");
-	}});
+	private static final MediaType ENTRY = new MediaType("application",
+			"atom+xml", singletonMap("type", "entry"));
 
 	@Required
 	public void setAbdera(Abdera abdera) {
