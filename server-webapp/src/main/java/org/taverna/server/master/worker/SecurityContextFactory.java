@@ -71,10 +71,8 @@ public class SecurityContextFactory implements
 		instance = handle;
 	}
 
-	@SuppressWarnings("UPM_UNCALLED_PRIVATE_METHOD")
-	@java.lang.SuppressWarnings("unused")
 	@PreDestroy
-	private void closeLog() {
+	void removeAsSingleton() {
 		installAsInstance(null);
 		try {
 			if (provider != null)
@@ -86,10 +84,8 @@ public class SecurityContextFactory implements
 		}
 	}
 
-	@SuppressWarnings("UPM_UNCALLED_PRIVATE_METHOD")
-	@java.lang.SuppressWarnings("unused")
 	@PostConstruct
-	private void setAsSingleton() {
+	void setAsSingleton() {
 		installAsInstance(this);
 		if (getProvider(PROVIDER_NAME) == null) {
 			try {
