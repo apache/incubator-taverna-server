@@ -25,6 +25,7 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -596,6 +597,18 @@ public class TavernaServerSupport {
 			permSet.remove(userName);
 			context.setPermittedDestroyers(permSet);
 		}
+	}
+
+	public Map<String, Permission> getPermissionMap(
+			TavernaSecurityContext context) {
+		Map<String, Permission> perm = new HashMap<String, Permission>();
+		for (String u : context.getPermittedReaders())
+			perm.put(u, Permission.Read);
+		for (String u : context.getPermittedUpdaters())
+			perm.put(u, Permission.Update);
+		for (String u : context.getPermittedDestroyers())
+			perm.put(u, Permission.Destroy);
+		return perm;
 	}
 
 	/**

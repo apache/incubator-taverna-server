@@ -13,7 +13,6 @@ import static org.taverna.server.master.common.Uri.secure;
 import static org.taverna.server.master.utils.RestUtils.opt;
 
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.ws.rs.core.Response;
@@ -203,13 +202,7 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 	@Override
 	@CallCounted
 	public PermissionsDescription describePermissions(UriInfo ui) {
-		Map<String, Permission> perm = new HashMap<String, Permission>();
-		for (String u : context.getPermittedReaders())
-			perm.put(u, Permission.Read);
-		for (String u : context.getPermittedUpdaters())
-			perm.put(u, Permission.Update);
-		for (String u : context.getPermittedDestroyers())
-			perm.put(u, Permission.Destroy);
+		Map<String, Permission> perm = support.getPermissionMap(context);
 		return new PermissionsDescription(secure(ui).path("{id}"), perm);
 	}
 

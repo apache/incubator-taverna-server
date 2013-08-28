@@ -6,6 +6,7 @@
 package org.taverna.server.master;
 
 import static java.lang.Math.min;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.sort;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.Response.created;
@@ -30,7 +31,6 @@ import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -704,25 +704,19 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 			throws UnknownRunException, NotOwnerException {
 		PermissionList pl = new PermissionList();
 		pl.permission = new ArrayList<PermissionList.SinglePermissionMapping>();
-		Map<String, Permission> perm = new HashMap<String, Permission>();
+		Map<String, Permission> perm;
 		try {
-			TavernaSecurityContext context = getRunSecurityContext(runName,
-					false);
-			for (String u : context.getPermittedReaders())
-				perm.put(u, Permission.Read);
-			for (String u : context.getPermittedUpdaters())
-				perm.put(u, Permission.Update);
-			for (String u : context.getPermittedDestroyers())
-				perm.put(u, Permission.Destroy);
+			perm = support.getPermissionMap(getRunSecurityContext(runName,
+					false));
 		} catch (BadStateChangeException e) {
 			log.error("unexpected error from internal API", e);
+			perm = emptyMap();
 		}
 		List<String> users = new ArrayList<String>(perm.keySet());
 		sort(users);
-		for (String user : users) {
+		for (String user : users)
 			pl.permission.add(new PermissionList.SinglePermissionMapping(user,
 					perm.get(user)));
-		}
 		return pl;
 	}
 
