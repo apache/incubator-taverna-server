@@ -212,7 +212,10 @@ public class RunConnection {
 		destroyers = rrd.getDestroyers().toArray(STRING_ARY);
 		credentials = rrd.getSecurityContext().getCredentials();
 		trust = rrd.getSecurityContext().getTrusted();
-		this.name = rrd.name;
+		if (rrd.name.length() > NAME_LENGTH)
+			this.name = rrd.name.substring(0, NAME_LENGTH);
+		else
+			this.name = rrd.name;
 		setFinished(rrd.doneTransitionToFinished);
 	}
 

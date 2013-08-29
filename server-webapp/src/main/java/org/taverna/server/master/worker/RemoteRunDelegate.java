@@ -13,6 +13,7 @@ import static java.util.UUID.randomUUID;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.worker.RemoteRunDelegate.checkBadFilename;
+import static org.taverna.server.master.worker.RunConnection.NAME_LENGTH;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -87,6 +88,7 @@ public class RemoteRunDelegate implements TavernaRun {
 	transient FactoryBean factory;
 	boolean doneTransitionToFinished;
 	String name;
+	private static final String ELLIPSIS = "...";
 
 	public RemoteRunDelegate(Date creationInstant, Workflow workflow,
 			RemoteSingleRun rsr, int defaultLifetime, RunDBSupport db, UUID id,
@@ -104,7 +106,13 @@ public class RemoteRunDelegate implements TavernaRun {
 		this.factory = factory;
 		try {
 			this.name = "";
-			this.name = workflow.getName() + " " + creationInstant;
+			String ci = " " + creationInstant;
+			String n = workflow.getName();
+			if (n.length() > NAME_LENGTH - ci.length())
+				n = n.substring(0,
+						NAME_LENGTH - ci.length() - ELLIPSIS.length())
+						+ ELLIPSIS;
+			this.name = n + ci;
 		} catch (Exception e) {
 			// Ignore; it's just a name, not something important.
 		}
