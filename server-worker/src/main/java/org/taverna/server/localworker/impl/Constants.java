@@ -117,4 +117,6 @@ public interface Constants {
 	 * located.
 	 */
 	static final String SHARED_DIR_PROP = "taverna.sharedDirectory";
+
+	static final String TIME = "/usr/bin/time";
 }
