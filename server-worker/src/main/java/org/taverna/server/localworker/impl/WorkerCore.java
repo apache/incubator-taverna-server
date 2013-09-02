@@ -10,6 +10,7 @@ import static java.io.File.pathSeparator;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Double.parseDouble;
 import static java.lang.Long.parseLong;
+import static java.lang.Runtime.getRuntime;
 import static java.lang.System.out;
 import static java.net.InetAddress.getLocalHost;
 import static org.apache.commons.io.FileUtils.forceDelete;
@@ -36,10 +37,12 @@ import static org.taverna.server.localworker.remote.RemoteStatus.Finished;
 import static org.taverna.server.localworker.remote.RemoteStatus.Initialized;
 import static org.taverna.server.localworker.remote.RemoteStatus.Operating;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -144,6 +147,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	String emailAddress;
 	Date start;
 	RunAccounting accounting;
+	Holder<Integer> pid;
 
 	private boolean finished;
 	private JobUsageRecord ur;
@@ -160,7 +164,16 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		super();
 		stdout = new StringWriter();
 		stderr = new StringWriter();
+		pid = new Holder<Integer>();
 		this.accounting = accounting;
+	}
+
+	private int getPID() {
+		synchronized(pid) {
+			if (pid.value == null)
+				return -1;
+			return pid.value;
+		}
 	}
 
 	/**
@@ -170,12 +183,17 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	 * @author Donal Fellows
 	 */
 	private static class AsyncCopy extends Thread {
-		private InputStream from;
+		private BufferedReader from;
 		private Writer to;
+		private Holder<Integer> pidHolder;
 
-		AsyncCopy(InputStream from, Writer to) {
-			this.from = from;
+		AsyncCopy(InputStream from, Writer to) throws UnsupportedEncodingException {
+			this(from, to, null);
+		}
+		AsyncCopy(InputStream from, Writer to, Holder<Integer> pid) throws UnsupportedEncodingException {
+			this.from = new BufferedReader(new InputStreamReader(from, SYSTEM_ENCODING));
 			this.to = to;
+			this.pidHolder = pid;
 			setDaemon(true);
 			start();
 		}
@@ -183,7 +201,16 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		@Override
 		public void run() {
 			try {
-				copy(from, to, SYSTEM_ENCODING);
+				if (pidHolder != null) {
+					String line = from.readLine();
+					if (line.matches("^pid:\\d+$"))
+						synchronized(pidHolder) {
+							pidHolder.value = Integer.parseInt(line.substring(4));
+						}
+					else
+						to.write(line + System.getProperty("line.separator"));
+				}
+				copy(from, to);
 			} catch (IOException e) {
 			}
 		}
@@ -289,7 +316,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 					accounting.runStarted();
 
 					// Capture its stdout and stderr
-					new AsyncCopy(subprocess.getInputStream(), stdout);
+					new AsyncCopy(subprocess.getInputStream(), stdout, pid);
 					new AsyncCopy(subprocess.getErrorStream(), stderr);
 					if (password != null)
 						new PasswordWriterThread(subprocess, password);
@@ -607,28 +634,35 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		return dur * 1000;
 	}
 
+	private void signal(String signal) throws Exception {
+		int pid = getPID();
+		if (pid > 0
+				&& getRuntime().exec("kill -" + signal + " " + pid).waitFor() == 0)
+			return;
+		throw new Exception("failed to send signal " + signal + " to process "
+				+ pid);
+	}
+
 	/**
 	 * Move the worker out of the stopped state and back to operating.
 	 * 
 	 * @throws Exception
-	 *             if it fails (which it always does; operation currently
-	 *             unsupported).
+	 *             if it fails.
 	 */
 	@Override
 	public void startWorker() throws Exception {
-		throw new Exception("starting unsupported");
+		signal("CONT");
 	}
 
 	/**
 	 * Move the worker into the stopped state from the operating state.
 	 * 
 	 * @throws Exception
-	 *             if it fails (which it always does; operation currently
-	 *             unsupported).
+	 *             if it fails.
 	 */
 	@Override
 	public void stopWorker() throws Exception {
-		throw new Exception("stopping unsupported");
+		signal("STOP");
 	}
 
 	/**

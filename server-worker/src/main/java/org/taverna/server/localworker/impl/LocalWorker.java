@@ -635,7 +635,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			case Initialized:
 				boolean started;
 				try {
-					started = startWorker();
+					started = createWorker();
 				} catch (Exception e) {
 					throw new ImplementationException(
 							"problem creating executing workflow", e);
@@ -649,7 +649,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 					core.startWorker();
 				} catch (Exception e) {
 					throw new ImplementationException(
-							"problem starting workflow run", e);
+							"problem continuing workflow run", e);
 				}
 				break;
 			case Finished:
@@ -699,7 +699,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		}
 	}
 
-	private boolean startWorker() throws Exception {
+	private boolean createWorker() throws Exception {
 		start = new Date();
 		char[] pw = keystorePassword;
 		keystorePassword = null;
