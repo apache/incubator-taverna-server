@@ -27,6 +27,8 @@ import java.util.TreeMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.taverna.server.localworker.api.Worker;
+import org.taverna.server.localworker.api.WorkerFactory;
 import org.taverna.server.localworker.remote.IllegalStateTransitionException;
 import org.taverna.server.localworker.remote.ImplementationException;
 import org.taverna.server.localworker.remote.RemoteDirectory;

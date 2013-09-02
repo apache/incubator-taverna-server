@@ -1,4 +1,5 @@
-package org.taverna.server.localworker.impl;
+package org.taverna.server.localworker.api;
+
 
 /**
  * Class that manufactures instances of {@link Worker}.

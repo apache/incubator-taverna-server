@@ -3,7 +3,7 @@
  * 
  * See the file "LICENSE" for license terms.
  */
-package org.taverna.server.localworker.impl;
+package org.taverna.server.localworker.api;
 
 import static java.nio.charset.Charset.defaultCharset;
 

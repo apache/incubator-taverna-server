@@ -12,12 +12,12 @@ import static java.lang.System.out;
 import static java.lang.System.setProperty;
 import static java.lang.System.setSecurityManager;
 import static java.rmi.registry.LocateRegistry.getRegistry;
-import static org.taverna.server.localworker.impl.Constants.DEATH_DELAY;
-import static org.taverna.server.localworker.impl.Constants.LOCALHOST;
-import static org.taverna.server.localworker.impl.Constants.RMI_HOST_PROP;
-import static org.taverna.server.localworker.impl.Constants.SECURITY_POLICY_FILE;
-import static org.taverna.server.localworker.impl.Constants.SEC_POLICY_PROP;
-import static org.taverna.server.localworker.impl.Constants.UNSECURE_PROP;
+import static org.taverna.server.localworker.api.Constants.DEATH_DELAY;
+import static org.taverna.server.localworker.api.Constants.LOCALHOST;
+import static org.taverna.server.localworker.api.Constants.RMI_HOST_PROP;
+import static org.taverna.server.localworker.api.Constants.SECURITY_POLICY_FILE;
+import static org.taverna.server.localworker.api.Constants.SEC_POLICY_PROP;
+import static org.taverna.server.localworker.api.Constants.UNSECURE_PROP;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -37,6 +37,9 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.ws.Holder;
 
+import org.taverna.server.localworker.api.RunAccounting;
+import org.taverna.server.localworker.api.Worker;
+import org.taverna.server.localworker.api.WorkerFactory;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.localworker.server.UsageRecordReceiver;

@@ -3,12 +3,13 @@
  * 
  * See the file "LICENSE" for license terms.
  */
-package org.taverna.server.localworker.impl;
+package org.taverna.server.localworker.api;
 
 import java.io.File;
 import java.util.List;
 import java.util.Map;
 
+import org.taverna.server.localworker.impl.LocalWorker;
 import org.taverna.server.localworker.remote.ImplementationException;
 import org.taverna.server.localworker.remote.RemoteListener;
 import org.taverna.server.localworker.remote.RemoteStatus;
