@@ -128,7 +128,8 @@ var readonlies = [ "invokationCount", "lastExitCode", "runCount", "startupTime",
 var entries = [ "defaultLifetime", "executeWorkflowScript", "javaBinary",
 		"registrationPollMillis", "registrationWaitSeconds", "registryHost",
 		"registryPort", "runLimit", "runasPasswordFile", "serverForkerJar",
-		"serverWorkerJar", "usageRecordDumpFile", "operatingLimit" ];
+		"serverWorkerJar", "usageRecordDumpFile", "operatingLimit",
+		"registryJar" ];
 /** Cached information about users. */
 var userinfo = [];
 /** Extra arguments to pass to the runtime. */
