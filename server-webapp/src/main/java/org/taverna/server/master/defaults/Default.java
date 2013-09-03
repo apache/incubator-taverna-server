@@ -30,6 +30,12 @@ public interface Default {
 	 */
 	static final String SECURE_FORK_IMPLEMENTATION_JAR = "util/secure.fork.jar";
 
+	/**
+	 * The name of the resource that is the implementation of the subprocess
+	 * that acts as the RMI registry.
+	 */
+	static final String REGISTRY_JAR = "util/rmi.daemon.jar";
+
 	/** Initial lifetime of runs, in minutes. */
 	static final int RUN_LIFE_MINUTES = 20;
 

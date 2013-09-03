@@ -175,4 +175,17 @@ public interface LocalWorkerModel extends PolicyLimits {
 	public abstract void setOperatingLimit(int operatingLimit);
 
 	void setPermittedWorkflowURIs(List<URI> permittedWorkflows);
+
+	/**
+	 * @return the full path name of the RMI registry subprocess's
+	 *         implementation JAR
+	 */
+	String getRegistryJar();
+
+	/**
+	 * @param rmiRegistryJar
+	 *            the full path name of the RMI registry subprocess's
+	 *            implementation JAR
+	 */
+	void setRegistryJar(String rmiRegistryJar);
 }

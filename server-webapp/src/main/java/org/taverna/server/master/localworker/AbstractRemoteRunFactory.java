@@ -15,7 +15,6 @@ import static java.util.UUID.randomUUID;
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.DIR;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.URL;
@@ -147,7 +146,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	private Registry makeRegistry(int port) throws RemoteException {
 		ProcessBuilder p = new ProcessBuilder(getJavaBinary());
 		p.command().add("-jar");
-		p.command().add(getRMIregistryJar());
+		p.command().add(getRmiRegistryJar());
 		p.command().add(Integer.toString(port));
 		p.command().add(Boolean.toString(rmiLocalhostOnly));
 		try {
@@ -176,12 +175,6 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		} catch (InterruptedException e) {
 			throw new RemoteException("unexpected interrupt");
 		}
-	}
-
-	private String getRMIregistryJar() {
-		// TODO Expose a better way of doing this
-		return new File(new File(getServerWorkerJar()).getParentFile(),
-				"rmi.daemon.jar").toString();
 	}
 
 	/**
@@ -305,6 +298,18 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		if (port != state.getRegistryPort())
 			registry = null;
 		state.setRegistryPort(port);
+	}
+
+	@ManagedAttribute(description = "What JAR do we use to start the RMI registry process?")
+	@Override
+	public String getRmiRegistryJar() {
+		return state.getRegistryJar();
+	}
+
+	@ManagedAttribute(description = "What JAR to we use to start the RMI registry process? Note that setting this does not cause an immediate restart.")
+	@Override
+	public void setRmiRegistryJar(String rmiRegistryJar) {
+		state.setRegistryJar(rmiRegistryJar);
 	}
 
 	@Autowired(required = true)

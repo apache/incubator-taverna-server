@@ -304,6 +304,27 @@ public class AdminBean implements Admin {
 
 	@RolesAllowed(ADMIN)
 	@Override
+	public String getRegistryJar() {
+		return factory.getRmiRegistryJar();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public String setRegistryJar(String registryJar) {
+		factory.setRmiRegistryJar(registryJar);
+		return factory.getRmiRegistryJar();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response optionsRegistryJar() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
+
+	@RolesAllowed(ADMIN)
+	@Override
 	public int getRunLimit() {
 		return factory.getMaxRuns();
 	}
@@ -714,6 +735,7 @@ public class AdminBean implements Admin {
 		return opt("PUT");
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public StringList getPermittedWorkflowURIs() {
 		StringList sl = new StringList();
@@ -726,6 +748,7 @@ public class AdminBean implements Admin {
 
 	private static final URI myExp = URI.create("http://www.myexperment.org/");
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public StringList setPermittedWorkflowURIs(StringList permitted) {
 		List<URI> uris = new ArrayList<URI>();
@@ -739,6 +762,7 @@ public class AdminBean implements Admin {
 		return getPermittedWorkflowURIs();
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsPermittedWorkflowURIs() {
 		return opt("PUT");

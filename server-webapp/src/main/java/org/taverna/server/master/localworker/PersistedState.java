@@ -55,6 +55,8 @@ class PersistedState implements LocalWorkerModel {
 	@Persistent
 	private String serverForkerJar;
 	@Persistent
+	private String registryJar;
+	@Persistent
 	private String passwordFile;
 	@Persistent
 	private String javaBinary;
@@ -226,5 +228,15 @@ class PersistedState implements LocalWorkerModel {
 		this.permittedWorkflows = new String[permittedWorkflows.size()];
 		for (int i = 0 ; i<this.permittedWorkflows.length ; i++)
 			this.permittedWorkflows[i] = permittedWorkflows.get(i).toString();
+	}
+
+	@Override
+	public String getRegistryJar() {
+		return registryJar;
+	}
+
+	@Override
+	public void setRegistryJar(String registryJar) {
+		this.registryJar = registryJar;
 	}
 }

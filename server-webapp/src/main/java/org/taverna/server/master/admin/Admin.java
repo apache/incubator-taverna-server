@@ -22,6 +22,7 @@ import static org.taverna.server.master.admin.Paths.OP_LIMIT;
 import static org.taverna.server.master.admin.Paths.PASSFILE;
 import static org.taverna.server.master.admin.Paths.PERM_WF;
 import static org.taverna.server.master.admin.Paths.REG_HOST;
+import static org.taverna.server.master.admin.Paths.REG_JAR;
 import static org.taverna.server.master.admin.Paths.REG_POLL;
 import static org.taverna.server.master.admin.Paths.REG_PORT;
 import static org.taverna.server.master.admin.Paths.REG_WAIT;
@@ -294,6 +295,39 @@ public interface Admin {
 	@Path(OPERATING)
 	@Description("How many runs are currently actually running.")
 	Response optionsOperatingCount();
+
+	/**
+	 * Get the full pathname of the RMI registry's JAR.
+	 * 
+	 * @return The current setting.
+	 */
+	@GET
+	@Path(REG_JAR)
+	@Produces(PLAIN)
+	@Description("What is the full pathname of the server's custom RMI registry executable JAR file?")
+	@NonNull
+	String getRegistryJar();
+
+	/**
+	 * Set the full pathname of the RMI registry's JAR.
+	 * 
+	 * @param registryJar
+	 *            What to set it to.
+	 * @return The new setting.
+	 */
+	@PUT
+	@Path(REG_JAR)
+	@Consumes(PLAIN)
+	@Produces(PLAIN)
+	@Description("What is the full pathname of the server's custom RMI registry executable JAR file?")
+	@NonNull
+	String setRegistryJar(@NonNull String registryJar);
+
+	/** What HTTP methods may we use? */
+	@OPTIONS
+	@Path(REG_JAR)
+	@Description("What is the full pathname of the server's special custom RMI registry executable JAR file?")
+	Response optionsRegistryJar();
 
 	/**
 	 * Get the location of the RMI registry.
@@ -1013,6 +1047,7 @@ interface Paths {
 	static final String OPERATING = "operatingCount";
 	static final String REG_HOST = "registryHost";
 	static final String REG_PORT = "registryPort";
+	static final String REG_JAR = "registryJar";
 	static final String RUN_LIMIT = "runLimit";
 	static final String OP_LIMIT = "operatingLimit";
 	static final String LIFE = "defaultLifetime";

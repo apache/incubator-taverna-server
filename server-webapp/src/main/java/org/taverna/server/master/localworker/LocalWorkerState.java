@@ -13,6 +13,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static org.taverna.server.master.defaults.Default.EXTRA_ARGUMENTS;
 import static org.taverna.server.master.defaults.Default.PASSWORD_FILE;
+import static org.taverna.server.master.defaults.Default.REGISTRY_JAR;
 import static org.taverna.server.master.defaults.Default.RMI_PREFIX;
 import static org.taverna.server.master.defaults.Default.RUN_LIFE_MINUTES;
 import static org.taverna.server.master.defaults.Default.RUN_OPERATING_LIMIT;
@@ -124,6 +125,7 @@ public class LocalWorkerState extends JDOSupport<PersistedState> implements
 	int operatingLimit;
 
 	URI[] permittedWorkflows;
+	private String registryJar;
 
 	@Override
 	public void setDefaultLifetime(int defaultLifetime) {
@@ -333,6 +335,19 @@ public class LocalWorkerState extends JDOSupport<PersistedState> implements
 	}
 
 	@Override
+	public String getRegistryJar() {
+		return registryJar == null ? REGISTRY_JAR : registryJar;
+	}
+
+	@Override
+	public void setRegistryJar(String rmiRegistryJar) {
+		this.registryJar = (rmiRegistryJar == null || rmiRegistryJar.isEmpty()) ? null
+				: rmiRegistryJar;
+		if (loadedState)
+			self.store();
+	}
+
+	@Override
 	public List<URI> getPermittedWorkflowURIs() {
 		if (permittedWorkflows == null || permittedWorkflows.length == 0)
 			return emptyList();
@@ -381,6 +396,7 @@ public class LocalWorkerState extends JDOSupport<PersistedState> implements
 		operatingLimit = state.getOperatingLimit();
 		List<URI> pwu = state.getPermittedWorkflowURIs();
 		permittedWorkflows = (URI[]) pwu.toArray(new URI[pwu.size()]);
+		registryJar = state.getRegistryJar();
 
 		loadedState = true;
 	}
@@ -410,6 +426,7 @@ public class LocalWorkerState extends JDOSupport<PersistedState> implements
 		state.setOperatingLimit(operatingLimit);
 		if (permittedWorkflows != null)
 			state.setPermittedWorkflowURIs(asList(permittedWorkflows));
+		state.setRegistryJar(registryJar);
 
 		loadedState = true;
 	}

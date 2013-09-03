@@ -120,4 +120,10 @@ public interface ConfigurableRunFactory extends RunFactory {
 	 *             if anything goes wrong
 	 */
 	int getOperatingCount() throws Exception;
+
+	/** How do we start the RMI registry process? Getter */
+	String getRmiRegistryJar();
+
+	/** How do we start the RMI registry process? Setter */
+	void setRmiRegistryJar(String rmiRegistryJar);
 }
