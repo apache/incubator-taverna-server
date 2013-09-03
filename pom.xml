@@ -504,5 +504,6 @@
 		<module>server-unix-forker</module>
 		<module>server-usagerecord</module>
 		<module>server-port-description</module>
+		<module>server-rmidaemon</module>
 	</modules>
 </project>

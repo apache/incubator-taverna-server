@@ -120,6 +120,13 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+			<groupId>uk.org.taverna.server</groupId>
+			<artifactId>server-rmidaemon</artifactId>
+			<version>${project.parent.version}</version>
+			<classifier>jar-with-dependencies</classifier>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
 			<version>2.5</version>
@@ -523,6 +530,14 @@
 									<classifier>jar-with-dependencies</classifier>
 									<overWrite>false</overWrite>
 									<destFileName>secure.fork.jar</destFileName>
+								</artifactItem>
+								<artifactItem>
+									<groupId>uk.org.taverna.server</groupId>
+									<artifactId>server-rmidaemon</artifactId>
+									<version>${project.parent.version}</version>
+									<classifier>jar-with-dependencies</classifier>
+									<overWrite>false</overWrite>
+									<destFileName>rmi.daemon.jar</destFileName>
 								</artifactItem>
 							</artifactItems>
 							<outputDirectory>${util.dir}</outputDirectory>

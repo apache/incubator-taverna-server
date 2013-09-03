@@ -8,23 +8,22 @@ package org.taverna.server.master.localworker;
 import static java.lang.System.getSecurityManager;
 import static java.lang.System.setProperty;
 import static java.lang.System.setSecurityManager;
-import static java.net.InetAddress.getLocalHost;
 import static java.rmi.registry.LocateRegistry.createRegistry;
 import static java.rmi.registry.LocateRegistry.getRegistry;
 import static java.rmi.registry.Registry.REGISTRY_PORT;
-import static java.rmi.server.RMISocketFactory.getDefaultSocketFactory;
 import static java.util.UUID.randomUUID;
 import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.DIR;
 
+import java.io.File;
 import java.io.IOException;
-import java.net.ServerSocket;
+import java.io.ObjectInputStream;
 import java.net.URL;
+import java.rmi.MarshalledObject;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,6 +34,7 @@ import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.xml.bind.JAXBException;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -145,19 +145,43 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	}
 
 	private Registry makeRegistry(int port) throws RemoteException {
-		if (rmiLocalhostOnly) {
-			setProperty("java.rmi.server.hostname", "127.0.0.1");
-			return createRegistry(port, getDefaultSocketFactory(),
-					new RMIServerSocketFactory() {
-						@Override
-						public ServerSocket createServerSocket(int port)
-								throws IOException {
-							return new ServerSocket(port, 0, getLocalHost());
-						}
-					});
-		} else {
-			return createRegistry(port);
+		ProcessBuilder p = new ProcessBuilder(getJavaBinary());
+		p.command().add("-jar");
+		p.command().add(getRMIregistryJar());
+		p.command().add(Integer.toString(port));
+		p.command().add(Boolean.toString(rmiLocalhostOnly));
+		try {
+			Process proc = p.start();
+			Thread.sleep(getSleepTime());
+			try {
+				if (proc.exitValue() == 0)
+					return null;
+				String error = IOUtils.toString(proc.getErrorStream());
+				throw new RemoteException(error);
+			} catch (IllegalThreadStateException ise) {
+				// Still running!
+			}
+			ObjectInputStream ois = new ObjectInputStream(proc.getInputStream());
+			@SuppressWarnings("unchecked")
+			java.rmi.MarshalledObject<Registry> handle = (MarshalledObject<Registry>) ois
+					.readObject();
+			ois.close();
+			return handle.get();
+		} catch (RemoteException e) {
+			throw e;
+		} catch (ClassNotFoundException e) {
+			throw new RemoteException("unexpected registry type", e);
+		} catch (IOException e) {
+			throw new RemoteException("unexpected IO problem with registry", e);
+		} catch (InterruptedException e) {
+			throw new RemoteException("unexpected interrupt");
 		}
+	}
+
+	private String getRMIregistryJar() {
+		// TODO Expose a better way of doing this
+		return new File(new File(getServerWorkerJar()).getParentFile(),
+				"rmi.daemon.jar").toString();
 	}
 
 	/**
@@ -298,7 +322,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 * Configures the Java security model. Not currently used, as it is
 	 * viciously difficult to get right!
 	 */
-	@SuppressWarnings("unused")
+	//@SuppressWarnings("unused")
 	@edu.umd.cs.findbugs.annotations.SuppressWarnings("UPM_UNCALLED_PRIVATE_METHOD")
 	private static void installSecurityManager() {
 		if (getSecurityManager() == null) {
