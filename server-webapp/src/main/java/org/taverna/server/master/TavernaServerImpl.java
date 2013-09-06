@@ -609,6 +609,22 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		}
 	}
 
+	private Credential findCredential(TavernaSecurityContext c, String id)
+			throws NoCredentialException {
+		for (Credential t : c.getCredentials())
+			if (t.id.equals(id))
+				return t;
+		throw new NoCredentialException();
+	}
+
+	private Trust findTrust(TavernaSecurityContext c, String id)
+			throws NoCredentialException {
+		for (Trust t : c.getTrusted())
+			if (t.id.equals(id))
+				return t;
+		throw new NoCredentialException();
+	}
+
 	@Override
 	@CallCounted
 	public String setRunCredential(String runName, String credentialID,
@@ -619,13 +635,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		if (credentialID == null || credentialID.isEmpty()) {
 			credential.id = randomUUID().toString();
 		} else {
-			find: do {
-				for (Credential t : c.getCredentials())
-					if (t.id.equals(credentialID))
-						break find;
-				throw new NoCredentialException();
-			} while (false);
-			credential.id = credentialID;
+			credential.id = findCredential(c, credentialID).id;
 		}
 		URI uri = getRunUriBuilder().path("security/credentials/{credid}")
 				.build(runName, credential.id);
@@ -667,13 +677,7 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 		if (certificateID == null || certificateID.isEmpty()) {
 			certificate.id = randomUUID().toString();
 		} else {
-			find: do {
-				for (Trust t : c.getTrusted())
-					if (t.id.equals(certificateID))
-						break find;
-				throw new NoCredentialException();
-			} while (false);
-			certificate.id = certificateID;
+			certificate.id = findTrust(c, certificateID).id;
 		}
 		URI uri = getRunUriBuilder().path("security/trusts/{certid}").build(
 				runName, certificate.id);
