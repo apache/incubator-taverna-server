@@ -151,7 +151,7 @@ class InputREST implements TavernaServerInputREST, InputBean {
 		try {
 			File from = fileUtils.getFile(
 					support.getRun(mvm.get("runName").get(0)),
-					FalseDE.make(mvm.get("path").get(0)));
+					SyntheticDirectoryEntry.make(mvm.get("path").get(0)));
 			File to = run.getWorkingDirectory().makeEmptyFile(
 					support.getPrincipal(), randomUUID().toString());
 
@@ -166,44 +166,6 @@ class InputREST implements TavernaServerInputREST, InputBean {
 			throw new BadStateChangeException("may not copy from that run", e);
 		} catch (NoDirectoryEntryException e) {
 			throw new BadStateChangeException("source does not exist", e);
-		}
-	}
-
-	static class FalseDE implements DirectoryEntry {
-		public static DirEntryReference make(String path) {
-			return DirEntryReference.newInstance(new FalseDE(path));
-		}
-
-		private FalseDE(String p) {
-			this.p = p;
-			this.d = new Date();
-		}
-
-		private String p;
-		private Date d;
-
-		@Override
-		public String getName() {
-			return null;
-		}
-
-		@Override
-		public String getFullName() {
-			return p;
-		}
-
-		@Override
-		public void destroy() {
-		}
-
-		@Override
-		public int compareTo(DirectoryEntry o) {
-			return p.compareTo(o.getFullName());
-		}
-
-		@Override
-		public Date getModificationDate() {
-			return d;
 		}
 	}
 
@@ -243,4 +205,47 @@ interface InputBean extends SupportAware {
 	void setCdBuilder(ContentsDescriptorBuilder cd);
 
 	void setFileUtils(FilenameUtils fn);
+}
+
+/**
+ * A way to create synthetic directory entries, used during deletion.
+ * 
+ * @author Donal Fellows
+ */
+class SyntheticDirectoryEntry implements DirectoryEntry {
+	public static DirEntryReference make(String path) {
+		return DirEntryReference.newInstance(new SyntheticDirectoryEntry(path));
+	}
+
+	private SyntheticDirectoryEntry(String p) {
+		this.p = p;
+		this.d = new Date();
+	}
+
+	private String p;
+	private Date d;
+
+	@Override
+	public String getName() {
+		return null;
+	}
+
+	@Override
+	public String getFullName() {
+		return p;
+	}
+
+	@Override
+	public void destroy() {
+	}
+
+	@Override
+	public int compareTo(DirectoryEntry o) {
+		return p.compareTo(o.getFullName());
+	}
+
+	@Override
+	public Date getModificationDate() {
+		return d;
+	}
 }
