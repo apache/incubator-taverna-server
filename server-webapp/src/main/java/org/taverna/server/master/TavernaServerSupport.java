@@ -46,6 +46,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.taverna.server.master.api.ManagementModel;
+import org.taverna.server.master.api.TavernaServerBean;
 import org.taverna.server.master.common.Permission;
 import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.common.Workflow;
@@ -101,7 +103,7 @@ public class TavernaServerSupport {
 	/** How to map the user ID to who to run as. */
 	private LocalIdentityMapper idMapper;
 	/** The code that is coupled to CXF. */
-	private TavernaServer webapp;
+	private TavernaServerBean webapp;
 	/**
 	 * Whether to log failures during principal retrieval. Should be normally on
 	 * as it indicates a serious problem, but can be switched off for testing.
@@ -306,7 +308,7 @@ public class TavernaServerSupport {
 	 *            The web-app being installed by Spring.
 	 */
 	@Required
-	public void setWebapp(TavernaServer webapp) {
+	public void setWebapp(TavernaServerBean webapp) {
 		this.webapp = webapp;
 	}
 
@@ -673,7 +675,13 @@ public class TavernaServerSupport {
 			run = runFactory.create(p, workflow);
 			TavernaSecurityContext c = run.getSecurityContext();
 			c.initializeSecurityFromContext(SecurityContextHolder.getContext());
-			webapp.initObsoleteSecurity(c);
+			/*
+			 * These next pieces of security initialisation are (hopefully) obsolete
+			 * now that we use Spring Security, but we keep them Just In Case.
+			 */
+			boolean doRESTinit = webapp.initObsoleteSOAPSecurity(c);
+			if (doRESTinit)
+				webapp.initObsoleteRESTSecurity(c);
 		} catch (Exception e) {
 			log.error("failed to build workflow run worker", e);
 			throw new NoCreateException("failed to build workflow run worker");

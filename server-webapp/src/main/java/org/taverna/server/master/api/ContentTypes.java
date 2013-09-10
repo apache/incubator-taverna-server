@@ -3,7 +3,7 @@
  * 
  * See the file "LICENSE" for license terms.
  */
-package org.taverna.server.master;
+package org.taverna.server.master.api;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;

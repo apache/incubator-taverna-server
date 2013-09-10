@@ -6,7 +6,7 @@
 package org.taverna.server.master.rest.handler;
 
 import static org.apache.commons.io.IOUtils.copy;
-import static org.taverna.server.master.ContentTypes.APPLICATION_ZIP_TYPE;
+import static org.taverna.server.master.api.ContentTypes.APPLICATION_ZIP_TYPE;
 
 import java.io.IOException;
 import java.io.OutputStream;

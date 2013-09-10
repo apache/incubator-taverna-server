@@ -3,7 +3,7 @@
  * 
  * See the file "LICENSE" for license terms.
  */
-package org.taverna.server.master;
+package org.taverna.server.master.api;
 
 /**
  * The model of the webapp's state Java Bean.

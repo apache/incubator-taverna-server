@@ -13,6 +13,7 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 import org.springframework.beans.factory.annotation.Required;
+import org.taverna.server.master.api.ManagementModel;
 import org.taverna.server.master.utils.JDOSupport;
 
 /** The persistent, manageable state of the Taverna Server web application. */

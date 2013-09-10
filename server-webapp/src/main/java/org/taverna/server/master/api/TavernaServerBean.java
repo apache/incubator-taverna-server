@@ -3,9 +3,11 @@
  * 
  * See the file "LICENSE" for license terms.
  */
-package org.taverna.server.master;
+package org.taverna.server.master.api;
 
 import org.springframework.beans.factory.annotation.Required;
+import org.taverna.server.master.ContentsDescriptorBuilder;
+import org.taverna.server.master.TavernaServerSupport;
 import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
@@ -25,7 +27,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * 
  * @author Donal Fellows
  */
-public interface TavernaServer extends TavernaServerSOAP, TavernaServerREST,
+public interface TavernaServerBean extends TavernaServerSOAP, TavernaServerREST,
 		UriBuilderFactory {
 	/**
 	 * @param policy
@@ -53,7 +55,8 @@ public interface TavernaServer extends TavernaServerSOAP, TavernaServerREST,
 	 *            The contents descriptor builder being installed by Spring.
 	 */
 	@Required
-	void setContentsDescriptorBuilder(@NonNull ContentsDescriptorBuilder cdBuilder);
+	void setContentsDescriptorBuilder(
+			@NonNull ContentsDescriptorBuilder cdBuilder);
 
 	/**
 	 * @param notificationEngine
@@ -68,7 +71,7 @@ public interface TavernaServer extends TavernaServerSOAP, TavernaServerREST,
 	 */
 	@Required
 	void setSupport(@NonNull TavernaServerSupport support);
-	
+
 	/**
 	 * @param eventSource
 	 *            The event source bean being installed by Spring.
@@ -77,10 +80,22 @@ public interface TavernaServer extends TavernaServerSOAP, TavernaServerREST,
 	void setEventSource(@NonNull EventDAO eventSource);
 
 	/**
-	 * The nastier parts of security initialisation, which we want to go away.
+	 * The nastier parts of security initialisation in SOAP calls, which we want
+	 * to go away.
 	 * 
 	 * @param context
 	 *            The context to configure.
+	 * @return True if we did <i>not</i> initialise things.
 	 */
-	void initObsoleteSecurity(@NonNull TavernaSecurityContext context);
+	boolean initObsoleteSOAPSecurity(@NonNull TavernaSecurityContext context);
+
+	/**
+	 * The nastier parts of security initialisation in REST calls, which we want
+	 * to go away.
+	 * 
+	 * @param context
+	 *            The context to configure.
+	 * @return True if we did <i>not</i> initialise things.
+	 */
+	boolean initObsoleteRESTSecurity(@NonNull TavernaSecurityContext context);
 }

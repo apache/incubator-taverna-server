@@ -11,10 +11,10 @@ import static javax.ws.rs.core.Response.noContent;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.seeOther;
 import static javax.ws.rs.core.Response.status;
-import static org.taverna.server.master.ContentTypes.APPLICATION_ZIP_TYPE;
-import static org.taverna.server.master.ContentTypes.DIRECTORY_VARIANTS;
-import static org.taverna.server.master.ContentTypes.INITIAL_FILE_VARIANTS;
 import static org.taverna.server.master.TavernaServerImpl.log;
+import static org.taverna.server.master.api.ContentTypes.APPLICATION_ZIP_TYPE;
+import static org.taverna.server.master.api.ContentTypes.DIRECTORY_VARIANTS;
+import static org.taverna.server.master.api.ContentTypes.INITIAL_FILE_VARIANTS;
 import static org.taverna.server.master.common.Uri.secure;
 import static org.taverna.server.master.utils.RestUtils.opt;
 
@@ -35,7 +35,7 @@ import javax.ws.rs.core.Variant;
 import javax.xml.ws.Holder;
 
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.TavernaServerImpl.SupportAware;
+import org.taverna.server.master.api.DirectoryBean;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoUpdateException;
@@ -352,15 +352,4 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 		else
 			return noContent().build();
 	}
-}
-
-/**
- * Description of properties supported by {@link DirectoryREST}.
- * 
- * @author Donal Fellows
- */
-interface DirectoryBean extends SupportAware {
-	void setFileUtils(FilenameUtils fileUtils);
-
-	DirectoryREST connect(TavernaRun run);
 }

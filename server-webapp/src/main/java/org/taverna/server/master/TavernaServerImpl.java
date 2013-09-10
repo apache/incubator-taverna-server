@@ -51,7 +51,8 @@ import org.apache.commons.logging.Log;
 import org.apache.cxf.annotations.WSDLDocumentation;
 import org.ogf.usage.JobUsageRecord;
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.TavernaServerImpl.SupportAware;
+import org.taverna.server.master.api.SupportAware;
+import org.taverna.server.master.api.TavernaServerBean;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.InputDescription;
 import org.taverna.server.master.common.Permission;
@@ -111,7 +112,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 @WebService(endpointInterface = "org.taverna.server.master.soap.TavernaServerSOAP", serviceName = "TavernaServer", targetNamespace = SERVER_SOAP)
 @WSDLDocumentation("An instance of Taverna " + Version.JAVA + " Server.")
 public abstract class TavernaServerImpl implements TavernaServerSOAP,
-		TavernaServerREST, TavernaServer {
+		TavernaServerREST, TavernaServerBean {
 	/**
 	 * The root of descriptions of the server in JMX.
 	 */
@@ -317,23 +318,6 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	 * @return The handle to the interface, as decorated by Spring.
 	 */
 	protected abstract RunREST makeRunInterface();
-
-	/**
-	 * Indicates that this is a class that wants to be told by Spring about the
-	 * main support bean.
-	 * 
-	 * @author Donal Fellows
-	 */
-	interface SupportAware {
-		/**
-		 * How to tell the bean about the support bean.
-		 * 
-		 * @param support
-		 *            Reference to the support bean.
-		 */
-		@Required
-		void setSupport(TavernaServerSupport support);
-	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	// SOAP INTERFACE
@@ -1025,26 +1009,25 @@ public abstract class TavernaServerImpl implements TavernaServerSOAP,
 	// SUPPORT METHODS
 
 	@Override
-	public void initObsoleteSecurity(TavernaSecurityContext c) {
-		/*
-		 * These next pieces of security initialisation are (hopefully) obsolete
-		 * now that we use Spring Security, but we keep them Just In Case.
-		 */
-		boolean doRESTinit = true;
-		if (jaxws != null) {
-			try {
-				javax.xml.ws.handler.MessageContext msgCtxt = jaxws
-						.getMessageContext();
-				if (msgCtxt != null) {
-					doRESTinit = false;
-					c.initializeSecurityFromSOAPContext(msgCtxt);
-				}
-			} catch (IllegalStateException e) {
-				/* ignore; not much we can do */
-			}
+	public boolean initObsoleteSOAPSecurity(TavernaSecurityContext c) {
+		try {
+			javax.xml.ws.handler.MessageContext msgCtxt = (jaxws == null ? null
+					: jaxws.getMessageContext());
+			if (msgCtxt == null)
+				return true;
+			c.initializeSecurityFromSOAPContext(msgCtxt);
+			return false;
+		} catch (IllegalStateException e) {
+			/* ignore; not much we can do */
+			return true;
 		}
-		if (doRESTinit && jaxrsHeaders != null)
-			c.initializeSecurityFromRESTContext(jaxrsHeaders);
+	}
+	@Override
+	public boolean initObsoleteRESTSecurity(TavernaSecurityContext c) {
+		if (jaxrsHeaders == null)
+			return true;
+		c.initializeSecurityFromRESTContext(jaxrsHeaders);
+		return false;
 	}
 
 	/**

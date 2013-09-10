@@ -11,7 +11,7 @@ import static org.taverna.server.master.TavernaServerImpl.log;
 
 import javax.ws.rs.core.Response;
 
-import org.taverna.server.master.ManagementModel;
+import org.taverna.server.master.api.ManagementModel;
 
 /**
  * Base class for handlers that grants Spring-enabled access to the management

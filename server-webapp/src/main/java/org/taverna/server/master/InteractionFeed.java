@@ -15,6 +15,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
+import org.taverna.server.master.api.FeedBean;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoUpdateException;
@@ -91,13 +92,4 @@ public class InteractionFeed implements InteractionFeedREST, FeedBean {
 	public Response entryOptions(String id) {
 		return opt("DELETE");
 	}
-}
-
-/**
- * Description of properties supported by {@link InteractionFeed}.
- * 
- * @author Donal Fellows
- */
-interface FeedBean {
-	void setInteractionFeedSupport(InteractionFeedSupport feed);
 }

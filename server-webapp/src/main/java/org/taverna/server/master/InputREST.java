@@ -18,7 +18,7 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.apache.cxf.jaxrs.model.URITemplate;
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.TavernaServerImpl.SupportAware;
+import org.taverna.server.master.api.InputBean;
 import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.exceptions.BadInputPortNameException;
 import org.taverna.server.master.exceptions.BadPropertyValueException;
@@ -192,19 +192,6 @@ class InputREST implements TavernaServerInputREST, InputBean {
 	public Response inputOptions(@PathParam("name") String name) {
 		return opt("PUT");
 	}
-}
-
-/**
- * Description of properties supported by {@link InputREST}.
- * 
- * @author Donal Fellows
- */
-interface InputBean extends SupportAware {
-	InputREST connect(TavernaRun run, UriInfo ui);
-
-	void setCdBuilder(ContentsDescriptorBuilder cd);
-
-	void setFileUtils(FilenameUtils fn);
 }
 
 /**

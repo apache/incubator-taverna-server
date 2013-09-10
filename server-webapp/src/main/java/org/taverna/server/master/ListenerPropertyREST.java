@@ -10,7 +10,7 @@ import static org.taverna.server.master.utils.RestUtils.opt;
 
 import javax.ws.rs.core.Response;
 
-import org.taverna.server.master.TavernaServerImpl.SupportAware;
+import org.taverna.server.master.api.ListenerPropertyBean;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.Listener;
@@ -70,14 +70,4 @@ class ListenerPropertyREST implements TavernaServerListenersREST.Property,
 	public Response options() {
 		return opt("PUT");
 	}
-}
-
-/**
- * Description of properties supported by {@link ListenerPropertyREST}.
- * 
- * @author Donal Fellows
- */
-interface ListenerPropertyBean extends SupportAware {
-	ListenerPropertyREST connect(Listener listen, TavernaRun run,
-			String propertyName);
 }

@@ -17,7 +17,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
-import org.taverna.server.master.TavernaServerImpl.SupportAware;
+import org.taverna.server.master.api.ListenersBean;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.Listener;
@@ -87,13 +87,4 @@ abstract class ListenersREST implements TavernaServerListenersREST,
 	public Response listenersOptions() {
 		return opt();
 	}
-}
-
-/**
- * Description of properties supported by {@link ListenersREST}.
- * 
- * @author Donal Fellows
- */
-interface ListenersBean extends SupportAware {
-	ListenersREST connect(TavernaRun run);
 }

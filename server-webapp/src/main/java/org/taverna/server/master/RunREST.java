@@ -26,7 +26,7 @@ import javax.xml.bind.JAXBException;
 import org.joda.time.DateTime;
 import org.ogf.usage.JobUsageRecord;
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.TavernaServerImpl.SupportAware;
+import org.taverna.server.master.api.RunBean;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.BadStateChangeException;
@@ -394,19 +394,4 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	public Response logOptions() {
 		return opt();
 	}
-}
-
-/**
- * Description of properties supported by {@link RunREST}.
- * 
- * @author Donal Fellows
- */
-interface RunBean extends SupportAware {
-	void setCdBuilder(ContentsDescriptorBuilder cdBuilder);
-
-	void setFileUtils(FilenameUtils converter);
-
-	void setRun(TavernaRun run);
-
-	void setRunName(String runName);
 }

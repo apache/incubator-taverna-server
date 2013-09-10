@@ -14,6 +14,7 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.taverna.server.master.api.OneListenerBean;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.TavernaRun;
@@ -88,13 +89,4 @@ abstract class SingleListenerREST implements TavernaServerListenerREST,
 	public Response propertiesOptions() {
 		return opt();
 	}
-}
-
-/**
- * Description of properties supported by {@link InputREST}.
- * 
- * @author Donal Fellows
- */
-interface OneListenerBean {
-	SingleListenerREST connect(Listener listen, TavernaRun run);
 }

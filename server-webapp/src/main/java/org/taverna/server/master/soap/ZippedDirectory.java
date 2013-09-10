@@ -5,7 +5,7 @@
  */
 package org.taverna.server.master.soap;
 
-import static org.taverna.server.master.ContentTypes.APPLICATION_ZIP_TYPE;
+import static org.taverna.server.master.api.ContentTypes.APPLICATION_ZIP_TYPE;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +40,7 @@ public class ZippedDirectory {
 	}
 
 	/**
-	 * Initialize the contents of this descriptor from the given directory.
+	 * Initialise the contents of this descriptor from the given directory.
 	 * 
 	 * @param dir
 	 *            The directory that is to be reported.

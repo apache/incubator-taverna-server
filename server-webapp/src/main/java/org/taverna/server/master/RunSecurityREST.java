@@ -18,7 +18,7 @@ import java.util.Map;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.taverna.server.master.TavernaServerImpl.SupportAware;
+import org.taverna.server.master.api.SecurityBean;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.Permission;
 import org.taverna.server.master.common.Trust;
@@ -280,13 +280,4 @@ class RunSecurityREST implements TavernaServerSecurityREST, SecurityBean {
 	public Response permissionOptions(String id) {
 		return opt("PUT", "DELETE");
 	}
-}
-
-/**
- * Description of properties supported by {@link RunSecurityREST}.
- * 
- * @author Donal Fellows
- */
-interface SecurityBean extends SupportAware {
-	RunSecurityREST connect(TavernaSecurityContext context, TavernaRun run);
 }

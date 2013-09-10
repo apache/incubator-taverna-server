@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.taverna.server.master.api.ManagementModel;
 import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.exceptions.BadPropertyValueException;
 import org.taverna.server.master.exceptions.NoListenerException;

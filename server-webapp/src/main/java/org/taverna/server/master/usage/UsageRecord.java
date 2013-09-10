@@ -81,6 +81,7 @@ public class UsageRecord {
 
 	@Persistent
 	@Column(name = "USAGE_RECORD", length = 32000)
+	// TODO Consider moving to BLOB (CLOB?) type
 	private String usageRecord;
 
 	public String getId() {
