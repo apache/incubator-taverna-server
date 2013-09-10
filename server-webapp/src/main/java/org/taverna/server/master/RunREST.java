@@ -12,7 +12,7 @@ import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.status;
 import static org.joda.time.format.ISODateTimeFormat.dateTime;
 import static org.joda.time.format.ISODateTimeFormat.dateTimeParser;
-import static org.taverna.server.master.TavernaServerImpl.log;
+import static org.taverna.server.master.TavernaServer.log;
 import static org.taverna.server.master.common.Status.Initialized;
 import static org.taverna.server.master.common.Status.Operating;
 import static org.taverna.server.master.utils.RestUtils.opt;

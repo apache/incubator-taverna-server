@@ -5,7 +5,7 @@
  */
 package org.taverna.server.master;
 
-import static org.taverna.server.master.TavernaServerImpl.log;
+import static org.taverna.server.master.TavernaServer.log;
 import static org.taverna.server.master.utils.RestUtils.opt;
 
 import javax.ws.rs.core.Response;

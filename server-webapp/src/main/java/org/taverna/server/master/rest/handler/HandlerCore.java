@@ -7,7 +7,7 @@ package org.taverna.server.master.rest.handler;
 
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.status;
-import static org.taverna.server.master.TavernaServerImpl.log;
+import static org.taverna.server.master.TavernaServer.log;
 
 import javax.ws.rs.core.Response;
 

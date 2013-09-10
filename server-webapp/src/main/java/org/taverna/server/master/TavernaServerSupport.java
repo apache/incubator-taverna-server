@@ -12,7 +12,7 @@ import static java.lang.Math.min;
 import static org.apache.commons.logging.LogFactory.getLog;
 import static org.springframework.jmx.support.MetricType.COUNTER;
 import static org.springframework.jmx.support.MetricType.GAUGE;
-import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
+import static org.taverna.server.master.TavernaServer.JMX_ROOT;
 import static org.taverna.server.master.common.Roles.ADMIN;
 import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 

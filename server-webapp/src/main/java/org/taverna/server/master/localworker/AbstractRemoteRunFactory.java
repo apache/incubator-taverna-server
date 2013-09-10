@@ -12,7 +12,7 @@ import static java.rmi.registry.LocateRegistry.createRegistry;
 import static java.rmi.registry.LocateRegistry.getRegistry;
 import static java.rmi.registry.Registry.REGISTRY_PORT;
 import static java.util.UUID.randomUUID;
-import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
+import static org.taverna.server.master.TavernaServer.JMX_ROOT;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.DIR;
 
 import java.io.IOException;

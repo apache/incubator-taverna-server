@@ -38,7 +38,7 @@
 	</bean>
 
 	<jaxws:server id="master_SOAP"
-		serviceClass="org.taverna.server.master.TavernaServerImpl" address="/soap">
+		serviceClass="org.taverna.server.master.TavernaServer" address="/soap">
 		<jaxws:serviceBean>
 			<ref bean="webapp" />
 		</jaxws:serviceBean>
@@ -65,7 +65,6 @@
 		<jaxrs:features>
 			<!-- <cxf:logging /> --><!-- NOISY! -->
 		</jaxrs:features>
-		<!-- We register these because of a CXF (or Spring?) bug. Yuck! -->
 		<jaxrs:providers>
 			<ref bean="ExceptionProvider.AccessDenied" />
 			<ref bean="ExceptionProvider.BadInputPortName" />

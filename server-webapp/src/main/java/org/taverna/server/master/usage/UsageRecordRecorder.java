@@ -5,7 +5,7 @@
  */
 package org.taverna.server.master.usage;
 
-import static org.taverna.server.master.TavernaServerImpl.log;
+import static org.taverna.server.master.TavernaServer.log;
 
 import java.io.FileWriter;
 import java.io.IOException;

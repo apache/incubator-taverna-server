@@ -13,7 +13,7 @@ import static java.util.UUID.randomUUID;
 import static org.apache.commons.logging.LogFactory.getLog;
 import static org.springframework.jmx.support.MetricType.COUNTER;
 import static org.springframework.jmx.support.MetricType.GAUGE;
-import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
+import static org.taverna.server.master.TavernaServer.JMX_ROOT;
 
 import java.io.BufferedReader;
 import java.io.File;

@@ -6,7 +6,7 @@
 package org.taverna.server.master.identity;
 
 import static org.apache.commons.logging.LogFactory.getLog;
-import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
+import static org.taverna.server.master.TavernaServer.JMX_ROOT;
 import static org.taverna.server.master.common.Roles.ADMIN;
 import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.defaults.Default.AUTHORITY_PREFIX;

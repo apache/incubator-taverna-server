@@ -111,7 +111,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 @DeclareRoles({ USER, ADMIN })
 @WebService(endpointInterface = "org.taverna.server.master.soap.TavernaServerSOAP", serviceName = "TavernaServer", targetNamespace = SERVER_SOAP)
 @WSDLDocumentation("An instance of Taverna " + Version.JAVA + " Server.")
-public abstract class TavernaServerImpl implements TavernaServerSOAP,
+public abstract class TavernaServer implements TavernaServerSOAP,
 		TavernaServerREST, TavernaServerBean {
 	/**
 	 * The root of descriptions of the server in JMX.

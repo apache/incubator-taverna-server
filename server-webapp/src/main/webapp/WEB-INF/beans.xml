@@ -10,8 +10,7 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-	<bean id="webapp"
-		class="org.taverna.server.master.TavernaServerImpl">
+	<bean id="webapp" class="org.taverna.server.master.TavernaServer">
 		<property name="policy" ref="worker.policy" />
 		<property name="runStore" ref="worker.rundb" />
 		<property name="fileUtils" ref="fileUtils" />

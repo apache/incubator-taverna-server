@@ -11,7 +11,7 @@ import static javax.ws.rs.core.Response.noContent;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.seeOther;
 import static javax.ws.rs.core.Response.status;
-import static org.taverna.server.master.TavernaServerImpl.log;
+import static org.taverna.server.master.TavernaServer.log;
 import static org.taverna.server.master.api.ContentTypes.APPLICATION_ZIP_TYPE;
 import static org.taverna.server.master.api.ContentTypes.DIRECTORY_VARIANTS;
 import static org.taverna.server.master.api.ContentTypes.INITIAL_FILE_VARIANTS;
