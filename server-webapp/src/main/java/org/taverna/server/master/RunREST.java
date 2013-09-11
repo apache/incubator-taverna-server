@@ -340,7 +340,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	@Override
 	@CallCounted
 	public String getStdout() throws NoListenerException {
-		return support.getListener(run, "io").getProperty("stdout");
+		return support.getProperty(run, "io", "stdout");
 	}
 
 	@Override
@@ -352,7 +352,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	@Override
 	@CallCounted
 	public String getStderr() throws NoListenerException {
-		return support.getListener(run, "io").getProperty("stderr");
+		return support.getProperty(run, "io", "stderr");
 	}
 
 	@Override
@@ -364,8 +364,8 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	@Override
 	@CallCounted
 	public Response getUsage() throws NoListenerException, JAXBException {
-		String ur = support.getListener(run, "io").getProperty("usageRecord");
-		if (ur == null || ur.isEmpty())
+		String ur = support.getProperty(run, "io", "usageRecord");
+		if (ur.isEmpty())
 			return noContent().build();
 		return ok(JobUsageRecord.unmarshal(ur), APPLICATION_XML).build();
 	}

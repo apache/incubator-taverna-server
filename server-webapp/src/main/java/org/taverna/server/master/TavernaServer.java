@@ -99,6 +99,7 @@ import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 import org.taverna.server.port_description.OutputDescription;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -335,7 +336,8 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 	private void checkCreatePolicy(Workflow workflow) throws NoCreateException {
 		List<URI> pwu = policy
 				.listPermittedWorkflowURIs(support.getPrincipal());
-		if (pwu == null || pwu.size() == 0) return;
+		if (pwu == null || pwu.size() == 0)
+			return;
 		throw new NoCreateException("server policy: will only start "
 				+ "workflows sourced from permitted URI list");
 	}
@@ -492,7 +494,7 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 	@CallCounted
 	public String getRunStdout(String runName) throws UnknownRunException {
 		try {
-			return support.getListener(runName, "io").getProperty("stdout");
+			return support.getProperty(runName, "io", "stdout");
 		} catch (NoListenerException e) {
 			return "";
 		}
@@ -502,7 +504,7 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 	@CallCounted
 	public String getRunStderr(String runName) throws UnknownRunException {
 		try {
-			return support.getListener(runName, "io").getProperty("stderr");
+			return support.getProperty(runName, "io", "stderr");
 		} catch (NoListenerException e) {
 			return "";
 		}
@@ -513,9 +515,8 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 	public JobUsageRecord getRunUsageRecord(String runName)
 			throws UnknownRunException {
 		try {
-			String ur = support.getListener(runName, "io").getProperty(
-					"usageRecord");
-			if (ur == null || ur.isEmpty())
+			String ur = support.getProperty(runName, "io", "usageRecord");
+			if (ur.isEmpty())
 				return null;
 			return JobUsageRecord.unmarshal(ur);
 		} catch (NoListenerException e) {
@@ -1022,6 +1023,7 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 			return true;
 		}
 	}
+
 	@Override
 	public boolean initObsoleteRESTSecurity(TavernaSecurityContext c) {
 		if (jaxrsHeaders == null)
@@ -1059,6 +1061,7 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 		return DEFAULT_HOST;
 	}
 
+	@NonNull
 	private URI getPossiblyInsecureBaseUri() {
 		// See if JAX-RS can supply the info
 		UriInfo ui = getUriInfo();

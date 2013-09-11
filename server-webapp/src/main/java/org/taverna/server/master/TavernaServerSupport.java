@@ -488,6 +488,51 @@ public class TavernaServerSupport {
 	}
 
 	/**
+	 * Obtain a property from a listener that is already attached to a workflow
+	 * run.
+	 * 
+	 * @param runName
+	 *            The ID of the workflow run to search.
+	 * @param listenerName
+	 *            The name of the listener to look up in.
+	 * @param propertyName
+	 *            The name of the property to fetch.
+	 * @return The property value.
+	 * @throws NoListenerException
+	 *             If no listener with that name exists, or no property with
+	 *             that name exists.
+	 * @throws UnknownRunException
+	 *             If no run with that name exists.
+	 */
+	@NonNull
+	public String getProperty(String runName, String listenerName,
+			String propertyName) throws NoListenerException,
+			UnknownRunException {
+		return getListener(runName, listenerName).getProperty(propertyName);
+	}
+
+	/**
+	 * Obtain a property from a listener that is already attached to a workflow
+	 * run.
+	 * 
+	 * @param run
+	 *            The workflow run to search.
+	 * @param listenerName
+	 *            The name of the listener to look up in.
+	 * @param propertyName
+	 *            The name of the property to fetch.
+	 * @return The property value.
+	 * @throws NoListenerException
+	 *             If no listener with that name exists, or no property with
+	 *             that name exists.
+	 */
+	@NonNull
+	public String getProperty(TavernaRun run, String listenerName,
+			String propertyName) throws NoListenerException {
+		return getListener(run, listenerName).getProperty(propertyName);
+	}
+
+	/**
 	 * Get the permission description for the given user.
 	 * 
 	 * @param context
@@ -676,8 +721,9 @@ public class TavernaServerSupport {
 			TavernaSecurityContext c = run.getSecurityContext();
 			c.initializeSecurityFromContext(SecurityContextHolder.getContext());
 			/*
-			 * These next pieces of security initialisation are (hopefully) obsolete
-			 * now that we use Spring Security, but we keep them Just In Case.
+			 * These next pieces of security initialisation are (hopefully)
+			 * obsolete now that we use Spring Security, but we keep them Just
+			 * In Case.
 			 */
 			boolean doRESTinit = webapp.initObsoleteSOAPSecurity(c);
 			if (doRESTinit)
