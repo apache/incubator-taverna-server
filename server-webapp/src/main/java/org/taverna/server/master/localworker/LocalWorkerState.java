@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.defaults.Default;
 import org.taverna.server.master.utils.JDOSupport;
+import org.taverna.server.master.worker.WorkerModel;
 
 /**
  * The persistent state of a local worker factory.
@@ -44,7 +45,7 @@ import org.taverna.server.master.utils.JDOSupport;
  */
 @PersistenceAware
 public class LocalWorkerState extends JDOSupport<PersistedState> implements
-		LocalWorkerModel {
+		WorkerModel {
 	public LocalWorkerState() {
 		super(PersistedState.class);
 	}
@@ -374,7 +375,7 @@ public class LocalWorkerState extends JDOSupport<PersistedState> implements
 	public void load() {
 		if (loadedState || !isPersistent())
 			return;
-		LocalWorkerModel state = getById(KEY);
+		WorkerModel state = getById(KEY);
 		if (state == null) {
 			store();
 			return;
@@ -405,7 +406,7 @@ public class LocalWorkerState extends JDOSupport<PersistedState> implements
 	public void store() {
 		if (!isPersistent())
 			return;
-		LocalWorkerModel state = getById(KEY);
+		WorkerModel state = getById(KEY);
 		if (state == null) {
 			state = persist(makeInstance());
 		}

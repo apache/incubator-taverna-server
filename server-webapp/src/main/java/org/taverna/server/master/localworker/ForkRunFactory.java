@@ -11,8 +11,6 @@ import static java.util.Arrays.asList;
 import static java.util.Calendar.SECOND;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.logging.LogFactory.getLog;
-import static org.springframework.jmx.support.MetricType.COUNTER;
-import static org.springframework.jmx.support.MetricType.GAUGE;
 import static org.taverna.server.master.TavernaServer.JMX_ROOT;
 
 import java.io.BufferedReader;
@@ -30,7 +28,6 @@ import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
-import org.springframework.jmx.export.annotation.ManagedMetric;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
@@ -51,7 +48,6 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		ConfigurableRunFactory {
 	private int lastStartupCheckCount;
 	private Integer lastExitCode;
-	private int totalRuns;
 	private RemoteRunFactory factory;
 	private Process factoryProcess;
 	private String factoryProcessName;
@@ -65,7 +61,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	public ForkRunFactory() throws JAXBException {
 	}
 
-	private void reinitFactory() {
+	protected void reinitFactory() {
 		boolean makeFactory = factory != null;
 		killFactory();
 		try {
@@ -87,119 +83,6 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		return factory;
 	}
 
-	/** @return Which java executable to run. */
-	@ManagedAttribute(description = "Which java executable to run.", currencyTimeLimit = 300)
-	@Override
-	public String getJavaBinary() {
-		return state.getJavaBinary();
-	}
-
-	/**
-	 * @param javaBinary
-	 *            Which java executable to run.
-	 */
-	@ManagedAttribute(description = "Which java executable to run.", currencyTimeLimit = 300)
-	@Override
-	public void setJavaBinary(String javaBinary) {
-		state.setJavaBinary(javaBinary);
-		reinitFactory();
-	}
-
-	/** @return The list of additional arguments used to make a worker process. */
-	@ManagedAttribute(description = "The list of additional arguments used to make a worker process.", currencyTimeLimit = 300)
-	@Override
-	public String[] getExtraArguments() {
-		return state.getExtraArgs();
-	}
-
-	/**
-	 * @param firstArguments
-	 *            The list of additional arguments used to make a worker
-	 *            process.
-	 */
-	@ManagedAttribute(description = "The list of additional arguments used to make a worker process.", currencyTimeLimit = 300)
-	@Override
-	public void setExtraArguments(String[] firstArguments) {
-		state.setExtraArgs(firstArguments);
-		reinitFactory();
-	}
-
-	/** @return The location of the JAR implementing the server worker process. */
-	@ManagedAttribute(description = "The location of the JAR implementing the server worker process.")
-	@Override
-	public String getServerWorkerJar() {
-		return state.getServerWorkerJar();
-	}
-
-	/**
-	 * @param serverWorkerJar
-	 *            The location of the JAR implementing the server worker
-	 *            process.
-	 */
-	@ManagedAttribute(description = "The location of the JAR implementing the server worker process.")
-	@Override
-	public void setServerWorkerJar(String serverWorkerJar) {
-		state.setServerWorkerJar(serverWorkerJar);
-		reinitFactory();
-	}
-
-	/** @return The script to run to start running a workflow. */
-	@ManagedAttribute(description = "The script to run to start running a workflow.", currencyTimeLimit = 300)
-	@Override
-	public String getExecuteWorkflowScript() {
-		return state.getExecuteWorkflowScript();
-	}
-
-	/**
-	 * @param executeWorkflowScript
-	 *            The script to run to start running a workflow.
-	 */
-	@ManagedAttribute(description = "The script to run to start running a workflow.", currencyTimeLimit = 300)
-	@Override
-	public void setExecuteWorkflowScript(String executeWorkflowScript) {
-		state.setExecuteWorkflowScript(executeWorkflowScript);
-		reinitFactory();
-	}
-
-	/** @return How many seconds to wait for a worker process to register itself. */
-	@ManagedAttribute(description = "How many seconds to wait for a worker process to register itself.", currencyTimeLimit = 300)
-	@Override
-	public int getWaitSeconds() {
-		return state.getWaitSeconds();
-	}
-
-	/**
-	 * @param seconds
-	 *            How many seconds to wait for a worker process to register
-	 *            itself.
-	 */
-	@ManagedAttribute(description = "How many seconds to wait for a worker process to register itself.", currencyTimeLimit = 300)
-	@Override
-	public void setWaitSeconds(int seconds) {
-		state.setWaitSeconds(seconds);
-	}
-
-	/**
-	 * @return How many milliseconds to wait between checks to see if a worker
-	 *         process has registered.
-	 */
-	@ManagedAttribute(description = "How many milliseconds to wait between checks to see if a worker process has registered.", currencyTimeLimit = 300)
-	@Override
-	public int getSleepTime() {
-		return state.getSleepMS();
-	}
-
-	/**
-	 * @param sleepTime
-	 *            How many milliseconds to wait between checks to see if a
-	 *            worker process has registered.
-	 */
-	@ManagedAttribute(description = "How many milliseconds to wait between checks to see if a worker process has registered.", currencyTimeLimit = 300)
-	@Override
-	public void setSleepTime(int sleepTime) {
-		state.setSleepMS(sleepTime);
-	}
-
 	/**
 	 * @return How many checks were done for the worker process the last time a
 	 *         spawn was tried.
@@ -208,13 +91,6 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	@Override
 	public int getLastStartupCheckCount() {
 		return lastStartupCheckCount;
-	}
-
-	/** @return How many times has a workflow run been spawned by this engine. */
-	@ManagedMetric(description = "How many times has a workflow run been spawned by this engine.", currencyTimeLimit = 10, metricType = COUNTER, category = "throughput")
-	@Override
-	public int getTotalRuns() {
-		return totalRuns;
 	}
 
 	/**
@@ -468,7 +344,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 			globaluser = creator.getName();
 		RemoteSingleRun rsr = getFactory().make(wf, globaluser,
 				makeURReciver(creator), id);
-		totalRuns++;
+		incrementRunCount();
 		return rsr;
 	}
 
@@ -492,33 +368,12 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	}
 
 	@Override
-	public String getPasswordFile() {
-		return "";
-	}
-
-	@Override
-	public String getServerForkerJar() {
-		return "<NOT-SUPPORTED>";
-	}
-
-	@Override
-	public void setPasswordFile(String newValue) {
-		// Do nothing
-	}
-
-	@Override
-	public void setServerForkerJar(String newValue) {
-		// Do nothing
-	}
-
-	@Override
 	public String[] getFactoryProcessMapping() {
 		return new String[0];
 	}
 
-	@ManagedMetric(description = "How many workflow runs are currently actually executing.", currencyTimeLimit = 10, metricType = GAUGE, category = "throughput")
 	@Override
-	public int getOperatingCount() throws Exception {
+	protected int operatingCount() throws Exception {
 		return getFactory().countOperatingRuns();
 	}
 }

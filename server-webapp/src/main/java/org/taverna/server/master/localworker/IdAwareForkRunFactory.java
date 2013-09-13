@@ -11,8 +11,6 @@ import static java.util.Arrays.asList;
 import static java.util.Calendar.SECOND;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.logging.LogFactory.getLog;
-import static org.springframework.jmx.support.MetricType.COUNTER;
-import static org.springframework.jmx.support.MetricType.GAUGE;
 import static org.taverna.server.master.TavernaServer.JMX_ROOT;
 
 import java.io.BufferedReader;
@@ -44,7 +42,6 @@ import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
-import org.springframework.jmx.export.annotation.ManagedMetric;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
@@ -64,7 +61,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 @ManagedResource(objectName = JMX_ROOT + "RunFactory", description = "The factory for a user-specific forked run.")
 public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 		ConfigurableRunFactory {
-	private int totalRuns;
 	private MetaFactory forker;
 	private Map<String, RemoteRunFactory> factory;
 	private Map<String, String> factoryProcessName;
@@ -80,7 +76,8 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 		factoryProcessName = new HashMap<String, String>();
 	}
 
-	private void reinitFactory() {
+	@Override
+	protected void reinitFactory() {
 		boolean makeForker = forker != null;
 		try {
 			killForker();
@@ -95,159 +92,6 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 		}
 	}
 
-	/** @return Which java executable to run. */
-	@Override
-	@ManagedAttribute(description = "Which java executable to run.", currencyTimeLimit = 300)
-	public String getJavaBinary() {
-		return state.getJavaBinary();
-	}
-
-	/**
-	 * @param javaBinary
-	 *            Which java executable to run.
-	 */
-	@Override
-	@ManagedAttribute(description = "Which java executable to run.", currencyTimeLimit = 300)
-	public void setJavaBinary(String javaBinary) {
-		state.setJavaBinary(javaBinary);
-		reinitFactory();
-	}
-
-	/** @return The list of additional arguments used to make a worker process. */
-	@Override
-	@ManagedAttribute(description = "The list of additional arguments used to make a worker process.", currencyTimeLimit = 300)
-	public String[] getExtraArguments() {
-		return state.getExtraArgs();
-	}
-
-	/**
-	 * @param firstArguments
-	 *            The list of additional arguments used to make a worker
-	 *            process.
-	 */
-	@Override
-	@ManagedAttribute(description = "The list of additional arguments used to make a worker process.", currencyTimeLimit = 300)
-	public void setExtraArguments(String[] firstArguments) {
-		state.setExtraArgs(firstArguments);
-		reinitFactory();
-	}
-
-	/** @return The location of the JAR implementing the server worker processes. */
-	@Override
-	@ManagedAttribute(description = "The location of the JAR implementing the server worker processes.")
-	public String getServerWorkerJar() {
-		return state.getServerWorkerJar();
-	}
-
-	/**
-	 * @param serverWorkerJar
-	 *            The location of the JAR implementing the server worker
-	 *            processes.
-	 */
-	@Override
-	@ManagedAttribute(description = "The location of the JAR implementing the server worker processes.")
-	public void setServerWorkerJar(String serverWorkerJar) {
-		state.setServerWorkerJar(serverWorkerJar);
-		reinitFactory();
-	}
-
-	/** @return The script to run to start running a workflow. */
-	@Override
-	@ManagedAttribute(description = "The script to run to start running a workflow.", currencyTimeLimit = 300)
-	public String getExecuteWorkflowScript() {
-		return state.getExecuteWorkflowScript();
-	}
-
-	/**
-	 * @param executeWorkflowScript
-	 *            The script to run to start running a workflow.
-	 */
-	@Override
-	@ManagedAttribute(description = "The script to run to start running a workflow.", currencyTimeLimit = 300)
-	public void setExecuteWorkflowScript(String executeWorkflowScript) {
-		state.setExecuteWorkflowScript(executeWorkflowScript);
-		reinitFactory();
-	}
-
-	/** @return How many seconds to wait for a worker process to register itself. */
-	@Override
-	@ManagedAttribute(description = "How many seconds to wait for a worker process to register itself.", currencyTimeLimit = 300)
-	public int getWaitSeconds() {
-		return state.getWaitSeconds();
-	}
-
-	/**
-	 * @param seconds
-	 *            How many seconds to wait for a worker process to register
-	 *            itself.
-	 */
-	@Override
-	@ManagedAttribute(description = "How many seconds to wait for a worker process to register itself.", currencyTimeLimit = 300)
-	public void setWaitSeconds(int seconds) {
-		state.setWaitSeconds(seconds);
-	}
-
-	/**
-	 * @return How many milliseconds to wait between checks to see if a worker
-	 *         process has registered.
-	 */
-	@Override
-	@ManagedAttribute(description = "How many milliseconds to wait between checks to see if a worker process has registered.", currencyTimeLimit = 300)
-	public int getSleepTime() {
-		return state.getSleepMS();
-	}
-
-	/**
-	 * @param sleepTime
-	 *            How many milliseconds to wait between checks to see if a
-	 *            worker process has registered.
-	 */
-	@Override
-	@ManagedAttribute(description = "How many milliseconds to wait between checks to see if a worker process has registered.", currencyTimeLimit = 300)
-	public void setSleepTime(int sleepTime) {
-		state.setSleepMS(sleepTime);
-	}
-
-	/**
-	 * @return A file containing a password to use when running a program as
-	 *         another user (e.g., with sudo).
-	 */
-	@Override
-	@ManagedAttribute(description = "A file containing a password to use when running a program as another user (e.g., with sudo).", currencyTimeLimit = 300)
-	public String getPasswordFile() {
-		return state.getPasswordFile();
-	}
-
-	/**
-	 * @param passwordFile
-	 *            A file containing a password to use when running a program as
-	 *            another user (e.g., with sudo).
-	 */
-	@Override
-	@ManagedAttribute(description = "A file containing a password to use when running a program as another user (e.g., with sudo).", currencyTimeLimit = 300)
-	public void setPasswordFile(String passwordFile) {
-		state.setPasswordFile(passwordFile);
-	}
-
-	/**
-	 * @return The location of the JAR implementing the secure-fork process.
-	 */
-	@Override
-	@ManagedAttribute(description = "The location of the JAR implementing the secure-fork process.", currencyTimeLimit = 300)
-	public String getServerForkerJar() {
-		return state.getServerForkerJar();
-	}
-
-	/**
-	 * @param serverForkerJar
-	 *            The location of the JAR implementing the secure-fork process.
-	 */
-	@Override
-	@ManagedAttribute(description = "The location of the JAR implementing the secure-fork process.", currencyTimeLimit = 300)
-	public void setServerForkerJar(String serverForkerJar) {
-		state.setServerForkerJar(serverForkerJar);
-	}
-
 	/**
 	 * @return How many checks were done for the worker process the last time a
 	 *         spawn was tried.
@@ -256,13 +100,6 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	@ManagedAttribute(description = "How many checks were done for the worker process the last time a spawn was tried.", currencyTimeLimit = 60)
 	public int getLastStartupCheckCount() {
 		return forker == null ? 0 : forker.lastStartupCheckCount();
-	}
-
-	/** @return How many times has a workflow run been spawned by this engine. */
-	@Override
-	@ManagedMetric(description = "How many times has a workflow run been spawned by this engine.", currencyTimeLimit = 10, metricType = COUNTER, category = "throughput")
-	public int getTotalRuns() {
-		return totalRuns;
 	}
 
 	/**
@@ -341,7 +178,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	 */
 	@PostConstruct
 	void initMetaFactory() throws IOException {
-		forker = new SecureFork(this);
+		forker = new SecureFork(this, log);
 	}
 
 	private void killForker() throws IOException, InterruptedException {
@@ -439,7 +276,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 			globaluser = creator.getName();
 		RemoteSingleRun rsr = factory.get(username).make(wf, globaluser,
 				makeURReciver(creator), id);
-		totalRuns++;
+		incrementRunCount();
 		return rsr;
 	}
 
@@ -487,9 +324,8 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 		return "<PROPERTY-NOT-SUPPORTED>";
 	}
 
-	@ManagedMetric(description = "How many workflow runs are currently actually executing.", currencyTimeLimit = 10, metricType = GAUGE, category = "throughput")
 	@Override
-	public int getOperatingCount() throws Exception {
+	protected int operatingCount() throws Exception {
 		int total = 0;
 		for (RemoteRunFactory rrf : factory.values())
 			total += rrf.countOperatingRuns();
@@ -598,9 +434,9 @@ class SecureFork implements IdAwareForkRunFactory.MetaFactory {
 		args.addAll(asList(main.getExtraArguments()));
 	}
 
-	SecureFork(IdAwareForkRunFactory main) throws IOException {
+	SecureFork(IdAwareForkRunFactory main, Log log) throws IOException {
 		this.main = main;
-		this.log = main.log;
+		this.log = log;
 		this.state = main.state;
 		ProcessBuilder p = new ProcessBuilder();
 		initFactoryArgs(p.command());

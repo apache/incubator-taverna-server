@@ -29,18 +29,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
@@ -48,7 +44,6 @@ import org.taverna.server.localworker.server.UsageRecordReceiver;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoListenerException;
-import org.taverna.server.master.factories.ConfigurableRunFactory;
 import org.taverna.server.master.factories.ListenerFactory;
 import org.taverna.server.master.factories.RunFactory;
 import org.taverna.server.master.interaction.InteractionFeedSupport;
@@ -62,6 +57,7 @@ import org.taverna.server.master.utils.UsernamePrincipal;
 import org.taverna.server.master.worker.FactoryBean;
 import org.taverna.server.master.worker.RemoteRunDelegate;
 import org.taverna.server.master.worker.RunDBSupport;
+import org.taverna.server.master.worker.RunFactoryConfiguration;
 
 /**
  * Bridge to remote runs via RMI.
@@ -69,16 +65,8 @@ import org.taverna.server.master.worker.RunDBSupport;
  * @author Donal Fellows
  */
 @ManagedResource(objectName = JMX_ROOT + "Factory", description = "The factory for runs")
-public abstract class AbstractRemoteRunFactory implements ListenerFactory,
-		RunFactory, ConfigurableRunFactory, FactoryBean {
-	/** The logger for writing messages out on. */
-	Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
-
-	@PreDestroy
-	void closeLog() {
-		log = null;
-	}
-
+public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
+		implements ListenerFactory, RunFactory, FactoryBean {
 	/**
 	 * Whether to apply stronger limitations than normal to RMI. It is
 	 * recommended that this be true!
@@ -89,6 +77,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	private String interhost;
 	/** The interaction port number. */
 	private String interport;
+	private Process registryProcess;
 	/**
 	 * The interaction WebDAV location. Will be resolved before being passed to
 	 * the back-end.
@@ -133,6 +122,14 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		interfeed = feed;
 	}
 
+	protected void reinitRegistry() {
+		registry = null;
+		if (registryProcess != null) {
+			registryProcess.destroy();
+			registryProcess = null;
+		}
+	}
+
 	protected void initInteractionDetails(RemoteRunFactory factory)
 			throws RemoteException {
 		if (interhost != null) {
@@ -165,7 +162,9 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 			java.rmi.MarshalledObject<Registry> handle = (MarshalledObject<Registry>) ois
 					.readObject();
 			ois.close();
-			return handle.get();
+			Registry r = handle.get();
+			registryProcess = proc;
+			return r;
 		} catch (RemoteException e) {
 			throw e;
 		} catch (ClassNotFoundException e) {
@@ -245,16 +244,6 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	private EventDAO masterEventFeed;
 
 	@Autowired(required = true)
-	void setState(LocalWorkerState state) {
-		this.state = state;
-	}
-
-	@Autowired(required = true)
-	void setRunDB(RunDBSupport runDB) {
-		this.runDB = runDB;
-	}
-
-	@Autowired(required = true)
 	void setSecurityContextFactory(SecurityContextFactory factory) {
 		this.securityFactory = factory;
 	}
@@ -262,54 +251,6 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	@Autowired(required = true)
 	void setMasterEventFeed(EventDAO masterEventFeed) {
 		this.masterEventFeed = masterEventFeed;
-	}
-
-	@ManagedAttribute(description = "The host holding the RMI registry to communicate via.")
-	@Override
-	public String getRegistryHost() {
-		return state.getRegistryHost();
-	}
-
-	@ManagedAttribute(description = "The host holding the RMI registry to communicate via.")
-	@Override
-	public void setRegistryHost(String host) {
-		boolean rebuild = false;
-		if (host == null || host.isEmpty()) {
-			host = null;
-			rebuild = (state.getRegistryHost() != null);
-		} else {
-			rebuild = !host.equals(state.getRegistryHost());
-		}
-		state.setRegistryHost(host);
-		if (rebuild) {
-			registry = null;
-		}
-	}
-
-	@ManagedAttribute(description = "The port number of the RMI registry. Should not normally be set.")
-	@Override
-	public int getRegistryPort() {
-		return state.getRegistryPort();
-	}
-
-	@ManagedAttribute(description = "The port number of the RMI registry. Should not normally be set.")
-	@Override
-	public void setRegistryPort(int port) {
-		if (port != state.getRegistryPort())
-			registry = null;
-		state.setRegistryPort(port);
-	}
-
-	@ManagedAttribute(description = "What JAR do we use to start the RMI registry process?")
-	@Override
-	public String getRmiRegistryJar() {
-		return state.getRegistryJar();
-	}
-
-	@ManagedAttribute(description = "What JAR to we use to start the RMI registry process? Note that setting this does not cause an immediate restart.")
-	@Override
-	public void setRmiRegistryJar(String rmiRegistryJar) {
-		state.setRegistryJar(rmiRegistryJar);
 	}
 
 	@Autowired(required = true)
@@ -327,7 +268,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 * Configures the Java security model. Not currently used, as it is
 	 * viciously difficult to get right!
 	 */
-	//@SuppressWarnings("unused")
+	// @SuppressWarnings("unused")
 	@edu.umd.cs.findbugs.annotations.SuppressWarnings("UPM_UNCALLED_PRIVATE_METHOD")
 	private static void installSecurityManager() {
 		if (getSecurityManager() == null) {
@@ -426,66 +367,6 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	protected abstract RemoteSingleRun getRealRun(UsernamePrincipal creator,
 			Workflow workflow, UUID id) throws Exception;
 
-	/** @return The names of the current runs. */
-	@ManagedAttribute(description = "The names of the current runs.", currencyTimeLimit = 5)
-	@Override
-	public String[] getCurrentRunNames() {
-		List<String> names = runDB.listRunNames();
-		return names.toArray(new String[names.size()]);
-	}
-
-	@ManagedAttribute(description = "The maximum number of simultaneous runs supported by the server.", currencyTimeLimit = 300)
-	@Override
-	public int getMaxRuns() {
-		return state.getMaxRuns();
-	}
-
-	@ManagedAttribute(description = "The maximum number of simultaneous runs supported by the server.")
-	@Override
-	public void setMaxRuns(int maxRuns) {
-		state.setMaxRuns(maxRuns);
-	}
-
-	@ManagedAttribute(description = "The maximum number of simultaneous operating runs supported by the server.", currencyTimeLimit = 300)
-	@Override
-	public int getOperatingLimit() {
-		return state.getOperatingLimit();
-	}
-
-	@ManagedAttribute(description = "The maximum number of simultaneous operating runs supported by the server.")
-	@Override
-	public void setOperatingLimit(int operatingLimit) {
-		state.setOperatingLimit(operatingLimit);
-	}
-
-	/**
-	 * @return A count of the number of runs believed to actually be in the
-	 *         {@linkplain uk.org.taverna.server.master.common.Status#Operating
-	 *         operating} state.
-	 * @throws Exception
-	 *             If anything goes wrong.
-	 */
-	public abstract int getOperatingCount() throws Exception;
-
-	/** @return How many minutes should a workflow live by default? */
-	@ManagedAttribute(description = "How many minutes should a workflow live by default?", currencyTimeLimit = 300)
-	@Override
-	public int getDefaultLifetime() {
-		return state.getDefaultLifetime();
-	}
-
-	/**
-	 * Set how long a workflow should live by default.
-	 * 
-	 * @param defaultLifetime
-	 *            Default lifetime, in minutes.
-	 */
-	@ManagedAttribute
-	@Override
-	public void setDefaultLifetime(int defaultLifetime) {
-		state.setDefaultLifetime(defaultLifetime);
-	}
-
 	/**
 	 * How to convert a wrapped workflow into XML.
 	 * 
@@ -497,16 +378,6 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 */
 	protected String serializeWorkflow(Workflow workflow) throws JAXBException {
 		return workflow.marshal();
-	}
-
-	@Override
-	public boolean isAllowingRunsToStart() {
-		try {
-			return state.getOperatingLimit() > getOperatingCount();
-		} catch (Exception e) {
-			log.info("failed to get operating run count", e);
-			return false;
-		}
 	}
 
 	/**

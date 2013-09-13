@@ -15,6 +15,8 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.taverna.server.master.worker.WorkerModel;
+
 /**
  * The actual database connector for persisted local worker state.
  * 
@@ -23,7 +25,7 @@ import javax.jdo.annotations.PrimaryKey;
 // WARNING! If you change the name of this class, update persistence.xml as
 // well!
 @PersistenceCapable(table = PersistedState.TABLE)
-class PersistedState implements LocalWorkerModel {
+class PersistedState implements WorkerModel {
 	static final String TABLE = "LOCALWORKERSTATE__PERSISTEDSTATE";
 	static PersistedState makeInstance() {
 		PersistedState o = new PersistedState();

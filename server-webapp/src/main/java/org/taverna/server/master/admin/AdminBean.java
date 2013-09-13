@@ -32,9 +32,9 @@ import org.taverna.server.master.exceptions.GeneralFailureException;
 import org.taverna.server.master.factories.ConfigurableRunFactory;
 import org.taverna.server.master.identity.User;
 import org.taverna.server.master.identity.UserStore;
-import org.taverna.server.master.localworker.LocalWorkerModel;
 import org.taverna.server.master.usage.UsageRecordRecorder;
 import org.taverna.server.master.utils.InvocationCounter;
+import org.taverna.server.master.worker.WorkerModel;
 import org.taverna.server.master.worker.RunDBSupport;
 
 /**
@@ -74,7 +74,7 @@ public class AdminBean implements Admin {
 	}
 
 	@Required
-	public void setLocalWorkerModel(LocalWorkerModel worker) {
+	public void setLocalWorkerModel(WorkerModel worker) {
 		localWorker = worker;
 	}
 
@@ -98,7 +98,7 @@ public class AdminBean implements Admin {
 	private ConfigurableRunFactory factory;
 	private UsageRecordRecorder usageRecords;
 	private UserStore userStore;
-	private LocalWorkerModel localWorker;
+	private WorkerModel localWorker;
 	private String adminHtmlFile = "/admin.html";
 	private String resourceRoot = "/static/";
 
