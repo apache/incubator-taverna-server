@@ -287,6 +287,12 @@
 		<property name="maxRuns" value="${default.runlimit}">
 			<description>The maximum simultaneous number of runs.</description>
 		</property>
+		<property name="operatingLimit" value="${default.operatinglimit}">
+			<description>
+				The maximum number of runs that are in the Operating state,
+				i.e., actually running with a process consuming resources.
+			</description>
+		</property>
 		<property name="extraArgs">
 			<description>Any extra arguments (memory control, etc.) to pass to
 				the spawned subprocesses.
