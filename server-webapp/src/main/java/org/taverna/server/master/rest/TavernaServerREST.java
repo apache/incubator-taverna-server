@@ -11,6 +11,7 @@ import static org.taverna.server.master.rest.ContentTypes.URI_LIST;
 import static org.taverna.server.master.rest.ContentTypes.XML;
 import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL;
 import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_NOTIFIERS;
+import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_OP_LIMIT;
 import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_PERM_LIST;
 import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_PERM_WF;
 import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_RUN_LIMIT;
@@ -193,6 +194,7 @@ public interface TavernaServerREST {
 		public static final String RUNS = "runs";
 		public static final String POL = "policy";
 		public static final String POL_RUN_LIMIT = "runLimit";
+		public static final String POL_OP_LIMIT = "operatingLimit";
 		public static final String POL_PERM_WF = "permittedWorkflows";
 		public static final String POL_PERM_LIST = "permittedListenerTypes";
 		public static final String POL_NOTIFIERS = "enabledNotificationFabrics";
@@ -274,16 +276,37 @@ public interface TavernaServerREST {
 		 * this. If this number is lower than the number they currently have,
 		 * they will be unable to create any runs at all.
 		 * 
-		 * @return The maximum number of runs.
+		 * @return The maximum number of existing runs.
 		 */
 		@GET
 		@Path(POL_RUN_LIMIT)
 		@Produces("text/plain")
 		@RolesAllowed(USER)
-		@Description("Gets the maximum number of simultaneous runs that the "
-				+ "user may create.")
+		@Description("Gets the maximum number of simultaneous runs in any "
+				+ "state that the user may create.")
 		@NonNull
 		public int getMaxSimultaneousRuns();
+
+		/**
+		 * Gets the maximum number of simultaneous
+		 * {@linkplain org.taverna.server.master.common.Status.Operating
+		 * operating} runs that the user may create. The <i>actual</i> number
+		 * they can start may be lower than this. If this number is lower than
+		 * the number they currently have, they will be unable to start any runs
+		 * at all.
+		 * 
+		 * @return The maximum number of operating runs.
+		 */
+		@GET
+		@Path(POL_OP_LIMIT)
+		@Produces("text/plain")
+		@RolesAllowed(USER)
+		@Description("Gets the maximum number of simultaneously operating "
+				+ "runs that the user may have. Note that this is often a "
+				+ "global limit; it does not represent a promise that a "
+				+ "particular user may be able to have that many operating "
+				+ "runs at once.")
+		public int getMaxOperatingRuns();
 
 		/**
 		 * Gets the list of permitted workflows. Any workflow may be submitted
@@ -344,6 +367,11 @@ public interface TavernaServerREST {
 			 */
 			public Uri runLimit;
 			/**
+			 * Where to go to find out about the maximum number of operating
+			 * runs.
+			 */
+			public Uri operatingLimit;
+			/**
 			 * Where to go to find out about what workflows are allowed.
 			 */
 			public Uri permittedWorkflows;
@@ -369,6 +397,7 @@ public interface TavernaServerREST {
 			public PolicyDescription(UriInfo ui) {
 				super(true);
 				runLimit = new Uri(ui, false, POL_RUN_LIMIT);
+				operatingLimit = new Uri(ui, false, POL_OP_LIMIT);
 				permittedWorkflows = new Uri(ui, false, POL_PERM_WF);
 				permittedListenerTypes = new Uri(ui, false, POL_PERM_LIST);
 				enabledNotificationFabrics = new Uri(ui, false, POL_NOTIFIERS);

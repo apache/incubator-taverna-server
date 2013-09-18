@@ -1161,4 +1161,9 @@ class PolicyREST implements PolicyView, SupportAware {
 		return new EnabledNotificationFabrics(
 				notificationEngine.listAvailableDispatchers());
 	}
+
+	@Override
+	public int getMaxOperatingRuns() {
+		return policy.getOperatingLimit();
+	}
 }
