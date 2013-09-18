@@ -56,7 +56,6 @@ import org.taverna.server.master.usage.UsageRecordRecorder;
 import org.taverna.server.master.utils.UsernamePrincipal;
 import org.taverna.server.master.worker.FactoryBean;
 import org.taverna.server.master.worker.RemoteRunDelegate;
-import org.taverna.server.master.worker.RunDBSupport;
 import org.taverna.server.master.worker.RunFactoryConfiguration;
 
 /**
@@ -236,8 +235,6 @@ public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
 	 * install.
 	 */
 	public static final String SECURITY_POLICY_FILE = "security.policy";
-	LocalWorkerState state;
-	RunDBSupport runDB;
 	private SecurityContextFactory securityFactory;
 	UsageRecordRecorder usageRecordSink;
 	TaskExecutor urProcessorPool;

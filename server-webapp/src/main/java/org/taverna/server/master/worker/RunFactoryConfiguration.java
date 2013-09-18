@@ -11,6 +11,7 @@ import javax.annotation.PreDestroy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedMetric;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -33,11 +34,13 @@ public abstract class RunFactoryConfiguration implements ConfigurableRunFactory 
 	}
 
 	@Autowired(required = true)
+	@Order(0)
 	void setState(LocalWorkerState state) {
 		this.state = state;
 	}
 
 	@Autowired(required = true)
+	@Order(0)
 	void setRunDB(RunDBSupport runDB) {
 		this.runDB = runDB;
 	}

@@ -41,6 +41,7 @@ import javax.xml.bind.JAXBException;
 import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
@@ -178,7 +179,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	 */
 	@PostConstruct
 	void initMetaFactory() throws IOException {
-		forker = new SecureFork(this, log);
+		forker = new SecureFork(this, state, log);
 	}
 
 	private void killForker() throws IOException, InterruptedException {
@@ -306,6 +307,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	}
 
 	@Value("${secureForkPasswordFile}")
+	@Order(20)
 	public void setPasswordSource(String passwordSource) {
 		if (passwordSource == null || passwordSource.isEmpty()
 				|| passwordSource.startsWith("${"))
@@ -434,10 +436,10 @@ class SecureFork implements IdAwareForkRunFactory.MetaFactory {
 		args.addAll(asList(main.getExtraArguments()));
 	}
 
-	SecureFork(IdAwareForkRunFactory main, Log log) throws IOException {
+	SecureFork(IdAwareForkRunFactory main, LocalWorkerState state, Log log) throws IOException {
 		this.main = main;
 		this.log = log;
-		this.state = main.state;
+		this.state = state;
 		ProcessBuilder p = new ProcessBuilder();
 		initFactoryArgs(p.command());
 		p.redirectErrorStream(true);
