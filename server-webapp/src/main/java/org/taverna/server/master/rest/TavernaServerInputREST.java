@@ -9,6 +9,9 @@ import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.rest.ContentTypes.JSON;
 import static org.taverna.server.master.rest.ContentTypes.TEXT;
 import static org.taverna.server.master.rest.ContentTypes.XML;
+import static org.taverna.server.master.rest.TavernaServerInputREST.PathNames.BACLAVA;
+import static org.taverna.server.master.rest.TavernaServerInputREST.PathNames.EXPECTED;
+import static org.taverna.server.master.rest.TavernaServerInputREST.PathNames.ONE_INPUT;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +79,7 @@ public interface TavernaServerInputREST {
 	 *         workflow run.
 	 */
 	@GET
-	@Path("expected")
+	@Path(EXPECTED)
 	@Produces({ XML, JSON })
 	@Description("Describe the expected inputs of this workflow run.")
 	@NonNull
@@ -84,7 +87,7 @@ public interface TavernaServerInputREST {
 
 	/** Get an outline of the operations supported. */
 	@OPTIONS
-	@Path("expected")
+	@Path(EXPECTED)
 	@Description("Produces the description of the expected inputs' operations.")
 	Response expectedOptions();
 
@@ -93,7 +96,7 @@ public interface TavernaServerInputREST {
 	 *         run, or empty to indicate that no such file is specified.
 	 */
 	@GET
-	@Path("baclava")
+	@Path(BACLAVA)
 	@Produces(TEXT)
 	@Description("Gives the Baclava file describing the inputs, or empty if "
 			+ "individual files are used.")
@@ -115,7 +118,7 @@ public interface TavernaServerInputREST {
 	 *             <tt>..</tt> segment.
 	 */
 	@PUT
-	@Path("baclava")
+	@Path(BACLAVA)
 	@Consumes(TEXT)
 	@Produces(TEXT)
 	@Description("Sets the Baclava file describing the inputs.")
@@ -125,7 +128,7 @@ public interface TavernaServerInputREST {
 
 	/** Get an outline of the operations supported. */
 	@OPTIONS
-	@Path("baclava")
+	@Path(BACLAVA)
 	@Description("Produces the description of the inputs' baclava operations.")
 	Response baclavaOptions();
 
@@ -139,7 +142,7 @@ public interface TavernaServerInputREST {
 	 *             If no input with that name exists.
 	 */
 	@GET
-	@Path("input/{name}")
+	@Path(ONE_INPUT)
 	@Produces({ XML, JSON })
 	@Description("Gives a description of what is used to supply a particular "
 			+ "input.")
@@ -168,7 +171,7 @@ public interface TavernaServerInputREST {
 	 *             If some bad misconfiguration has happened.
 	 */
 	@PUT
-	@Path("input/{name}")
+	@Path(ONE_INPUT)
 	@Consumes({ XML, JSON })
 	@Produces({ XML, JSON })
 	@Description("Sets the source for a particular input port.")
@@ -180,9 +183,15 @@ public interface TavernaServerInputREST {
 
 	/** Get an outline of the operations supported. */
 	@OPTIONS
-	@Path("input/{name}")
+	@Path(ONE_INPUT)
 	@Description("Produces the description of the one input's operations.")
 	Response inputOptions(@PathParam("name") String name);
+
+	interface PathNames {
+		final String EXPECTED = "expected";
+		final String BACLAVA = "baclava";
+		final String ONE_INPUT = "input/{name}";
+	}
 
 	/**
 	 * A description of the structure of inputs to a Taverna workflow run, done
@@ -223,11 +232,11 @@ public interface TavernaServerInputREST {
 		 */
 		public InputsDescriptor(UriInfo ui, TavernaRun run) {
 			super(true);
-			expected = new Uri(ui, "expected");
-			baclava = new Uri(ui, "baclava");
+			expected = new Uri(ui, EXPECTED);
+			baclava = new Uri(ui, BACLAVA);
 			input = new ArrayList<Uri>();
 			for (Input i : run.getInputs())
-				input.add(new Uri(ui, "input/{name}", i.getName()));
+				input.add(new Uri(ui, ONE_INPUT, i.getName()));
 		}
 	}
 
