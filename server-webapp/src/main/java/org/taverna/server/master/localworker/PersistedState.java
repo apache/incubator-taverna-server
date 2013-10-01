@@ -6,7 +6,6 @@
 package org.taverna.server.master.localworker;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -214,22 +213,21 @@ class PersistedState implements WorkerModel {
 
 	@Override
 	public List<URI> getPermittedWorkflowURIs() {
-		List<URI> uris = new ArrayList<URI>();
-		if (permittedWorkflows != null)
-			for (String uri : permittedWorkflows)
-				try {
-					uris.add(new URI(uri));
-				} catch (URISyntaxException e) {
-					// Ignore; should be impossible at this point
-				}
+		String[] pw = this.permittedWorkflows;
+		if (pw == null)
+			return new ArrayList<URI>();
+		List<URI> uris = new ArrayList<URI>(pw.length);
+		for (String uri : pw)
+			uris.add(URI.create(uri));
 		return uris;
 	}
 
 	@Override
 	public void setPermittedWorkflowURIs(List<URI> permittedWorkflows) {
-		this.permittedWorkflows = new String[permittedWorkflows.size()];
-		for (int i = 0 ; i<this.permittedWorkflows.length ; i++)
-			this.permittedWorkflows[i] = permittedWorkflows.get(i).toString();
+		String[] pw = new String[permittedWorkflows.size()];
+		for (int i = 0; i < pw.length; i++)
+			pw[i] = permittedWorkflows.get(i).toString();
+		this.permittedWorkflows = pw;
 	}
 
 	@Override
