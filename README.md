@@ -14,7 +14,7 @@ You will need:
 * **Unix** (e.g., Linux, OSX). Running Linux inside a virtual machine
   works.
 
-* **Java 6** (or later) installed. See the Java requirements on the
+* **Java 7** (or later) installed. See the Java requirements on the
   [Taverna website](http://www.taverna.org.uk/download/workbench/system-requirements/).
 
 * **Tomcat 6** (recent version).
