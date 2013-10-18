@@ -5,9 +5,14 @@ import static java.util.Collections.singletonMap;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
@@ -30,9 +35,13 @@ import org.springframework.beans.factory.annotation.Required;
 @Provider
 @Produces({ "application/atom+xml", "application/atom+xml;type=entry" })
 @Consumes({ "application/atom+xml", "application/atom+xml;type=entry" })
-public class EntryHandler implements MessageBodyWriter<Entry>, MessageBodyReader<Entry> {
+public class EntryHandler implements MessageBodyWriter<Entry>,
+		MessageBodyReader<Entry> {
+	private static final String ENC = "UTF-8";
 	private static final MediaType ENTRY = new MediaType("application",
 			"atom+xml", singletonMap("type", "entry"));
+	private static final Variant VARIANT = new Variant(ENTRY, null, ENC);
+	private static final Charset UTF8 = Charset.forName(ENC);
 
 	@Required
 	public void setAbdera(Abdera abdera) {
@@ -51,8 +60,8 @@ public class EntryHandler implements MessageBodyWriter<Entry>, MessageBodyReader
 		if (!ENTRY.isCompatible(mediaType))
 			return false;
 		if (mediaType.getParameters().containsKey("type"))
-			return "entry".equalsIgnoreCase(mediaType.getParameters()
-					.get("type"));
+			return "entry".equalsIgnoreCase(mediaType.getParameters().get(
+					"type"));
 		return true;
 	}
 
@@ -61,13 +70,35 @@ public class EntryHandler implements MessageBodyWriter<Entry>, MessageBodyReader
 			Annotation[] annotations, MediaType mediaType,
 			MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
 			throws IOException, WebApplicationException {
-		Document<Entry> doc = parser.parse(entityStream);
-		if (!Entry.class.isAssignableFrom(doc.getRoot().getClass())) {
+		Charset cs = UTF8;
+		try {
+			String charset = mediaType.getParameters().get("charset");
+			if (charset != null)
+				cs = Charset.forName(charset);
+		} catch (IllegalCharsetNameException e) {
 			throw new WebApplicationException(Response
-					.notAcceptable(asList(new Variant(ENTRY, null, null)))
-					.entity("not really a feed entry").build());
+					.notAcceptable(asList(VARIANT)).entity("bad charset name")
+					.build());
+		} catch (UnsupportedCharsetException e) {
+			throw new WebApplicationException(Response
+					.notAcceptable(asList(VARIANT))
+					.entity("unsupportd charset name").build());
 		}
-		return doc.getRoot();
+		try {
+			Document<Entry> doc = parser.parse(new InputStreamReader(
+					entityStream, cs));
+			if (!Entry.class.isAssignableFrom(doc.getRoot().getClass())) {
+				throw new WebApplicationException(Response
+						.notAcceptable(asList(VARIANT))
+						.entity("not really a feed entry").build());
+			}
+			return doc.getRoot();
+		} catch (ClassCastException e) {
+			throw new WebApplicationException(Response
+					.notAcceptable(asList(VARIANT))
+					.entity("not really a feed entry").build());
+
+		}
 	}
 
 	@Override
@@ -78,8 +109,8 @@ public class EntryHandler implements MessageBodyWriter<Entry>, MessageBodyReader
 		if (!ENTRY.isCompatible(mediaType))
 			return false;
 		if (mediaType.getParameters().containsKey("type"))
-			return "entry".equalsIgnoreCase(mediaType.getParameters()
-					.get("type"));
+			return "entry".equalsIgnoreCase(mediaType.getParameters().get(
+					"type"));
 		return true;
 	}
 
@@ -95,7 +126,8 @@ public class EntryHandler implements MessageBodyWriter<Entry>, MessageBodyReader
 			MultivaluedMap<String, Object> httpHeaders,
 			OutputStream entityStream) throws IOException,
 			WebApplicationException {
-		httpHeaders.putSingle("Content-Type", ENTRY.toString());
-		writer.writeTo(t, entityStream);
+		httpHeaders.putSingle("Content-Type", ENTRY.toString() + ";charset="
+				+ ENC);
+		writer.writeTo(t, new OutputStreamWriter(entityStream, UTF8));
 	}
 }
