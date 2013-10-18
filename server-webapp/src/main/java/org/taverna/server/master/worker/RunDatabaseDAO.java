@@ -83,6 +83,8 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	@WithinSingleTransaction
 	public String getSecurityToken(String name) {
 		RunConnection rc = getById(name);
+		if (rc == null)
+			return null;
 		return rc.getSecurityToken();
 	}
 

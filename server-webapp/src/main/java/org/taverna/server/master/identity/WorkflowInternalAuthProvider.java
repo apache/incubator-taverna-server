@@ -179,9 +179,14 @@ public class WorkflowInternalAuthProvider extends
 		if (logDecisions)
 			log.info("request for auth for user " + username);
 		String wfid = username.substring(PREFIX.length());
-		String securityToken = dao.getSecurityToken(wfid);
-		if (securityToken == null)
+		final String securityToken;
+		try {
+			securityToken = dao.getSecurityToken(wfid);
+			if (securityToken == null)
+				throw new UsernameNotFoundException("no such user");
+		} catch (NullPointerException npe) {
 			throw new UsernameNotFoundException("no such user");
+		}
 		return new User(username, securityToken, true, true, true, true,
 				Arrays.asList(new LiteralGrantedAuthority(SELF),
 						new WorkflowSelfAuthority(wfid)));
