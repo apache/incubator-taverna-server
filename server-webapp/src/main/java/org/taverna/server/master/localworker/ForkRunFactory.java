@@ -61,6 +61,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	public ForkRunFactory() throws JAXBException {
 	}
 
+	@Override
 	protected void reinitFactory() {
 		boolean makeFactory = factory != null;
 		killFactory();

@@ -121,6 +121,7 @@ public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
 		interfeed = feed;
 	}
 
+	@Override
 	protected void reinitRegistry() {
 		registry = null;
 		if (registryProcess != null) {

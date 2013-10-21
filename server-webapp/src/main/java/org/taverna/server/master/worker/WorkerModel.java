@@ -173,6 +173,7 @@ public interface WorkerModel extends PolicyLimits {
 	 */
 	public abstract void setOperatingLimit(int operatingLimit);
 
+	@Override
 	void setPermittedWorkflowURIs(List<URI> permittedWorkflows);
 
 	/**

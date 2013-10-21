@@ -108,6 +108,7 @@ public class AdminBean implements Admin {
 		return Response.ok(getResource(adminHtmlFile), "text/html").build();
 	}
 
+	@Override
 	@RolesAllowed(ADMIN)
 	public Response getStaticResource(String file) throws IOException {
 		if (file.matches("^[-_.a-zA-Z0-9]+$")) {

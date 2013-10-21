@@ -384,6 +384,7 @@ class StdOut extends StreamLogger {
 		super("forker", process.getInputStream());
 	}
 
+	@Override
 	protected void write(String msg) {
 		log.info(msg);
 	}
@@ -394,6 +395,7 @@ class StdErr extends StreamLogger {
 		super("forker", process.getErrorStream());
 	}
 
+	@Override
 	protected void write(String msg) {
 		log.info(msg);
 	}
