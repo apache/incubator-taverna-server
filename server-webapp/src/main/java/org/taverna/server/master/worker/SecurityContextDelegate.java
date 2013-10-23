@@ -52,6 +52,8 @@ import org.taverna.server.master.interfaces.File;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
+
 /**
  * Implementation of a security context.
  * 
@@ -231,6 +233,7 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 	private RunDatabaseDAO getDAO() {
 		return ((RunDatabase) factory.db).dao;
 	}
+	@Nullable
 	private List<X509Certificate> getCerts(URI uri) throws IOException, GeneralSecurityException {
 		return factory.certFetcher.getTrustsForURI(uri);
 	}
@@ -247,9 +250,12 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 		validateCredential(pw);
 		log.info("issuing self-referential credential for " + pw.serviceURI);
 		credentials.add(pw);
-		Trust t = new Trust();
-		t.loadedCertificates = getCerts(pw.serviceURI);
-		trusts.add(t);
+		List<X509Certificate> myCerts = getCerts(pw.serviceURI);
+		if (myCerts != null && myCerts.size() > 0) {
+			Trust t = new Trust();
+			t.loadedCertificates = getCerts(pw.serviceURI);
+			trusts.add(t);
+		}
 	}
 
 	/**
