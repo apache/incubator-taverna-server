@@ -3,7 +3,8 @@ package org.taverna.server.master.worker;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * A simple password issuing bean.
@@ -19,7 +20,7 @@ public class PasswordIssuer {
 			'8', '9', '0', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')',
 			',', '.', '<', '>', '/', '?', ':', ';', '-', '_', '+', '[', ']',
 			'{', '}', '`', '~' };
-	private final Logger log = Logger.getLogger(PasswordIssuer.class);
+	private Log log = LogFactory.getLog("Taverna.Server.Worker");
 	private SecureRandom r;
 	private int length;
 
@@ -50,6 +51,7 @@ public class PasswordIssuer {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < length; i++)
 			sb.append(ALPHABET[r.nextInt(ALPHABET.length)]);
+		log.info("issued new password of length " + sb.length());
 		return sb.toString();
 	}
 }
