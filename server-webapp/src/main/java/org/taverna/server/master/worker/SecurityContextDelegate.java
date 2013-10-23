@@ -293,11 +293,15 @@ public abstract class SecurityContextDelegate implements TavernaSecurityContext 
 
 			synchronized (lock) {
 				try {
-					for (Trust t : trusted)
-						for (Certificate cert : t.loadedCertificates) {
-							truststore.addCertificate(cert);
-							trustedCount++;
-						}
+					for (Trust t : trusted) {
+						if (t == null || t.loadedCertificates == null)
+							continue;
+						for (Certificate cert : t.loadedCertificates)
+							if (cert != null) {
+								truststore.addCertificate(cert);
+								trustedCount++;
+							}
+					}
 
 					this.uriToAliasMap = uriToAliasMap;
 					this.keystore = keystore;
