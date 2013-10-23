@@ -19,7 +19,8 @@ public interface File extends DirectoryEntry {
 	 * @param offset
 	 *            Where in the file to start reading.
 	 * @param length
-	 *            The length of file to read.
+	 *            The length of file to read, or -1 to read to the end of the
+	 *            file.
 	 * @return The literal byte contents of the section of the file, or null if
 	 *         the section doesn't exist.
 	 * @throws FilesystemAccessException

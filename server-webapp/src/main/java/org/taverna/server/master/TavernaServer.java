@@ -531,15 +531,7 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 	@CallCounted
 	public String getRunLog(String runName) throws UnknownRunException {
 		try {
-			File f = fileUtils.getFile(support.getRun(runName),
-					"logs/detail.log");
-			return new String(f.getContents(0, -1), "UTF-8");
-		} catch (FilesystemAccessException e) {
-			// Ignore this; normal during some parts of lifecycle
-			return "";
-		} catch (NoDirectoryEntryException e) {
-			// Ignore this; normal during some parts of lifecycle
-			return "";
+			return support.getLogs(support.getRun(runName)).get("UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			log.warn("unexpected encoding problem", e);
 			return "";

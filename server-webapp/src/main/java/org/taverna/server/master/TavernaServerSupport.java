@@ -55,6 +55,7 @@ import org.taverna.server.master.common.version.Version;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoDestroyException;
+import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.UnknownRunException;
@@ -70,6 +71,7 @@ import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
 import org.taverna.server.master.rest.handler.T2FlowDocumentHandler;
+import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.InvocationCounter;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
@@ -104,6 +106,8 @@ public class TavernaServerSupport {
 	private LocalIdentityMapper idMapper;
 	/** The code that is coupled to CXF. */
 	private TavernaServerBean webapp;
+	/** How to handle files. */
+	private FilenameUtils fileUtils;
 	/**
 	 * Whether to log failures during principal retrieval. Should be normally on
 	 * as it indicates a serious problem, but can be switched off for testing.
@@ -310,6 +314,15 @@ public class TavernaServerSupport {
 	@Required
 	public void setWebapp(TavernaServerBean webapp) {
 		this.webapp = webapp;
+	}
+
+	/**
+	 * @param fileUtils
+	 *            The file handling utilities.
+	 */
+	@Required
+	public void setFileUtils(FilenameUtils fileUtils) {
+		this.fileUtils = fileUtils;
 	}
 
 	/**
@@ -864,5 +877,26 @@ public class TavernaServerSupport {
 
 	public boolean getAllowStartWorkflowRuns() {
 		return runFactory.isAllowingRunsToStart();
+	}
+
+	/**
+	 * The list of filenames that logs may occupy.
+	 */
+	private static final String[] LOGS = { "logs/detail.log.4",
+			"logs/detail.log.3", "logs/detail.log.2", "logs/detail.log.1",
+			"logs/detail.log" };
+
+	public FileConcatenation getLogs(TavernaRun run) {
+		FileConcatenation fc = new FileConcatenation();
+		for (String name : LOGS) {
+			try {
+				fc.add(fileUtils.getFile(run, name));
+			} catch (FilesystemAccessException e) {
+				// Ignore
+			} catch (NoDirectoryEntryException e) {
+				// Ignore
+			}
+		}
+		return fc;
 	}
 }

@@ -72,6 +72,9 @@
 	<bean id="MessagingProvider.File" class="org.taverna.server.master.rest.handler.FileMessageHandler">
 		<property name="maxChunkSize" value="${default.messageSize}" />
 	</bean>
+	<bean id="MessagingProvider.FileConcatenation" class="org.taverna.server.master.rest.handler.FileConcatenationHandler">
+		<property name="maxChunkSize" value="${default.messageSize}" />
+	</bean>
 	<bean id="MessagingProvider.FileSegment" class="org.taverna.server.master.rest.handler.FileSegmentHandler">
 		<property name="maxChunkSize" value="${default.messageSize}" />
 	</bean>

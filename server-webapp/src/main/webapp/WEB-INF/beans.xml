@@ -27,6 +27,7 @@
 		<property name="policy" ref="worker.policy" />
 		<property name="listenerFactory" ref="localworker.factory" />
 		<property name="runFactory" ref="localworker.factory" />
+		<property name="fileUtils" ref="fileUtils" />
 		<property name="runStore" ref="worker.rundb" />
 		<property name="stateModel" ref="webapp.state" />
 		<property name="idMapper" ref="IdentityMapper" />
@@ -67,7 +68,6 @@
 		class="org.taverna.server.master.RunREST">
 		<property name="support" ref="webapp.support" />
 		<property name="cdBuilder" ref="contentsDescriptorBuilder" />
-		<property name="fileUtils" ref="fileUtils" />
 		<lookup-method name="makeSecurityInterface" bean="run.securityView.prototype" />
 		<lookup-method name="makeInputInterface" bean="run.inputView.prototype" />
 		<lookup-method name="makeListenersInterface" bean="run.listenersView.prototype" />

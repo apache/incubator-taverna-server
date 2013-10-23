@@ -87,6 +87,7 @@
 			<ref bean="ExceptionProvider.Overloaded" />
 			<ref bean="ExceptionProvider.UnknownRun" />
 			<ref bean="MessagingProvider.File" />
+			<ref bean="MessagingProvider.FileConcatenation" />
 			<ref bean="MessagingProvider.FileSegment" />
 			<ref bean="MessagingProvider.InputStream" />
 			<ref bean="MessagingProvider.T2flow" />

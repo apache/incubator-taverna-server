@@ -44,7 +44,6 @@ import org.taverna.server.master.rest.TavernaServerInputREST;
 import org.taverna.server.master.rest.TavernaServerListenersREST;
 import org.taverna.server.master.rest.TavernaServerRunREST;
 import org.taverna.server.master.rest.TavernaServerSecurityREST;
-import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 import org.taverna.server.port_description.OutputDescription;
 
@@ -58,7 +57,6 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	private TavernaRun run;
 	private TavernaServerSupport support;
 	private ContentsDescriptorBuilder cdBuilder;
-	private FilenameUtils fileUtils;
 
 	@Override
 	@Required
@@ -70,12 +68,6 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	@Required
 	public void setCdBuilder(ContentsDescriptorBuilder cdBuilder) {
 		this.cdBuilder = cdBuilder;
-	}
-
-	@Override
-	@Required
-	public void setFileUtils(FilenameUtils converter) {
-		this.fileUtils = converter;
 	}
 
 	@Override
@@ -379,14 +371,10 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	@Override
 	@CallCounted
 	public Response getLogContents() {
-		try {
-			return Response.ok(fileUtils.getFile(run, "logs/detail.log"),
-					TEXT_PLAIN).build();
-		} catch (FilesystemAccessException e) {
+		FileConcatenation fc = support.getLogs(run);
+		if (fc.isEmpty())
 			return Response.noContent().build();
-		} catch (NoDirectoryEntryException e) {
-			return Response.noContent().build();
-		}
+		return Response.ok(fc, TEXT_PLAIN).build();
 	}
 
 	@Override
