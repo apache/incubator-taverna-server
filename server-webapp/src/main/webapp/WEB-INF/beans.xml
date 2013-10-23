@@ -270,6 +270,11 @@
 		<property name="httpRealm" value="${http.realmName}" />
 		<property name="uriSource" ref="webapp" />
 		<property name="certificateFetcher" ref="certificateChainFetcher" />
+		<property name="passwordIssuer" ref="passwordIssuer" />
+	</bean>
+
+	<bean id="passwordIssuer" class="org.taverna.server.master.worker.PasswordIssuer">
+		<!-- <property name="length" value="8" /> -->
 	</bean>
 
 	<bean id="certificateChainFetcher" class="org.taverna.server.master.utils.CertificateChainFetcher"/>

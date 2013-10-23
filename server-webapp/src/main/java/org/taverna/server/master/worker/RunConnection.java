@@ -7,7 +7,6 @@ package org.taverna.server.master.worker;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.UUID.randomUUID;
 import static org.taverna.server.master.worker.RunConnection.COUNT_QUERY;
 import static org.taverna.server.master.worker.RunConnection.NAMES_QUERY;
 import static org.taverna.server.master.worker.RunConnection.SCHEMA;
@@ -203,7 +202,8 @@ public class RunConnection {
 			run = new MarshalledObject<RemoteSingleRun>(rrd.run);
 			securityContextFactory = rrd.getSecurityContext().getFactory();
 			owner = rrd.getSecurityContext().getOwner().getName();
-			securityToken = randomUUID().toString();
+			securityToken = ((org.taverna.server.master.worker.SecurityContextFactory) securityContextFactory)
+					.issueNewPassword();
 		}
 		// Properties that are set multiple times
 		expiry = rrd.getExpiry();

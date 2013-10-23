@@ -48,6 +48,7 @@ public class SecurityContextFactory implements
 	transient UriBuilderFactory uriSource;
 	transient CertificateChainFetcher certFetcher;
 	transient String httpRealm;
+	private transient PasswordIssuer passwordIssuer;
 	private transient BouncyCastleProvider provider;
 
 	/**
@@ -131,6 +132,11 @@ public class SecurityContextFactory implements
 		this.httpRealm = realm; //${http.realmName}
 	}
 
+	@Required
+	public void setPasswordIssuer(PasswordIssuer issuer) {
+		this.passwordIssuer = issuer;
+	}
+
 	@Override
 	public SecurityContextDelegate create(TavernaRun run,
 			UsernamePrincipal owner) throws Exception {
@@ -143,5 +149,9 @@ public class SecurityContextFactory implements
 		if (instance == null)
 			installAsInstance(this);
 		return instance;
+	}
+
+	public String issueNewPassword() {
+		return passwordIssuer.issue();
 	}
 }
