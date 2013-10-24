@@ -5,6 +5,7 @@
  */
 package org.taverna.server.master.rest;
 
+import static org.taverna.server.master.common.Namespaces.SERVER;
 import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.rest.ContentTypes.JSON;
 import static org.taverna.server.master.rest.ContentTypes.URI_LIST;
@@ -396,6 +397,8 @@ public interface TavernaServerREST {
 			 */
 			public Uri enabledNotificationFabrics;
 
+			public Uri capabilities;
+
 			/** Make a blank server description. */
 			public PolicyDescription() {
 			}
@@ -413,6 +416,7 @@ public interface TavernaServerREST {
 				permittedWorkflows = new Uri(ui, false, POL_PERM_WF);
 				permittedListenerTypes = new Uri(ui, false, POL_PERM_LIST);
 				enabledNotificationFabrics = new Uri(ui, false, POL_NOTIFIERS);
+				capabilities = new Uri(ui, false, POL_CAPABILITIES);
 			}
 		}
 
@@ -424,6 +428,7 @@ public interface TavernaServerREST {
 		@XmlRootElement(name = "capabilities")
 		@XmlType(name = "")
 		public static class CapabilityList {
+			@XmlElement(name = "capability", namespace = SERVER)
 			public List<Capability> capability = new ArrayList<Capability>();
 		}
 	}
