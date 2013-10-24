@@ -39,7 +39,10 @@
 				<entry key="baclava" value="application/vnd.taverna.baclava+xml" />
 			</map>
 		</property>
+		<property name="capabilitySource" ref="capabilities" />
 	</bean>
+
+	<bean id="capabilities" class="org.taverna.server.master.utils.CapabilityLister" />
 
 	<bean id="webapp.policyView" class="org.taverna.server.master.PolicyREST">
 		<property name="support" ref="webapp.support" />

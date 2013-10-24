@@ -48,6 +48,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.taverna.server.master.api.ManagementModel;
 import org.taverna.server.master.api.TavernaServerBean;
+import org.taverna.server.master.common.Capability;
 import org.taverna.server.master.common.Permission;
 import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.common.Workflow;
@@ -71,6 +72,7 @@ import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
 import org.taverna.server.master.rest.handler.T2FlowDocumentHandler;
+import org.taverna.server.master.utils.CapabilityLister;
 import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.InvocationCounter;
 import org.taverna.server.master.utils.UsernamePrincipal;
@@ -108,6 +110,8 @@ public class TavernaServerSupport {
 	private TavernaServerBean webapp;
 	/** How to handle files. */
 	private FilenameUtils fileUtils;
+	/** How to get the server capabilities. */
+	private CapabilityLister capabilitySource;
 	/**
 	 * Whether to log failures during principal retrieval. Should be normally on
 	 * as it indicates a serious problem, but can be switched off for testing.
@@ -346,6 +350,11 @@ public class TavernaServerSupport {
 	@Required
 	public void setContentTypeMap(Map<String, String> contentTypeMap) {
 		this.contentTypeMap = contentTypeMap;
+	}
+
+	@Required
+	public void setCapabilitySource(CapabilityLister capabilitySource) {
+		this.capabilitySource = capabilitySource;
 	}
 
 	/**
@@ -898,5 +907,10 @@ public class TavernaServerSupport {
 			}
 		}
 		return fc;
+	}
+
+	@NonNull
+	public List<Capability> getCapabilities() {
+		return capabilitySource.getCapabilities();
 	}
 }

@@ -10,6 +10,7 @@ import static org.taverna.server.master.rest.ContentTypes.JSON;
 import static org.taverna.server.master.rest.ContentTypes.URI_LIST;
 import static org.taverna.server.master.rest.ContentTypes.XML;
 import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL;
+import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_CAPABILITIES;
 import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_NOTIFIERS;
 import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_OP_LIMIT;
 import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_PERM_LIST;
@@ -42,6 +43,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.cxf.jaxrs.model.wadl.Description;
+import org.taverna.server.master.common.Capability;
 import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.common.VersionedElement;
@@ -193,6 +195,7 @@ public interface TavernaServerREST {
 		public static final String ROOT = "/";
 		public static final String RUNS = "runs";
 		public static final String POL = "policy";
+		public static final String POL_CAPABILITIES = "capabilities";
 		public static final String POL_RUN_LIMIT = "runLimit";
 		public static final String POL_OP_LIMIT = "operatingLimit";
 		public static final String POL_PERM_WF = "permittedWorkflows";
@@ -354,6 +357,15 @@ public interface TavernaServerREST {
 		@NonNull
 		public EnabledNotificationFabrics getEnabledNotifiers();
 
+		@GET
+		@Path(POL_CAPABILITIES)
+		@Produces({ XML, JSON })
+		@RolesAllowed(USER)
+		@Description("Gets a description of the capabilities supported by "
+				+ "this installation of Taverna Server.")
+		@NonNull
+		public CapabilityList getCapabilities();
+
 		/**
 		 * A description of the parts of a server policy.
 		 * 
@@ -402,6 +414,17 @@ public interface TavernaServerREST {
 				permittedListenerTypes = new Uri(ui, false, POL_PERM_LIST);
 				enabledNotificationFabrics = new Uri(ui, false, POL_NOTIFIERS);
 			}
+		}
+
+		/**
+		 * A list of Taverna Server capabilities.
+		 * 
+		 * @author Donal Fellows
+		 */
+		@XmlRootElement(name = "capabilities")
+		@XmlType(name = "")
+		public static class CapabilityList {
+			public List<Capability> capability = new ArrayList<Capability>();
 		}
 	}
 

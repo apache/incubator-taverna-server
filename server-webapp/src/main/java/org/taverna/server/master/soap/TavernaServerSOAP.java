@@ -10,6 +10,7 @@ import static org.taverna.server.master.common.Roles.USER;
 
 import java.net.URI;
 import java.util.Date;
+import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
 import javax.jws.WebMethod;
@@ -19,6 +20,7 @@ import javax.jws.WebService;
 
 import org.apache.cxf.annotations.WSDLDocumentation;
 import org.ogf.usage.JobUsageRecord;
+import org.taverna.server.master.common.Capability;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.InputDescription;
 import org.taverna.server.master.common.Permission;
@@ -101,7 +103,7 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "MaxSimultaneousRuns")
 	@WSDLDocumentation("Get the upper limit on the number of runs that the user may create at once.")
-	int getMaxSimultaneousRuns();
+	int getServerMaxRuns();
 
 	/**
 	 * Get the list of allowed workflows. If the list is empty, <i>any</i>
@@ -112,7 +114,7 @@ public interface TavernaServerSOAP {
 	@WebMethod(operationName = "getPermittedWorkflowURIs")
 	@WebResult(name = "PermittedWorkflowURI")
 	@WSDLDocumentation("Get the list of URIs to allowed workflows. If the list is empty, any workflow may be used including those not submitted via URI.")
-	URI[] getAllowedWorkflows();
+	URI[] getServerWorkflows();
 
 	/**
 	 * Get the list of allowed event listeners.
@@ -122,7 +124,7 @@ public interface TavernaServerSOAP {
 	@WebMethod(operationName = "getPermittedListenerTypes")
 	@WebResult(name = "PermittedListenerType")
 	@WSDLDocumentation("Get the list of allowed types of event listeners.")
-	String[] getAllowedListeners();
+	String[] getServerListeners();
 
 	/**
 	 * Get the list of notification fabrics.
@@ -132,7 +134,13 @@ public interface TavernaServerSOAP {
 	@WebMethod(operationName = "getEnabledNotificationFabrics")
 	@WebResult(name = "EnabledNotifierFabric")
 	@WSDLDocumentation("Get the list of notification fabrics. Each is a URI scheme.")
-	String[] getEnabledNotifiers();
+	String[] getServerNotifiers();
+
+	@WebMethod(operationName = "getCapabilities")
+	@WebResult(name = "Capabilities")
+	@WSDLDocumentation("Get the workflow execution capabilities of this "
+			+ "Taverna Server instance.")
+	List<Capability> getServerCapabilities();
 
 	/**
 	 * Destroy a run immediately. This might or might not actually relinquish
@@ -544,7 +552,7 @@ public interface TavernaServerSOAP {
 	 *            The handle of the run.
 	 * @param listenerType
 	 *            The type of event listener to add. Must be one of the names
-	 *            returned by the {@link #getAllowedListeners()} operation.
+	 *            returned by the {@link #getServerListeners()} operation.
 	 * @param configuration
 	 *            The configuration document for the event listener; the
 	 *            interpretation of the configuration is up to the listener.
@@ -1325,5 +1333,5 @@ public interface TavernaServerSOAP {
 	 */
 	@WSDLDocumentation("A simple way to get the status of the overall server.")
 	@WebResult(name = "ServerStatus")
-	String getStatus();
+	String getServerStatus();
 }

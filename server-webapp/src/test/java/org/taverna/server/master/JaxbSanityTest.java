@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.taverna.server.master.admin.Admin;
 import org.taverna.server.master.common.Credential.KeyPair;
 import org.taverna.server.master.common.Credential.Password;
+import org.taverna.server.master.common.Capability;
 import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
 import org.taverna.server.master.common.Permission;
@@ -43,6 +44,7 @@ import org.taverna.server.master.rest.TavernaServerListenersREST.PropertyDescrip
 import org.taverna.server.master.rest.TavernaServerREST.EnabledNotificationFabrics;
 import org.taverna.server.master.rest.TavernaServerREST.PermittedListeners;
 import org.taverna.server.master.rest.TavernaServerREST.PermittedWorkflows;
+import org.taverna.server.master.rest.TavernaServerREST.PolicyView.CapabilityList;
 import org.taverna.server.master.rest.TavernaServerREST.PolicyView.PolicyDescription;
 import org.taverna.server.master.rest.TavernaServerREST.RunList;
 import org.taverna.server.master.rest.TavernaServerREST.ServerDescription;
@@ -248,6 +250,16 @@ public class JaxbSanityTest {
 	}
 
 	@Test
+	public void testJAXBForCapability() throws Exception {
+		testJAXB(Capability.class);
+	}
+
+	@Test
+	public void testJAXBForCapabilityList() throws Exception {
+		testJAXB(CapabilityList.class);
+	}
+
+	@Test
 	public void testJAXBForEverythingREST() throws Exception {
 		testJAXB(DirEntryReference.class, InputDescription.class,
 				RunReference.class, Workflow.class, Status.class,
@@ -263,16 +275,17 @@ public class JaxbSanityTest {
 				TavernaServerSecurityREST.TrustList.class, Permission.class,
 				TavernaServerSecurityREST.Descriptor.class,
 				TavernaServerSecurityREST.PermissionDescription.class,
-				TavernaServerSecurityREST.PermissionsDescription.class);
+				TavernaServerSecurityREST.PermissionsDescription.class,
+				Capability.class, CapabilityList.class);
 	}
 
 	@Test
 	public void testJAXBForEverythingSOAP() throws Exception {
-		testJAXB(DirEntry.class, FileContents.class,
-				InputDescription.class, Permission.class, PermissionList.class,
+		testJAXB(DirEntry.class, FileContents.class, InputDescription.class,
+				Permission.class, PermissionList.class,
 				PermissionList.SinglePermissionMapping.class,
 				RunReference.class, Status.class, Trust.class, Uri.class,
-				Workflow.class);
+				Workflow.class, Capability.class);
 	}
 
 	@Test

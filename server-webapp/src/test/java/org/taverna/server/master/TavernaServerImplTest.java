@@ -193,12 +193,12 @@ public class TavernaServerImplTest {
 
 	@Test
 	public void defaults2() {
-		assertEquals(10, server.getMaxSimultaneousRuns());
+		assertEquals(10, server.getServerMaxRuns());
 	}
 
 	@Test
 	public void defaults3() {
-		assertEquals(1, server.getAllowedListeners().length);
+		assertEquals(1, server.getServerListeners().length);
 	}
 
 	@Test
@@ -211,7 +211,7 @@ public class TavernaServerImplTest {
 		int oldmax = policy.maxruns;
 		try {
 			policy.maxruns = 1;
-			assertEquals(1, server.getMaxSimultaneousRuns());
+			assertEquals(1, server.getServerMaxRuns());
 		} finally {
 			policy.maxruns = oldmax;
 		}
@@ -230,7 +230,7 @@ public class TavernaServerImplTest {
 		RunReference run = server.submitWorkflow(null);
 		try {
 			lrunname = lrunconf = null;
-			assertEquals(asList("foo"), asList(server.getAllowedListeners()));
+			assertEquals(asList("foo"), asList(server.getServerListeners()));
 			String l = server.addRunListener(run.name, "foo", "foobar");
 			assertEquals("bar", l);
 			assertEquals("foobar", lrunconf);
