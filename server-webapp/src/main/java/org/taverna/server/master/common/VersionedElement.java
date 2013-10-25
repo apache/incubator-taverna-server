@@ -53,7 +53,7 @@ public abstract class VersionedElement {
 			}
 		}
 		VERSION = p.getProperty("tavernaserver.version", "unknownVersion");
-		REVISION = p.getProperty("tavernaserver.revision", "unknownRevision")
+		REVISION = p.getProperty("tavernaserver.revisionid", "unknownRevision")
 				+ " (branch: " + p.getProperty("tavernaserver.branch", "trunk")
 				+ ")";
 		TIMESTAMP = p
