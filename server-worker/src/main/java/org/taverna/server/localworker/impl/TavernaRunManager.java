@@ -195,6 +195,29 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 		}
 	}
 
+	private void addArgument(String arg) {
+		if (arg.startsWith("-E")) {
+			String trimmed = arg.substring(2);
+			int idx = trimmed.indexOf('=');
+			if (idx > 0) {
+				addEnvironmentDefinition(trimmed.substring(0, idx),
+						trimmed.substring(idx + 1));
+				return;
+			}
+		} else if (arg.startsWith("-D")) {
+			if (arg.indexOf('=') > 0) {
+				addJavaParameter(arg);
+				return;
+			}
+		} else if (arg.startsWith("-J")) {
+			addJavaParameter(arg.substring(2));
+			return;
+		}
+		throw new IllegalArgumentException("argument \"" + arg
+				+ "\" must start with -D, -E or -J; "
+				+ "-D and -E must contain a \"=\"");
+	}
+
 	/**
 	 * @param args
 	 *            The arguments from the command line invocation.
@@ -212,33 +235,11 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 			setProperty(RMI_HOST_PROP, LOCALHOST);
 		}
 		setSecurityManager(new RMISecurityManager());
-		String command = args[0];
 		factoryName = args[args.length - 1];
-		registry = getRegistry();
-		TavernaRunManager man = new TavernaRunManager(command);
-		for (int i = 1; i < args.length - 1; i++) {
-			if (args[i].startsWith("-E")) {
-				String arg = args[i].substring(2);
-				int idx = arg.indexOf('=');
-				if (idx > 0) {
-					man.addEnvironmentDefinition(arg.substring(0, idx),
-							arg.substring(idx + 1));
-					continue;
-				}
-			} else if (args[i].startsWith("-D")) {
-				if (args[i].indexOf('=') > 0) {
-					man.addJavaParameter(args[i]);
-					continue;
-				}
-			} else if (args[i].startsWith("-J")) {
-				man.addJavaParameter(args[i].substring(2));
-				continue;
-			}
-			throw new IllegalArgumentException(
-					"argument \""
-							+ args[i]
-							+ "\" must start with -D, -E or -J; -D and -E must contain a \"=\"");
-		}
+		TavernaRunManager man = new TavernaRunManager(args[0]);
+		for (int i = 1; i < args.length - 1; i++)
+			man.addArgument(args[i]);
+		registry = getRegistry(LOCALHOST);
 		registry.bind(factoryName, man);
 		getRuntime().addShutdownHook(new Thread() {
 			@Override
