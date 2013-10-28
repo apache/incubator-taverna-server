@@ -5,7 +5,7 @@
  */
 package org.taverna.server.master.utils;
 
-import static org.taverna.server.master.utils.Contextualizer.SUBSTITUAND;
+import static org.taverna.server.master.utils.Contextualizer.ROOT_PLACEHOLDER;
 
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -53,12 +53,12 @@ public class WebappAwareDataSource extends BasicDataSource {
 		synchronized (this) {
 			if (!init) {
 				String url = getUrl();
-				if (url.contains(SUBSTITUAND)) {
+				if (url.contains(ROOT_PLACEHOLDER)) {
 					String newurl = ctxt.contextualize(url);
 					setUrl(newurl);
 					log.info("mapped " + url + " to " + newurl);
 				} else {
-					log.info("did not find " + SUBSTITUAND + " in " + url);
+					log.info("did not find " + ROOT_PLACEHOLDER + " in " + url);
 				}
 				init = true;
 			}
