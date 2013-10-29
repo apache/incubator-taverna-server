@@ -72,6 +72,8 @@ import org.taverna.server.localworker.remote.RemoteListener;
 import org.taverna.server.localworker.remote.RemoteStatus;
 import org.taverna.server.localworker.server.UsageRecordReceiver;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
@@ -169,7 +171,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	}
 
 	private int getPID() {
-		synchronized(pid) {
+		synchronized (pid) {
 			if (pid.value == null)
 				return -1;
 			return pid.value;
@@ -187,11 +189,15 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		private Writer to;
 		private Holder<Integer> pidHolder;
 
-		AsyncCopy(InputStream from, Writer to) throws UnsupportedEncodingException {
+		AsyncCopy(InputStream from, Writer to)
+				throws UnsupportedEncodingException {
 			this(from, to, null);
 		}
-		AsyncCopy(InputStream from, Writer to, Holder<Integer> pid) throws UnsupportedEncodingException {
-			this.from = new BufferedReader(new InputStreamReader(from, SYSTEM_ENCODING));
+
+		AsyncCopy(InputStream from, Writer to, Holder<Integer> pid)
+				throws UnsupportedEncodingException {
+			this.from = new BufferedReader(new InputStreamReader(from,
+					SYSTEM_ENCODING));
 			this.to = to;
 			this.pidHolder = pid;
 			setDaemon(true);
@@ -204,8 +210,9 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 				if (pidHolder != null) {
 					String line = from.readLine();
 					if (line.matches("^pid:\\d+$"))
-						synchronized(pidHolder) {
-							pidHolder.value = Integer.parseInt(line.substring(4));
+						synchronized (pidHolder) {
+							pidHolder.value = Integer.parseInt(line
+									.substring(4));
 						}
 					else
 						to.write(line + System.getProperty("line.separator"));
@@ -281,59 +288,53 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	 *            subdirectory.
 	 * @param token
 	 *            The name of the workflow run.
+	 * @return <tt>true</tt> if the worker started, or <tt>false</tt> if a
+	 *         timeout occurred.
 	 * @throws IOException
 	 *             If any of quite a large number of things goes wrong.
 	 */
 	@Override
-	public boolean initWorker(final LocalWorker local,
-			final String executeWorkflowCommand, final String workflow,
-			final File workingDir, final File inputBaclava,
-			final Map<String, File> inputFiles,
-			final Map<String, String> inputValues, final File outputBaclava,
-			final File securityDir, final char[] password,
-			final Map<String, String> environment, final String token,
-			final List<String> runtime) throws IOException {
-		final Holder<IOException> h = new Holder<IOException>();
-		Thread t = new Thread(new Runnable() {
+	public boolean initWorker(@NonNull final LocalWorker local,
+			@NonNull final String executeWorkflowCommand,
+			@NonNull final String workflow, @NonNull final File workingDir,
+			@Nullable final File inputBaclava,
+			@NonNull final Map<String, File> inputFiles,
+			@NonNull final Map<String, String> inputValues,
+			@Nullable final File outputBaclava,
+			@NonNull final File securityDir, @Nullable final char[] password,
+			@NonNull final Map<String, String> environment,
+			@NonNull final String token, @NonNull final List<String> runtime)
+			throws IOException {
+		new TimingOutTask() {
 			@Override
-			public void run() {
-				try {
-					ProcessBuilder pb = createProcessBuilder(local,
-							executeWorkflowCommand, workflow, workingDir,
-							inputBaclava, inputFiles, inputValues,
-							outputBaclava, securityDir, password, environment,
-							token, runtime);
-
-					// Start the subprocess
-					out.println("starting " + pb.command() + " in directory "
-							+ pb.directory() + " with environment "
-							+ pb.environment());
-					subprocess = pb.start();
-					if (subprocess == null)
-						throw new IOException(
-								"unknown failure creating process");
-					start = new Date();
-					accounting.runStarted();
-
-					// Capture its stdout and stderr
-					new AsyncCopy(subprocess.getInputStream(), stdout, pid);
-					new AsyncCopy(subprocess.getErrorStream(), stderr);
-					if (password != null)
-						new PasswordWriterThread(subprocess, password);
-				} catch (IOException e) {
-					h.value = e;
-				}
+			public void doIt() throws IOException {
+				startExecutorSubprocess(
+						createProcessBuilder(local, executeWorkflowCommand,
+								workflow, workingDir, inputBaclava, inputFiles,
+								inputValues, outputBaclava, securityDir,
+								password, environment, token, runtime),
+						password);
 			}
-		});
-		t.start();
-		try {
-			t.join(START_WAIT_TIME);
-		} catch (InterruptedException e) {
-			// Won't happen
-		}
-		if (h.value != null)
-			throw h.value;
+		}.doOrTimeOut(START_WAIT_TIME);
 		return subprocess != null;
+	}
+
+	private void startExecutorSubprocess(ProcessBuilder pb, char[] password) throws IOException {
+		// Start the subprocess
+		out.println("starting " + pb.command() + " in directory "
+				+ pb.directory() + " with environment "
+				+ pb.environment());
+		subprocess = pb.start();
+		if (subprocess == null)
+			throw new IOException("unknown failure creating process");
+		start = new Date();
+		accounting.runStarted();
+
+		// Capture its stdout and stderr
+		new AsyncCopy(subprocess.getInputStream(), stdout, pid);
+		new AsyncCopy(subprocess.getErrorStream(), stderr);
+		if (password != null)
+			new PasswordWriterThread(subprocess, password);
 	}
 
 	/**
@@ -373,13 +374,16 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	 * @throws FileNotFoundException
 	 *             If we can't write the workflow out (unlikely)
 	 */
-	ProcessBuilder createProcessBuilder(LocalWorker local,
-			String executeWorkflowCommand, String workflow, File workingDir,
-			File inputBaclava, Map<String, File> inputFiles,
-			Map<String, String> inputValues, File outputBaclava,
-			File securityDir, char[] password, Map<String, String> environment,
-			String token, List<String> runtime) throws IOException,
-			UnsupportedEncodingException, FileNotFoundException {
+	ProcessBuilder createProcessBuilder(@NonNull LocalWorker local,
+			@NonNull String executeWorkflowCommand, @NonNull String workflow,
+			@NonNull File workingDir, @Nullable File inputBaclava,
+			Map<String, File> inputFiles,
+			@NonNull Map<String, String> inputValues,
+			@Nullable File outputBaclava, @NonNull File securityDir,
+			@NonNull char[] password, @NonNull Map<String, String> environment,
+			@NonNull String token, @NonNull List<String> runtime)
+			throws IOException, UnsupportedEncodingException,
+			FileNotFoundException {
 		ProcessBuilder pb = new ProcessBuilder();
 		pb.command().add(TIME);
 		/*
@@ -514,6 +518,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			return interactionHost;
 		return url.getProtocol() + "://" + url.getHost();
 	}
+
 	private static String makeInterPort(URL url) {
 		if (url == null)
 			return interactionPort;
@@ -522,6 +527,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			port = url.getDefaultPort();
 		return Integer.toString(port);
 	}
+
 	private static String makeInterPath(URL url) {
 		if (url == null)
 			return interactionFeedPath;
@@ -571,7 +577,6 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		return new JobUsageRecord("unknown");
 	}
 
-
 	/**
 	 * Fills in the accounting information from the exit code and stderr.
 	 * 
@@ -619,7 +624,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 
 	private long parseDuration(String durationString) {
 		try {
-			return (long)(parseDouble(durationString) * 1000);
+			return (long) (parseDouble(durationString) * 1000);
 		} catch (NumberFormatException nfe) {
 			// Not a double; maybe MM:SS.mm or HH:MM:SS.mm
 		}
@@ -629,7 +634,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 				dur = 60 * dur + parseLong(d);
 			} catch (NumberFormatException nfe) {
 				// Assume that only one thing is fractional, and that it is last
-				return 60000 * dur + (long)(parseDouble(d) * 1000);
+				return 60000 * dur + (long) (parseDouble(d) * 1000);
 			}
 		return dur * 1000;
 	}
@@ -786,5 +791,40 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			throw new ImplementationException("problem deleting workflow file",
 					e);
 		}
+	}
+}
+
+/**
+ * A class that handles running a task that can take some time.
+ * @author Donal Fellows
+ *
+ */
+abstract class TimingOutTask extends Thread {
+	public abstract void doIt() throws IOException;
+
+	private IOException ioe;
+
+	@Override
+	public final void run() {
+		try {
+			doIt();
+		} catch (IOException ioe) {
+			this.ioe = ioe;
+		}
+	}
+
+	public TimingOutTask() {
+		this.setDaemon(true);
+	}
+
+	public void doOrTimeOut(long timeout) throws IOException {
+		start();
+		try {
+			join(timeout);
+		} catch (InterruptedException e) {
+			// Ignore; won't happen
+		}
+		if (ioe != null)
+			throw ioe;
 	}
 }
