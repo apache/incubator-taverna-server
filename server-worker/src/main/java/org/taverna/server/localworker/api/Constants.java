@@ -87,6 +87,12 @@ public abstract class Constants {
 	public static final int START_WAIT_TIME = 1500;
 
 	/**
+	 * Time to wait for success or failure of a death-causing activity (i.e.,
+	 * sending a signal).
+	 */
+	public static final int DEATH_TIME = 333;
+
+	/**
 	 * The name of the file (in this code's resources) that provides the default
 	 * security policy that we use.
 	 */
