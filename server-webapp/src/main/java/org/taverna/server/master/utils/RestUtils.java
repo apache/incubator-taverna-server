@@ -27,6 +27,6 @@ public class RestUtils {
 		for (String m : methods)
 			sb.append(m).append(",");
 		sb.append("HEAD,OPTIONS");
-		return Response.ok().header("Accept", sb.toString()).entity("").build();
+		return Response.ok().header("Allow", sb.toString()).entity("").build();
 	}
 }
