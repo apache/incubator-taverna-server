@@ -29,7 +29,7 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedOperationParameter;
 import org.springframework.jmx.export.annotation.ManagedOperationParameters;
 import org.springframework.jmx.export.annotation.ManagedResource;
-import org.springframework.security.authentication.encoding.PasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -91,7 +91,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 	}
 
 	private void installPassword(User u, String password) {
-		u.setEncodedPassword(encoder.encodePassword(password, u.getUsername()));
+		u.setEncodedPassword(encoder.encode(password));
 	}
 
 	public void setDefaultLocalUser(String defLocalUser) {
@@ -372,7 +372,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 			if (!realUser)
 				return null;
 			u.setUsername(user);
-			u.setEncodedPassword(encoder.encodePassword(pass, user));
+			u.setEncodedPassword(encoder.encode(pass));
 			u.setDisabled(false);
 			return u;
 		}

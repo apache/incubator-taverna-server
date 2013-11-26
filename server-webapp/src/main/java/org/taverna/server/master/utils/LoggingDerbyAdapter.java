@@ -6,16 +6,16 @@ import java.sql.DatabaseMetaData;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
-import org.datanucleus.store.mapped.DatastoreContainerObject;
-import org.datanucleus.store.mapped.DatastoreIdentifier;
-import org.datanucleus.store.mapped.IdentifierFactory;
 import org.datanucleus.store.rdbms.adapter.DerbyAdapter;
+import org.datanucleus.store.rdbms.identifier.DatastoreIdentifier;
+import org.datanucleus.store.rdbms.identifier.IdentifierFactory;
 import org.datanucleus.store.rdbms.key.CandidateKey;
 import org.datanucleus.store.rdbms.key.ForeignKey;
 import org.datanucleus.store.rdbms.key.Index;
 import org.datanucleus.store.rdbms.key.PrimaryKey;
 import org.datanucleus.store.rdbms.sql.SQLTable;
 import org.datanucleus.store.rdbms.table.Column;
+import org.datanucleus.store.rdbms.table.Table;
 import org.datanucleus.store.rdbms.table.TableImpl;
 import org.datanucleus.store.rdbms.table.ViewImpl;
 
@@ -68,7 +68,7 @@ public class LoggingDerbyAdapter extends DerbyAdapter {
 	}
 
 	@Override
-	public String getAddColumnStatement(DatastoreContainerObject table,
+	public String getAddColumnStatement(Table table,
 			Column col) {
 		String statement = super.getAddColumnStatement(table, col);
 		log.info("Generated extra column\n" + statement);
@@ -100,7 +100,7 @@ public class LoggingDerbyAdapter extends DerbyAdapter {
 	}
 
 	@Override
-	public String getDropTableStatement(DatastoreContainerObject table) {
+	public String getDropTableStatement(Table table) {
 		String statement = super.getDropTableStatement(table);
 		log.info("Generated drop table\n" + statement);
 		return statement;
