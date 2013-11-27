@@ -8,6 +8,7 @@ package org.taverna.server.master.notification;
 import static org.taverna.server.master.defaults.Default.SMS_GATEWAY_URL;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -20,10 +21,10 @@ import javax.annotation.PreDestroy;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -38,7 +39,7 @@ public class SMSDispatcher extends RateLimitedDispatcher {
 		return "sms";
 	}
 
-	private HttpClient client;
+	private CloseableHttpClient client;
 	private URI service;
 	private String user = "", pass = "";
 	private String usernameField = "username", passwordField = "password",
@@ -106,14 +107,17 @@ public class SMSDispatcher extends RateLimitedDispatcher {
 
 	@PostConstruct
 	void init() {
-		client = new DefaultHttpClient();
+		client = HttpClientBuilder.create().build();
 	}
 
 	@PreDestroy
-	void close() {
-		if (client != null && client.getConnectionManager() != null)
-			client.getConnectionManager().shutdown();
-		client = null;
+	void close() throws IOException {
+		try {
+			if (client != null)
+				client.close();
+		} finally {
+			client = null;
+		}
 	}
 
 	@Override
