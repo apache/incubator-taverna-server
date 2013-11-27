@@ -6,7 +6,7 @@
 package org.taverna.server.master.notification.atom;
 
 import org.apache.abdera.model.Entry;
-import org.apache.cxf.jaxrs.ext.atom.AtomElementWriter;
+import org.apache.cxf.jaxrs.provider.atom.AtomElementWriter;
 import org.springframework.beans.factory.annotation.Required;
 
 /**

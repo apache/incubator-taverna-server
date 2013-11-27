@@ -40,7 +40,7 @@ public class EntryHandler implements MessageBodyWriter<Entry>,
 	private static final String ENC = "UTF-8";
 	private static final MediaType ENTRY = new MediaType("application",
 			"atom+xml", singletonMap("type", "entry"));
-	private static final Variant VARIANT = new Variant(ENTRY, null, ENC);
+	private static final Variant VARIANT = new Variant(ENTRY, (String) null, ENC);
 	private static final Charset UTF8 = Charset.forName(ENC);
 
 	@Required

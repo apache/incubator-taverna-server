@@ -170,7 +170,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 		if (!contentType.equals(APPLICATION_OCTET_STREAM)) {
 			String[] ct = contentType.split("/");
 			variants.add(0,
-					new Variant(new MediaType(ct[0], ct[1]), null, null));
+					new Variant(new MediaType(ct[0], ct[1]), (String) null, null));
 		}
 		return variants;
 	}

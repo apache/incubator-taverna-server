@@ -85,7 +85,7 @@
 	</bean>
 	<bean id="MessagingProvider.Permission" class="org.taverna.server.master.rest.handler.PermissionHandler">
 	</bean>
-	<bean id="MessagingProvider.Atom" class="org.apache.cxf.jaxrs.provider.AtomPojoProvider">
+	<bean id="MessagingProvider.Atom" class="org.apache.cxf.jaxrs.provider.atom.AtomPojoProvider">
 		<property name="atomWriters" ref="atomEntryBinding" />
 		<property name="collectionGetters" ref="atomFeedBinding" />
 	</bean>

@@ -35,9 +35,9 @@ public interface ContentTypes {
 	 * we <i>only</i> serve directories up as these.
 	 */
 	public static final List<Variant> DIRECTORY_VARIANTS = asList(new Variant(
-			APPLICATION_XML_TYPE, null, null), new Variant(
-			APPLICATION_JSON_TYPE, null, null), new Variant(
-			APPLICATION_ZIP_TYPE, null, null));
+			APPLICATION_XML_TYPE, (String) null, "UTF-8"), new Variant(
+			APPLICATION_JSON_TYPE, (String) null, "UTF-8"), new Variant(
+			APPLICATION_ZIP_TYPE, (String) null, null));
 
 	/**
 	 * The baseline set of media types that we are willing to serve up files as.
@@ -46,5 +46,5 @@ public interface ContentTypes {
 	 * in the case of <tt>text/*</tt> subtypes) back at the client.
 	 */
 	public static final List<Variant> INITIAL_FILE_VARIANTS = singletonList(new Variant(
-			APPLICATION_OCTET_STREAM_TYPE, null, null));
+			APPLICATION_OCTET_STREAM_TYPE, (String) null, null));
 }

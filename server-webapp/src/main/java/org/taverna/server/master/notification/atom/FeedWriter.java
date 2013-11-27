@@ -8,7 +8,7 @@ package org.taverna.server.master.notification.atom;
 import java.util.List;
 
 import org.apache.abdera.model.Feed;
-import org.apache.cxf.jaxrs.ext.atom.AtomElementWriter;
+import org.apache.cxf.jaxrs.provider.atom.AtomElementWriter;
 
 /**
  * How to write a whole Atom feed of events.

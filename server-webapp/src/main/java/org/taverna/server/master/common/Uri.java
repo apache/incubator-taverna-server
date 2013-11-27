@@ -121,6 +121,7 @@ public class Uri {
 		log.debug("rewrote " + uri + " to " + newURI);
 		return newURI;
 	}
+
 	public static URI secure(URI base, String uri) {
 		URI newURI = secure(fromUri(base.resolve(uri))).build();
 		log.debug("rewrote " + uri + " to " + newURI);
@@ -253,7 +254,7 @@ public class Uri {
 			}
 
 			@Override
-			public URI buildFromMap(Map<String, ? extends Object> values)
+			public URI buildFromMap(Map<String, ?> values)
 					throws IllegalArgumentException, UriBuilderException {
 				return rewrite(wrapped.buildFromMap(values));
 			}
@@ -271,15 +272,41 @@ public class Uri {
 			}
 
 			@Override
+			public URI build(Object[] values, boolean encodeSlashInPath)
+					throws IllegalArgumentException, UriBuilderException {
+				return rewrite(wrapped.build(values, encodeSlashInPath));
+			}
+
+			@Override
 			public URI buildFromEncoded(Object... values)
 					throws IllegalArgumentException, UriBuilderException {
 				return rewrite(wrapped.buildFromEncoded(values));
 			}
 
 			@Override
+			public URI buildFromMap(Map<String, ?> values,
+					boolean encodeSlashInPath) throws IllegalArgumentException,
+					UriBuilderException {
+				return rewrite(wrapped.buildFromEncoded(values,
+						encodeSlashInPath));
+			}
+
+			@Override
 			public UriBuilder uri(URI uri) throws IllegalArgumentException {
 				wrapped.uri(uri);
 				return this;
+			}
+
+			@Override
+			public UriBuilder uri(String uriTemplate)
+					throws IllegalArgumentException {
+				wrapped.uri(uriTemplate);
+				return this;
+			}
+
+			@Override
+			public String toTemplate() {
+				return wrapped.toTemplate();
 			}
 
 			@Override
