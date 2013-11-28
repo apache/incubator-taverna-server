@@ -3,10 +3,12 @@
 	for license terms. -->
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:security="http://www.springframework.org/schema/security"
 	xsi:schemaLocation="
 	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
 	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
 	http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.3.xsd">
 
@@ -16,6 +18,12 @@
 	</description>
 
 	<import resource="webappBeans.xml" />
+
+	<context:property-placeholder order="0" ignore-unresolvable="true"
+		 properties-ref="security.override.properties" />
+	<util:properties id="security.override.properties">
+		<prop key="fetchCertificateChain">true</prop>
+	</util:properties>
 
 	<bean id="MBeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
 		<property name="locateExistingServerIfPossible" value="true" />
@@ -56,6 +64,13 @@
 	<bean class="org.taverna.server.master.common.Uri.Rewriter"
 		autowire="byType" id="URI-Rewriter-Thunk">
 		<property name="rewriteTarget" value="${default.webapp}" />
+	</bean>
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="properties">
+			<value>
+				fetcher.secure=true
+			</value>
+		</property>
 	</bean>
 	<security:authentication-manager>
 		<security:authentication-provider ref="workflowInternalAuthProvder" />

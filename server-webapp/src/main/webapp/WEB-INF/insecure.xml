@@ -20,9 +20,10 @@
 	<import resource="webappBeans.xml" />
 
 	<context:property-placeholder order="0" ignore-unresolvable="true"
-		 properties-ref="factory.config.override" />
-	<util:properties id="factory.config.override">
+		 properties-ref="security.override.properties" />
+	<util:properties id="security.override.properties">
 		<prop key="backEndFactory">org.taverna.server.master.localworker.ForkRunFactory</prop>
+		<prop key="fetchCertificateChain">false</prop>
 	</util:properties>
 
 	<security:http realm="${http.realmName}" create-session="never"

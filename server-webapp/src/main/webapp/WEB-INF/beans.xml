@@ -280,7 +280,9 @@
 		<!-- <property name="length" value="8" /> -->
 	</bean>
 
-	<bean id="certificateChainFetcher" class="org.taverna.server.master.utils.CertificateChainFetcher"/>
+	<bean id="certificateChainFetcher" class="org.taverna.server.master.utils.CertificateChainFetcher">
+		<property name="secure" value="${fetchCertificateChain}" />
+	</bean>
 
 	<bean id="localworker.state" class="org.taverna.server.master.localworker.LocalWorkerState"
 		scope="singleton" lazy-init="false">
