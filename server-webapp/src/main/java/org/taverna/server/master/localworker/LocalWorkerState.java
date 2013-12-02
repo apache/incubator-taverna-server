@@ -212,7 +212,7 @@ public class LocalWorkerState extends JDOSupport<PersistedState> implements
 	 *            Full path to the script to use.
 	 */
 	public void setDefaultExecuteWorkflowScript(String defaultScript) {
-		if (defaultScript.startsWith("${")) {
+		if (defaultScript.startsWith("${") || defaultScript.equals("NONE")) {
 			this.defaultExecuteWorkflowScript = guessWorkflowScript();
 			return;
 		}

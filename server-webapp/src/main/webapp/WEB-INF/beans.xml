@@ -334,6 +334,11 @@
 		<property name="defaultExecuteWorkflowScript" value="${executeWorkflowScript}" />
 	</bean>
 
+	<context:property-placeholder order="999999999" properties-ref="default-defaults" />
+	<util:properties id="default-defaults">
+		<prop key="executeWorkflowScript">NONE</prop>
+	</util:properties>
+
 	<bean id="worker.policy" class="org.taverna.server.master.worker.PolicyImpl">
 		<description>
 			The implementation of the access control policy supported
