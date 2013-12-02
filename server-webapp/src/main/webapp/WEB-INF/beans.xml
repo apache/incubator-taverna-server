@@ -334,7 +334,7 @@
 		<property name="defaultExecuteWorkflowScript" value="${executeWorkflowScript}" />
 	</bean>
 
-	<context:property-placeholder order="999999999" properties-ref="default-defaults" />
+	<context:property-placeholder order="999999999" ignore-unresolvable="true" properties-ref="default-defaults" />
 	<util:properties id="default-defaults">
 		<prop key="executeWorkflowScript">NONE</prop>
 	</util:properties>
