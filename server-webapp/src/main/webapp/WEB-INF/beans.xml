@@ -331,13 +331,8 @@
 			to the executeworkflow.sh in either the Taverna 2 Workbench distribution 
 			or the Taverna 2 Command Line distribution.</description> </property> -->
 		<property name="self" ref="localworker.state" />
-		<property name="defaultExecuteWorkflowScript" value="${executeWorkflowScript}" />
+		<property name="defaultExecuteWorkflowScript" value="${executeWorkflowScript:NONE}" />
 	</bean>
-
-	<context:property-placeholder order="999999999" ignore-unresolvable="true" properties-ref="default-defaults" />
-	<util:properties id="default-defaults">
-		<prop key="executeWorkflowScript">NONE</prop>
-	</util:properties>
 
 	<bean id="worker.policy" class="org.taverna.server.master.worker.PolicyImpl">
 		<description>
