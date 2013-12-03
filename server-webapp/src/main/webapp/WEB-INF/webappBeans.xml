@@ -144,7 +144,7 @@
 
 	<bean id="root_facade" class="org.taverna.server.master.facade.Facade">
 		<property name="file" value="/welcome.html" />
-		<property name="pattern" value="SERVICE_URI/" />
+		<property name="contextualizer" ref="contextualizer" />
 	</bean>
 
 	<bean class="org.taverna.server.master.common.Uri.Rewriter"
