@@ -299,6 +299,13 @@
 				<scope>compile</scope>
 			</dependency>
 			<dependency>
+				<groupId>uk.org.taverna.server</groupId>
+				<artifactId>server-prov-support</artifactId>
+				<version>${project.parent.version}</version>
+				<classifier>repository</classifier>
+				<scope>runtime</scope>
+			</dependency>
+			<dependency>
 				<groupId>asm</groupId>
 				<artifactId>asm</artifactId>
 				<version>${version.asm}</version>
@@ -403,8 +410,8 @@
 				</plugin>
 				<plugin>
 					<groupId>org.datanucleus</groupId>
-					<artifactId>maven-datanucleus-plugin</artifactId>
-					<version>3.0.1</version>
+					<artifactId>datanucleus-maven-plugin</artifactId>
+					<version>3.3.0-release</version>
 					<configuration>
 						<jdkLogConfiguration>file:${project.basedir}/src/build/resources/datanucleus-log.properties</jdkLogConfiguration>
 					</configuration>
@@ -413,14 +420,17 @@
 						<dependency>
 							<groupId>org.datanucleus</groupId>
 							<artifactId>datanucleus-core</artifactId>
+							<version>3.2.9</version>
 						</dependency>
 						<dependency>
 							<groupId>org.datanucleus</groupId>
 							<artifactId>datanucleus-enhancer</artifactId>
+							<version>3.1.1</version>
 						</dependency>
 						<dependency>
 							<groupId>org.datanucleus</groupId>
 							<artifactId>datanucleus-api-jdo</artifactId>
+							<version>3.2.5</version>
 						</dependency>
 						<dependency>
 							<groupId>javax.jdo</groupId>
@@ -563,12 +573,29 @@
 							<excludeTransitive>true</excludeTransitive>
 						</configuration>
 					</execution>
+					<execution>
+						<id>unpack-provenance-support</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>uk.org.taverna.server</groupId>
+									<artifactId>server-prov-support</artifactId>
+									<version>${project.parent.version}</version>
+									<classifier>repository</classifier>
+									<outputDirectory>${util.dir}/taverna-commandline-${version.commandline}/repository</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.datanucleus</groupId>
 				<artifactId>datanucleus-maven-plugin</artifactId>
-				<version>3.3.0-release</version>
 				<configuration>
 					<fork>false</fork>
 					<metadataIncludes>
@@ -608,8 +635,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<encoding>US-ASCII</encoding>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
 			</plugin>
 			<plugin>
