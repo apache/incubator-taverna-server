@@ -413,7 +413,9 @@
 					<artifactId>datanucleus-maven-plugin</artifactId>
 					<version>3.3.0-release</version>
 					<configuration>
-						<jdkLogConfiguration>file:${project.basedir}/src/build/resources/datanucleus-log.properties</jdkLogConfiguration>
+						<jdkLogConfiguration>${project.basedir}/src/build/resources/datanucleus-log.properties</jdkLogConfiguration>
+						<log4jConfiguration>${project.basedir}/src/build/resources/datanucleus_log4j.properties</log4jConfiguration>
+						<verbose>true</verbose>
 					</configuration>
 					<dependencies>
 						<!-- Sucks that I have to say these explicitly -->
