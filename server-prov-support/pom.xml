@@ -7,7 +7,7 @@
 		<version>2.5.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>server-prov-support</artifactId>
-	<name>Provenance Support</name>
+	<name>Provenance support libraries</name>
 	<packaging>jar</packaging>
 	<dependencies>
 		<dependency>
@@ -30,14 +30,6 @@
 				<exclusion>
 					<groupId>javax.xml.stream</groupId>
 					<artifactId>stax-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>xerces</groupId>
-					<artifactId>xercesImpl</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
 				</exclusion>
 				<exclusion>
 					<artifactId>data-management-config</artifactId>
@@ -181,4 +173,5 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+	<description>A packaging of the libraries required to be added to the Taverna Command Line tool in order to support the new provenance system.</description>
 </project>

@@ -294,6 +294,12 @@
 			<version>${project.parent.version}</version>
 			<classifier>repository</classifier>
 			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>prov-taverna-cmdline</artifactId>
+					<groupId>org.purl.wf4ever.provtaverna</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 
