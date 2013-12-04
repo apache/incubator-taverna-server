@@ -62,7 +62,7 @@ exec "$javabin" $memlimit $permsize \
   "-Dtaverna.startup=$taverna_home" $RAVEN_APPHOME_PROP $RUNID_PROP \
   $INTERACTION_PROPS $pre \
   -Djava.system.class.loader=net.sf.taverna.raven.prelauncher.BootstrapClassLoader \
-  -Draven.launcher.app.main=net.sf.taverna.t2.commandline.CommandLineLauncher \
+  -Draven.launcher.app.main=org.purl.wf4ever.provtaverna.cmdline.ProvCommandLineLauncher \
   -Draven.launcher.show_splashscreen=false \
   -Djava.awt.headless=true \
   -jar "$taverna_home/lib/"prelauncher-*.jar \
