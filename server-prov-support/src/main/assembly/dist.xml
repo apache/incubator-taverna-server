@@ -18,4 +18,5 @@
 			</includes>
 		</fileSet>
 	</fileSets>
+	<includeBaseDirectory>false</includeBaseDirectory>
 </assembly>

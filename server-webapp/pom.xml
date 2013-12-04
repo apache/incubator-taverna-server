@@ -288,6 +288,13 @@
 			<version>1.3.4</version>
 			<scope>runtime</scope>
 		</dependency>
+		<dependency>
+			<groupId>uk.org.taverna.server</groupId>
+			<artifactId>server-prov-support</artifactId>
+			<version>${project.parent.version}</version>
+			<classifier>repository</classifier>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
@@ -297,13 +304,6 @@
 				<artifactId>server-runinterface</artifactId>
 				<version>${project.parent.version}</version>
 				<scope>compile</scope>
-			</dependency>
-			<dependency>
-				<groupId>uk.org.taverna.server</groupId>
-				<artifactId>server-prov-support</artifactId>
-				<version>${project.parent.version}</version>
-				<classifier>repository</classifier>
-				<scope>runtime</scope>
 			</dependency>
 			<dependency>
 				<groupId>asm</groupId>
@@ -586,7 +586,7 @@
 									<artifactId>server-prov-support</artifactId>
 									<version>${project.parent.version}</version>
 									<classifier>repository</classifier>
-									<outputDirectory>${util.dir}/taverna-commandline-${version.commandline}/repository</outputDirectory>
+									<outputDirectory>${util.dir}/taverna-commandline-${version.commandline}</outputDirectory>
 								</artifactItem>
 							</artifactItems>
 						</configuration>

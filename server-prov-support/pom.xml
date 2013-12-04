@@ -14,6 +14,78 @@
 			<groupId>org.purl.wf4ever.provtaverna</groupId>
 			<artifactId>prov-taverna-cmdline</artifactId>
 			<version>2.1.5</version>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.activation</groupId>
+					<artifactId>activation</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.persistence</groupId>
+					<artifactId>persistence-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.xml.bind</groupId>
+					<artifactId>jaxb-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.xml.stream</groupId>
+					<artifactId>stax-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>xerces</groupId>
+					<artifactId>xercesImpl</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
+				</exclusion>
+				<exclusion>
+					<artifactId>data-management-config</artifactId>
+					<groupId>net.sf.taverna.t2.ui-impl</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>taverna-commandline-common</artifactId>
+					<groupId>
+						net.sf.taverna.t2.taverna-commandline
+					</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>reference-impl</artifactId>
+					<groupId>net.sf.taverna.t2.core</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>results</artifactId>
+					<groupId>net.sf.taverna.t2.lang</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>reference-api</artifactId>
+					<groupId>net.sf.taverna.t2.core</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>workflowmodel-api</artifactId>
+					<groupId>net.sf.taverna.t2.core</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>workflowmodel-impl</artifactId>
+					<groupId>net.sf.taverna.t2.core</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>spring-context</artifactId>
+					<groupId>org.springframework</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>spi-discovery-api</artifactId>
+					<groupId>net.sf.taverna.t2.infrastructure</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>junit</artifactId>
+					<groupId>junit</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jaxb-impl</artifactId>
+					<groupId>com.sun.xml.bind</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 	<build>
@@ -55,6 +127,8 @@
 							<directory>${project.build.directory}/repository</directory>
 							<includes>
 								<include>**/*.xml</include>
+								<include>**/*.jar</include>
+								<include>**/*.pom</include>
 							</includes>
 						</fileSet>
 					</fileSets>
