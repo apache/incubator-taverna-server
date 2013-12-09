@@ -56,13 +56,15 @@ if test x != "x$INTERACTION_HOST"; then
     INTERACTION_PROPS="$INTERACTION_PROPS -Dtaverna.interaction.feed_path=$INTERACTION_FEED"
 fi
 
+MainClass=org.purl.wf4ever.provtaverna.cmdline.ProvCommandLineLauncher
+
 echo "pid:$$"
 exec "$javabin" $memlimit $permsize \
   "-Draven.profile=file://$taverna_home/conf/current-profile.xml" \
   "-Dtaverna.startup=$taverna_home" $RAVEN_APPHOME_PROP $RUNID_PROP \
   $INTERACTION_PROPS $pre \
   -Djava.system.class.loader=net.sf.taverna.raven.prelauncher.BootstrapClassLoader \
-  -Draven.launcher.app.main=org.purl.wf4ever.provtaverna.cmdline.ProvCommandLineLauncher \
+  -Draven.launcher.app.main=$MainClass \
   -Draven.launcher.show_splashscreen=false \
   -Djava.awt.headless=true \
   -jar "$taverna_home/lib/"prelauncher-*.jar \

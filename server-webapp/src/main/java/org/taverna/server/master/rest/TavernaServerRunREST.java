@@ -17,6 +17,7 @@ import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.IN;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.LISTEN;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.LOG;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.OUT;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.PROV;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.SEC;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.STATUS;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.STDERR;
@@ -502,6 +503,23 @@ public interface TavernaServerRunREST {
 	Response logOptions();
 
 	/**
+	 * @return The log for the workflow run, or empty string if the run has not
+	 *         yet started.
+	 */
+	@GET
+	@Path(PROV)
+	@Description("Return the log for the workflow run.")
+	@Produces("application/vnd.wf4ever.robundle+zip")
+	@NonNull
+	Response getProvenance();
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path(PROV)
+	@Description("Return the log for the workflow run.")
+	Response provOptions();
+
+	/**
 	 * Factored out path names used in the {@link TavernaServerRunREST}
 	 * interface and related places.
 	 * 
@@ -525,6 +543,7 @@ public interface TavernaServerRunREST {
 		public static final String STDERR = "stderr";
 		public static final String USAGE = "usage";
 		public static final String LOG = "log";
+		public static final String PROV = "provenance";
 	}
 
 	/**
@@ -573,6 +592,8 @@ public interface TavernaServerRunREST {
 		public Uri usage;
 		/** The log from the run. */
 		public Uri log;
+		/** The provenance from the run. */
+		public Uri provenance;
 
 		/**
 		 * How to describe a run's expiry.
@@ -692,6 +713,7 @@ public interface TavernaServerRunREST {
 			stderr = new Uri(ui, STDERR);
 			usage = new Uri(ui, USAGE);
 			log = new Uri(ui, LOG);
+			provenance = new Uri(ui, PROV);
 		}
 	}
 }

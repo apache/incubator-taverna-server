@@ -216,10 +216,10 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 				public void doIt() throws IOException {
 					startExecutorSubprocess(
 							createProcessBuilder(local, executeWorkflowCommand,
-									workflow, workingDir, inputBaclava, inputFiles,
-									inputValues, outputBaclava, securityDir,
-									password, environment, token, runtime),
-							password);
+									workflow, workingDir, inputBaclava,
+									inputFiles, inputValues, outputBaclava,
+									securityDir, password, environment, token,
+									runtime), password);
 				}
 			}.doOrTimeOut(START_WAIT_TIME);
 		} catch (IOException e) {
@@ -376,6 +376,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 						"parent directory of output baclava file does not exist");
 			if (outputBaclava.exists())
 				throw new IOException("output baclava file exists");
+			// Provenance cannot be supported when using baclava output
 		} else {
 			File out = new File(workingDir, "out");
 			if (!out.mkdir())
@@ -384,6 +385,9 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			forceDelete(out);
 			pb.command().add("-outputdir");
 			pb.command().add(out.getAbsolutePath());
+			// Enable provenance generation
+			pb.command().add("-embedded");
+			pb.command().add("-provenance");
 		}
 
 		// Add an argument holding the workflow
@@ -488,7 +492,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 					accounting.runCeased();
 					buildUR(code.value == 0 ? Completed : Aborted, code.value);
 				}
-			}}) {
+			} }) {
 				try {
 					tot.doOrTimeOut(DEATH_TIME);
 				} catch (Exception e) {

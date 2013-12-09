@@ -382,4 +382,19 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	public Response logOptions() {
 		return opt();
 	}
+
+	@Override
+	@CallCounted
+	public Response getProvenance() {
+		FileConcatenation fc = support.getProv(run);
+		if (fc.isEmpty())
+			return Response.status(404).entity("no provenance currently available").build();
+		return Response.ok(fc, "application/vnd.wf4ever.robundle+zip").build();
+	}
+
+	@Override
+	@CallCounted
+	public Response provOptions() {
+		return opt();
+	}
 }
