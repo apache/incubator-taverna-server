@@ -465,18 +465,10 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 					buildUR(code.value == 0 ? Completed : Failed, code.value);
 				}
 			}, new TimingOutTask() {
-				/** Ask the workflow to stop */
+				/** Tell the workflow to stop */
 				@Override
 				public void doIt() throws IOException {
-					code.value = killVeryNicely();
-					accounting.runCeased();
-					buildUR(code.value == 0 ? Completed : Aborted, code.value);
-				}
-			}, new TimingOutTask() {
-				/** Tell the workflow firmly to stop */
-				@Override
-				public void doIt() throws IOException {
-					code.value = killFairlyNicely();
+					code.value = killNicely();
 					accounting.runCeased();
 					buildUR(code.value == 0 ? Completed : Aborted, code.value);
 				}
@@ -589,17 +581,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	}
 
 	@Nullable
-	private Integer killVeryNicely() {
-		try {
-			subprocess.destroy();
-			return subprocess.waitFor();
-		} catch (InterruptedException e) {
-			return null;
-		}
-	}
-
-	@Nullable
-	private Integer killFairlyNicely() {
+	private Integer killNicely() {
 		try {
 			signal("TERM");
 			return subprocess.waitFor();
