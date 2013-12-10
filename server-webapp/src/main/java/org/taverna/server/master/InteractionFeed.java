@@ -5,12 +5,15 @@
  */
 package org.taverna.server.master;
 
+import static org.taverna.server.master.common.Roles.SELF;
+import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.utils.RestUtils.opt;
 
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.core.Response;
 
 import org.apache.abdera.model.Entry;
@@ -45,6 +48,7 @@ public class InteractionFeed implements InteractionFeedREST, FeedBean {
 
 	@Override
 	@CallCounted
+	@RolesAllowed({ USER, SELF })
 	public Feed getFeed() throws FilesystemAccessException,
 			NoDirectoryEntryException {
 		return interactionFeed.getRunFeed(run);
@@ -52,6 +56,7 @@ public class InteractionFeed implements InteractionFeedREST, FeedBean {
 
 	@Override
 	@CallCounted
+	@RolesAllowed({ USER, SELF })
 	public Response addEntry(Entry entry) throws MalformedURLException,
 			FilesystemAccessException, NoDirectoryEntryException,
 			NoUpdateException {
@@ -68,6 +73,7 @@ public class InteractionFeed implements InteractionFeedREST, FeedBean {
 
 	@Override
 	@CallCounted
+	@RolesAllowed({ USER, SELF })
 	public Entry getEntry(String id) throws FilesystemAccessException,
 			NoDirectoryEntryException {
 		return interactionFeed.getRunFeedEntry(run, id);
@@ -75,6 +81,7 @@ public class InteractionFeed implements InteractionFeedREST, FeedBean {
 
 	@Override
 	@CallCounted
+	@RolesAllowed({ USER, SELF })
 	public String deleteEntry(String id) throws FilesystemAccessException,
 			NoDirectoryEntryException, NoUpdateException {
 		interactionFeed.removeRunFeedEntry(run, id);
