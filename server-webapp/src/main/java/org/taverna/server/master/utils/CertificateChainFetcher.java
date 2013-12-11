@@ -69,6 +69,11 @@ public class CertificateChainFetcher {
 		this.timeout = timeout;
 	}
 
+	public void setSecure(boolean secure) {
+		this.secure = secure;
+	}
+
+	private boolean secure = true;
 	private String protocol = "TLS";
 	private String keystoreType = KeyStore.getDefaultType();
 	private String algorithm = TrustManagerFactory.getDefaultAlgorithm();
@@ -158,6 +163,8 @@ public class CertificateChainFetcher {
 	 */
 	public List<X509Certificate> getTrustsForURI(URI uri) throws IOException,
 			GeneralSecurityException {
+		if (!secure)
+			return null;
 		synchronized (this) {
 			if (!cache.containsKey(uri)) {
 				X509Certificate[] chain = getCertificateChainForService(

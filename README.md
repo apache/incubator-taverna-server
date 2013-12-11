@@ -12,7 +12,7 @@ security. *Do not mix up installations between the two types.*
 You will need:
 
 * **Unix** (e.g., Linux, OSX). Running Linux inside a virtual machine
-  works.
+  works. Running directly on Windows is not supported.
 
 * **Java 7** (or later) installed. See the Java requirements on the
   [Taverna website](http://www.taverna.org.uk/download/workbench/system-requirements/).

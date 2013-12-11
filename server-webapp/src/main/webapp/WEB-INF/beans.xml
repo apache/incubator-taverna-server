@@ -280,7 +280,9 @@
 		<!-- <property name="length" value="8" /> -->
 	</bean>
 
-	<bean id="certificateChainFetcher" class="org.taverna.server.master.utils.CertificateChainFetcher"/>
+	<bean id="certificateChainFetcher" class="org.taverna.server.master.utils.CertificateChainFetcher">
+		<property name="secure" value="${fetchCertificateChain}" />
+	</bean>
 
 	<bean id="localworker.state" class="org.taverna.server.master.localworker.LocalWorkerState"
 		scope="singleton" lazy-init="false">
@@ -329,7 +331,7 @@
 			to the executeworkflow.sh in either the Taverna 2 Workbench distribution 
 			or the Taverna 2 Command Line distribution.</description> </property> -->
 		<property name="self" ref="localworker.state" />
-		<property name="defaultExecuteWorkflowScript" value="${executeWorkflowScript}" />
+		<property name="defaultExecuteWorkflowScript" value="${executeWorkflowScript:NONE}" />
 	</bean>
 
 	<bean id="worker.policy" class="org.taverna.server.master.worker.PolicyImpl">

@@ -127,6 +127,8 @@ public class LocalWorkerState extends JDOSupport<PersistedState> implements
 
 	URI[] permittedWorkflows;
 	private String registryJar;
+	private static final String DEFAULT_REGISTRY_JAR = LocalWorkerState.class
+			.getClassLoader().getResource(REGISTRY_JAR).getFile();
 
 	@Override
 	public void setDefaultLifetime(int defaultLifetime) {
@@ -210,7 +212,7 @@ public class LocalWorkerState extends JDOSupport<PersistedState> implements
 	 *            Full path to the script to use.
 	 */
 	public void setDefaultExecuteWorkflowScript(String defaultScript) {
-		if (defaultScript.startsWith("${")) {
+		if (defaultScript.startsWith("${") || defaultScript.equals("NONE")) {
 			this.defaultExecuteWorkflowScript = guessWorkflowScript();
 			return;
 		}
@@ -337,7 +339,7 @@ public class LocalWorkerState extends JDOSupport<PersistedState> implements
 
 	@Override
 	public String getRegistryJar() {
-		return registryJar == null ? REGISTRY_JAR : registryJar;
+		return registryJar == null ? DEFAULT_REGISTRY_JAR : registryJar;
 	}
 
 	@Override

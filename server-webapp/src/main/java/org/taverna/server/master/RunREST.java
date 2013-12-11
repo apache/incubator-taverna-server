@@ -13,12 +13,15 @@ import static javax.ws.rs.core.Response.status;
 import static org.joda.time.format.ISODateTimeFormat.dateTime;
 import static org.joda.time.format.ISODateTimeFormat.dateTimeParser;
 import static org.taverna.server.master.TavernaServer.log;
+import static org.taverna.server.master.common.Roles.SELF;
+import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.common.Status.Initialized;
 import static org.taverna.server.master.common.Status.Operating;
 import static org.taverna.server.master.utils.RestUtils.opt;
 
 import java.util.Date;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBException;
@@ -88,6 +91,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public Response destroy() throws NoUpdateException {
 		try {
 			support.unregisterRun(runName, run);
@@ -99,12 +103,14 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public TavernaServerListenersREST getListeners() {
 		return makeListenersInterface().connect(run);
 	}
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public TavernaServerSecurityREST getSecurity() throws NotOwnerException {
 		TavernaSecurityContext secContext = run.getSecurityContext();
 		if (!support.getPrincipal().equals(secContext.getOwner()))
@@ -116,18 +122,21 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public String getExpiryTime() {
 		return dateTime().print(new DateTime(run.getExpiry()));
 	}
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public String getCreateTime() {
 		return dateTime().print(new DateTime(run.getCreationTimestamp()));
 	}
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public String getFinishTime() {
 		Date f = run.getFinishTimestamp();
 		return f == null ? "" : dateTime().print(new DateTime(f));
@@ -135,6 +144,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public String getStartTime() {
 		Date f = run.getStartTimestamp();
 		return f == null ? "" : dateTime().print(new DateTime(f));
@@ -142,24 +152,28 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public String getStatus() {
 		return run.getStatus().toString();
 	}
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public Workflow getWorkflow() {
 		return run.getWorkflow();
 	}
 
 	@Override
 	@CallCounted
+	@RolesAllowed({ USER, SELF })
 	public DirectoryREST getWorkingDirectory() {
 		return makeDirectoryInterface().connect(run);
 	}
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public String setExpiryTime(String expiry) throws NoUpdateException,
 			IllegalArgumentException {
 		DateTime wanted = dateTimeParser().parseDateTime(expiry.trim());
@@ -169,6 +183,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public Response setStatus(String status) throws NoUpdateException {
 		Status newStatus = Status.valueOf(status.trim());
 		support.permitUpdate(run);
@@ -186,12 +201,14 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public TavernaServerInputREST getInputs(UriInfo ui) {
 		return makeInputInterface().connect(run, ui);
 	}
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public String getOutputFile() {
 		String o = run.getOutputBaclavaFile();
 		return o == null ? "" : o;
@@ -199,6 +216,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public String setOutputFile(String filename) throws NoUpdateException,
 			FilesystemAccessException, BadStateChangeException {
 		support.permitUpdate(run);
@@ -211,6 +229,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public OutputDescription getOutputDescription(UriInfo ui)
 			throws BadStateChangeException, FilesystemAccessException,
 			NoDirectoryEntryException {
@@ -222,6 +241,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@RolesAllowed({ USER, SELF })
 	public InteractionFeedREST getInteractionFeed() {
 		return makeInteractionFeed().connect(run);
 	}
@@ -311,12 +331,14 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public String getName() {
 		return run.getName();
 	}
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public String setName(String name) throws NoUpdateException {
 		support.permitUpdate(run);
 		run.setName(name);
@@ -331,6 +353,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public String getStdout() throws NoListenerException {
 		return support.getProperty(run, "io", "stdout");
 	}
@@ -343,6 +366,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public String getStderr() throws NoListenerException {
 		return support.getProperty(run, "io", "stderr");
 	}
@@ -355,6 +379,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public Response getUsage() throws NoListenerException, JAXBException {
 		String ur = support.getProperty(run, "io", "usageRecord");
 		if (ur.isEmpty())
@@ -370,6 +395,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@RolesAllowed(USER)
 	public Response getLogContents() {
 		FileConcatenation fc = support.getLogs(run);
 		if (fc.isEmpty())

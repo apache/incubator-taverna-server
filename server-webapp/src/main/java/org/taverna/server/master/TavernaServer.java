@@ -18,6 +18,7 @@ import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.common.DirEntryReference.newInstance;
 import static org.taverna.server.master.common.Namespaces.SERVER_SOAP;
 import static org.taverna.server.master.common.Roles.ADMIN;
+import static org.taverna.server.master.common.Roles.SELF;
 import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.common.Status.Initialized;
 import static org.taverna.server.master.common.Uri.secure;
@@ -285,7 +286,7 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 
 	@Override
 	@CallCounted
-	@RolesAllowed(USER)
+	@RolesAllowed({ USER, SELF })
 	public TavernaServerRunREST getRunResource(final String runName, UriInfo ui)
 			throws UnknownRunException {
 		jaxrsUriInfo.set(new WeakReference<UriInfo>(ui));

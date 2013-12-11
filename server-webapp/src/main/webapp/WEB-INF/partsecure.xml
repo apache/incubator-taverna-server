@@ -20,9 +20,12 @@
 
 	<!-- This is all the same as the secure config *EXCEPT* for this override. -->
 	<context:property-placeholder order="0" ignore-unresolvable="true"
-		 properties-ref="factory.config.override" />
-	<util:properties id="factory.config.override">
+		 properties-ref="security.override.properties" />
+	<util:properties id="security.override.properties">
 		<prop key="backEndFactory">org.taverna.server.master.localworker.ForkRunFactory</prop>
+		<prop key="fetchCertificateChain">true</prop>
+		<prop key="suppressRewriteEngine">false</prop>
+		<prop key="requiredChannel">https</prop>
 	</util:properties>
 
 	<bean id="MBeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
@@ -30,43 +33,4 @@
 	</bean>
 	<context:mbean-export server="MBeanServer"
 		default-domain="${my.domain}" registration="ignoreExisting" />
-
-	<security:http realm="${http.realmName}" create-session="never"
-		use-expressions="true">
-		<security:http-basic />
-		<security:intercept-url pattern="/"
-			requires-channel="any" access="permitAll" />
-		<security:intercept-url pattern="/rest"
-			requires-channel="https" access="permitAll" />
-		<security:intercept-url pattern="/rest/"
-			requires-channel="https" access="permitAll" />
-		<security:intercept-url pattern="/rest/policy"
-			requires-channel="https" access="permitAll" />
-		<security:intercept-url pattern="/rest/policy/"
-			requires-channel="https" access="permitAll" />
-		<security:intercept-url pattern="/services/**"
-			requires-channel="https" access="permitAll" />
-		<security:intercept-url pattern="/soap/**"
-			requires-channel="https" method="GET" access="permitAll" />
-		<security:intercept-url pattern="/soap/**"
-			requires-channel="https" method="POST" access="hasRole('ROLE_tavernauser')" />
-		<security:intercept-url pattern="/admin"
-			requires-channel="https" access="hasRole('ROLE_tavernasuperuser')" />
-		<security:intercept-url pattern="/admin/**"
-			requires-channel="https" access="hasRole('ROLE_tavernasuperuser')" />
-		<security:intercept-url pattern="/rest/**"
-			requires-channel="https" access="hasAnyRole('ROLE_tavernauser','ROLE_tavernaworkflow')" />
-		<security:intercept-url pattern="/feed"
-			requires-channel="https" access="hasRole('ROLE_tavernauser')" />
-		<security:intercept-url pattern="/feed/**"
-			requires-channel="https" access="hasRole('ROLE_tavernauser')" />
-	</security:http>
-	<bean class="org.taverna.server.master.common.Uri.Rewriter"
-		autowire="byType" id="URI-Rewriter-Thunk">
-		<property name="rewriteTarget" value="${default.webapp}" />
-	</bean>
-	<security:authentication-manager>
-		<security:authentication-provider ref="workflowInternalAuthProvder" />
-		<security:authentication-provider ref="authProvider" />
-	</security:authentication-manager>
 </beans>

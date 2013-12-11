@@ -1,13 +1,13 @@
-Taverna 2.5.0 Server Release Notes
+Taverna 2.5.1 Server Release Notes
 ==================================
 
-This is the first release of Taverna 2.5 Server. We welcome feedback
+This is the first public release of Taverna 2.5 Server. We welcome feedback
 on both the things that are there and the things that are not.
 
 Key Features
 ------------
  * Runs arbitrary Taverna 2 workflows
-   * Based on Taverna 2.4 Workflow Engine
+   * Based on Taverna 2.5 Workflow Engine
    * Includes support for Components and Interaction processors
  * REST and SOAP interfaces
    * All functionality available through both interfaces
@@ -33,6 +33,7 @@ Key Features
      * Authenticated web interface, JMX
    * Usage monitoring/accounting
  * General quality improvements
+   * Improved speed
    * Improved robustness
      * State can persist over (limited) server restarts
    * Improved installation
@@ -61,3 +62,14 @@ TAVSERV-301 Interaction feed address is not a full URI
 TAVSERV-309 Failure in getRunOutputDescription SOAP operation
 TAVSERV-310	Support OPTIONS in main interface
 ---- 2.5.0 release ----
+TAVSERV-219 Some server errors are reported as 403 when 500 is more
+            appropriate
+TAVSERV-290 Support restricting what URLs to use workflows from
+TAVSERV-307 Users created through the admin web interface are not properly
+            set up in "insecure" mode
+TAVSERV-321 Interaction service internal bug
+TAVSERV-322 Atom feed updated timestamp being rounded down
+TAVSERV-325 Can't create run with long default name
+TAVSERV-326 Log concatenation
+TAVSERV-328 An OPTIONS request to any resource produces incorrect headers
+---- 2.5.1 release ----

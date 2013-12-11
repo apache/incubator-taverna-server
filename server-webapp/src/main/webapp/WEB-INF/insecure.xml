@@ -20,48 +20,13 @@
 	<import resource="webappBeans.xml" />
 
 	<context:property-placeholder order="0" ignore-unresolvable="true"
-		 properties-ref="factory.config.override" />
-	<util:properties id="factory.config.override">
+		 properties-ref="security.override.properties" />
+	<util:properties id="security.override.properties">
 		<prop key="backEndFactory">org.taverna.server.master.localworker.ForkRunFactory</prop>
+		<prop key="fetchCertificateChain">false</prop>
+		<prop key="suppressRewriteEngine">true</prop>
+		<prop key="requiredChannel">any</prop>
 	</util:properties>
 
-	<security:http realm="${http.realmName}" create-session="never"
-		use-expressions="true">
-		<security:http-basic />
-		<security:intercept-url pattern="/"
-			requires-channel="any" access="permitAll" />
-		<security:intercept-url pattern="/rest"
-			requires-channel="any" access="permitAll" />
-		<security:intercept-url pattern="/rest/"
-			requires-channel="any" access="permitAll" />
-		<security:intercept-url pattern="/rest/policy"
-			requires-channel="any" access="permitAll" />
-		<security:intercept-url pattern="/rest/policy/"
-			requires-channel="any" access="permitAll" />
-		<security:intercept-url pattern="/services/**"
-			requires-channel="any" access="permitAll" />
-		<security:intercept-url pattern="/soap/**"
-			requires-channel="any" method="GET" access="permitAll" />
-		<security:intercept-url pattern="/soap/**"
-			requires-channel="any" method="POST" access="hasRole('ROLE_tavernauser')" />
-		<security:intercept-url pattern="/admin"
-			requires-channel="any" access="hasRole('ROLE_tavernasuperuser')" />
-		<security:intercept-url pattern="/admin/**"
-			requires-channel="any" access="hasRole('ROLE_tavernasuperuser')" />
-		<security:intercept-url pattern="/rest/**"
-			requires-channel="any" access="hasAnyRole('ROLE_tavernauser','ROLE_tavernaworkflow')" />
-		<security:intercept-url pattern="/feed"
-			requires-channel="any" access="hasRole('ROLE_tavernauser')" />
-		<security:intercept-url pattern="/feed/**"
-			requires-channel="any" access="hasRole('ROLE_tavernauser')" />
-	</security:http>
-	<bean class="org.taverna.server.master.common.Uri.Rewriter"
-		autowire="byType" id="URI-Rewriter-Thunk">
-		<property name="suppressSecurity" value="true" />
-		<property name="rewriteTarget" value="${default.webapp}" />
-	</bean>
-	<security:authentication-manager>
-		<security:authentication-provider ref="workflowInternalAuthProvder" />
-		<security:authentication-provider ref="authProvider" />
-	</security:authentication-manager>
+	<!-- No JMX support; assume too unsafe. -->
 </beans>

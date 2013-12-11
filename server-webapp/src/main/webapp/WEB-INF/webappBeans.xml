@@ -144,10 +144,57 @@
 
 	<bean id="root_facade" class="org.taverna.server.master.facade.Facade">
 		<property name="file" value="/welcome.html" />
-		<property name="pattern" value="SERVICE_URI/" />
+		<property name="contextualizer" ref="contextualizer" />
 	</bean>
+
+	<bean class="org.taverna.server.master.common.Uri.Rewriter"
+		autowire="byType" id="URI-Rewriter-Thunk">
+		<property name="suppressSecurity" value="${suppressRewriteEngine}" />
+		<property name="rewriteTarget" value="${default.webapp}" />
+	</bean>
+	<security:authentication-manager>
+		<security:authentication-provider ref="workflowInternalAuthProvder" />
+		<security:authentication-provider ref="authProvider" />
+	</security:authentication-manager>
 
 	<aop:aspectj-autoproxy proxy-target-class="true" />
 	<security:global-method-security
 		jsr250-annotations="enabled" />
+
+	<security:http realm="${http.realmName}" create-session="never"
+		use-expressions="true">
+		<security:http-basic />
+		<security:intercept-url pattern="/"
+			requires-channel="any" access="permitAll" />
+		<security:intercept-url pattern="/rest"
+			requires-channel="${requiredChannel}" access="permitAll" />
+		<security:intercept-url pattern="/rest/"
+			requires-channel="${requiredChannel}" access="permitAll" />
+		<security:intercept-url pattern="/rest/policy"
+			requires-channel="${requiredChannel}" access="permitAll" />
+		<security:intercept-url pattern="/rest/policy/"
+			requires-channel="${requiredChannel}" access="permitAll" />
+		<security:intercept-url pattern="/services/**"
+			requires-channel="${requiredChannel}" access="permitAll" />
+		<security:intercept-url pattern="/soap/**" method="GET"
+			requires-channel="${requiredChannel}" access="permitAll" />
+		<security:intercept-url pattern="/soap/**" method="POST"
+			requires-channel="${requiredChannel}"
+			access="hasRole('ROLE_tavernauser')" />
+		<security:intercept-url pattern="/admin"
+			requires-channel="${requiredChannel}"
+			access="hasRole('ROLE_tavernasuperuser')" />
+		<security:intercept-url pattern="/admin/**"
+			requires-channel="${requiredChannel}"
+			access="hasRole('ROLE_tavernasuperuser')" />
+		<security:intercept-url pattern="/rest/**"
+			requires-channel="${requiredChannel}"
+			access="hasAnyRole('ROLE_tavernauser','ROLE_tavernaworkflow')" />
+		<security:intercept-url pattern="/feed"
+			requires-channel="${requiredChannel}"
+			access="hasRole('ROLE_tavernauser')" />
+		<security:intercept-url pattern="/feed/**"
+			requires-channel="${requiredChannel}"
+			access="hasRole('ROLE_tavernauser')" />
+	</security:http>
 </beans>
