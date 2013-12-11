@@ -47,6 +47,7 @@ import org.taverna.server.master.rest.TavernaServerInputREST;
 import org.taverna.server.master.rest.TavernaServerListenersREST;
 import org.taverna.server.master.rest.TavernaServerRunREST;
 import org.taverna.server.master.rest.TavernaServerSecurityREST;
+import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 import org.taverna.server.port_description.OutputDescription;
 
@@ -85,12 +86,14 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	public RunDescription getDescription(UriInfo ui) {
 		return new RunDescription(run, ui);
 	}
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public Response destroy() throws NoUpdateException {
 		try {
@@ -103,6 +106,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public TavernaServerListenersREST getListeners() {
 		return makeListenersInterface().connect(run);
@@ -110,6 +114,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public TavernaServerSecurityREST getSecurity() throws NotOwnerException {
 		TavernaSecurityContext secContext = run.getSecurityContext();
@@ -122,6 +127,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public String getExpiryTime() {
 		return dateTime().print(new DateTime(run.getExpiry()));
@@ -129,6 +135,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public String getCreateTime() {
 		return dateTime().print(new DateTime(run.getCreationTimestamp()));
@@ -136,6 +143,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public String getFinishTime() {
 		Date f = run.getFinishTimestamp();
@@ -144,6 +152,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public String getStartTime() {
 		Date f = run.getStartTimestamp();
@@ -152,6 +161,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public String getStatus() {
 		return run.getStatus().toString();
@@ -159,6 +169,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public Workflow getWorkflow() {
 		return run.getWorkflow();
@@ -166,6 +177,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed({ USER, SELF })
 	public DirectoryREST getWorkingDirectory() {
 		return makeDirectoryInterface().connect(run);
@@ -173,6 +185,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public String setExpiryTime(String expiry) throws NoUpdateException,
 			IllegalArgumentException {
@@ -183,6 +196,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public Response setStatus(String status) throws NoUpdateException {
 		Status newStatus = Status.valueOf(status.trim());
@@ -201,6 +215,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public TavernaServerInputREST getInputs(UriInfo ui) {
 		return makeInputInterface().connect(run, ui);
@@ -208,6 +223,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public String getOutputFile() {
 		String o = run.getOutputBaclavaFile();
@@ -216,6 +232,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public String setOutputFile(String filename) throws NoUpdateException,
 			FilesystemAccessException, BadStateChangeException {
@@ -229,6 +246,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public OutputDescription getOutputDescription(UriInfo ui)
 			throws BadStateChangeException, FilesystemAccessException,
@@ -241,6 +259,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed({ USER, SELF })
 	public InteractionFeedREST getInteractionFeed() {
 		return makeInteractionFeed().connect(run);
@@ -248,6 +267,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public String getName() {
 		return run.getName();
@@ -255,6 +275,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public String setName(String name) throws NoUpdateException {
 		support.permitUpdate(run);
@@ -264,6 +285,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public String getStdout() throws NoListenerException {
 		return support.getProperty(run, "io", "stdout");
@@ -271,6 +293,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public String getStderr() throws NoListenerException {
 		return support.getProperty(run, "io", "stderr");
@@ -278,6 +301,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public Response getUsage() throws NoListenerException, JAXBException {
 		String ur = support.getProperty(run, "io", "usageRecord");
@@ -288,6 +312,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public Response getLogContents() {
 		FileConcatenation fc = support.getLogs(run);
@@ -298,6 +323,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public Response getProvenance() {
 		FileConcatenation fc = support.getProv(run);

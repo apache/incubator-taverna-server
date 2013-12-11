@@ -35,6 +35,7 @@ import org.taverna.server.master.rest.TavernaServerInputREST;
 import org.taverna.server.master.rest.TavernaServerInputREST.InDesc.AbstractContents;
 import org.taverna.server.master.rest.TavernaServerInputREST.InDesc.Reference;
 import org.taverna.server.master.utils.FilenameUtils;
+import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 import org.taverna.server.port_description.InputDescription;
 
@@ -76,18 +77,21 @@ class InputREST implements TavernaServerInputREST, InputBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	public InputsDescriptor get() {
 		return new InputsDescriptor(ui, run);
 	}
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	public InputDescription getExpected() {
 		return cdBuilder.makeInputDescriptor(run, ui);
 	}
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	public String getBaclavaFile() {
 		String i = run.getInputBaclavaFile();
 		return i == null ? "" : i;
@@ -95,6 +99,7 @@ class InputREST implements TavernaServerInputREST, InputBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	public InDesc getInput(String name) throws BadInputPortNameException {
 		Input i = support.getInput(run, name);
 		if (i == null)
@@ -104,6 +109,7 @@ class InputREST implements TavernaServerInputREST, InputBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	public String setBaclavaFile(String filename) throws NoUpdateException,
 			BadStateChangeException, FilesystemAccessException {
 		support.permitUpdate(run);
@@ -114,6 +120,7 @@ class InputREST implements TavernaServerInputREST, InputBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	public InDesc setInput(String name, InDesc inputDescriptor)
 			throws NoUpdateException, BadStateChangeException,
 			FilesystemAccessException, BadInputPortNameException,

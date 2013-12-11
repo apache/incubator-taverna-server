@@ -21,6 +21,7 @@ import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.rest.TavernaServerListenersREST;
 import org.taverna.server.master.rest.TavernaServerListenersREST.ListenerDescription;
 import org.taverna.server.master.rest.TavernaServerListenersREST.TavernaServerListenerREST;
+import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 /**
@@ -42,18 +43,21 @@ abstract class SingleListenerREST implements TavernaServerListenerREST,
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	public String getConfiguration() {
 		return listen.getConfiguration();
 	}
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	public ListenerDescription getDescription(UriInfo ui) {
 		return new ListenerDescription(listen, secure(ui));
 	}
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	public TavernaServerListenersREST.Properties getProperties(UriInfo ui) {
 		return new TavernaServerListenersREST.Properties(secure(ui).path(
 				"{prop}"), listen.listProperties());
@@ -61,6 +65,7 @@ abstract class SingleListenerREST implements TavernaServerListenerREST,
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	public TavernaServerListenersREST.Property getProperty(
 			final String propertyName) throws NoListenerException {
 		List<String> p = asList(listen.listProperties());

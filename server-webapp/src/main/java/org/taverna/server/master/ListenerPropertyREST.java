@@ -16,6 +16,7 @@ import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.rest.TavernaServerListenersREST;
+import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 /**
@@ -46,6 +47,7 @@ class ListenerPropertyREST implements TavernaServerListenersREST.Property,
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	public String getValue() {
 		try {
 			return listen.getProperty(propertyName);
@@ -58,6 +60,7 @@ class ListenerPropertyREST implements TavernaServerListenersREST.Property,
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	public String setValue(String value) throws NoUpdateException,
 			NoListenerException {
 		support.permitUpdate(run);

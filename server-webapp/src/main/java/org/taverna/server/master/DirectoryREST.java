@@ -52,6 +52,7 @@ import org.taverna.server.master.rest.MakeOrUpdateDirEntry;
 import org.taverna.server.master.rest.MakeOrUpdateDirEntry.MakeDirectory;
 import org.taverna.server.master.rest.TavernaServerDirectoryREST;
 import org.taverna.server.master.utils.FilenameUtils;
+import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 /**
@@ -83,6 +84,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed({ USER, SELF })
 	public Response destroyDirectoryEntry(List<PathSegment> path)
 			throws NoUpdateException, FilesystemAccessException,
@@ -94,6 +96,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed({ USER, SELF })
 	public DirectoryContents getDescription(UriInfo ui)
 			throws FilesystemAccessException {
@@ -195,6 +198,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed({ USER, SELF })
 	public Response getDirectoryOrFileContents(List<PathSegment> path,
 			UriInfo ui, HttpHeaders headers) throws FilesystemAccessException,
@@ -211,10 +215,9 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 			// Only for files...
 			result = de;
 			List<String> range = headers.getRequestHeader("Range");
-			if (range != null && range.size() == 1) {
+			if (range != null && range.size() == 1)
 				return new FileSegment((File) de, range.get(0))
 						.toResponse(wanted);
-			}
 		} else {
 			// Only for directories...
 			Directory d = (Directory) de;
@@ -231,6 +234,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed({ USER, SELF })
 	public Response makeDirectoryOrUpdateFile(List<PathSegment> parent,
 			MakeOrUpdateDirEntry op, UriInfo ui) throws NoUpdateException,
@@ -314,6 +318,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed({ USER, SELF })
 	public Response setFileContents(List<PathSegment> filePath,
 			InputStream contents, UriInfo ui) throws NoDirectoryEntryException,
@@ -329,6 +334,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed(USER)
 	public Response setFileContentsFromURL(List<PathSegment> filePath,
 			List<URI> referenceList, UriInfo ui)

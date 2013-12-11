@@ -25,6 +25,7 @@ import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interaction.InteractionFeedSupport;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.rest.InteractionFeedREST;
+import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 /**
@@ -48,6 +49,7 @@ public class InteractionFeed implements InteractionFeedREST, FeedBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed({ USER, SELF })
 	public Feed getFeed() throws FilesystemAccessException,
 			NoDirectoryEntryException {
@@ -56,6 +58,7 @@ public class InteractionFeed implements InteractionFeedREST, FeedBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed({ USER, SELF })
 	public Response addEntry(Entry entry) throws MalformedURLException,
 			FilesystemAccessException, NoDirectoryEntryException,
@@ -73,6 +76,7 @@ public class InteractionFeed implements InteractionFeedREST, FeedBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed({ USER, SELF })
 	public Entry getEntry(String id) throws FilesystemAccessException,
 			NoDirectoryEntryException {
@@ -81,6 +85,7 @@ public class InteractionFeed implements InteractionFeedREST, FeedBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	@RolesAllowed({ USER, SELF })
 	public String deleteEntry(String id) throws FilesystemAccessException,
 			NoDirectoryEntryException, NoUpdateException {
