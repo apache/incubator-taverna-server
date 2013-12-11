@@ -24,4 +24,5 @@ interface ContentTypes {
 	static final String JSON = APPLICATION_JSON;
 	static final String BYTES = APPLICATION_OCTET_STREAM;
 	static final String ATOM = APPLICATION_ATOM_XML;
+	static final String ROBUNDLE = "application/vnd.wf4ever.robundle+zip";
 }

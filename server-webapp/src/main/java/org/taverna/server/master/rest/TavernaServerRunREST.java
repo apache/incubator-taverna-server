@@ -10,6 +10,7 @@ import static org.joda.time.format.ISODateTimeFormat.basicDateTime;
 import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.interaction.InteractionFeedSupport.FEED_URL_DIR;
 import static org.taverna.server.master.rest.ContentTypes.JSON;
+import static org.taverna.server.master.rest.ContentTypes.ROBUNDLE;
 import static org.taverna.server.master.rest.ContentTypes.TEXT;
 import static org.taverna.server.master.rest.ContentTypes.XML;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.DIR;
@@ -509,7 +510,7 @@ public interface TavernaServerRunREST {
 	@GET
 	@Path(PROV)
 	@Description("Return the log for the workflow run.")
-	@Produces("application/vnd.wf4ever.robundle+zip")
+	@Produces(ROBUNDLE)
 	@NonNull
 	Response getProvenance();
 

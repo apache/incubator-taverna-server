@@ -651,6 +651,28 @@ public interface TavernaServerSOAP {
 			throws UnknownRunException;
 
 	/**
+	 * Returns the provenance bundle of a run. The run must be <i>finished</i>
+	 * for this to be guaranteed to be present, and must <i>not</i> have had its
+	 * output generated as Baclava.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @return The contents of the bundle.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 * @throws FilesystemAccessException
+	 *             If there was a problem reading the bundle.
+	 * @throws NoDirectoryEntryException
+	 *             If the bundle doesn't exist currently.
+	 */
+	@WebResult(name = "Provenance")
+	@WSDLDocumentation("Gets the provenance bundle of a finished run.")
+	FileContents getRunProvenance(@WebParam(name = "runName") String runName)
+			throws UnknownRunException, FilesystemAccessException,
+			NoDirectoryEntryException;
+
+	/**
 	 * Get the owner of the run.
 	 * 
 	 * @param runName

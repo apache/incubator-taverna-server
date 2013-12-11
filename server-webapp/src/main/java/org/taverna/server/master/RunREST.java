@@ -246,6 +246,66 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 		return makeInteractionFeed().connect(run);
 	}
 
+	@Override
+	@CallCounted
+	@RolesAllowed(USER)
+	public String getName() {
+		return run.getName();
+	}
+
+	@Override
+	@CallCounted
+	@RolesAllowed(USER)
+	public String setName(String name) throws NoUpdateException {
+		support.permitUpdate(run);
+		run.setName(name);
+		return run.getName();
+	}
+
+	@Override
+	@CallCounted
+	@RolesAllowed(USER)
+	public String getStdout() throws NoListenerException {
+		return support.getProperty(run, "io", "stdout");
+	}
+
+	@Override
+	@CallCounted
+	@RolesAllowed(USER)
+	public String getStderr() throws NoListenerException {
+		return support.getProperty(run, "io", "stderr");
+	}
+
+	@Override
+	@CallCounted
+	@RolesAllowed(USER)
+	public Response getUsage() throws NoListenerException, JAXBException {
+		String ur = support.getProperty(run, "io", "usageRecord");
+		if (ur.isEmpty())
+			return noContent().build();
+		return ok(JobUsageRecord.unmarshal(ur), APPLICATION_XML).build();
+	}
+
+	@Override
+	@CallCounted
+	@RolesAllowed(USER)
+	public Response getLogContents() {
+		FileConcatenation fc = support.getLogs(run);
+		if (fc.isEmpty())
+			return Response.noContent().build();
+		return Response.ok(fc, TEXT_PLAIN).build();
+	}
+
+	@Override
+	@CallCounted
+	@RolesAllowed(USER)
+	public Response getProvenance() {
+		FileConcatenation fc = support.getProv(run);
+		if (fc.isEmpty())
+			return Response.status(404).entity("no provenance currently available").build();
+		return Response.ok(fc, "application/vnd.wf4ever.robundle+zip").build();
+	}
+
 	/**
 	 * Construct a RESTful interface to a run's filestore.
 	 * 
@@ -331,31 +391,8 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
-	@RolesAllowed(USER)
-	public String getName() {
-		return run.getName();
-	}
-
-	@Override
-	@CallCounted
-	@RolesAllowed(USER)
-	public String setName(String name) throws NoUpdateException {
-		support.permitUpdate(run);
-		run.setName(name);
-		return run.getName();
-	}
-
-	@Override
-	@CallCounted
 	public Response nameOptions() {
 		return opt("PUT");
-	}
-
-	@Override
-	@CallCounted
-	@RolesAllowed(USER)
-	public String getStdout() throws NoListenerException {
-		return support.getProperty(run, "io", "stdout");
 	}
 
 	@Override
@@ -366,25 +403,8 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
-	@RolesAllowed(USER)
-	public String getStderr() throws NoListenerException {
-		return support.getProperty(run, "io", "stderr");
-	}
-
-	@Override
-	@CallCounted
 	public Response stderrOptions() {
 		return opt();
-	}
-
-	@Override
-	@CallCounted
-	@RolesAllowed(USER)
-	public Response getUsage() throws NoListenerException, JAXBException {
-		String ur = support.getProperty(run, "io", "usageRecord");
-		if (ur.isEmpty())
-			return noContent().build();
-		return ok(JobUsageRecord.unmarshal(ur), APPLICATION_XML).build();
 	}
 
 	@Override
@@ -395,27 +415,8 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
-	@RolesAllowed(USER)
-	public Response getLogContents() {
-		FileConcatenation fc = support.getLogs(run);
-		if (fc.isEmpty())
-			return Response.noContent().build();
-		return Response.ok(fc, TEXT_PLAIN).build();
-	}
-
-	@Override
-	@CallCounted
 	public Response logOptions() {
 		return opt();
-	}
-
-	@Override
-	@CallCounted
-	public Response getProvenance() {
-		FileConcatenation fc = support.getProv(run);
-		if (fc.isEmpty())
-			return Response.status(404).entity("no provenance currently available").build();
-		return Response.ok(fc, "application/vnd.wf4ever.robundle+zip").build();
 	}
 
 	@Override

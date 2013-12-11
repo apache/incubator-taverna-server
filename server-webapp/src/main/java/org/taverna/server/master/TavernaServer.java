@@ -15,6 +15,7 @@ import static javax.xml.ws.handler.MessageContext.HTTP_REQUEST_HEADERS;
 import static javax.xml.ws.handler.MessageContext.PATH_INFO;
 import static org.apache.commons.io.IOUtils.toByteArray;
 import static org.apache.commons.logging.LogFactory.getLog;
+import static org.taverna.server.master.TavernaServerSupport.PROV_BUNDLE;
 import static org.taverna.server.master.common.DirEntryReference.newInstance;
 import static org.taverna.server.master.common.Namespaces.SERVER_SOAP;
 import static org.taverna.server.master.common.Roles.ADMIN;
@@ -567,6 +568,19 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 			log.warn("unexpected encoding problem", e);
 			return "";
 		}
+	}
+
+	@Override
+	@CallCounted
+	@RolesAllowed(USER)
+	public FileContents getRunProvenance(String runName)
+			throws UnknownRunException, FilesystemAccessException,
+			NoDirectoryEntryException {
+		File f = fileUtils.getFile(support.getRun(runName), PROV_BUNDLE);
+		FileContents fc = new FileContents();
+		// We *know* the content type, by definition
+		fc.setFile(f, "application/vnd.wf4ever.robundle+zip");
+		return fc;
 	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
