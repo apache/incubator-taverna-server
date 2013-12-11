@@ -23,7 +23,6 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.security.web.PortMapper;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -148,7 +147,6 @@ public class Uri {
 		}
 
 		@Autowired
-		@Required
 		public void setPortMapper(PortMapper portMapper) {
 			this.portMapper = portMapper;
 		}

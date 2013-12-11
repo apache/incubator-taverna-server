@@ -67,10 +67,7 @@ public class Facade {
 	@Path("{dummy:.*}")
 	@Produces("text/html")
 	public Response get(@Context UriInfo ui) {
-		String url = ui.getBaseUri().toString().replace("%2D", "-");
-		if (!url.endsWith("/"))
-			url += "/";
-		return ok(contextualizer.contextualize(welcome), TEXT_HTML_TYPE)
+		return ok(contextualizer.contextualize(ui, welcome), TEXT_HTML_TYPE)
 				.build();
 	}
 }
