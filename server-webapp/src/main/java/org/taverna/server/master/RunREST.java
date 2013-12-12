@@ -325,7 +325,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	@CallCounted
 	@PerfLogged
 	@RolesAllowed(USER)
-	public Response getProvenance() {
+	public Response getRunBundle() {
 		FileConcatenation fc = support.getProv(run);
 		if (fc.isEmpty())
 			return Response.status(404).entity("no provenance currently available").build();
@@ -447,7 +447,7 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
-	public Response provOptions() {
+	public Response runBundleOptions() {
 		return opt();
 	}
 }

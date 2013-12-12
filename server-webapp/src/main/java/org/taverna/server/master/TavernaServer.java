@@ -603,7 +603,7 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 	@CallCounted
 	@PerfLogged
 	@RolesAllowed(USER)
-	public FileContents getRunProvenance(String runName)
+	public FileContents getRunBundle(String runName)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException {
 		File f = fileUtils.getFile(support.getRun(runName), PROV_BUNDLE);

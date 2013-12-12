@@ -18,7 +18,7 @@ import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.IN;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.LISTEN;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.LOG;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.OUT;
-import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.PROV;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.RUNBUNDLE;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.SEC;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.STATUS;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.STDERR;
@@ -51,6 +51,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
@@ -508,17 +509,17 @@ public interface TavernaServerRunREST {
 	 *         yet started.
 	 */
 	@GET
-	@Path(PROV)
-	@Description("Return the log for the workflow run.")
+	@Path(RUNBUNDLE)
+	@Description("Return the run bundle for the workflow run.")
 	@Produces(ROBUNDLE)
 	@NonNull
-	Response getProvenance();
+	Response getRunBundle();
 
 	/** Get an outline of the operations supported. */
 	@OPTIONS
-	@Path(PROV)
-	@Description("Return the log for the workflow run.")
-	Response provOptions();
+	@Path(RUNBUNDLE)
+	@Description("Return the run bundle for the workflow run.")
+	Response runBundleOptions();
 
 	/**
 	 * Factored out path names used in the {@link TavernaServerRunREST}
@@ -544,7 +545,7 @@ public interface TavernaServerRunREST {
 		public static final String STDERR = "stderr";
 		public static final String USAGE = "usage";
 		public static final String LOG = "log";
-		public static final String PROV = "provenance";
+		public static final String RUNBUNDLE = "run-bundle";
 	}
 
 	/**
@@ -593,8 +594,9 @@ public interface TavernaServerRunREST {
 		public Uri usage;
 		/** The log from the run. */
 		public Uri log;
-		/** The provenance from the run. */
-		public Uri provenance;
+		/** The bundle describing the run. */
+		@XmlElement(name = "run-bundle")
+		public Uri runBundle;
 
 		/**
 		 * How to describe a run's expiry.
@@ -714,7 +716,7 @@ public interface TavernaServerRunREST {
 			stderr = new Uri(ui, STDERR);
 			usage = new Uri(ui, USAGE);
 			log = new Uri(ui, LOG);
-			provenance = new Uri(ui, PROV);
+			runBundle = new Uri(ui, RUNBUNDLE);
 		}
 	}
 }
