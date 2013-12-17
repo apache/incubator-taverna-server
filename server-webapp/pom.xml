@@ -170,7 +170,7 @@
 		<dependency>
 			<groupId>org.datanucleus</groupId>
 			<artifactId>datanucleus-core</artifactId>
-			<version>[3.2.0, 3.2.99)</version>
+			<version>3.2.10</version>
 		</dependency>
 		<dependency>
 			<groupId>org.datanucleus</groupId>
@@ -428,7 +428,7 @@
 						<dependency>
 							<groupId>org.datanucleus</groupId>
 							<artifactId>datanucleus-core</artifactId>
-							<version>3.2.9</version>
+							<version>3.2.10</version>
 						</dependency>
 						<dependency>
 							<groupId>org.datanucleus</groupId>
@@ -757,6 +757,32 @@
 								</resource>
 							</resources>
 							<overwrite>true</overwrite>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.2.1</version>
+				<executions>
+					<execution>
+						<id>improve-registry-coverage</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>/bin/sh</executable>
+							<workingDirectory>${util.dir}/taverna-commandline-${version.commandline}</workingDirectory>
+							<environmentVariables>
+								<RAVEN_APPHOME>${util.dir}/taverna-commandline-${version.commandline}</RAVEN_APPHOME>
+							</environmentVariables>
+							<arguments>
+								<argument>./executeworkflow.sh</argument>
+								<argument>-help</argument>
+							</arguments>
+							<outputFile>/dev/null</outputFile>
 						</configuration>
 					</execution>
 				</executions>
