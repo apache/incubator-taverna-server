@@ -76,3 +76,10 @@ TAVSERV-325 Can't create run with long default name
 TAVSERV-326 Log concatenation
 TAVSERV-328 An OPTIONS request to any resource produces incorrect headers
 ---- 2.5.1 release ----
+TAVSERV-42 Provenance: Access and Lifetime
+TAVSERV-44 Managing Workflow Instances
+TAVSERV-69 Provenance: core
+TAVSERV-297 Running instance of Taverna Server 2.4.1 hangs after a while;
+            submitting a new workflow using REST API results in "HTTP 403
+            Permission denied"
+---- 2.5.2 release ----
