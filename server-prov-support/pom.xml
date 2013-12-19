@@ -44,7 +44,7 @@
 				<executions>
 					<execution>
 						<id>generate-pom-checksums</id>
-						<phase>prepare-package</phase>
+						<phase>broken-prepare-package</phase>
 						<goals>
 							<goal>files</goal>
 						</goals>
