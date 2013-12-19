@@ -1,7 +1,7 @@
 Taverna 2.5.1 Server Release Notes
 ==================================
 
-This is the first public release of Taverna 2.5 Server. We welcome feedback
+This is the second public release of Taverna 2.5 Server. We welcome feedback
 on both the things that are there and the things that are not.
 
 Key Features
@@ -18,6 +18,9 @@ Key Features
  * Tidies up when workflow runs expire
    * Expiry time fully configurable
    * Can force immediate deletion of a workflow run
+ * Generates Run Bundles
+   * Contains formal description of the workflow run, designed for
+     sharing, including the inputs, outputs and provenance trace
  * Security
    * Encrypted communication supported
    * Multiple users

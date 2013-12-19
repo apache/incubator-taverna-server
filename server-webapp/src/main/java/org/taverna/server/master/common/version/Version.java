@@ -27,7 +27,7 @@ public interface Version {
 interface Constants {
 	static final String MAJOR = "2";
 	static final String MINOR = "5";
-	static final String PATCH = "1";
+	static final String PATCH = "2";
 
 	static final char alphaChar = '\u03b1';
 	static final char betaChar = '\u03b2';

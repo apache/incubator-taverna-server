@@ -60,7 +60,7 @@ import org.taverna.server.master.soap.TavernaServerSOAP;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
- * The REST service interface to Taverna 2.5.1 Server.
+ * The REST service interface to Taverna 2.5.2 Server.
  * 
  * @author Donal Fellows
  * @see TavernaServerSOAP
