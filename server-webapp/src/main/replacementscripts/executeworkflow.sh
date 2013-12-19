@@ -20,7 +20,7 @@ do
 	*) post="$post \"$arg\"" ;;
     esac
 done
-if test "xx" == "x${post}x"; then
+if test "xx" = "x${post}x"; then
     echo "Missing arguments! Bug in argument processing?" >&2
     exit 1
 fi
