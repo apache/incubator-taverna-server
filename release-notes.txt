@@ -1,4 +1,4 @@
-Taverna 2.5.1 Server Release Notes
+Taverna 2.5.2 Server Release Notes
 ==================================
 
 This is the second public release of Taverna 2.5 Server. We welcome feedback
