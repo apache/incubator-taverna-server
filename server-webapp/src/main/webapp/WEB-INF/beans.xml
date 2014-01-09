@@ -125,6 +125,7 @@
 		<property name="eventSource" ref="dispatch.atom" />
 		<property name="support" ref="webapp.support" />
 		<property name="feedLanguage" value="${atom.language}" />
+		<property name="abdera" ref="abdera" />
 	</bean>
 
 	<bean id="admin" class="org.taverna.server.master.admin.AdminBean">
@@ -473,10 +474,10 @@
 		<property name="uriBuilder" ref="webapp" />
 		<property name="utils" ref="fileUtils" />
 	</bean>
-	<bean class="org.taverna.server.master.interaction.FeedHandler" id="interactionFeedHandler">
+	<bean class="org.taverna.server.master.rest.handler.FeedHandler" id="atomFeedHandler">
 		<property name="abdera" ref="abdera" />
 	</bean>
-	<bean class="org.taverna.server.master.interaction.EntryHandler" id="interactionEntryHandler">
+	<bean class="org.taverna.server.master.rest.handler.EntryHandler" id="atomEntryHandler">
 		<property name="abdera" ref="abdera" />
 	</bean>
 

@@ -85,23 +85,6 @@
 	</bean>
 	<bean id="MessagingProvider.Permission" class="org.taverna.server.master.rest.handler.PermissionHandler">
 	</bean>
-	<bean id="MessagingProvider.Atom" class="org.apache.cxf.jaxrs.provider.atom.AtomPojoProvider">
-		<property name="atomWriters" ref="atomEntryBinding" />
-		<property name="collectionGetters" ref="atomFeedBinding" />
-	</bean>
-	<util:map id="atomEntryBinding">
-		<entry key="org.taverna.server.master.notification.atom.TerminationEvent">
-			<bean id="Atom.EntryWriter"
-				class="org.taverna.server.master.notification.atom.EntryWriter">
-				<property name="feed" ref="feed" />
-			</bean>
-
-		</entry>
-	</util:map>
-	<util:map id="atomFeedBinding">
-		<entry key="org.taverna.server.master.notification.atom.AtomFeed$Feed"
-			value="getEvents" />
-	</util:map>
 
 	<bean id="Provider.RuntimeExceptionRemapping" class="org.taverna.server.master.utils.RuntimeExceptionWrapper" />
 	<bean id="MessagingProvider.ZipStream" class="org.taverna.server.master.rest.handler.ZipStreamHandler" />

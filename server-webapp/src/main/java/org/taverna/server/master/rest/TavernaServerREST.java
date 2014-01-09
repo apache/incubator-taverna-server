@@ -38,11 +38,12 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.apache.abdera.model.Entry;
+import org.apache.abdera.model.Feed;
 import org.apache.cxf.jaxrs.model.wadl.Description;
 import org.taverna.server.master.common.Capability;
 import org.taverna.server.master.common.RunReference;
@@ -54,7 +55,6 @@ import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.notification.atom.AbstractEvent;
 import org.taverna.server.master.soap.TavernaServerSOAP;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -570,10 +570,10 @@ public interface TavernaServerREST {
 		 */
 		@GET
 		@Path("/")
-		@Produces({ XML, JSON, "application/atom+xml;type=feed" })
+		@Produces("application/atom+xml;type=feed")
 		@Description("Get an Atom feed for the user's events.")
 		@NonNull
-		Events getFeed();
+		Feed getFeed(@Context UriInfo ui);
 
 		/**
 		 * @param id
@@ -582,36 +582,9 @@ public interface TavernaServerREST {
 		 */
 		@GET
 		@Path("{id}")
-		@Produces({ XML, JSON, "application/atom+xml;type=entry" })
+		@Produces("application/atom+xml;type=entry")
 		@Description("Get a particular Atom event.")
 		@NonNull
-		AbstractEvent getEvent(@NonNull @PathParam("id") String id);
-	}
-
-	/**
-	 * A description of an collection of events.
-	 * 
-	 * @author Donal Fellows
-	 */
-	@XmlType(name = "Events")
-	public static abstract class Events extends VersionedElement {
-		/**
-		 * @return The owner of the events in question.
-		 */
-		@XmlAttribute
-		public abstract String getOwner();
-
-		/**
-		 * @return The actual list of events.
-		 */
-		@XmlElement
-		public abstract List<AbstractEvent> getEvents();
-
-		/**
-		 * @param id
-		 *            The identifier of a particular event.
-		 * @return The details about that event.
-		 */
-		public abstract AbstractEvent getEvent(String id);
+		Entry getEvent(@NonNull @PathParam("id") String id);
 	}
 }

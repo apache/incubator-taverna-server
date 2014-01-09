@@ -94,8 +94,8 @@
 			<ref bean="MessagingProvider.Permission" />
 			<ref bean="MessagingProvider.ZipStream"/>
 			<ref bean="jsonProvider" />
-			<ref bean="interactionEntryHandler" />
-			<ref bean="interactionFeedHandler" />
+			<ref bean="atomEntryHandler" />
+			<ref bean="atomFeedHandler" />
 		</jaxrs:providers>
 		<jaxrs:outInterceptors>
 			<ref bean="Interceptor.FlushThreadLocalCache" />
@@ -110,7 +110,8 @@
 			<entry key="org.apache.cxf.endpoint.private" value="true" />
 		</jaxrs:properties>
 		<jaxrs:providers>
-			<ref bean="MessagingProvider.Atom" />
+			<ref bean="atomEntryHandler" />
+			<ref bean="atomFeedHandler" />
 		</jaxrs:providers>
 	</jaxrs:server>
 

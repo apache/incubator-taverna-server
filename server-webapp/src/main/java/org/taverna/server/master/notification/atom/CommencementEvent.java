@@ -9,11 +9,8 @@ import java.net.URI;
 
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
 
+import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Entry;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
@@ -23,8 +20,6 @@ import org.taverna.server.master.utils.UsernamePrincipal;
  * @author Donal Fellows
  */
 @PersistenceCapable
-@XmlType(name = "CommencementEvent", propOrder = {})
-@XmlRootElement
 @SuppressWarnings("serial")
 public class CommencementEvent extends AbstractEvent {
 	/**
@@ -63,18 +58,22 @@ public class CommencementEvent extends AbstractEvent {
 		entry.setContent(message).setLanguage(language);
 	}
 
-	@XmlElement
 	public String getMessage() {
 		return message;
 	}
 
-	@XmlElement
 	public String getTitle() {
 		return title;
 	}
 
-	@XmlAttribute
 	public String getLink() {
 		return link;
+	}
+
+	@Override
+	public Entry getEntry(Abdera abdera, String language) {
+		Entry e = abdera.getFactory().newEntry();
+		write(e, language);
+		return e;
 	}
 }

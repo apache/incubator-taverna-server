@@ -16,11 +16,8 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.Queries;
 import javax.jdo.annotations.Query;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlType;
 
+import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.joda.time.DateTime;
@@ -36,8 +33,6 @@ import org.joda.time.DateTime;
 		@Query(name = "eventsForUser", language = "SQL", value = "SELECT id FROM ATOM.EVENTS WHERE owner = ? ORDER BY published DESC", resultClass = String.class),
 		@Query(name = "eventForUserAndId", language = "SQL", value = "SELECT id FROM ATOM.EVENTS WHERE owner = ? AND id = ?", resultClass = String.class),
 		@Query(name = "eventsFromBefore", language = "SQL", value = "SELECT id FROM ATOM.EVENTS where published < ?", resultClass = String.class) })
-@XmlType(name = "AbstractEvent", propOrder = {})
-@XmlSeeAlso(TerminationEvent.class)
 public abstract class AbstractEvent implements Serializable {
 	@Persistent(primaryKey = "true")
 	@Column(length = 48)
@@ -46,7 +41,6 @@ public abstract class AbstractEvent implements Serializable {
 	protected String owner;
 	@Persistent
 	@Index
-	@XmlAttribute
 	protected Date published;
 
 	/**
@@ -80,12 +74,10 @@ public abstract class AbstractEvent implements Serializable {
 		entry.setUpdated(published);
 	}
 
-	@XmlAttribute
 	public final String getId() {
 		return id;
 	}
 
-	@XmlTransient
 	public final String getOwner() {
 		return owner;
 	}
@@ -93,4 +85,6 @@ public abstract class AbstractEvent implements Serializable {
 	public final DateTime getPublished() {
 		return new DateTime(published);
 	}
+
+	public abstract Entry getEntry(Abdera abdera, String language);
 }

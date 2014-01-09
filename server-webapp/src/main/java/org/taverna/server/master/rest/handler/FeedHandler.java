@@ -1,4 +1,4 @@
-package org.taverna.server.master.interaction;
+package org.taverna.server.master.rest.handler;
 
 import static java.util.Collections.singletonMap;
 
