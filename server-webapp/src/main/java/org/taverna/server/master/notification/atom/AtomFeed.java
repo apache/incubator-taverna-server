@@ -48,10 +48,12 @@ public class AtomFeed implements EventFeed, UriBuilderFactory,
 	private Abdera abdera;
 	private String feedLanguage = "en";
 
+	@Required
 	public void setEventSource(EventDAO eventSource) {
 		this.eventSource = eventSource;
 	}
 
+	@Required
 	public void setSupport(TavernaServerSupport support) {
 		this.support = support;
 	}
@@ -78,7 +80,7 @@ public class AtomFeed implements EventFeed, UriBuilderFactory,
 				feedLanguage);
 		feed.setId(ui.getAbsolutePath() + "#" + support.getPrincipal());
 		org.joda.time.DateTime modification = null;
-		for (AbstractEvent e : eventSource.getEvents(support.getPrincipal())) {
+		for (Event e : eventSource.getEvents(support.getPrincipal())) {
 			if (modification == null || e.getPublished().isAfter(modification))
 				modification = e.getPublished();
 			feed.addEntry(e.getEntry(abdera, feedLanguage));
@@ -87,6 +89,7 @@ public class AtomFeed implements EventFeed, UriBuilderFactory,
 			feed.setUpdated(new Date());
 		else
 			feed.setUpdated(modification.toDate());
+		feed.addLink(ui.getAbsolutePath().toASCIIString(), "self");
 		return feed;
 	}
 
@@ -120,8 +123,7 @@ public class AtomFeed implements EventFeed, UriBuilderFactory,
 	public void setServletContext(ServletContext servletContext) {
 		String base = servletContext.getInitParameter(PREFERRED_URI_PARAM);
 		if (base == null)
-			baseURI = URI.create(servletContext.getContextPath() + "/rest");
-		else
-			baseURI = URI.create(base);
+			base = servletContext.getContextPath() + "/rest";
+		baseURI = URI.create(base);
 	}
 }

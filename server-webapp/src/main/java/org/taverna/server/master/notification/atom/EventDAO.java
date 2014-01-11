@@ -11,7 +11,6 @@ import java.util.Date;
 import java.util.List;
 
 import javax.jdo.annotations.PersistenceAware;
-import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,10 +30,9 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * @author Donal Fellows
  */
 @PersistenceAware
-public class EventDAO extends JDOSupport<AbstractEvent> implements
-		MessageDispatcher {
+public class EventDAO extends JDOSupport<Event> implements MessageDispatcher {
 	public EventDAO() {
-		super(AbstractEvent.class);
+		super(Event.class);
 	}
 
 	@Override
@@ -65,15 +63,15 @@ public class EventDAO extends JDOSupport<AbstractEvent> implements
 	 */
 	@NonNull
 	@WithinSingleTransaction
-	public List<AbstractEvent> getEvents(@NonNull UsernamePrincipal user) {
+	public List<Event> getEvents(@NonNull UsernamePrincipal user) {
 		@SuppressWarnings("unchecked")
 		List<String> ids = (List<String>) namedQuery("eventsForUser").execute(
 				user.getName());
 		log.debug("found " + ids.size() + " events for user " + user);
 
-		List<AbstractEvent> result = new ArrayList<AbstractEvent>();
+		List<Event> result = new ArrayList<Event>();
 		for (String id : ids) {
-			AbstractEvent event = getById(id);
+			Event event = getById(id);
 			result.add(detach(event));
 		}
 		return result;
@@ -90,8 +88,7 @@ public class EventDAO extends JDOSupport<AbstractEvent> implements
 	 */
 	@NonNull
 	@WithinSingleTransaction
-	public AbstractEvent getEvent(@NonNull UsernamePrincipal user,
-			@NonNull String id) {
+	public Event getEvent(@NonNull UsernamePrincipal user, @NonNull String id) {
 		@SuppressWarnings("unchecked")
 		List<String> ids = (List<String>) namedQuery("eventForUserAndId")
 				.execute(user.getName(), id);
@@ -142,18 +139,16 @@ public class EventDAO extends JDOSupport<AbstractEvent> implements
 	@WithinSingleTransaction
 	public void dispatch(TavernaRun originator, String messageSubject,
 			String messageContent, String targetParameter) throws Exception {
-		UsernamePrincipal owner = originator.getSecurityContext().getOwner();
-		UriBuilder ub = ubf.getRunUriBuilder(originator);
-		persist(new TerminationEvent(ub.build(), owner, messageSubject,
+		persist(new Event("finish", ubf.getRunUriBuilder(originator).build(),
+				originator.getSecurityContext().getOwner(), messageSubject,
 				messageContent));
 	}
 
 	@WithinSingleTransaction
 	public void started(TavernaRun originator, String messageSubject,
 			String messageContent) {
-		UsernamePrincipal owner = originator.getSecurityContext().getOwner();
-		UriBuilder ub = ubf.getRunUriBuilder(originator);
-		persist(new CommencementEvent(ub.build(), owner, messageSubject,
+		persist(new Event("start", ubf.getRunUriBuilder(originator).build(),
+				originator.getSecurityContext().getOwner(), messageSubject,
 				messageContent));
 	}
 }

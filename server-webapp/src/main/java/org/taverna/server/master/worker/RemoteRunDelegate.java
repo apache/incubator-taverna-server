@@ -270,7 +270,7 @@ public class RemoteRunDelegate implements TavernaRun {
 				run.setStatus(RemoteStatus.Operating);
 				factory.getMasterEventFeed().started(this,
 						"started run execution",
-						"The execution of run " + id + " has started.");
+						"The execution of run '" + getName() + "' has started.");
 				break;
 			case Stopped:
 				run.setStatus(RemoteStatus.Stopped);
