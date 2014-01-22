@@ -181,6 +181,8 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 				lastException = e;
 			}
 		}
+		if (lastException == null)
+			lastException = new InterruptedException();
 		throw lastException;
 	}
 
