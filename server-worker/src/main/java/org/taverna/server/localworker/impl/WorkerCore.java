@@ -493,13 +493,25 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 					break;
 			}
 			finished = true;
-			exitCode = code.value;
+			setExitCode(code.value);
 			readyToSendEmail = true;
-			if (code.value > 128) {
-				out.println("workflow aborted, signal=" + (code.value - 128));
-			} else {
-				out.println("workflow exited, code=" + code.value);
-			}
+		}
+	}
+
+	/**
+	 * Integrated spot to handle writing/logging of the exit code.
+	 * 
+	 * @param code
+	 *            The exit code.
+	 */
+	private void setExitCode(int code) {
+		exitCode = code;
+		if (code > 256 - 8) {
+			out.println("workflow aborted, Raven issue = " + (code - 256));
+		} else if (code > 128) {
+			out.println("workflow aborted, signal=" + (code - 128));
+		} else {
+			out.println("workflow exited, code=" + code);
 		}
 	}
 
@@ -637,7 +649,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		if (finished)
 			return Finished;
 		try {
-			exitCode = subprocess.exitValue();
+			setExitCode(subprocess.exitValue());
 			finished = true;
 			readyToSendEmail = true;
 			accounting.runCeased();
