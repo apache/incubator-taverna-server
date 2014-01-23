@@ -56,7 +56,7 @@ if test x != "x$INTERACTION_HOST"; then
     INTERACTION_PROPS="$INTERACTION_PROPS -Dtaverna.interaction.feed_path=$INTERACTION_FEED"
 fi
 
-MainClass=net.sf.taverna.t2.commandline.ProvCommandLineLauncher
+MainClass=net.sf.taverna.t2.commandline.CommandLineLauncher
 
 echo "pid:$$"
 exec "$javabin" $memlimit $permsize \
