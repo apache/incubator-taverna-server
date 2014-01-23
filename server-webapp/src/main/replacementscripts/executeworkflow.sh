@@ -66,6 +66,6 @@ exec "$javabin" $memlimit $permsize \
   -Djava.system.class.loader=net.sf.taverna.raven.prelauncher.BootstrapClassLoader \
   -Draven.launcher.app.main=$MainClass \
   -Draven.launcher.show_splashscreen=false \
-  -Djava.awt.headless=true \
+  -Djava.awt.headless=true -Dtaverna.interaction.ignore_requests=true \
   -jar "$taverna_home/lib/"prelauncher-*.jar \
   "$@"
