@@ -54,9 +54,8 @@ public class DirectoryContents {
 	 */
 	public DirectoryContents(UriInfo ui, Collection<DirectoryEntry> collection) {
 		contents = new ArrayList<DirEntryReference>();
-		UriBuilder ub = secure(ui).path("{path}");
-		for (DirectoryEntry e : collection) {
+		UriBuilder ub = secure(ui).path("{filename}");
+		for (DirectoryEntry e : collection)
 			contents.add(DirEntryReference.newInstance(ub, e));
-		}
 	}
 }
