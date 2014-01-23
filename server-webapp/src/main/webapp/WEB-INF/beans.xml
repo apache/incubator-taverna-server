@@ -68,7 +68,7 @@
 
 	<bean id="webapp.invocationCounter" class="org.taverna.server.master.utils.InvocationCounter" />
 	<bean id="webapp.perfLogger" class="org.taverna.server.master.utils.CallTimeLogger">
-		<property name="threshold" value="${calltime.logthreshold:100000}" />
+		<property name="threshold" value="${calltime.logthreshold:2000000}" />
 	</bean>
 
 	<bean id="run.coreView.prototype" scope="prototype"
@@ -221,7 +221,8 @@
 		<property name="targetMethod" value="putAll" />
 		<property name="arguments">
 			<util:properties>
-				<prop key="derby.stream.error.field">org.taverna.server.master.utils.DerbyUtils.DEV_NULL</prop>
+				<prop key="derby.stream.error.field">org.taverna.server.master.utils.DerbyUtils.TO_LOG</prop>
+				<prop key="derby.stream.error.logSeverityLevel">30000</prop>
 			</util:properties>
 		</property>
 	</bean>
