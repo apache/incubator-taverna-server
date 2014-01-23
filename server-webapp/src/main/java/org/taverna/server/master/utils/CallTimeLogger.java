@@ -29,7 +29,7 @@ import org.aspectj.lang.annotation.Aspect;
  */
 @Aspect
 public class CallTimeLogger {
-	private long threshold = 100000;
+	private long threshold = 2000000;
 	private Log log = getLog("Taverna.Server.Performance");
 
 	public void setThreshold(long threshold) {
@@ -56,8 +56,8 @@ public class CallTimeLogger {
 			long aft = nanoTime();
 			long elapsed = aft - fore;
 			if (elapsed > threshold)
-				log.info(format("call to %s took %dns", call.toShortString(),
-						elapsed));
+				log.info(format("call to %s took %.3fms", call.toShortString(),
+						elapsed/1000000.0));
 		}
 	}
 
