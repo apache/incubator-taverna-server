@@ -287,21 +287,6 @@
 			<version>1.3.4</version>
 			<scope>runtime</scope>
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>uk.org.taverna.server</groupId>
-			<artifactId>server-prov-support</artifactId>
-			<version>${project.parent.version}</version>
-			<classifier>repository</classifier>
-			<scope>provided</scope>
-			<exclusions>
-				<exclusion>
-					<artifactId>prov-taverna-cmdline</artifactId>
-					<groupId>org.purl.wf4ever.provtaverna</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		 -->
 	</dependencies>
 
 	<dependencyManagement>
@@ -582,26 +567,6 @@
 							<excludeTransitive>true</excludeTransitive>
 						</configuration>
 					</execution>
-					<!-- 
-					<execution>
-						<id>unpack-provenance-support</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>uk.org.taverna.server</groupId>
-									<artifactId>server-prov-support</artifactId>
-									<version>${project.parent.version}</version>
-									<classifier>repository</classifier>
-									<outputDirectory>${util.dir}/taverna-commandline-${version.commandline}</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-					 -->
 				</executions>
 			</plugin>
 			<plugin>
