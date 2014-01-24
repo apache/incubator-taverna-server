@@ -54,6 +54,8 @@ public interface Worker {
 	 * @param keystorePassword
 	 *            The password to the keystore and truststore. <i>Must not be
 	 *            <tt>null</tt>.</i>
+	 * @param generateProvenance
+	 *            Whether to generate a run bundle containing provenance data.
 	 * @param environment
 	 *            Any environment variables that need to be added to the
 	 *            invokation.
@@ -69,8 +71,9 @@ public interface Worker {
 			String workflow, File workingDir, File inputBaclavaFile,
 			Map<String, File> inputRealFiles, Map<String, String> inputValues,
 			File outputBaclavaFile, File contextDirectory,
-			char[] keystorePassword, Map<String, String> environment,
-			String masterToken, List<String> runtimeSettings) throws Exception;
+			char[] keystorePassword, boolean generateProvenance,
+			Map<String, String> environment, String masterToken,
+			List<String> runtimeSettings) throws Exception;
 
 	/**
 	 * Kills off the subprocess if it exists and is alive.

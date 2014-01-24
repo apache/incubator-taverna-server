@@ -207,6 +207,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			@NonNull final Map<String, String> inputValues,
 			@Nullable final File outputBaclava,
 			@NonNull final File securityDir, @Nullable final char[] password,
+			final boolean generateProvenance,
 			@NonNull final Map<String, String> environment,
 			@NonNull final String token, @NonNull final List<String> runtime)
 			throws IOException {
@@ -218,8 +219,8 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 							createProcessBuilder(local, executeWorkflowCommand,
 									workflow, workingDir, inputBaclava,
 									inputFiles, inputValues, outputBaclava,
-									securityDir, password, environment, token,
-									runtime), password);
+									securityDir, password, generateProvenance,
+									environment, token, runtime), password);
 				}
 			}.doOrTimeOut(START_WAIT_TIME);
 		} catch (IOException e) {
@@ -292,10 +293,10 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			@NonNull Map<String, File> inputFiles,
 			@NonNull Map<String, String> inputValues,
 			@Nullable File outputBaclava, @NonNull File securityDir,
-			@NonNull char[] password, @NonNull Map<String, String> environment,
-			@NonNull String token, @NonNull List<String> runtime)
-			throws IOException, UnsupportedEncodingException,
-			FileNotFoundException {
+			@NonNull char[] password, boolean generateProvenance,
+			@NonNull Map<String, String> environment, @NonNull String token,
+			@NonNull List<String> runtime) throws IOException,
+			UnsupportedEncodingException, FileNotFoundException {
 		ProcessBuilder pb = new ProcessBuilder();
 		pb.command().add(TIME);
 		/*
@@ -387,7 +388,11 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			pb.command().add(out.getAbsolutePath());
 			// Enable provenance generation
 			pb.command().add("-embedded");
-			pb.command().add("-provenance");
+			if (generateProvenance) {
+				pb.command().add("-provenance");
+				pb.command().add("-provbundle");
+				pb.command().add("out.bundle.zip");
+			}
 		}
 
 		// Add an argument holding the workflow

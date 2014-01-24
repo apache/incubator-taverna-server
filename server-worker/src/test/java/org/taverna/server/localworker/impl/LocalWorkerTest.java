@@ -96,7 +96,7 @@ public class LocalWorkerTest {
 				String executeWorkflowCommand, String workflow,
 				File workingDir, File inputBaclava,
 				Map<String, File> inputFiles, Map<String, String> inputValues,
-				File outputBaclava, File cmdir, char[] cmpass,
+				File outputBaclava, File cmdir, char[] cmpass, boolean doprov,
 				Map<String, String> env, String id, List<String> conf)
 				throws Exception {
 			events.add("init[");
@@ -116,6 +116,7 @@ public class LocalWorkerTest {
 			events.add(outputBaclava == null ? "<null>" : outputBaclava
 					.getName());
 			// TODO: check cmdir and cmpass
+			// TODO: check doprov
 			// TODO: log env
 			events.add("]");
 			return true;

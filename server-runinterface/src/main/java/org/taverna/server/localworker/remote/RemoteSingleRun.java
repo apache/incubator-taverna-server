@@ -235,4 +235,16 @@ public interface RemoteSingleRun extends Remote {
 	 *             If anything goes wrong with the communication.
 	 */
 	void ping() throws RemoteException;
+
+	/**
+	 * Sets whether we should generate provenance information from a run.
+	 * 
+	 * @param generateProvenance
+	 *            Boolean flag, true for do the generation. Must be set before
+	 *            starting the run for this to have an effect.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
+	 */
+	void setGenerateProvenance(boolean generateProvenance)
+			throws RemoteException;
 }

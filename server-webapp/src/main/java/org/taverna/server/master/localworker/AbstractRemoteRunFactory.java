@@ -334,6 +334,7 @@ public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
 			RemoteSingleRun rsr = getRealRun(creator, workflow, id);
 			RemoteRunDelegate run = new RemoteRunDelegate(now, workflow, rsr,
 					state.getDefaultLifetime(), runDB, id, this);
+			rsr.setGenerateProvenance(true); // FIXME expose
 			run.setSecurityContext(securityFactory.create(run, creator));
 			URL feedUrl = interactionFeedSupport.getFeedURI(run).toURL();
 			URL webdavUrl = baseurifactory.getRunUriBuilder(run)

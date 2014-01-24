@@ -167,6 +167,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	List<String> runtimeSettings = new ArrayList<String>();
 	URL interactionFeedURL;
 	URL webdavURL;
+	private boolean doProvenance = true;
 
 	// ----------------------- METHODS -----------------------
 
@@ -620,6 +621,11 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	}
 
 	@Override
+	public void setGenerateProvenance(boolean prov) {
+		doProvenance = prov;
+	}
+
+	@Override
 	public void setStatus(RemoteStatus newStatus)
 			throws IllegalStateTransitionException, RemoteException,
 			ImplementationException, StillWorkingOnItException {
@@ -710,8 +716,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		 */
 		return core.initWorker(this, executeWorkflowCommand, workflow, base,
 				inputBaclavaFile, inputRealFiles, inputValues,
-				outputBaclavaFile, securityDirectory, pw, environment,
-				masterToken, runtimeSettings);
+				outputBaclavaFile, securityDirectory, pw, doProvenance,
+				environment, masterToken, runtimeSettings);
 	}
 
 	@Override
