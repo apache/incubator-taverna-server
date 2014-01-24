@@ -381,4 +381,16 @@ public abstract class RunFactoryConfiguration implements ConfigurableRunFactory 
 	public final int getOperatingCount() throws Exception {
 		return operatingCount();
 	}
+
+	@Override
+	@ManagedAttribute(description="Whether to tell a workflow to generate provenance bundles by default.")
+	public final void setGenerateProvenance(boolean genProv) {
+		state.setGenerateProvenance(genProv);
+	}
+
+	@Override
+	@ManagedAttribute(description="Whether to tell a workflow to generate provenance bundles by default.")
+	public final boolean getGenerateProvenance() {
+		return state.getGenerateProvenance();
+	}
 }

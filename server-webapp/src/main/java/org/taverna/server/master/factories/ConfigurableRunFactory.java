@@ -126,4 +126,8 @@ public interface ConfigurableRunFactory extends RunFactory {
 
 	/** How do we start the RMI registry process? Setter */
 	void setRmiRegistryJar(String rmiRegistryJar);
+
+	boolean getGenerateProvenance();
+
+	void setGenerateProvenance(boolean generateProvenance);
 }

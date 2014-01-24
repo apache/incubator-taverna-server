@@ -736,6 +736,7 @@ public class AdminBean implements Admin {
 		return opt("PUT");
 	}
 
+	// /////////////////////////////////////////////////////
 	@RolesAllowed(ADMIN)
 	@Override
 	public StringList getPermittedWorkflowURIs() {
@@ -753,7 +754,7 @@ public class AdminBean implements Admin {
 	@Override
 	public StringList setPermittedWorkflowURIs(StringList permitted) {
 		List<URI> uris = new ArrayList<URI>();
-		for (String uri: permitted.string)
+		for (String uri : permitted.string)
 			try {
 				uris.add(myExp.resolve(uri));
 			} catch (Exception e) {
@@ -766,6 +767,28 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public Response optionsPermittedWorkflowURIs() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public String getGenerateProvenance() {
+		return Boolean.toString(localWorker.getGenerateProvenance());
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public String setGenerateProvenance(String newValue) {
+		boolean b = Boolean.parseBoolean(newValue);
+		localWorker.setGenerateProvenance(b);
+		return Boolean.toString(localWorker.getGenerateProvenance());
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response optionsGenerateProvenance() {
 		return opt("PUT");
 	}
 }

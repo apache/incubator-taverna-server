@@ -10,6 +10,7 @@ import static org.taverna.server.master.admin.Paths.ARGS;
 import static org.taverna.server.master.admin.Paths.EXEC_WF;
 import static org.taverna.server.master.admin.Paths.EXITCODE;
 import static org.taverna.server.master.admin.Paths.FACTORIES;
+import static org.taverna.server.master.admin.Paths.GEN_PROV;
 import static org.taverna.server.master.admin.Paths.INVOKES;
 import static org.taverna.server.master.admin.Paths.JAR_FORKER;
 import static org.taverna.server.master.admin.Paths.JAR_WORKER;
@@ -847,6 +848,27 @@ public interface Admin {
 	@Description("What are the current list of workflow URIs that may be started? Empty means allow any, including user-supplied workflows.")
 	StringList getPermittedWorkflowURIs();
 
+	/** Do we turn on the generate provenance option by default? */
+	@GET
+	@Path(GEN_PROV)
+	@Produces(PLAIN)
+	@Description("Do we turn on the generate provenance option by default? (boolean)")
+	String getGenerateProvenance();
+
+	/** Do we turn on the generate provenance option by default? */
+	@PUT
+	@Path(GEN_PROV)
+	@Consumes(PLAIN)
+	@Produces(PLAIN)
+	@Description("Do we turn on the generate provenance option by default? (boolean)")
+	String setGenerateProvenance(String newValue);
+
+	/** Do we turn on the generate provenance option by default? */
+	@OPTIONS
+	@Path(GEN_PROV)
+	@Description("Do we turn on the generate provenance option by default? (boolean)")
+	Response optionsGenerateProvenance();
+
 	/**
 	 * What are the current list of workflow URIs that may be started? Empty
 	 * means allow any, including user-supplied workflows.
@@ -949,6 +971,7 @@ public interface Admin {
 		public Uri operatingLimit;
 		public Uri operatingCount;
 		public Uri permittedWorkflowURIs;
+		public Uri generateProvenance;
 
 		public AdminDescription() {
 		}
@@ -981,6 +1004,7 @@ public interface Admin {
 			operatingLimit = new Uri(ui, OP_LIMIT);
 			operatingCount = new Uri(ui, OPERATING);
 			permittedWorkflowURIs = new Uri(ui, PERM_WF);
+			generateProvenance = new Uri(ui, GEN_PROV);
 		}
 	}
 
@@ -1065,6 +1089,7 @@ interface Paths {
 	static final String FACTORIES = "factoryProcessMapping";
 	static final String URS = "usageRecords";
 	static final String PERM_WF = "permittedWorkflowURIs";
+	static final String GEN_PROV = "generateProvenance";
 	static final String USERS = "users";
 	static final String USER = USERS + "/{id}";
 }
