@@ -29,6 +29,8 @@ import org.taverna.server.master.notification.NotificationEngine;
 import org.taverna.server.master.notification.NotificationEngine.Message;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
+
 /**
  * The main facade bean that interfaces to the database of runs.
  * 
@@ -42,6 +44,8 @@ public class RunDatabase implements RunStore, RunDBSupport {
 	private NotificationEngine notificationEngine;
 	@Autowired
 	private FactoryBean factory;
+	private Map<String, TavernaRun> cache;
+	private volatile boolean cacheBeingCleaned;
 
 	@Override
 	@Required
@@ -83,9 +87,20 @@ public class RunDatabase implements RunStore, RunDBSupport {
 	@Override
 	public void cleanNow() {
 		try {
-			dao.doClean();
-		} catch (Exception e) {
-			log.warn("failure during deletion of expired runs", e);
+			cacheBeingCleaned = true;
+			List<String> cleaned;
+			try {
+				cleaned = dao.doClean();
+			} catch (Exception e) {
+				log.warn("failure during deletion of expired runs", e);
+				return;
+			}
+			synchronized (cache) {
+				for (String id : cleaned)
+					cache.remove(id);
+			}
+		} finally {
+			cacheBeingCleaned = false;
 		}
 	}
 
@@ -115,6 +130,18 @@ public class RunDatabase implements RunStore, RunDBSupport {
 		return dao.listRunNames();
 	}
 
+	@Nullable
+	private TavernaRun get(String uuid) {
+		TavernaRun run = null;
+		if (!cacheBeingCleaned)
+			synchronized (cache) {
+				run = cache.get(uuid);
+			}
+		if (run == null)
+			run = dao.get(uuid);
+		return run;
+	}
+
 	@Override
 	public TavernaRun getRun(UsernamePrincipal user, Policy p, String uuid)
 			throws UnknownRunException {
@@ -126,7 +153,7 @@ public class RunDatabase implements RunStore, RunDBSupport {
 			log.debug("run ID does not look like UUID; rejecting...");
 			throw new UnknownRunException();
 		}
-		TavernaRun run = dao.get(uuid);
+		TavernaRun run = get(uuid);
 		if (run != null && (user == null || p.permitAccess(user, run)))
 			return run;
 		throw new UnknownRunException();
@@ -134,7 +161,7 @@ public class RunDatabase implements RunStore, RunDBSupport {
 
 	@Override
 	public TavernaRun getRun(String uuid) throws UnknownRunException {
-		TavernaRun run = dao.get(uuid);
+		TavernaRun run = get(uuid);
 		if (run != null)
 			return run;
 		throw new UnknownRunException();
@@ -175,13 +202,19 @@ public class RunDatabase implements RunStore, RunDBSupport {
 					"unexpected problem when persisting run record in database",
 					e);
 		}
+		synchronized (cache) {
+			cache.put(rrd.getId(), run);
+		}
 		return rrd.getId();
 	}
 
 	@Override
 	public void unregisterRun(String uuid) {
 		try {
-			dao.unpersistRun(uuid);
+			if (dao.unpersistRun(uuid))
+				synchronized (cache) {
+					cache.remove(uuid);
+				}
 		} catch (RuntimeException e) {
 			log.debug("problem persisting the deletion of the run " + uuid, e);
 		}

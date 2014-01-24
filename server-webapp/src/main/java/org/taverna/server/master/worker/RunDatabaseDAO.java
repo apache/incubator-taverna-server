@@ -22,8 +22,12 @@ import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
 import org.taverna.server.master.utils.JDOSupport;
 import org.taverna.server.master.utils.UsernamePrincipal;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
  * This handles storing runs, interfacing with the underlying state engine as
@@ -67,7 +71,8 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 		return (List<String>) namedQuery("timedout").execute();
 	}
 
-	private RunConnection pickRun(String name) {
+	@Nullable
+	private RunConnection pickRun(@NonNull String name) {
 		log.debug("fetching the run called " + name);
 		try {
 			RunConnection rc = getById(name);
@@ -80,18 +85,20 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 		}
 	}
 
+	@Nullable
 	@WithinSingleTransaction
-	public String getSecurityToken(String name) {
+	public String getSecurityToken(@NonNull String name) {
 		RunConnection rc = getById(name);
 		if (rc == null)
 			return null;
 		return rc.getSecurityToken();
 	}
 
-	private void persist(RemoteRunDelegate rrd) throws IOException {
+	private void persist(@NonNull RemoteRunDelegate rrd) throws IOException {
 		persist(toDBform(rrd));
 	}
 
+	@NonNull
 	private List<RunConnection> allRuns() {
 		try {
 			List<RunConnection> rcs = new ArrayList<RunConnection>();
@@ -120,6 +127,7 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	 *            The identifier of the run.
 	 * @return The run handle, or <tt>null</tt> if there is no such run.
 	 */
+	@Nullable
 	@WithinSingleTransaction
 	public TavernaRun get(String name) {
 		try {
@@ -139,6 +147,7 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	 *            The policy that determines what they can see.
 	 * @return A mapping from run IDs to run handles.
 	 */
+	@NonNull
 	@WithinSingleTransaction
 	public Map<String, TavernaRun> listRuns(UsernamePrincipal user, Policy p) {
 		Map<String, TavernaRun> result = new HashMap<String, TavernaRun>();
@@ -157,6 +166,7 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	/**
 	 * @return A list of the IDs for all workflow runs.
 	 */
+	@NonNull
 	@WithinSingleTransaction
 	public List<String> listRunNames() {
 		ArrayList<String> runNames = new ArrayList<String>();
@@ -172,6 +182,7 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	 * @throws Exception
 	 *             If anything goes wrong.
 	 */
+	@Nullable
 	@WithinSingleTransaction
 	public RemoteRunDelegate pickArbitraryRun() throws Exception {
 		for (RunConnection rc : allRuns()) {
@@ -192,7 +203,7 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	 *             If anything goes wrong with serialisation of the run.
 	 */
 	@WithinSingleTransaction
-	public void persistRun(RemoteRunDelegate rrd) throws IOException {
+	public void persistRun(@NonNull RemoteRunDelegate rrd) throws IOException {
 		persist(rrd);
 	}
 
@@ -201,12 +212,14 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	 * 
 	 * @param name
 	 *            The ID of the run.
+	 * @return Whether a deletion happened.
 	 */
 	@WithinSingleTransaction
-	public void unpersistRun(String name) {
+	public boolean unpersistRun(String name) {
 		RunConnection rc = pickRun(name);
 		if (rc != null)
 			delete(rc);
+		return rc != null;
 	}
 
 	/**
@@ -218,15 +231,19 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	 *             If serialization of anything fails.
 	 */
 	@WithinSingleTransaction
-	public void flushToDisk(RemoteRunDelegate run) throws IOException {
+	public void flushToDisk(@NonNull RemoteRunDelegate run) throws IOException {
 		getById(run.id).makeChanges(run);
 	}
 
 	/**
 	 * Remove all workflow runs that have expired.
+	 * 
+	 * @return The ids of the deleted runs.
 	 */
+	@NonNull
+	@PerfLogged
 	@WithinSingleTransaction
-	public void doClean() {
+	public List<String> doClean() {
 		log.debug("deleting runs that timed out before " + new Date());
 		List<String> toDelete = expiredRuns();
 		log.debug("found " + toDelete.size() + " runs to delete");
@@ -239,12 +256,15 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 			}
 			delete(rc);
 		}
+		return toDelete;
 	}
 
 	/**
 	 * @return A list of workflow runs that are candidates for doing
 	 *         notification of termination.
 	 */
+	@NonNull
+	@PerfLogged
 	@WithinSingleTransaction
 	public List<RemoteRunDelegate> getNotifiable() {
 		List<RemoteRunDelegate> toNotify = new ArrayList<RemoteRunDelegate>();
