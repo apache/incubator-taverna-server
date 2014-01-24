@@ -13,13 +13,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jdo.annotations.PersistenceAware;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.common.Status;
 import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
@@ -69,6 +69,11 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	@SuppressWarnings("unchecked")
 	private List<String> expiredRuns() {
 		return (List<String>) namedQuery("timedout").execute();
+	}
+
+	@SuppressWarnings("unchecked")
+	private List<String> unterminatedRuns() {
+		return (List<String>) namedQuery("unterminated").execute();
 	}
 
 	@Nullable
@@ -266,22 +271,30 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	@NonNull
 	@PerfLogged
 	@WithinSingleTransaction
-	public List<RemoteRunDelegate> getNotifiable() {
+	public List<RemoteRunDelegate> getPotentiallyNotifiable() {
 		List<RemoteRunDelegate> toNotify = new ArrayList<RemoteRunDelegate>();
-		for (RunConnection rc : allRuns()) {
+		for (String id : unterminatedRuns())
+			try {
+				RunConnection rc = getById(id);
+				toNotify.add(rc.fromDBform(facade));
+			} catch (Exception e) {
+				log.warn("failed to fetch for notification of completion check", e);
+			}
+		return toNotify;
+	}
+
+	@PerfLogged
+	@WithinSingleTransaction
+	public void markFinished(@NonNull Set<String> terminated) {
+		for (RunConnection rc : allRuns())
 			try {
 				RemoteRunDelegate rrd = rc.fromDBform(facade);
-				if (rrd.doneTransitionToFinished
-						|| rrd.getStatus() != Status.Finished)
-					continue;
-				rrd.doneTransitionToFinished = true;
-				rc.setFinished(true);
-				toNotify.add(rrd);
+				if (terminated.contains(rrd.id)) {
+					rrd.doneTransitionToFinished = true;
+					rc.setFinished(true);
+				}
 			} catch (Exception e) {
-				log.warn("failed to do notification of completion", e);
-				continue;
+				log.warn("failed to note termination", e);
 			}
-		}
-		return toNotify;
 	}
 }

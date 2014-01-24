@@ -14,12 +14,14 @@ import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
+import org.taverna.server.master.common.Status;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.Policy;
@@ -44,7 +46,7 @@ public class RunDatabase implements RunStore, RunDBSupport {
 	private NotificationEngine notificationEngine;
 	@Autowired
 	private FactoryBean factory;
-	private Map<String, TavernaRun> cache = new HashMap<String,TavernaRun>();
+	private Map<String, TavernaRun> cache = new HashMap<String, TavernaRun>();
 
 	@Override
 	@Required
@@ -71,7 +73,30 @@ public class RunDatabase implements RunStore, RunDBSupport {
 
 	@Override
 	public void checkForFinishNow() {
-		for (RemoteRunDelegate rrd : dao.getNotifiable())
+		/*
+		 * Get which runs are actually newly finished; this requires getting the
+		 * candidates from the database and *then* doing the expensive requests
+		 * to the back end to find out the status.
+		 */
+		Map<String, RemoteRunDelegate> notifiable = new HashMap<>();
+		for (RemoteRunDelegate p : dao.getPotentiallyNotifiable())
+			if (p.getStatus() == Status.Finished)
+				notifiable.put(p.getId(), p);
+
+		// Check if there's nothing more to do
+		if (notifiable.isEmpty())
+			return;
+
+		/*
+		 * Tell the database about the ones we've got.
+		 */
+		dao.markFinished(notifiable.keySet());
+
+		/*
+		 * Send out the notifications. The notification addresses are stored in
+		 * the back-end engine, so this is *another* thing that can take time.
+		 */
+		for (RemoteRunDelegate rrd : notifiable.values())
 			for (Listener l : rrd.getListeners())
 				if (l.getName().equals("io")) {
 					try {
@@ -170,6 +195,16 @@ public class RunDatabase implements RunStore, RunDBSupport {
 
 	@Override
 	public Map<String, TavernaRun> listRuns(UsernamePrincipal user, Policy p) {
+		synchronized (cache) {
+			Map<String, TavernaRun> cached = new HashMap<String, TavernaRun>();
+			for (Entry<String, TavernaRun> e : cache.entrySet()) {
+				TavernaRun r = e.getValue();
+				if (p.permitAccess(user, r))
+					cached.put(e.getKey(), r);
+			}
+			if (!cached.isEmpty())
+				return cached;
+		}
 		return dao.listRuns(user, p);
 	}
 

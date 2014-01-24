@@ -5,6 +5,8 @@
  */
 package org.taverna.server.master.notification.atom;
 
+import static java.lang.String.format;
+import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.common.Uri.secure;
@@ -47,6 +49,7 @@ public class AtomFeed implements EventFeed, UriBuilderFactory,
 	private URI baseURI;
 	private Abdera abdera;
 	private String feedLanguage = "en";
+	private String uuid = randomUUID().toString();
 
 	@Required
 	public void setEventSource(EventDAO eventSource) {
@@ -78,7 +81,9 @@ public class AtomFeed implements EventFeed, UriBuilderFactory,
 		Feed feed = abdera.getFactory().newFeed();
 		feed.setTitle("events relating to workflow runs").setLanguage(
 				feedLanguage);
-		feed.setId(ui.getAbsolutePath() + "#" + support.getPrincipal());
+		String user = support.getPrincipal().toString()
+				.replaceAll("[^A-Za-z0-9]+", "");
+		feed.setId(format("urn:taverna-server:%s:%s", uuid, user));
 		org.joda.time.DateTime modification = null;
 		for (Event e : eventSource.getEvents(support.getPrincipal())) {
 			if (modification == null || e.getPublished().isAfter(modification))
