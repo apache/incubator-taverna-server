@@ -422,7 +422,7 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 	@Override
 	@CallCounted
 	@PerfLogged
-	public List<Capability> getServerCapabilities(){
+	public List<Capability> getServerCapabilities() {
 		return support.getCapabilities();
 	}
 
@@ -611,6 +611,26 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 		// We *know* the content type, by definition
 		fc.setFile(f, "application/vnd.wf4ever.robundle+zip");
 		return fc;
+	}
+
+	@Override
+	@CallCounted
+	@PerfLogged
+	@RolesAllowed(USER)
+	public boolean getRunGenerateProvenance(String runName)
+			throws UnknownRunException {
+		return support.getRun(runName).getGenerateProvenance();
+	}
+
+	@Override
+	@CallCounted
+	@PerfLogged
+	@RolesAllowed(USER)
+	public void setRunGenerateProvenance(String runName, boolean generate)
+			throws UnknownRunException, NoUpdateException {
+		TavernaRun run = support.getRun(runName);
+		support.permitUpdate(run);
+		run.setGenerateProvenance(generate);
 	}
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

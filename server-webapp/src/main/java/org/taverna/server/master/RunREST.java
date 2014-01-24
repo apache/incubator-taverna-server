@@ -332,6 +332,25 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 		return Response.ok(fc, "application/vnd.wf4ever.robundle+zip").build();
 	}
 
+	@Override
+	@CallCounted
+	@PerfLogged
+	@RolesAllowed(USER)
+	public String getGenerateProvenance() {
+		return Boolean.toString(run.getGenerateProvenance());
+	}
+
+	@Override
+	@CallCounted
+	@PerfLogged
+	@RolesAllowed(USER)
+	public String setGenerateProvenance(String newValue) throws NoUpdateException {
+		boolean b = Boolean.parseBoolean(newValue.trim());
+		support.permitUpdate(run);
+		run.setGenerateProvenance(b);
+		return Boolean.toString(run.getGenerateProvenance());
+	}
+
 	/**
 	 * Construct a RESTful interface to a run's filestore.
 	 * 
@@ -449,5 +468,11 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	@CallCounted
 	public Response runBundleOptions() {
 		return opt();
+	}
+
+	@Override
+	@CallCounted
+	public Response generateProvenanceOptions() {
+		return opt("PUT");
 	}
 }

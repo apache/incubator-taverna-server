@@ -205,4 +205,15 @@ public interface TavernaRun extends Serializable {
 	 *             If things fail.
 	 */
 	void ping() throws UnknownRunException;
+
+	/**
+	 * @return whether the run generates provenance data
+	 */
+	boolean getGenerateProvenance();
+
+	/**
+	 * @param generateProvenance
+	 *            whether the run generates provenance data
+	 */
+	void setGenerateProvenance(boolean generateProvenance);
 }

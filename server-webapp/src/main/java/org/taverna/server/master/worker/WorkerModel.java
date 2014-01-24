@@ -188,4 +188,16 @@ public interface WorkerModel extends PolicyLimits {
 	 *            implementation JAR
 	 */
 	void setRegistryJar(String rmiRegistryJar);
+
+	/**
+	 * @return whether a run should generate provenance information by default
+	 */
+	boolean getGenerateProvenance();
+
+	/**
+	 * @param generateProvenance
+	 *            whether a run should generate provenance information by
+	 *            default
+	 */
+	void setGenerateProvenance(boolean generateProvenance);
 }

@@ -88,15 +88,15 @@ public class RemoteRunDelegate implements TavernaRun {
 	transient RunDBSupport db;
 	transient FactoryBean factory;
 	boolean doneTransitionToFinished;
+	boolean generateProvenance;// FIXME expose
 	String name;
 	private static final String ELLIPSIS = "...";
 
 	public RemoteRunDelegate(Date creationInstant, Workflow workflow,
 			RemoteSingleRun rsr, int defaultLifetime, RunDBSupport db, UUID id,
-			FactoryBean factory) {
-		if (rsr == null) {
+			boolean generateProvenance, FactoryBean factory) {
+		if (rsr == null)
 			throw new IllegalArgumentException("remote run must not be null");
-		}
 		this.creationInstant = creationInstant;
 		this.workflow = workflow;
 		Calendar c = Calendar.getInstance();
@@ -104,6 +104,7 @@ public class RemoteRunDelegate implements TavernaRun {
 		this.expiry = c.getTime();
 		this.run = rsr;
 		this.db = db;
+		this.generateProvenance = generateProvenance;
 		this.factory = factory;
 		try {
 			this.name = "";
@@ -197,9 +198,8 @@ public class RemoteRunDelegate implements TavernaRun {
 	public List<Listener> getListeners() {
 		ArrayList<Listener> listeners = new ArrayList<Listener>();
 		try {
-			for (RemoteListener rl : run.getListeners()) {
+			for (RemoteListener rl : run.getListeners())
 				listeners.add(new ListenerDelegate(rl));
-			}
 		} catch (RemoteException e) {
 			log.warn("failed to get listeners", e);
 		}
@@ -264,14 +264,18 @@ public class RemoteRunDelegate implements TavernaRun {
 				break;
 			case Operating:
 				if (run.getStatus() == RemoteStatus.Initialized) {
+					if (!factory.isAllowingRunsToStart())
+						throw new OverloadedException();
 					secContext.conveySecurity();
 				}
-				if (!factory.isAllowingRunsToStart())
-					throw new OverloadedException();
+				run.setGenerateProvenance(generateProvenance);
 				run.setStatus(RemoteStatus.Operating);
-				factory.getMasterEventFeed().started(this,
-						"started run execution",
-						"The execution of run '" + getName() + "' has started.");
+				factory.getMasterEventFeed()
+						.started(
+								this,
+								"started run execution",
+								"The execution of run '" + getName()
+										+ "' has started.");
 				break;
 			case Stopped:
 				run.setStatus(RemoteStatus.Stopped);
@@ -323,9 +327,8 @@ public class RemoteRunDelegate implements TavernaRun {
 	public List<Input> getInputs() {
 		ArrayList<Input> inputs = new ArrayList<Input>();
 		try {
-			for (RemoteInput ri : run.getInputs()) {
+			for (RemoteInput ri : run.getInputs())
 				inputs.add(new RunInput(ri));
-			}
 		} catch (RemoteException e) {
 			log.warn("problem when fetching list of workflow inputs", e);
 		}
@@ -457,6 +460,17 @@ public class RemoteRunDelegate implements TavernaRun {
 		out.writeUTF(secContext.getOwner().getName());
 		out.writeObject(secContext.getFactory());
 		out.writeObject(new MarshalledObject<RemoteSingleRun>(run));
+	}
+
+	@Override
+	public boolean getGenerateProvenance() {
+		return generateProvenance;
+	}
+
+	@Override
+	public void setGenerateProvenance(boolean generateProvenance) {
+		this.generateProvenance = generateProvenance;
+		db.flushToDisk(this);
 	}
 
 	@SuppressWarnings("unchecked")

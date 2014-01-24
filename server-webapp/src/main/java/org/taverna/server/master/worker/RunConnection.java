@@ -101,6 +101,9 @@ public class RunConnection {
 	private int doneTransitionToFinished;
 
 	@Persistent(defaultFetchGroup = "true")
+	private int generateProvenance;
+
+	@Persistent(defaultFetchGroup = "true")
 	@Column(length = 128)
 	String owner;
 
@@ -130,6 +133,14 @@ public class RunConnection {
 
 	public void setFinished(boolean finished) {
 		doneTransitionToFinished = (finished ? 1 : 0);
+	}
+
+	public boolean isProvenanceGenerated() {
+		return generateProvenance != 0;
+	}
+
+	public void setProvenanceGenerated(boolean generate) {
+		generateProvenance = (generate ? 1 : 0);
 	}
 
 	/**
@@ -180,6 +191,7 @@ public class RunConnection {
 		rrd.destroyers = new HashSet<String>(list(destroyers));
 		rrd.run = run.get();
 		rrd.doneTransitionToFinished = isFinished();
+		rrd.generateProvenance = isProvenanceGenerated();
 		rrd.secContext = securityContextFactory.create(rrd,
 				new UsernamePrincipal(owner));
 		((SecurityContextDelegate)rrd.secContext).setCredentialsAndTrust(credentials,trust);
@@ -221,6 +233,7 @@ public class RunConnection {
 		else
 			this.name = rrd.name;
 		setFinished(rrd.doneTransitionToFinished);
+		setProvenanceGenerated(rrd.generateProvenance);
 	}
 
 	public String getSecurityToken() {

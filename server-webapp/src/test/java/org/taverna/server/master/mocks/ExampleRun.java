@@ -423,4 +423,16 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	public void ping() throws UnknownRunException {
 		// Do nothing
 	}
+
+	@Override
+	public boolean getGenerateProvenance() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setGenerateProvenance(boolean generateProvenance) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -14,6 +14,7 @@ import static org.taverna.server.master.rest.ContentTypes.ROBUNDLE;
 import static org.taverna.server.master.rest.ContentTypes.TEXT;
 import static org.taverna.server.master.rest.ContentTypes.XML;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.DIR;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.GENERATE_PROVENANCE;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.IN;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.LISTEN;
 import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.LOG;
@@ -435,7 +436,7 @@ public interface TavernaServerRunREST {
 	/**
 	 * @return The stdout for the workflow run, or empty string if the run has
 	 *         not yet started.
-	 * @throws NoListenerException 
+	 * @throws NoListenerException
 	 */
 	@GET
 	@Path(STDOUT)
@@ -453,7 +454,7 @@ public interface TavernaServerRunREST {
 	/**
 	 * @return The stderr for the workflow run, or empty string if the run has
 	 *         not yet started.
-	 * @throws NoListenerException 
+	 * @throws NoListenerException
 	 */
 	@GET
 	@Path(STDERR)
@@ -522,6 +523,38 @@ public interface TavernaServerRunREST {
 	Response runBundleOptions();
 
 	/**
+	 * @return Whether to create the run bundle for the workflow run. Only
+	 *         usefully set-able before the start of the run.
+	 */
+	@GET
+	@Path(GENERATE_PROVENANCE)
+	@Description("Whether to create the run bundle for the workflow run.")
+	@Produces(TEXT)
+	@NonNull
+	String getGenerateProvenance();
+
+	/**
+	 * @param provenanceFlag
+	 *            Whether to create the run bundle for the workflow run. Only
+	 *            usefully set-able before the start of the run.
+	 * @return What it was actually set to.
+	 * @throws NoUpdateException 
+	 */
+	@PUT
+	@Path(GENERATE_PROVENANCE)
+	@Description("Whether to create the run bundle for the workflow run.")
+	@Consumes(TEXT)
+	@Produces(TEXT)
+	@NonNull
+	String setGenerateProvenance(String provenanceFlag) throws NoUpdateException;
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path(GENERATE_PROVENANCE)
+	@Description("Whether to create the run bundle for the workflow run.")
+	Response generateProvenanceOptions();
+
+	/**
 	 * Factored out path names used in the {@link TavernaServerRunREST}
 	 * interface and related places.
 	 * 
@@ -546,6 +579,7 @@ public interface TavernaServerRunREST {
 		public static final String USAGE = "usage";
 		public static final String LOG = "log";
 		public static final String RUNBUNDLE = "run-bundle";
+		public static final String GENERATE_PROVENANCE = "generate-provenance";
 	}
 
 	/**
@@ -595,8 +629,11 @@ public interface TavernaServerRunREST {
 		/** The log from the run. */
 		public Uri log;
 		/** The bundle describing the run. */
-		@XmlElement(name = "run-bundle")
+		@XmlElement(name = RUNBUNDLE)
 		public Uri runBundle;
+		/** Whether to generate a bundle describing the run. */
+		@XmlElement(name = GENERATE_PROVENANCE)
+		public Uri generateProvenance;
 
 		/**
 		 * How to describe a run's expiry.
@@ -717,6 +754,7 @@ public interface TavernaServerRunREST {
 			usage = new Uri(ui, USAGE);
 			log = new Uri(ui, LOG);
 			runBundle = new Uri(ui, RUNBUNDLE);
+			generateProvenance = new Uri(ui, GENERATE_PROVENANCE);
 		}
 	}
 }

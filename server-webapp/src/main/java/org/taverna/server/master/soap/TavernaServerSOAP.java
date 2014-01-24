@@ -673,6 +673,40 @@ public interface TavernaServerSOAP {
 			NoDirectoryEntryException;
 
 	/**
+	 * Gets whether to generate provenance (in a run bundle) for a run.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @return Whether provenance will be generated.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 */
+	@WebResult(name = "GenerateProvenance")
+	@WSDLDocumentation("Gets whether a run generates provenance.")
+	boolean getRunGenerateProvenance(@WebParam(name = "runName") String runName)
+			throws UnknownRunException;
+
+	/**
+	 * Sets whether to generate provenance (in a run bundle) for a run.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @param generateProvenance
+	 *            Whether to generate provenance.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 * @throws NoUpdateException
+	 *             If the user is not allowed to manipulate the run.
+	 */
+	@WSDLDocumentation("Sets whether a run generates provenance. "
+			+ "Only usefully settable before the run is started.")
+	void setRunGenerateProvenance(@WebParam(name = "runName") String runName,
+			@WebParam(name = "generateProvenance") boolean generateProvenance)
+			throws UnknownRunException, NoUpdateException;
+
+	/**
 	 * Get the owner of the run.
 	 * 
 	 * @param runName

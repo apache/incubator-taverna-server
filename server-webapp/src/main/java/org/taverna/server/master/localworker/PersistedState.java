@@ -26,6 +26,7 @@ import org.taverna.server.master.worker.WorkerModel;
 @PersistenceCapable(table = PersistedState.TABLE)
 class PersistedState implements WorkerModel {
 	static final String TABLE = "LOCALWORKERSTATE__PERSISTEDSTATE";
+
 	static PersistedState makeInstance() {
 		PersistedState o = new PersistedState();
 		o.ID = KEY;
@@ -70,6 +71,8 @@ class PersistedState implements WorkerModel {
 	@Persistent(defaultFetchGroup = "true")
 	@Join(table = TABLE + "_PERMWFURI", column = "ID")
 	private String[] permittedWorkflows;
+	@Persistent
+	private int generateProvenance;
 
 	@Override
 	public void setDefaultLifetime(int defaultLifetime) {
@@ -238,5 +241,15 @@ class PersistedState implements WorkerModel {
 	@Override
 	public void setRegistryJar(String registryJar) {
 		this.registryJar = registryJar;
+	}
+
+	@Override
+	public boolean getGenerateProvenance() {
+		return generateProvenance > 0;
+	}
+
+	@Override
+	public void setGenerateProvenance(boolean generateProvenance) {
+		this.generateProvenance = (generateProvenance ? 1 : 0);
 	}
 }
