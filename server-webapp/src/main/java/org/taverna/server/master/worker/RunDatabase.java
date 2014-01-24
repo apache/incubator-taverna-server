@@ -45,7 +45,6 @@ public class RunDatabase implements RunStore, RunDBSupport {
 	@Autowired
 	private FactoryBean factory;
 	private Map<String, TavernaRun> cache;
-	private volatile boolean cacheBeingCleaned;
 
 	@Override
 	@Required
@@ -86,21 +85,16 @@ public class RunDatabase implements RunStore, RunDBSupport {
 
 	@Override
 	public void cleanNow() {
+		List<String> cleaned;
 		try {
-			cacheBeingCleaned = true;
-			List<String> cleaned;
-			try {
-				cleaned = dao.doClean();
-			} catch (Exception e) {
-				log.warn("failure during deletion of expired runs", e);
-				return;
-			}
-			synchronized (cache) {
-				for (String id : cleaned)
-					cache.remove(id);
-			}
-		} finally {
-			cacheBeingCleaned = false;
+			cleaned = dao.doClean();
+		} catch (Exception e) {
+			log.warn("failure during deletion of expired runs", e);
+			return;
+		}
+		synchronized (cache) {
+			for (String id : cleaned)
+				cache.remove(id);
 		}
 	}
 
@@ -133,15 +127,16 @@ public class RunDatabase implements RunStore, RunDBSupport {
 	@Nullable
 	private TavernaRun get(String uuid) {
 		TavernaRun run = null;
-		if (!cacheBeingCleaned) {
-			synchronized (cache) {
-				run = cache.get(uuid);
-			}
-			try {
+		synchronized (cache) {
+			run = cache.get(uuid);
+		}
+		try {
+			if (run != null)
 				run.ping();
-			} catch (UnknownRunException e) {
-				run = null;
-			}
+		} catch (UnknownRunException e) {
+			log.debug("stale mapping in cache?", e);
+			// Don't need to flush the cache; this happens when cleaning anyway
+			run = null;
 		}
 		if (run == null)
 			run = dao.get(uuid);
