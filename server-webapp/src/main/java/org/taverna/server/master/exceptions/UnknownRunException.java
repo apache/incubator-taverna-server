@@ -20,4 +20,8 @@ public class UnknownRunException extends Exception {
 	public UnknownRunException() {
 		super("unknown run UUID");
 	}
+
+	public UnknownRunException(Throwable t) {
+		super("implementation problems", t);
+	}
 }

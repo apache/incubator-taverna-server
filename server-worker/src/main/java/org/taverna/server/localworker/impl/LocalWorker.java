@@ -729,4 +729,9 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		interactionFeedURL = feed;
 		webdavURL = webdav;
 	}
+
+	@Override
+	public void ping() {
+		// Do nothing here; this *should* be empty
+	}
 }

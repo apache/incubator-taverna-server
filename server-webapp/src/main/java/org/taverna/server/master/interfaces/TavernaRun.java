@@ -14,6 +14,7 @@ import org.taverna.server.master.common.Status;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDestroyException;
+import org.taverna.server.master.exceptions.UnknownRunException;
 
 /**
  * The interface to a taverna workflow run, or "run" for short.
@@ -37,7 +38,8 @@ public interface TavernaRun extends Serializable {
 	String getName();
 
 	/**
-	 * @param name The new name of the run. May be truncated.
+	 * @param name
+	 *            The new name of the run. May be truncated.
 	 */
 	void setName(String name);
 
@@ -190,4 +192,17 @@ public interface TavernaRun extends Serializable {
 	 *         never started).
 	 */
 	Date getFinishTimestamp();
+
+	/**
+	 * Test if this run is really there.
+	 * 
+	 * <p>
+	 * <i>Implementation note:</i> Used to test communication fabrics, etc. so
+	 * implementations of this interface that do not delegate to another object
+	 * should do nothing.
+	 * 
+	 * @throws UnknownRunException
+	 *             If things fail.
+	 */
+	void ping() throws UnknownRunException;
 }

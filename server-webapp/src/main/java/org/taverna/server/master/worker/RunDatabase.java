@@ -133,10 +133,16 @@ public class RunDatabase implements RunStore, RunDBSupport {
 	@Nullable
 	private TavernaRun get(String uuid) {
 		TavernaRun run = null;
-		if (!cacheBeingCleaned)
+		if (!cacheBeingCleaned) {
 			synchronized (cache) {
 				run = cache.get(uuid);
 			}
+			try {
+				run.ping();
+			} catch (UnknownRunException e) {
+				run = null;
+			}
+		}
 		if (run == null)
 			run = dao.get(uuid);
 		return run;

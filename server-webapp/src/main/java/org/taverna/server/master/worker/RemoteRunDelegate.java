@@ -54,6 +54,7 @@ import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.OverloadedException;
+import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.interfaces.Directory;
 import org.taverna.server.master.interfaces.DirectoryEntry;
 import org.taverna.server.master.interfaces.File;
@@ -496,6 +497,15 @@ public class RemoteRunDelegate implements TavernaRun {
 		else
 			this.name = name;
 		db.flushToDisk(this);
+	}
+
+	@Override
+	public void ping() throws UnknownRunException {
+		try {
+			run.ping();
+		} catch (RemoteException e) {
+			throw new UnknownRunException(e);
+		}
 	}
 }
 

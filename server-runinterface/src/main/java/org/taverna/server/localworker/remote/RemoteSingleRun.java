@@ -226,4 +226,13 @@ public interface RemoteSingleRun extends Remote {
 	 */
 	void setInteractionServiceDetails(@NonNull URL interactionFeed,
 			@NonNull URL webdavPath) throws RemoteException;
+
+	/**
+	 * A do-nothing method, used to check the general reachability of the
+	 * workflow run.
+	 * 
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
+	 */
+	void ping() throws RemoteException;
 }
