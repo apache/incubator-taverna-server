@@ -44,7 +44,7 @@ public class RunDatabase implements RunStore, RunDBSupport {
 	private NotificationEngine notificationEngine;
 	@Autowired
 	private FactoryBean factory;
-	private Map<String, TavernaRun> cache;
+	private Map<String, TavernaRun> cache = new HashMap<String,TavernaRun>();
 
 	@Override
 	@Required

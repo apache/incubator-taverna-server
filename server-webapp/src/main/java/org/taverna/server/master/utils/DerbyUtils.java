@@ -44,4 +44,6 @@ public class DerbyUtils {
 		public void close() throws IOException {
 		}
 	};
+	// Hack
+	public static final Writer DEV_NULL = TO_LOG;
 }
