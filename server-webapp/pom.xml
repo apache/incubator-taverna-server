@@ -559,6 +559,7 @@
 									<artifactId>taverna-commandline</artifactId>
 									<version>${version.commandline}</version>
 									<type>zip</type>
+									<classifier>bin</classifier>
 									<outputDirectory>${util.dir}</outputDirectory>
 								</artifactItem>
 							</artifactItems>
