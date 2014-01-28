@@ -278,7 +278,9 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 				RunConnection rc = getById(id);
 				toNotify.add(rc.fromDBform(facade));
 			} catch (Exception e) {
-				log.warn("failed to fetch for notification of completion check", e);
+				log.warn(
+						"failed to fetch for notification of completion check",
+						e);
 			}
 		return toNotify;
 	}
@@ -286,15 +288,16 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	@PerfLogged
 	@WithinSingleTransaction
 	public void markFinished(@NonNull Set<String> terminated) {
-		for (RunConnection rc : allRuns())
+		for (String id : terminated) {
+			RunConnection rc = getById(id);
+			if (rc == null)
+				continue;
 			try {
-				RemoteRunDelegate rrd = rc.fromDBform(facade);
-				if (terminated.contains(rrd.id)) {
-					rrd.doneTransitionToFinished = true;
-					rc.setFinished(true);
-				}
+				rc.fromDBform(facade).doneTransitionToFinished = true;
+				rc.setFinished(true);
 			} catch (Exception e) {
 				log.warn("failed to note termination", e);
 			}
+		}
 	}
 }
