@@ -1,5 +1,7 @@
 package org.taverna.server.master.utils;
 
+import static java.lang.System.currentTimeMillis;
+import static java.lang.Thread.sleep;
 import static org.apache.commons.logging.LogFactory.getLog;
 
 import java.sql.DatabaseMetaData;
@@ -7,7 +9,6 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.datanucleus.store.rdbms.adapter.DerbyAdapter;
-import org.datanucleus.store.rdbms.identifier.DatastoreIdentifier;
 import org.datanucleus.store.rdbms.identifier.IdentifierFactory;
 import org.datanucleus.store.rdbms.key.CandidateKey;
 import org.datanucleus.store.rdbms.key.ForeignKey;
@@ -27,6 +28,38 @@ import org.datanucleus.store.rdbms.table.ViewImpl;
 public class LoggingDerbyAdapter extends DerbyAdapter {
 	Log log = getLog("Taverna.Server.SQL");
 
+	private StringBuilder ddl = new StringBuilder();
+	private volatile long timeout;
+	private Thread timer;
+
+	private synchronized void logDDL() {
+		if (ddl.length() > 0) {
+			log.info("Data definition language:\n" + ddl);
+			ddl.setLength(0);
+		}
+		timer = null;
+	}
+
+	private synchronized void doLog(String item) {
+		ddl.append(item);
+		if (!item.endsWith("\n"))
+			ddl.append('\n');
+		timeout = currentTimeMillis() + 15000;
+		if (timer == null)
+			(timer = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						while (timeout > currentTimeMillis())
+							sleep(1000);
+					} catch (InterruptedException e) {
+						// Ignore
+					}
+					logDDL();
+				}
+			})).start();
+	}
+
 	/**
 	 * Creates an Apache Derby adapter based on the given metadata which logs
 	 * the DDL it creates.
@@ -40,14 +73,14 @@ public class LoggingDerbyAdapter extends DerbyAdapter {
 			Properties props, IdentifierFactory factory) {
 		String statement = super.getCreateTableStatement(table, columns, props,
 				factory);
-		log.info("Generated table definition\n" + statement);
+		doLog(statement);
 		return statement;
 	}
 
 	@Override
 	public String getCreateIndexStatement(Index index, IdentifierFactory factory) {
 		String statement = super.getCreateIndexStatement(index, factory);
-		log.info("Generated table index\n" + statement);
+		doLog(statement);
 		return statement;
 	}
 
@@ -55,7 +88,7 @@ public class LoggingDerbyAdapter extends DerbyAdapter {
 	public String getAddCandidateKeyStatement(CandidateKey ck,
 			IdentifierFactory factory) {
 		String statement = super.getAddCandidateKeyStatement(ck, factory);
-		log.info("Generated candidate key\n" + statement);
+		doLog(statement);
 		return statement;
 	}
 
@@ -63,15 +96,14 @@ public class LoggingDerbyAdapter extends DerbyAdapter {
 	public String getAddPrimaryKeyStatement(PrimaryKey pk,
 			IdentifierFactory factory) {
 		String statement = super.getAddPrimaryKeyStatement(pk, factory);
-		log.info("Generated primary key\n" + statement);
+		doLog(statement);
 		return statement;
 	}
 
 	@Override
-	public String getAddColumnStatement(Table table,
-			Column col) {
+	public String getAddColumnStatement(Table table, Column col) {
 		String statement = super.getAddColumnStatement(table, col);
-		log.info("Generated extra column\n" + statement);
+		doLog(statement);
 		return statement;
 	}
 
@@ -79,37 +111,28 @@ public class LoggingDerbyAdapter extends DerbyAdapter {
 	public String getAddForeignKeyStatement(ForeignKey fk,
 			IdentifierFactory factory) {
 		String statement = super.getAddForeignKeyStatement(fk, factory);
-		log.info("Generated foreign key\n" + statement);
+		doLog(statement);
 		return statement;
-	}
-
-	@Override
-	public String getCheckConstraintForValues(DatastoreIdentifier identifier,
-			Object[] values, boolean nullable) {
-		String constraint = super.getCheckConstraintForValues(identifier,
-				values, nullable);
-		log.info("Generated check constraint\n" + constraint);
-		return constraint;
 	}
 
 	@Override
 	public String getDeleteTableStatement(SQLTable tbl) {
 		String statement = super.getDeleteTableStatement(tbl);
-		log.info("Generated delete table\n" + statement);
+		doLog(statement);
 		return statement;
 	}
 
 	@Override
 	public String getDropTableStatement(Table table) {
 		String statement = super.getDropTableStatement(table);
-		log.info("Generated drop table\n" + statement);
+		doLog(statement);
 		return statement;
 	}
 
 	@Override
 	public String getDropViewStatement(ViewImpl view) {
 		String statement = super.getDropViewStatement(view);
-		log.info("Generated drop view\n" + statement);
+		doLog(statement);
 		return statement;
 	}
 }
