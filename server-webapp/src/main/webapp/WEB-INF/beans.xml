@@ -68,7 +68,7 @@
 
 	<bean id="webapp.invocationCounter" class="org.taverna.server.master.utils.InvocationCounter" />
 	<bean id="webapp.perfLogger" class="org.taverna.server.master.utils.CallTimeLogger">
-		<property name="threshold" value="${calltime.logthreshold:2000000}" />
+		<property name="threshold" value="${calltime.logthreshold:4000000}" />
 	</bean>
 
 	<bean id="run.coreView.prototype" scope="prototype"

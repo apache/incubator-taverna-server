@@ -10,6 +10,7 @@ import static java.lang.System.nanoTime;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.apache.commons.logging.LogFactory.getLog;
+import static org.taverna.server.master.TavernaServer.JMX_ROOT;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -19,6 +20,9 @@ import org.apache.commons.logging.Log;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.jmx.export.annotation.ManagedAttribute;
+import org.springframework.jmx.export.annotation.ManagedResource;
+import org.taverna.server.master.common.version.Version;
 
 /**
  * This class is responsible for timing all invocations of publicly-exposed
@@ -28,10 +32,19 @@ import org.aspectj.lang.annotation.Aspect;
  * @author Donal Fellows
  */
 @Aspect
+@ManagedResource(objectName = JMX_ROOT + "PerformanceMonitor", description = "The performance monitor for Taverna Server "
+		+ Version.JAVA
+		+ ". Writes to application log using the category 'Taverna.Server.Performance'.")
 public class CallTimeLogger {
-	private long threshold = 2000000;
+	private long threshold = 4000000;
 	private Log log = getLog("Taverna.Server.Performance");
 
+	@ManagedAttribute(description = "Threshold beneath which monitored call times are not logged. In nanoseconds.")
+	public long getThreshold() {
+		return threshold;
+	}
+
+	@ManagedAttribute(description = "Threshold beneath which monitored call times are not logged. In nanoseconds.")
 	public void setThreshold(long threshold) {
 		this.threshold = threshold;
 	}
@@ -57,7 +70,7 @@ public class CallTimeLogger {
 			long elapsed = aft - fore;
 			if (elapsed > threshold)
 				log.info(format("call to %s took %.3fms", call.toShortString(),
-						elapsed/1000000.0));
+						elapsed / 1000000.0));
 		}
 	}
 
