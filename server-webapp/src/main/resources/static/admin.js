@@ -123,8 +123,11 @@ var NodeAll;
 	};
 })();
 
-var buttonlist = [ "allowNew", "logFaults", "logWorkflows" ];
+/** The IDs of boolean-coupled buttons. */
+var buttonlist = [ "allowNew", "logFaults", "logWorkflows", "generateProvenance" ];
+/** The IDs of values that track server variables without setting things. */
 var readonlies = [ "invokationCount", "lastExitCode", "runCount", "startupTime", "operatingCount" ];
+/** The IDs of text/numeric-coupled entries. */
 var entries = [ "defaultLifetime", "executeWorkflowScript", "javaBinary",
 		"registrationPollMillis", "registrationWaitSeconds", "registryHost",
 		"registryPort", "runLimit", "runasPasswordFile", "serverForkerJar",
