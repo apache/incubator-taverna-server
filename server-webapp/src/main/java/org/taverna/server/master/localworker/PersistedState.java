@@ -21,8 +21,10 @@ import org.taverna.server.master.worker.WorkerModel;
  * 
  * @author Donal Fellows
  */
-// WARNING! If you change the name of this class, update persistence.xml as
-// well!
+/*
+ * WARNING! If you change the name of this class, update persistence.xml as
+ * well!
+ */
 @PersistenceCapable(table = PersistedState.TABLE)
 class PersistedState implements WorkerModel {
 	static final String TABLE = "LOCALWORKERSTATE__PERSISTEDSTATE";

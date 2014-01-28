@@ -88,7 +88,7 @@ public class SecurityContextFactory implements
 	@PostConstruct
 	void setAsSingleton() {
 		installAsInstance(this);
-		if (getProvider(PROVIDER_NAME) == null) {
+		if (getProvider(PROVIDER_NAME) == null)
 			try {
 				provider = new BouncyCastleProvider();
 				if (addProvider(provider) == -1)
@@ -99,7 +99,6 @@ public class SecurityContextFactory implements
 								+ "might be OK if already configured", e);
 				provider = null;
 			}
-		}
 	}
 
 	@Required

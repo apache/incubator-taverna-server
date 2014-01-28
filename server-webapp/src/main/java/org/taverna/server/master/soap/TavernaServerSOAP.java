@@ -44,7 +44,7 @@ import org.taverna.server.master.rest.TavernaServerREST;
 import org.taverna.server.port_description.OutputDescription;
 
 /**
- * The SOAP service interface to Taverna 2.5.2 Server.
+ * The SOAP service interface to Taverna 2.5.3 Server.
  * 
  * @author Donal Fellows
  * @see TavernaServerREST
