@@ -389,8 +389,8 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			pb.command().add("-outputdir");
 			pb.command().add(out.getAbsolutePath());
 			// Enable provenance generation
-			pb.command().add("-embedded");
 			if (generateProvenance) {
+				pb.command().add("-embedded");
 				pb.command().add("-provenance");
 				pb.command().add("-provbundle");
 				pb.command().add("out.bundle.zip");
