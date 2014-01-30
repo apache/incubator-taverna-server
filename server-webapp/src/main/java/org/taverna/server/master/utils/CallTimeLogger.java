@@ -60,7 +60,7 @@ public class CallTimeLogger {
 	 *             If anything goes wrong with the wrapped call.
 	 * @see System#nanoTime()
 	 */
-	@Around("@annotation(org.taverna.server.master.utils.CallTimeLogger.PerfLogged)")
+	//@Around("@annotation(org.taverna.server.master.utils.CallTimeLogger.PerfLogged)")
 	public Object time(ProceedingJoinPoint call) throws Throwable {
 		long fore = nanoTime();
 		try {
