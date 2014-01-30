@@ -301,6 +301,9 @@ public class RemoteRunDelegate implements TavernaRun {
 			log.info("still working on setting status of run " + id + " to "
 					+ s, e);
 			return e.getMessage();
+		} catch (InterruptedException e) {
+			throw new BadStateChangeException(
+					"interrupted while waiting to insert notification into database");
 		}
 	}
 

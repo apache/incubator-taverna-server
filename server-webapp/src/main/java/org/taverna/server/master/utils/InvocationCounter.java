@@ -26,7 +26,7 @@ import org.aspectj.lang.annotation.Before;
 public class InvocationCounter {
 	private int count;
 
-	//@Before("@annotation(org.taverna.server.master.utils.InvocationCounter.CallCounted)")
+	@Before("@annotation(org.taverna.server.master.utils.InvocationCounter.CallCounted)")
 	public synchronized void count() {
 		count++;
 	}

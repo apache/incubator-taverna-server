@@ -453,6 +453,7 @@
 		<property name="expiryAgeDays" value="${atom.lifespan}" />
 		<property name="persistenceManagerFactory" ref="pmf" />
 		<property name="uriBuilderFactory" ref="feed" />
+		<property name="self" ref="dispatch.atom" />
 	</bean>
 
 	<bean id="worker.notifier"
