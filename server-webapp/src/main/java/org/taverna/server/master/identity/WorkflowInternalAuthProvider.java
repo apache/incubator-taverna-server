@@ -37,6 +37,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.interfaces.LocalIdentityMapper;
 import org.taverna.server.master.interfaces.RunStore;
+import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
 import org.taverna.server.master.utils.UsernamePrincipal;
 import org.taverna.server.master.worker.RunDatabaseDAO;
 
@@ -193,6 +194,7 @@ public class WorkflowInternalAuthProvider extends
 	}
 
 	@Override
+	@PerfLogged
 	protected final void additionalAuthenticationChecks(UserDetails userRecord,
 			UsernamePasswordAuthenticationToken token) {
 		try {
@@ -209,6 +211,7 @@ public class WorkflowInternalAuthProvider extends
 
 	@Override
 	@NonNull
+	@PerfLogged
 	protected final UserDetails retrieveUser(String username,
 			UsernamePasswordAuthenticationToken token) {
 		try {
@@ -258,6 +261,7 @@ public class WorkflowInternalAuthProvider extends
 		}
 
 		@Override
+		@PerfLogged
 		public String getUsernameForPrincipal(UsernamePrincipal user) {
 			Authentication auth = SecurityContextHolder.getContext()
 					.getAuthentication();
