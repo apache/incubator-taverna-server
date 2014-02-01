@@ -37,6 +37,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.core.userdetails.memory.UserAttribute;
 import org.springframework.security.core.userdetails.memory.UserAttributeEditor;
+import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
 import org.taverna.server.master.utils.JDOSupport;
 
 /**
@@ -372,6 +373,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		}
 
 		@Override
+		@PerfLogged
 		public UserDetails loadUserByUsername(String username) {
 			int epoch = realStore.getEpoch();
 			UserDetails details = null;
