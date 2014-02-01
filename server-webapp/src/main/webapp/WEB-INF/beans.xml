@@ -486,11 +486,16 @@
 	<bean id="authProvider"
 		class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
 		<property name="passwordEncoder" ref="passwordEncoder" />
-		<property name="userDetailsService" ref="userStore" />
+		<property name="userDetailsService">
+			<bean class="org.taverna.server.master.identity.UserStore.CachedUserStore">
+				<property name="realStore" ref="userStore" />
+			</bean>
+		</property>
 	</bean>
 	<bean id="workflowInternalAuthProvder"
 		class="org.taverna.server.master.identity.WorkflowInternalAuthProvider">
 		<property name="dao" ref="worker.runDAO" />
+		<property name="cacheBound" value="${default.runlimit}" />
 	</bean>
 	<bean id="velocity" class="org.apache.velocity.app.VelocityEngine"
 		init-method="init" lazy-init="false">

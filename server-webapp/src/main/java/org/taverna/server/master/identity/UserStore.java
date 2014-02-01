@@ -23,6 +23,7 @@ import javax.annotation.PreDestroy;
 import javax.jdo.annotations.PersistenceAware;
 
 import org.apache.commons.logging.Log;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedOperation;
@@ -61,6 +62,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 	private Map<String, BootstrapUserInfo> base = new HashMap<String, BootstrapUserInfo>();
 	private String defLocalUser;
 	private PasswordEncoder encoder;
+	private volatile int epoch;
 
 	/**
 	 * Install the encoder that will be used to turn a plaintext password into
@@ -122,6 +124,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 				persist(u);
 			}
 		base = null;
+		epoch++;
 	}
 
 	/**
@@ -203,6 +206,8 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		if (username.matches(".*[^a-zA-Z0-9].*"))
 			throw new IllegalArgumentException(
 					"bad user name; must be pure alphanumeric");
+		if (getById(username) != null)
+			throw new IllegalArgumentException("user name already exists");
 		User u = new User();
 		u.setDisabled(true);
 		u.setAdmin(false);
@@ -214,6 +219,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 			u.setLocalUsername(defLocalUser);
 		log.info("creating user for " + username);
 		persist(u);
+		epoch++;
 	}
 
 	/**
@@ -235,6 +241,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		if (u != null) {
 			u.setDisabled(!enabled);
 			log.info((enabled ? "enabling" : "disabling") + " user " + username);
+			epoch++;
 		}
 	}
 
@@ -258,6 +265,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 			u.setAdmin(admin);
 			log.info((admin ? "enabling" : "disabling") + " user " + username
 					+ " admin status");
+			epoch++;
 		}
 	}
 
@@ -279,6 +287,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		if (u != null) {
 			installPassword(u, password);
 			log.info("changing password for user " + username);
+			epoch++;
 		}
 	}
 
@@ -301,6 +310,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 			u.setLocalUsername(localUsername);
 			log.info("mapping user " + username + " to local account "
 					+ localUsername);
+			epoch++;
 		}
 	}
 
@@ -316,6 +326,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 	public void deleteUser(String username) {
 		delete(getById(username));
 		log.info("deleting user " + username);
+		epoch++;
 	}
 
 	@Override
@@ -344,6 +355,40 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		if (u != null)
 			return u;
 		throw new UsernameNotFoundException("who are you?");
+	}
+
+	int getEpoch() {
+		return epoch;
+	}
+
+	public static class CachedUserStore implements UserDetailsService {
+		private volatile int epoch;
+		private Map<String, UserDetails> cache = new HashMap<String, UserDetails>();
+		private UserStore realStore;
+
+		@Required
+		public void setRealStore(UserStore store) {
+			this.realStore = store;
+		}
+
+		@Override
+		public UserDetails loadUserByUsername(String username) {
+			int epoch = realStore.getEpoch();
+			UserDetails details = null;
+			synchronized (cache) {
+				if (epoch != this.epoch)
+					cache.clear();
+				else
+					details = cache.get(username);
+			}
+			if (details == null) {
+				details = realStore.loadUserByUsername(username);
+				synchronized (cache) {
+					cache.put(username, details);
+				}
+			}
+			return details;
+		}
 	}
 
 	private static class BootstrapUserInfo {
