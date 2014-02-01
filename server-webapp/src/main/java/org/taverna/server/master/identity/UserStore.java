@@ -363,7 +363,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 	}
 
 	public static class CachedUserStore implements UserDetailsService {
-		private volatile int epoch;
+		private int epoch;
 		private Map<String, UserDetails> cache = new HashMap<String, UserDetails>();
 		private UserStore realStore;
 
@@ -376,11 +376,13 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		@PerfLogged
 		public UserDetails loadUserByUsername(String username) {
 			int epoch = realStore.getEpoch();
-			UserDetails details = null;
+			UserDetails details;
 			synchronized (cache) {
-				if (epoch != this.epoch)
+				if (epoch != this.epoch) {
 					cache.clear();
-				else
+					this.epoch = epoch;
+					details = null;
+				} else
 					details = cache.get(username);
 			}
 			if (details == null) {
