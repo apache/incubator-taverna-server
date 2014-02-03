@@ -24,7 +24,19 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 /**
- * The rrepresentation of a user in the database.
+ * The representation of a user in the database.
+ * <p>
+ * A user consists logically of a (non-ordered) tuple of items:
+ * <ul>
+ * <li>The {@linkplain #getUsername() user name},
+ * <li>The {@linkplain #getPassword() user's password} (salted, encoded),
+ * <li>Whether the user is {@linkplain #isEnabled() enabled} (i.e., able to log
+ * in),
+ * <li>Whether the user has {@linkplain #isAdmin() administrative privileges}, and
+ * <li>What {@linkplain #getLocalUsername() system (Unix) account} the user's
+ * workflows will run as; separation between different users that are mapped to
+ * the same system account is nothing like as strongly enforced.
+ * </ul>
  * 
  * @author Donal Fellows
  */

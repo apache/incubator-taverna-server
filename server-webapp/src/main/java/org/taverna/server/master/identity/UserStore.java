@@ -47,7 +47,8 @@ import org.taverna.server.master.utils.JDOSupport;
  */
 @PersistenceAware
 @ManagedResource(objectName = JMX_ROOT + "Users", description = "The user database.")
-public class UserStore extends JDOSupport<User> implements UserDetailsService {
+public class UserStore extends JDOSupport<User> implements UserDetailsService,
+		UserStoreAPI {
 	/** The logger for the user store. */
 	private static Log log = getLog("Taverna.Server.UserDB");
 
@@ -128,24 +129,14 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		epoch++;
 	}
 
-	/**
-	 * List the currently-known account names.
-	 * 
-	 * @return A list of users in the database. Note that this is a snapshot.
-	 */
+	@Override
 	@WithinSingleTransaction
 	@ManagedAttribute(description = "The list of server accounts known about.", currencyTimeLimit = 30)
 	public List<String> getUserNames() {
 		return getUsers();
 	}
 
-	/**
-	 * Get a particular user's description.
-	 * 
-	 * @param userName
-	 *            The username to look up.
-	 * @return A <i>copy</i> of the user description.
-	 */
+	@Override
 	@WithinSingleTransaction
 	public User getUser(String userName) {
 		return detach(getById(userName));
@@ -184,20 +175,10 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		return result;
 	}
 
-	/**
-	 * Create a new user account; the account will be disabled and
-	 * non-administrative by default. Does not create any underlying system
-	 * account.
-	 * 
-	 * @param username
-	 *            The username to create.
-	 * @param password
-	 *            The password to use.
-	 * @param coupleLocalUsername
-	 *            Whether to set the local user name to the 'main' one.
-	 */
+	@Override
 	@WithinSingleTransaction
-	@ManagedOperation(description = "Create a new user account; the account will be disabled and non-administrative by default. Does not create any underlying system account.")
+	@ManagedOperation(description = "Create a new user account; the account will be disabled and "
+			+ "non-administrative by default. Does not create any underlying system account.")
 	@ManagedOperationParameters({
 			@ManagedOperationParameter(name = "username", description = "The username to create."),
 			@ManagedOperationParameter(name = "password", description = "The password to use."),
@@ -223,17 +204,10 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		epoch++;
 	}
 
-	/**
-	 * Set or clear whether this account is enabled. Disabled accounts cannot be
-	 * used to log in.
-	 * 
-	 * @param username
-	 *            The username to adjust.
-	 * @param enabled
-	 *            Whether to enable the account.
-	 */
+	@Override
 	@WithinSingleTransaction
-	@ManagedOperation(description = "Set or clear whether this account is enabled. Disabled accounts cannot be used to log in.")
+	@ManagedOperation(description = "Set or clear whether this account is enabled. "
+			+ "Disabled accounts cannot be used to log in.")
 	@ManagedOperationParameters({
 			@ManagedOperationParameter(name = "username", description = "The username to adjust."),
 			@ManagedOperationParameter(name = "enabled", description = "Whether to enable the account.") })
@@ -246,17 +220,10 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		}
 	}
 
-	/**
-	 * Set or clear the mark on an account that indicates that it has
-	 * administrative privileges.
-	 * 
-	 * @param username
-	 *            The username to adjust.
-	 * @param admin
-	 *            Whether the account has admin privileges.
-	 */
+	@Override
 	@WithinSingleTransaction
-	@ManagedOperation(description = "Set or clear the mark on an account that indicates that it has administrative privileges.")
+	@ManagedOperation(description = "Set or clear the mark on an account that indicates "
+			+ "that it has administrative privileges.")
 	@ManagedOperationParameters({
 			@ManagedOperationParameter(name = "username", description = "The username to adjust."),
 			@ManagedOperationParameter(name = "admin", description = "Whether the account has admin privileges.") })
@@ -270,14 +237,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		}
 	}
 
-	/**
-	 * Change the password for an account.
-	 * 
-	 * @param username
-	 *            The username to adjust.
-	 * @param password
-	 *            The new password to use.
-	 */
+	@Override
 	@WithinSingleTransaction
 	@ManagedOperation(description = "Change the password for an account.")
 	@ManagedOperationParameters({
@@ -292,14 +252,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		}
 	}
 
-	/**
-	 * Change what local system account to use for a server account.
-	 * 
-	 * @param username
-	 *            The username to adjust.
-	 * @param localUsername
-	 *            The new local user account use.
-	 */
+	@Override
 	@WithinSingleTransaction
 	@ManagedOperation(description = "Change what local system account to use for a server account.")
 	@ManagedOperationParameters({
@@ -315,14 +268,10 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		}
 	}
 
-	/**
-	 * Delete a server account. The underlying system account is not modified.
-	 * 
-	 * @param username
-	 *            The username to delete.
-	 */
+	@Override
 	@WithinSingleTransaction
-	@ManagedOperation(description = "Delete a server account. The underlying system account is not modified.")
+	@ManagedOperation(description = "Delete a server account. The underlying "
+			+ "system account is not modified.")
 	@ManagedOperationParameters(@ManagedOperationParameter(name = "username", description = "The username to delete."))
 	public void deleteUser(String username) {
 		delete(getById(username));
