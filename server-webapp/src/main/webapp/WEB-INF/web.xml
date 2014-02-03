@@ -15,6 +15,17 @@
 		<description>Where Spring is to load its bean definitions from. DO NOT
 			CHANGE WITHOUT CONSULTING DOCUMENTATION.</description>
 	</context-param>
+	<context-param>
+		<param-name>log4jExposeWebAppRoot</param-name>
+		<param-value>false</param-value>
+		<description>
+			THIS IS STUPID! We have to do this so that Tomcat webapps do not
+			leak their configurations into each other via the log4j support
+			trying to be "smart".
+			http://javacolors.blogspot.co.uk/2010/08/tomcat-and-webxmls-webapprootkey.html
+			If you change this, good luck hunting down the weird crashes.
+		</description>
+	</context-param>
 
 	<filter>
 		<filter-name>springSecurityFilterChain</filter-name>
