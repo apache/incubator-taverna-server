@@ -148,8 +148,9 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 	 */
 
 	private boolean matchType(MediaType a, MediaType b) {
-		log.debug("comparing " + a.getType() + "/" + a.getSubtype() + " and "
-				+ b.getType() + "/" + b.getSubtype());
+		if (log.isDebugEnabled())
+			log.debug("comparing " + a.getType() + "/" + a.getSubtype()
+					+ " and " + b.getType() + "/" + b.getSubtype());
 		return (a.isWildcardType() || b.isWildcardType() || a.getType().equals(
 				b.getType()))
 				&& (a.isWildcardSubtype() || b.isWildcardSubtype() || a

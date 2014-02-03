@@ -132,8 +132,9 @@ public class JabberDispatcher implements MessageDispatcher {
 
 		@Override
 		public void processMessage(Chat chat, Message message) {
-			log.debug("unexpectedly received XMPP message from <"
-					+ message.getFrom() + ">; ignoring");
+			if (log.isDebugEnabled())
+				log.debug("unexpectedly received XMPP message from <"
+						+ message.getFrom() + ">; ignoring");
 		}
 	}
 }

@@ -229,16 +229,17 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 			try {
 				sleep(700);
 			} catch (InterruptedException e) {
-				log.debug(
-						"interrupted during wait after asking factories to shut down",
-						e);
+				if (log.isDebugEnabled())
+					log.debug("interrupted during wait after "
+							+ "asking factories to shut down", e);
 			}
 		}
 
 		try {
 			killForker();
 		} catch (Exception e) {
-			log.debug("exception in shutdown of secure-fork process", e);
+			if (log.isDebugEnabled())
+				log.debug("exception in shutdown of secure-fork process", e);
 		}
 	}
 
@@ -438,7 +439,8 @@ class SecureFork implements IdAwareForkRunFactory.MetaFactory {
 		args.addAll(asList(main.getExtraArguments()));
 	}
 
-	SecureFork(IdAwareForkRunFactory main, LocalWorkerState state, Log log) throws IOException {
+	SecureFork(IdAwareForkRunFactory main, LocalWorkerState state, Log log)
+			throws IOException {
 		this.main = main;
 		this.log = log;
 		this.state = state;

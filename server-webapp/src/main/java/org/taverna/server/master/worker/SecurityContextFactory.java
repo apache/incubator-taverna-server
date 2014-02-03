@@ -139,7 +139,9 @@ public class SecurityContextFactory implements
 	@Override
 	public SecurityContextDelegate create(TavernaRun run,
 			UsernamePrincipal owner) throws Exception {
-		log().debug("constructing security context delegate for " + owner);
+		Log log = log();
+		if (log.isDebugEnabled())
+			log.debug("constructing security context delegate for " + owner);
 		RemoteRunDelegate rrd = (RemoteRunDelegate) run;
 		return new HelioSecurityContextDelegateImpl(rrd, owner, this);
 	}

@@ -869,8 +869,10 @@ public class TavernaServerSupport {
 				if (len < 0)
 					break;
 				total += len;
-				log.debug("read " + len + " bytes from source stream (total: "
-						+ total + ") bound for " + name);
+				if (log.isDebugEnabled())
+					log.debug("read " + len
+							+ " bytes from source stream (total: " + total
+							+ ") bound for " + name);
 				if (len == buffer.length)
 					file.appendContents(buffer);
 				else {

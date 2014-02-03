@@ -287,8 +287,9 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 			} catch (RemoteException e) {
 				log.warn(factoryProcessName + " failed to shut down nicely", e);
 			} catch (InterruptedException e) {
-				log.debug("interrupted during wait after asking "
-						+ factoryProcessName + " to shut down", e);
+				if (log.isDebugEnabled())
+					log.debug("interrupted during wait after asking "
+							+ factoryProcessName + " to shut down", e);
 			} finally {
 				factory = null;
 			}

@@ -117,13 +117,15 @@ public class Uri {
 
 	public static URI secure(URI uri) {
 		URI newURI = secure(fromUri(uri)).build();
-		log.debug("rewrote " + uri + " to " + newURI);
+		if (log.isDebugEnabled())
+			log.debug("rewrote " + uri + " to " + newURI);
 		return newURI;
 	}
 
 	public static URI secure(URI base, String uri) {
 		URI newURI = secure(fromUri(base.resolve(uri))).build();
-		log.debug("rewrote " + uri + " to " + newURI);
+		if (log.isDebugEnabled())
+			log.debug("rewrote " + uri + " to " + newURI);
 		return newURI;
 	}
 

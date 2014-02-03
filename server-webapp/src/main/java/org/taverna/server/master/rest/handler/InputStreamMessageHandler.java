@@ -63,10 +63,12 @@ class TransferStream extends InputStream {
 		this.entityStream = new BufferedInputStream(entityStream);
 		if (contentLength != null && contentLength.size() > 0) {
 			this.limit = parseLong(contentLength.get(0));
-			log.debug("will attempt to transfer " + this.limit + " bytes");
+			if (log.isDebugEnabled())
+				log.debug("will attempt to transfer " + this.limit + " bytes");
 		} else {
 			this.limit = -1;
-			log.debug("will attempt to transfer until EOF");
+			if (log.isDebugEnabled())
+				log.debug("will attempt to transfer until EOF");
 		}
 	}
 

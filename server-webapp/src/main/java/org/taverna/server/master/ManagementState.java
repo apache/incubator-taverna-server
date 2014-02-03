@@ -45,7 +45,8 @@ class ManagementState extends JDOSupport<WebappState> implements
 	@Override
 	public void setLogIncomingWorkflows(boolean logIncomingWorkflows) {
 		this.logIncomingWorkflows = logIncomingWorkflows;
-		if (loadedState)self.store();
+		if (loadedState)
+			self.store();
 	}
 
 	@Override
@@ -57,7 +58,8 @@ class ManagementState extends JDOSupport<WebappState> implements
 	@Override
 	public void setAllowNewWorkflowRuns(boolean allowNewWorkflowRuns) {
 		this.allowNewWorkflowRuns = allowNewWorkflowRuns;
-		if (loadedState)self.store();
+		if (loadedState)
+			self.store();
 	}
 
 	@Override
@@ -69,7 +71,8 @@ class ManagementState extends JDOSupport<WebappState> implements
 	@Override
 	public void setLogOutgoingExceptions(boolean logOutgoingExceptions) {
 		this.logOutgoingExceptions = logOutgoingExceptions;
-		if (loadedState)self.store();
+		if (loadedState)
+			self.store();
 	}
 
 	@Override
@@ -87,7 +90,8 @@ class ManagementState extends JDOSupport<WebappState> implements
 	@Override
 	public void setUsageRecordLogFile(String usageRecordLogFile) {
 		this.usageRecordLogFile = usageRecordLogFile;
-		if (loadedState)self.store();
+		if (loadedState)
+			self.store();
 	}
 
 	private static final int KEY = 42; // whatever
@@ -100,6 +104,7 @@ class ManagementState extends JDOSupport<WebappState> implements
 
 	private boolean loadedState;
 	private ManagementState self;
+
 	@Required
 	public void setSelf(ManagementState self) {
 		this.self = self;
@@ -139,7 +144,8 @@ class ManagementState extends JDOSupport<WebappState> implements
 	}
 }
 
-//WARNING! If you change the name of this class, update persistence.xml as well!
+// WARNING! If you change the name of this class, update persistence.xml as
+// well!
 @PersistenceCapable(table = "MANAGEMENTSTATE__WEBAPPSTATE")
 class WebappState implements ManagementModel {
 	public WebappState() {

@@ -69,8 +69,9 @@ public class NotificationEngine {
 						return;
 					}
 				} catch (Exception ex) {
-					log.debug("failed in pseudo-directed dispatch of " + scheme
-							+ ":" + target, ex);
+					if (log.isDebugEnabled())
+						log.debug("failed in pseudo-directed dispatch of "
+								+ scheme + ":" + target, ex);
 					e2 = ex;
 				}
 			if (e2 != null)
@@ -78,7 +79,8 @@ public class NotificationEngine {
 		}
 	}
 
-	private void dispatchUniversally(TavernaRun originator, Message message) throws Exception {
+	private void dispatchUniversally(TavernaRun originator, Message message)
+			throws Exception {
 		for (MessageDispatcher d : universalDispatchers)
 			try {
 				if (d.isAvailable())
@@ -107,7 +109,8 @@ public class NotificationEngine {
 	 * @throws Exception
 	 *             If anything goes wrong with the dispatch process.
 	 */
-	public void dispatchMessage(TavernaRun originator, String destination, Message message) throws Exception {
+	public void dispatchMessage(TavernaRun originator, String destination,
+			Message message) throws Exception {
 		if (destination != null && !destination.trim().isEmpty()) {
 			try {
 				URI toURI = new URI(destination.trim());
@@ -136,6 +139,7 @@ public class NotificationEngine {
 
 	public interface Message {
 		String getContent(String type);
+
 		String getTitle(String type);
 	}
 }

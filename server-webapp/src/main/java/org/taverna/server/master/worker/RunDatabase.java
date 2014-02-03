@@ -159,7 +159,8 @@ public class RunDatabase implements RunStore, RunDBSupport {
 			if (run != null)
 				run.ping();
 		} catch (UnknownRunException e) {
-			log.debug("stale mapping in cache?", e);
+			if (log.isDebugEnabled())
+				log.debug("stale mapping in cache?", e);
 			// Don't need to flush the cache; this happens when cleaning anyway
 			run = null;
 		}
@@ -176,7 +177,8 @@ public class RunDatabase implements RunStore, RunDBSupport {
 		try {
 			UUID.fromString(uuid);
 		} catch (IllegalArgumentException e) {
-			log.debug("run ID does not look like UUID; rejecting...");
+			if (log.isDebugEnabled())
+				log.debug("run ID does not look like UUID; rejecting...");
 			throw new UnknownRunException();
 		}
 		TavernaRun run = get(uuid);
@@ -252,7 +254,9 @@ public class RunDatabase implements RunStore, RunDBSupport {
 					cache.remove(uuid);
 				}
 		} catch (RuntimeException e) {
-			log.debug("problem persisting the deletion of the run " + uuid, e);
+			if (log.isDebugEnabled())
+				log.debug("problem persisting the deletion of the run " + uuid,
+						e);
 		}
 	}
 

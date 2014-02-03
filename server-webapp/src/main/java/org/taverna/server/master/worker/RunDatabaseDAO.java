@@ -53,7 +53,8 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 
 	@SuppressWarnings("unchecked")
 	private List<String> nameRuns() {
-		log.debug("fetching all run names");
+		if (log.isDebugEnabled())
+			log.debug("fetching all run names");
 		return (List<String>) namedQuery("names").execute();
 	}
 
@@ -62,7 +63,8 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	 */
 	@WithinSingleTransaction
 	public int countRuns() {
-		log.debug("counting the number of runs");
+		if (log.isDebugEnabled())
+			log.debug("counting the number of runs");
 		return (Integer) namedQuery("count").execute();
 	}
 
@@ -78,7 +80,8 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 
 	@Nullable
 	private RunConnection pickRun(@NonNull String name) {
-		log.debug("fetching the run called " + name);
+		if (log.isDebugEnabled())
+			log.debug("fetching the run called " + name);
 		try {
 			RunConnection rc = getById(name);
 			if (rc == null)
@@ -249,15 +252,19 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	@PerfLogged
 	@WithinSingleTransaction
 	public List<String> doClean() {
-		log.debug("deleting runs that timed out before " + new Date());
+		if (log.isDebugEnabled())
+			log.debug("deleting runs that timed out before " + new Date());
 		List<String> toDelete = expiredRuns();
-		log.debug("found " + toDelete.size() + " runs to delete");
+		if (log.isDebugEnabled())
+			log.debug("found " + toDelete.size() + " runs to delete");
 		for (String id : toDelete) {
 			RunConnection rc = getById(id);
 			try {
 				rc.fromDBform(facade).run.destroy();
 			} catch (Exception e) {
-				log.debug("failed to delete execution resource for " + id, e);
+				if (log.isDebugEnabled())
+					log.debug("failed to delete execution resource for " + id,
+							e);
 			}
 			delete(rc);
 		}

@@ -69,7 +69,8 @@ public class EventDAO extends JDOSupport<Event> implements MessageDispatcher {
 		@SuppressWarnings("unchecked")
 		List<String> ids = (List<String>) namedQuery("eventsForUser").execute(
 				user.getName());
-		log.debug("found " + ids.size() + " events for user " + user);
+		if (log.isDebugEnabled())
+			log.debug("found " + ids.size() + " events for user " + user);
 
 		List<Event> result = new ArrayList<Event>();
 		for (String id : ids) {
@@ -94,8 +95,9 @@ public class EventDAO extends JDOSupport<Event> implements MessageDispatcher {
 		@SuppressWarnings("unchecked")
 		List<String> ids = (List<String>) namedQuery("eventForUserAndId")
 				.execute(user.getName(), id);
-		log.debug("found " + ids.size() + " events for user " + user
-				+ " with id = " + id);
+		if (log.isDebugEnabled())
+			log.debug("found " + ids.size() + " events for user " + user
+					+ " with id = " + id);
 
 		if (ids.size() != 1)
 			throw new IllegalArgumentException("no such id");
@@ -124,7 +126,7 @@ public class EventDAO extends JDOSupport<Event> implements MessageDispatcher {
 		@SuppressWarnings("unchecked")
 		List<String> ids = (List<String>) namedQuery("eventsFromBefore")
 				.execute(death);
-		if (!ids.isEmpty())
+		if (log.isDebugEnabled() && !ids.isEmpty())
 			log.debug("found " + ids.size()
 					+ " events to be squelched (older than " + death + ")");
 
