@@ -483,12 +483,17 @@
 		<property name="abdera" ref="abdera" />
 	</bean>
 
-	<bean id="authProvider"
-		class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
-		<property name="passwordEncoder" ref="passwordEncoder" />
-		<property name="userDetailsService">
-			<bean class="org.taverna.server.master.identity.UserStore.CachedUserStore">
-				<property name="realStore" ref="userStore" />
+	<bean id="authProvider" class="org.taverna.server.master.identity.LoggingAuthProvider">
+		<property name="delegate">
+			<bean
+				class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
+				<property name="passwordEncoder" ref="passwordEncoder" />
+				<property name="userDetailsService">
+					<bean
+						class="org.taverna.server.master.identity.UserStore.CachedUserStore">
+						<property name="realStore" ref="userStore" />
+					</bean>
+				</property>
 			</bean>
 		</property>
 	</bean>

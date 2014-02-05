@@ -130,6 +130,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService,
 	}
 
 	@Override
+	@PerfLogged
 	@WithinSingleTransaction
 	@ManagedAttribute(description = "The list of server accounts known about.", currencyTimeLimit = 30)
 	public List<String> getUserNames() {
@@ -137,6 +138,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService,
 	}
 
 	@Override
+	@PerfLogged
 	@WithinSingleTransaction
 	public User getUser(String userName) {
 		return detach(getById(userName));
@@ -149,6 +151,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService,
 	 *            The username to look up.
 	 * @return A description map intended for use by a server admin over JMX.
 	 */
+	@PerfLogged
 	@WithinSingleTransaction
 	@ManagedOperation(description = "Get information about a server account.")
 	@ManagedOperationParameters(@ManagedOperationParameter(name = "userName", description = "The username to look up."))
@@ -167,6 +170,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService,
 	 * 
 	 * @return A list of user details, <i>copied</i> out of the database.
 	 */
+	@PerfLogged
 	@WithinSingleTransaction
 	public List<UserDetails> listUsers() {
 		ArrayList<UserDetails> result = new ArrayList<UserDetails>();
@@ -176,6 +180,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService,
 	}
 
 	@Override
+	@PerfLogged
 	@WithinSingleTransaction
 	@ManagedOperation(description = "Create a new user account; the account will be disabled and "
 			+ "non-administrative by default. Does not create any underlying system account.")
@@ -205,6 +210,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService,
 	}
 
 	@Override
+	@PerfLogged
 	@WithinSingleTransaction
 	@ManagedOperation(description = "Set or clear whether this account is enabled. "
 			+ "Disabled accounts cannot be used to log in.")
@@ -221,6 +227,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService,
 	}
 
 	@Override
+	@PerfLogged
 	@WithinSingleTransaction
 	@ManagedOperation(description = "Set or clear the mark on an account that indicates "
 			+ "that it has administrative privileges.")
@@ -238,6 +245,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService,
 	}
 
 	@Override
+	@PerfLogged
 	@WithinSingleTransaction
 	@ManagedOperation(description = "Change the password for an account.")
 	@ManagedOperationParameters({
@@ -253,6 +261,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService,
 	}
 
 	@Override
+	@PerfLogged
 	@WithinSingleTransaction
 	@ManagedOperation(description = "Change what local system account to use for a server account.")
 	@ManagedOperationParameters({
@@ -269,6 +278,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService,
 	}
 
 	@Override
+	@PerfLogged
 	@WithinSingleTransaction
 	@ManagedOperation(description = "Delete a server account. The underlying "
 			+ "system account is not modified.")
@@ -280,6 +290,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService,
 	}
 
 	@Override
+	@PerfLogged
 	@WithinSingleTransaction
 	public UserDetails loadUserByUsername(String username)
 			throws UsernameNotFoundException, DataAccessException {
