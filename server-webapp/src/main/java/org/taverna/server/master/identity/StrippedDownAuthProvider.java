@@ -1,5 +1,10 @@
 package org.taverna.server.master.identity;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.annotation.PreDestroy;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -45,13 +50,13 @@ public class StrippedDownAuthProvider implements AuthenticationProvider {
 	private String userNotFoundEncodedPassword;
 	private UserDetailsService userDetailsService;
 	private PasswordEncoder passwordEncoder;
+	private Map<String, String> authCache = new HashMap<String, String>();
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	@PerfLogged
 	@Override
 	public Authentication authenticate(Authentication authentication)
 			throws AuthenticationException {
-		long t0 = System.nanoTime();
 
 		if (!(authentication instanceof UsernamePasswordAuthenticationToken))
 			throw new IllegalArgumentException(
@@ -64,8 +69,6 @@ public class StrippedDownAuthProvider implements AuthenticationProvider {
 
 		UserDetails user;
 
-		long t1 = System.nanoTime();
-
 		try {
 			user = retrieveUser(username, auth);
 			if (user == null)
@@ -77,8 +80,6 @@ public class StrippedDownAuthProvider implements AuthenticationProvider {
 			throw new BadCredentialsException("Bad credentials");
 		}
 
-		long t2 = System.nanoTime();
-
 		// Pre-auth
 		if (!user.isAccountNonLocked())
 			throw new LockedException("User account is locked");
@@ -86,22 +87,54 @@ public class StrippedDownAuthProvider implements AuthenticationProvider {
 			throw new DisabledException("User account is disabled");
 		if (!user.isAccountNonExpired())
 			throw new AccountExpiredException("User account has expired");
+		Object credentials = auth.getCredentials();
+		if (credentials == null) {
+			logger.debug("Authentication failed: no credentials provided");
+
+			throw new BadCredentialsException("Bad credentials");
+		}
+
+		long t1 = System.nanoTime();
+		String providedPassword = credentials.toString();
+		boolean matched = false;
+		synchronized (authCache) {
+			String pw = authCache.get(username);
+			if (pw != null && providedPassword != null) {
+				if (pw.equals(providedPassword))
+					matched = true;
+				else
+					authCache.remove(username);
+			}
+		}
 		// Auth
-		additionalAuthenticationChecks(user, auth);
+		if (!matched) {
+			if (!passwordEncoder.matches(providedPassword, user.getPassword())) {
+				logger.debug("Authentication failed: password does not match stored value");
+
+				throw new BadCredentialsException("Bad credentials");
+			}
+			if (providedPassword != null)
+				synchronized (authCache) {
+					authCache.put(username, providedPassword);
+				}
+		}
+		long t2 = System.nanoTime();
+
 		// Post-auth
 		if (!user.isCredentialsNonExpired())
 			throw new CredentialsExpiredException(
 					"User credentials have expired");
 
-		long t3 = System.nanoTime();
-
 		try {
 			return createSuccessAuthentication(user, auth, user);
 		} finally {
-			long t4 = System.nanoTime();
-			long i0=t1-t0, i1=t2-t1, i2=t3-t2, i3 = t4-t3;
-			logger.info(String.format("timings: getPrincipal=%d, getUser=%d, checkAuth=%d, %d",i0,i1,i2,i3));
+			logger.info(String.format("timing: checkAuth=%d", t2 - t1));
 		}
+	}
+
+	@PreDestroy
+	void clearCache() {
+		authCache.clear();
 	}
 
 	/**
@@ -145,46 +178,6 @@ public class StrippedDownAuthProvider implements AuthenticationProvider {
 	public boolean supports(Class<?> authentication) {
 		return UsernamePasswordAuthenticationToken.class
 				.isAssignableFrom(authentication);
-	}
-
-	/**
-	 * Allows subclasses to perform any additional checks of a returned (or
-	 * cached) <code>UserDetails</code> for a given authentication request.
-	 * Generally a subclass will at least compare the
-	 * {@link Authentication#getCredentials()} with a
-	 * {@link UserDetails#getPassword()}. If custom logic is needed to compare
-	 * additional properties of <code>UserDetails</code> and/or
-	 * <code>UsernamePasswordAuthenticationToken</code>, these should also
-	 * appear in this method.
-	 * 
-	 * @param userDetails
-	 *            as retrieved from the
-	 *            {@link #retrieveUser(String, UsernamePasswordAuthenticationToken)}
-	 *            or <code>UserCache</code>
-	 * @param authentication
-	 *            the current request that needs to be authenticated
-	 * 
-	 * @throws AuthenticationException
-	 *             AuthenticationException if the credentials could not be
-	 *             validated (generally a <code>BadCredentialsException</code>,
-	 *             an <code>AuthenticationServiceException</code>)
-	 */
-	private void additionalAuthenticationChecks(UserDetails userDetails,
-			UsernamePasswordAuthenticationToken authentication)
-			throws AuthenticationException {
-		Object credentials = authentication.getCredentials();
-		if (credentials == null) {
-			logger.debug("Authentication failed: no credentials provided");
-
-			throw new BadCredentialsException("Bad credentials");
-		}
-
-		if (!passwordEncoder.matches(credentials.toString(),
-				userDetails.getPassword())) {
-			logger.debug("Authentication failed: password does not match stored value");
-
-			throw new BadCredentialsException("Bad credentials");
-		}
 	}
 
 	/**
