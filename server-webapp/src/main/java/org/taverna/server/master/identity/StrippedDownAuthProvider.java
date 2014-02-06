@@ -94,7 +94,6 @@ public class StrippedDownAuthProvider implements AuthenticationProvider {
 			throw new BadCredentialsException("Bad credentials");
 		}
 
-		long t1 = System.nanoTime();
 		String providedPassword = credentials.toString();
 		boolean matched = false;
 		synchronized (authCache) {
@@ -118,18 +117,13 @@ public class StrippedDownAuthProvider implements AuthenticationProvider {
 					authCache.put(username, providedPassword);
 				}
 		}
-		long t2 = System.nanoTime();
 
 		// Post-auth
 		if (!user.isCredentialsNonExpired())
 			throw new CredentialsExpiredException(
 					"User credentials have expired");
 
-		try {
-			return createSuccessAuthentication(user, auth, user);
-		} finally {
-			logger.info(String.format("timing: checkAuth=%d", t2 - t1));
-		}
+		return createSuccessAuthentication(user, auth, user);
 	}
 
 	@PreDestroy
