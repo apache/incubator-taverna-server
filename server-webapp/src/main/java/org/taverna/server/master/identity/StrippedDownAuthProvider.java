@@ -62,7 +62,7 @@ public class StrippedDownAuthProvider implements AuthenticationProvider {
 			timestamp = System.currentTimeMillis();
 		}
 		boolean valid(String password) {
-			return creds.equals(password) && timestamp+VALIDITY < System.currentTimeMillis();
+			return creds.equals(password) && timestamp+VALIDITY > System.currentTimeMillis();
 		}
 	}
 
