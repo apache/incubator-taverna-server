@@ -50,8 +50,21 @@ public class StrippedDownAuthProvider implements AuthenticationProvider {
 	private String userNotFoundEncodedPassword;
 	private UserDetailsService userDetailsService;
 	private PasswordEncoder passwordEncoder;
-	private Map<String, String> authCache = new HashMap<String, String>();
+	private Map<String, AuthCacheEntry> authCache = new HashMap<String, AuthCacheEntry>();
 	protected final Log logger = LogFactory.getLog(getClass());
+
+	private static class AuthCacheEntry {
+		private String creds;
+		private long timestamp;
+		private static final long VALIDITY = 1000 * 60 * 20;
+		AuthCacheEntry(String credentials) {
+			creds = credentials;
+			timestamp = System.currentTimeMillis();
+		}
+		boolean valid(String password) {
+			return creds.equals(password) && timestamp+VALIDITY < System.currentTimeMillis();
+		}
+	}
 
 	@PerfLogged
 	@Override
@@ -97,9 +110,9 @@ public class StrippedDownAuthProvider implements AuthenticationProvider {
 		String providedPassword = credentials.toString();
 		boolean matched = false;
 		synchronized (authCache) {
-			String pw = authCache.get(username);
+			AuthCacheEntry pw = authCache.get(username);
 			if (pw != null && providedPassword != null) {
-				if (pw.equals(providedPassword))
+				if (pw.valid(providedPassword))
 					matched = true;
 				else
 					authCache.remove(username);
@@ -114,7 +127,7 @@ public class StrippedDownAuthProvider implements AuthenticationProvider {
 			}
 			if (providedPassword != null)
 				synchronized (authCache) {
-					authCache.put(username, providedPassword);
+					authCache.put(username, new AuthCacheEntry(providedPassword));
 				}
 		}
 
