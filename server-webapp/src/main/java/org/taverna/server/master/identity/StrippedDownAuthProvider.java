@@ -51,6 +51,8 @@ public class StrippedDownAuthProvider implements AuthenticationProvider {
 	@Override
 	public Authentication authenticate(Authentication authentication)
 			throws AuthenticationException {
+		long t0 = System.nanoTime();
+
 		if (!(authentication instanceof UsernamePasswordAuthenticationToken))
 			throw new IllegalArgumentException(
 					"can only authenticate against username+password");
@@ -62,6 +64,8 @@ public class StrippedDownAuthProvider implements AuthenticationProvider {
 
 		UserDetails user;
 
+		long t1 = System.nanoTime();
+
 		try {
 			user = retrieveUser(username, auth);
 			if (user == null)
@@ -72,6 +76,8 @@ public class StrippedDownAuthProvider implements AuthenticationProvider {
 				logger.debug("User '" + username + "' not found", notFound);
 			throw new BadCredentialsException("Bad credentials");
 		}
+
+		long t2 = System.nanoTime();
 
 		// Pre-auth
 		if (!user.isAccountNonLocked())
@@ -87,7 +93,15 @@ public class StrippedDownAuthProvider implements AuthenticationProvider {
 			throw new CredentialsExpiredException(
 					"User credentials have expired");
 
-		return createSuccessAuthentication(user, auth, user);
+		long t3 = System.nanoTime();
+
+		try {
+			return createSuccessAuthentication(user, auth, user);
+		} finally {
+			long t4 = System.nanoTime();
+			long i0=t1-t0, i1=t2-t1, i2=t3-t2, i3 = t4-t3;
+			logger.info(String.format("timings: getPrincipal=%d, getUser=%d, checkAuth=%d, %d",i0,i1,i2,i3));
+		}
 	}
 
 	/**
