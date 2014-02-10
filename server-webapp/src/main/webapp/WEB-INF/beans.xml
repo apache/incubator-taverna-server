@@ -484,13 +484,12 @@
 	</bean>
 
 	<bean id="authProvider" class="org.taverna.server.master.identity.StrippedDownAuthProvider">
-				<property name="passwordEncoder" ref="passwordEncoder" />
-				<property name="userDetailsService">
-					<bean
-						class="org.taverna.server.master.identity.UserStore.CachedUserStore">
-						<property name="realStore" ref="userStore" />
-					</bean>
-				</property>
+		<property name="passwordEncoder" ref="passwordEncoder" />
+		<property name="userDetailsService">
+			<bean class="org.taverna.server.master.identity.UserStore.CachedUserStore">
+				<property name="realStore" ref="userStore" />
+			</bean>
+		</property>
 	</bean>
 	<bean id="workflowInternalAuthProvder"
 		class="org.taverna.server.master.identity.WorkflowInternalAuthProvider">
