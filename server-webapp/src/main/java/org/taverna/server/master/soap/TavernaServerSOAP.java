@@ -144,9 +144,7 @@ public interface TavernaServerSOAP {
 
 	/**
 	 * Destroy a run immediately. This might or might not actually relinquish
-	 * resources; that's up to the service implementation and deployment. This
-	 * does <i>not</i> remove any entries associated with the handle in the
-	 * provenance database.
+	 * resources; that's up to the service implementation and deployment.
 	 * 
 	 * @param runName
 	 *            The handle of the run.

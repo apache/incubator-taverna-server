@@ -16,11 +16,14 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 
 /**
  * Logs the time it takes to service HTTP calls into Taverna Server.
+ * <p>
+ * This class is currently not used.
  * 
  * @author Donal Fellows
  */
@@ -38,13 +41,15 @@ public class CallTimingFilter implements Filter {
 	public void doFilter(ServletRequest request, ServletResponse response,
 			FilterChain chain) throws IOException, ServletException {
 		if (request instanceof HttpServletRequest)
-			doFilter((HttpServletRequest) request, response, chain);
+			doFilter((HttpServletRequest) request,
+					(HttpServletResponse) response, chain);
 		else
 			chain.doFilter(request, response);
 	}
 
-	public void doFilter(HttpServletRequest request, ServletResponse response,
-			FilterChain chain) throws IOException, ServletException {
+	public void doFilter(HttpServletRequest request,
+			HttpServletResponse response, FilterChain chain)
+			throws IOException, ServletException {
 		long start = nanoTime();
 		chain.doFilter(request, response);
 		long elapsedTime = nanoTime() - start;
