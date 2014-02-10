@@ -83,3 +83,6 @@ TAVSERV-297 Running instance of Taverna Server 2.4.1 hangs after a while;
             submitting a new workflow using REST API results in "HTTP 403
             Permission denied"
 ---- 2.5.2 release ----
+TAVSERV-329 Master feed broken
+TAVSERV-332 Massively degraded performance of 2.5.2
+---- 2.5.3 release ----

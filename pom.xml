@@ -4,7 +4,7 @@
 	<groupId>uk.org.taverna.server</groupId>
 	<artifactId>server</artifactId>
 	<packaging>pom</packaging>
-	<version>2.5.3-SNAPSHOT</version>
+	<version>2.5.3</version>
 	<name>Taverna Server</name>
 	<description>Taverna Server is a service that provides execution of Taverna Workflows, provided they do not access the user interface while executing.</description>
 	<url>http://www.taverna.org.uk/</url>
