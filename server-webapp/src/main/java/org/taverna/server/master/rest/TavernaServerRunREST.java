@@ -531,7 +531,7 @@ public interface TavernaServerRunREST {
 	@Description("Whether to create the run bundle for the workflow run.")
 	@Produces(TEXT)
 	@NonNull
-	String getGenerateProvenance();
+	boolean getGenerateProvenance();
 
 	/**
 	 * @param provenanceFlag
@@ -546,7 +546,7 @@ public interface TavernaServerRunREST {
 	@Consumes(TEXT)
 	@Produces(TEXT)
 	@NonNull
-	String setGenerateProvenance(String provenanceFlag) throws NoUpdateException;
+	boolean setGenerateProvenance(boolean provenanceFlag) throws NoUpdateException;
 
 	/** Get an outline of the operations supported. */
 	@OPTIONS

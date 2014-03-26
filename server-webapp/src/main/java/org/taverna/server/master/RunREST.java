@@ -336,19 +336,18 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 	@CallCounted
 	@PerfLogged
 	@RolesAllowed(USER)
-	public String getGenerateProvenance() {
-		return Boolean.toString(run.getGenerateProvenance());
+	public boolean getGenerateProvenance() {
+		return run.getGenerateProvenance();
 	}
 
 	@Override
 	@CallCounted
 	@PerfLogged
 	@RolesAllowed(USER)
-	public String setGenerateProvenance(String newValue) throws NoUpdateException {
-		boolean b = Boolean.parseBoolean(newValue.trim());
+	public boolean setGenerateProvenance(boolean newValue) throws NoUpdateException {
 		support.permitUpdate(run);
-		run.setGenerateProvenance(b);
-		return Boolean.toString(run.getGenerateProvenance());
+		run.setGenerateProvenance(newValue);
+		return run.getGenerateProvenance();
 	}
 
 	/**
