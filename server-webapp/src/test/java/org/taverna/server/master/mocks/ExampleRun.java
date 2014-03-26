@@ -203,6 +203,7 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 		public String name;
 		public String file;
 		public String value;
+		public String delim;
 
 		public ExampleInput(String name) {
 			this.name = name;
@@ -246,6 +247,22 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 		void reset() {
 			this.file = null;
 			this.value = null;
+		}
+
+		@Override
+		public String getDelimiter() {
+			return delim;
+		}
+
+		@Override
+		public void setDelimiter(String delimiter)
+				throws BadStateChangeException {
+			if (status != Status.Initialized)
+				throw new BadStateChangeException();
+			if (delimiter == null)
+				delim = null;
+			else
+				delim = delimiter.substring(0, 1);
 		}
 	}
 

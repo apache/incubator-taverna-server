@@ -945,6 +945,26 @@ class RunInput implements Input {
 			throw new BadStateChangeException(e);
 		}
 	}
+
+	@Override
+	public String getDelimiter() {
+		try {
+			return i.getDelimiter();
+		} catch (RemoteException e) {
+			return null;
+		}
+	}
+
+	@Override
+	public void setDelimiter(String delimiter) throws BadStateChangeException {
+		try {
+			if (delimiter != null)
+				delimiter = delimiter.substring(0, 1);
+			i.setDelimiter(delimiter);
+		} catch (RemoteException e) {
+			throw new BadStateChangeException(e);
+		}
+	}
 }
 
 @SuppressWarnings("serial")
