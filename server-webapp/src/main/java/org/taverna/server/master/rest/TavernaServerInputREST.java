@@ -282,6 +282,10 @@ public interface TavernaServerInputREST {
 		 */
 		@XmlType(name = "InputContents")
 		public static abstract class AbstractContents {
+			@XmlAttribute
+			public Uri descriptorRef;
+			@XmlAttribute
+			public String delimiter;
 			/**
 			 * The contents of the description of the input port. Meaning not
 			 * defined.
