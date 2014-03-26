@@ -65,6 +65,7 @@ import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Trust;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.common.version.Version;
+import org.taverna.server.master.exceptions.BadPropertyValueException;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.InvalidCredentialException;
@@ -1135,6 +1136,28 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 		if (i == null)
 			i = w.makeInput(portName);
 		i.setValue(portValue);
+	}
+
+	@Override
+	@CallCounted
+	@PerfLogged
+	@RolesAllowed(USER)
+	public void setRunInputPortListDelimiter(String runName, String portName,
+			String delimiter) throws UnknownRunException, NoUpdateException,
+			BadStateChangeException, BadPropertyValueException {
+		TavernaRun w = support.getRun(runName);
+		support.permitUpdate(w);
+		Input i = support.getInput(w, portName);
+		if (i == null)
+			i = w.makeInput(portName);
+		if (delimiter != null) {
+			if (delimiter.length() > 1)
+				throw new BadPropertyValueException("delimiter too long");
+			if (delimiter.charAt(0) < 1 || delimiter.charAt(0) > 127)
+				throw new BadPropertyValueException(
+						"delimiter character must be non-NUL ASCII");
+		}
+		i.setDelimiter(delimiter);
 	}
 
 	@Override

@@ -74,6 +74,11 @@ public class InputDescription extends VersionedElement {
 		@XmlAttribute(name = "portFile", required = false)
 		public String file;
 		/**
+		 * The file assigned to this port.
+		 */
+		@XmlAttribute(name = "listDelimiter", required = false)
+		public String delimiter;
+		/**
 		 * The value assigned to this port.
 		 */
 		@XmlValue
@@ -99,6 +104,7 @@ public class InputDescription extends VersionedElement {
 				file = null;
 				value = input.getValue();
 			}
+			delimiter = input.getDelimiter();
 		}
 	}
 }
