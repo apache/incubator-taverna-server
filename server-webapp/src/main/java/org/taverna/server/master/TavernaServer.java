@@ -1150,6 +1150,8 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 		Input i = support.getInput(w, portName);
 		if (i == null)
 			i = w.makeInput(portName);
+		if (delimiter != null && delimiter.isEmpty())
+			delimiter = null;
 		if (delimiter != null) {
 			if (delimiter.length() > 1)
 				throw new BadPropertyValueException("delimiter too long");
