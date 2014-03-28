@@ -1017,7 +1017,7 @@ public interface Admin {
 	@XmlType(name = "StringList")
 	public static class StringList {
 		@XmlElement
-		public List<String> string = new ArrayList<String>();
+		public List<String> string = new ArrayList<>();
 	}
 
 	/**
@@ -1029,7 +1029,7 @@ public interface Admin {
 	@XmlType(name = "UserList")
 	public static class UserList {
 		@XmlElement
-		public List<URI> user = new ArrayList<URI>();
+		public List<URI> user = new ArrayList<>();
 	}
 
 	@XmlRootElement(name = "userDesc")

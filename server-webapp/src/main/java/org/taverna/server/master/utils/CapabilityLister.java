@@ -24,16 +24,15 @@ public class CapabilityLister {
 
 	@PostConstruct
 	void loadCapabilities() throws IOException {
-		InputStream is = getClass().getResourceAsStream(
-				CAPABILITY_RESOURCE_FILE);
-		if (is != null) {
-			properties.load(is);
-			is.close();
+		try (InputStream is = getClass().getResourceAsStream(
+				CAPABILITY_RESOURCE_FILE)) {
+			if (is != null)
+				properties.load(is);
 		}
 	}
 
 	public List<Capability> getCapabilities() {
-		List<Capability> caps = new ArrayList<Capability>();
+		List<Capability> caps = new ArrayList<>();
 		for (Entry<Object, Object> entry : properties.entrySet()) {
 			Capability c = new Capability();
 			c.capability = URI.create(entry.getKey().toString());

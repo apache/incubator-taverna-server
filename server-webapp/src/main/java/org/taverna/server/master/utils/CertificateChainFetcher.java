@@ -111,7 +111,7 @@ public class CertificateChainFetcher {
 		TrustManagerFactory tmf = TrustManagerFactory.getInstance(algorithm);
 		ks.load(null, null);
 		tmf.init(ks);
-		final Holder<X509Certificate[]> chain = new Holder<X509Certificate[]>();
+		final Holder<X509Certificate[]> chain = new Holder<>();
 		final X509TrustManager defaultTrustManager = (X509TrustManager) tmf
 				.getTrustManagers()[0];
 		context.init(null, new TrustManager[] { new X509TrustManager() {
@@ -134,18 +134,16 @@ public class CertificateChainFetcher {
 			}
 		} }, null);
 		SSLSocketFactory factory = context.getSocketFactory();
-		SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
-		socket.setSoTimeout(timeout);
-		try {
+		try (SSLSocket socket = (SSLSocket) factory.createSocket(host, port)) {
+			socket.setSoTimeout(timeout);
 			socket.startHandshake();
-			socket.close();
 		} catch (SSLException e) {
 			// Ignore
 		}
 		return chain.value;
 	}
 
-	private Map<URI, List<X509Certificate>> cache = new HashMap<URI, List<X509Certificate>>();
+	private Map<URI, List<X509Certificate>> cache = new HashMap<>();
 
 	/**
 	 * Gets the certificate chain for a service identified by URI.

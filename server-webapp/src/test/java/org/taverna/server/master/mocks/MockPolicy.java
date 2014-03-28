@@ -21,7 +21,7 @@ public class MockPolicy extends SimpleServerPolicy {
 
 	public int maxruns = 10;
 	Integer usermaxruns;
-	Set<TavernaRun> denyaccess = new HashSet<TavernaRun>();
+	Set<TavernaRun> denyaccess = new HashSet<>();
 	boolean exnOnUpdate, exnOnCreate, exnOnDelete;
 
 	@Override

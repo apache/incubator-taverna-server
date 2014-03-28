@@ -136,7 +136,7 @@ public class SMSDispatcher extends RateLimitedDispatcher {
 			return;
 
 		// Build the message to send
-		List<NameValuePair> params = new ArrayList<NameValuePair>();
+		List<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair(usernameField, user));
 		params.add(new BasicNameValuePair(passwordField, pass));
 		params.add(new BasicNameValuePair(destinationField, targetParameter));
@@ -149,14 +149,10 @@ public class SMSDispatcher extends RateLimitedDispatcher {
 
 		// Log the response
 		HttpEntity entity = response.getEntity();
-		if (entity != null) {
-			BufferedReader e = new BufferedReader(new InputStreamReader(
-					entity.getContent()));
-			try {
+		if (entity != null)
+			try (BufferedReader e = new BufferedReader(new InputStreamReader(
+					entity.getContent()))) {
 				log.info(e.readLine());
-			} finally {
-				e.close();
 			}
-		}
 	}
 }

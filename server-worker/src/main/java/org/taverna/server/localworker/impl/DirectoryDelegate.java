@@ -17,6 +17,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.collections.MapIterator;
 import org.apache.commons.collections.map.ReferenceMap;
@@ -58,7 +59,7 @@ public class DirectoryDelegate extends UnicastRemoteObject implements
 	@Override
 	public Collection<RemoteDirectoryEntry> getContents()
 			throws RemoteException {
-		ArrayList<RemoteDirectoryEntry> result = new ArrayList<RemoteDirectoryEntry>();
+		List<RemoteDirectoryEntry> result = new ArrayList<>();
 		for (String s : dir.list()) {
 			if (s.equals(".") || s.equals(".."))
 				continue;
@@ -115,7 +116,7 @@ public class DirectoryDelegate extends UnicastRemoteObject implements
 			throw new IOException("tried to destroy main job working directory");
 		Collection<RemoteDirectoryEntry> values;
 		synchronized (localCache) {
-			values = new ArrayList<RemoteDirectoryEntry>(localCache.values());
+			values = new ArrayList<>(localCache.values());
 		}
 		for (RemoteDirectoryEntry obj : values) {
 			if (obj == null)

@@ -239,7 +239,7 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 	@CallCounted
 	@PerfLogged
 	public ServerDescription describeService(UriInfo ui) {
-		jaxrsUriInfo.set(new WeakReference<UriInfo>(ui));
+		jaxrsUriInfo.set(new WeakReference<>(ui));
 		return new ServerDescription(ui, resolve(interactionFeed));
 	}
 
@@ -248,7 +248,7 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 	@PerfLogged
 	@RolesAllowed(USER)
 	public RunList listUsersRuns(UriInfo ui) {
-		jaxrsUriInfo.set(new WeakReference<UriInfo>(ui));
+		jaxrsUriInfo.set(new WeakReference<>(ui));
 		return new RunList(runs(), secure(ui).path("{name}"));
 	}
 
@@ -258,7 +258,7 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 	@RolesAllowed(USER)
 	public Response submitWorkflow(Workflow workflow, UriInfo ui)
 			throws NoUpdateException {
-		jaxrsUriInfo.set(new WeakReference<UriInfo>(ui));
+		jaxrsUriInfo.set(new WeakReference<>(ui));
 		checkCreatePolicy(workflow);
 		String name = support.buildWorkflow(workflow);
 		return created(secure(ui).path("{uuid}").build(name)).build();
@@ -270,7 +270,7 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 	@RolesAllowed(USER)
 	public Response submitWorkflowByURL(List<URI> referenceList, UriInfo ui)
 			throws NoCreateException {
-		jaxrsUriInfo.set(new WeakReference<UriInfo>(ui));
+		jaxrsUriInfo.set(new WeakReference<>(ui));
 		if (referenceList == null || referenceList.size() == 0)
 			throw new NoCreateException("no workflow URI supplied");
 		URI workflowURI = referenceList.get(0);
@@ -298,14 +298,14 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 	@RolesAllowed({ USER, SELF })
 	public TavernaServerRunREST getRunResource(String runName, UriInfo ui)
 			throws UnknownRunException {
-		jaxrsUriInfo.set(new WeakReference<UriInfo>(ui));
+		jaxrsUriInfo.set(new WeakReference<>(ui));
 		RunREST rr = makeRunInterface();
 		rr.setRun(support.getRun(runName));
 		rr.setRunName(runName);
 		return rr;
 	}
 
-	private ThreadLocal<Reference<UriInfo>> jaxrsUriInfo = new InheritableThreadLocal<Reference<UriInfo>>();
+	private ThreadLocal<Reference<UriInfo>> jaxrsUriInfo = new InheritableThreadLocal<>();
 
 	private UriInfo getUriInfo() {
 		if (jaxrsUriInfo.get() == null)
@@ -344,7 +344,7 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 	@PerfLogged
 	@RolesAllowed(USER)
 	public RunReference[] listRuns() {
-		ArrayList<RunReference> ws = new ArrayList<RunReference>();
+		ArrayList<RunReference> ws = new ArrayList<>();
 		UriBuilder ub = getRunUriBuilder();
 		for (String runName : runs().keySet())
 			ws.add(new RunReference(runName, ub));
@@ -531,12 +531,9 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 				if (issue.isEmpty())
 					return "unknown reason for partial change";
 				return issue;
-			} catch (RuntimeException re) {
-				log.info("failed to start run " + runName, re);
-				throw re;
-			} catch (NoUpdateException nue) {
-				log.info("failed to start run " + runName, nue);
-				throw nue;
+			} catch (RuntimeException | NoUpdateException e) {
+				log.info("failed to start run " + runName, e);
+				throw e;
 			}
 		} else {
 			w.setStatus(s);
@@ -792,7 +789,7 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 	public PermissionList listRunPermissions(String runName)
 			throws UnknownRunException, NotOwnerException {
 		PermissionList pl = new PermissionList();
-		pl.permission = new ArrayList<PermissionList.SinglePermissionMapping>();
+		pl.permission = new ArrayList<>();
 		Map<String, Permission> perm;
 		try {
 			perm = support.getPermissionMap(getRunSecurityContext(runName,
@@ -801,7 +798,7 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 			log.error("unexpected error from internal API", e);
 			perm = emptyMap();
 		}
-		List<String> users = new ArrayList<String>(perm.keySet());
+		List<String> users = new ArrayList<>(perm.keySet());
 		sort(users);
 		for (String user : users)
 			pl.permission.add(new PermissionList.SinglePermissionMapping(user,
@@ -848,7 +845,7 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 	public DirEntry[] getRunDirectoryContents(String runName, DirEntry d)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException {
-		List<DirEntry> result = new ArrayList<DirEntry>();
+		List<DirEntry> result = new ArrayList<>();
 		for (DirectoryEntry e : fileUtils.getDirectory(support.getRun(runName),
 				convert(d)).getContents())
 			result.add(convert(newInstance(null, e)));
@@ -1013,7 +1010,7 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 	@RolesAllowed(USER)
 	public String[] getRunListeners(String runName) throws UnknownRunException {
 		TavernaRun w = support.getRun(runName);
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 		for (Listener l : w.getListeners())
 			result.add(l.getName());
 		return result.toArray(new String[result.size()]);

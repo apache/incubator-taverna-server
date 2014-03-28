@@ -71,8 +71,8 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	public static String interactionPort;
 	public static String interactionWebdavPath;
 	public static String interactionFeedPath;
-	Map<String, String> seedEnvironment = new HashMap<String, String>();
-	List<String> javaInitParams = new ArrayList<String>();
+	Map<String, String> seedEnvironment = new HashMap<>();
+	List<String> javaInitParams = new ArrayList<>();
 	private int activeRuns = 0;
 
 	/**
@@ -147,7 +147,7 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 		if (creator == null)
 			throw new RemoteException("no creator");
 		try {
-			Holder<String> wfid = new Holder<String>("???");
+			Holder<String> wfid = new Holder<>("???");
 			workflow = unwrapWorkflow(workflow, wfid);
 			out.println("Creating run from workflow <" + wfid.value + "> for <"
 					+ creator + ">");

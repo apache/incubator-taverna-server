@@ -192,9 +192,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		try {
 			// Validate registry connection first
 			getTheRegistry().list();
-		} catch (ConnectException ce) {
-			log.warn("connection problems with registry", ce);
-		} catch (ConnectIOException e) {
+		} catch (ConnectException | ConnectIOException e) {
 			log.warn("connection problems with registry", e);
 		}
 		RemoteRunFactory rrf = (RemoteRunFactory) getTheRegistry().lookup(name);
@@ -360,9 +358,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 			initFactory();
 			try {
 				return getRealRun(creator, wf, id);
-			} catch (ConnectException e) {
-				// factory was lost; try to recreate
-			} catch (ConnectIOException e) {
+			} catch (ConnectException | ConnectIOException e) {
 				// factory was lost; try to recreate
 			}
 			killFactory();

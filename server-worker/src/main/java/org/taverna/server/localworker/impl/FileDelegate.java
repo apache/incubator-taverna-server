@@ -58,17 +58,11 @@ public class FileDelegate extends UnicastRemoteObject implements RemoteFile {
 		if (length < 0 || length > 1024 * 64)
 			length = 1024 * 64;
 		byte[] buffer = new byte[length];
-		FileInputStream fis = null;
 		int read;
-		try {
-			fis = new FileInputStream(file);
-			if (offset > 0)
-				if (fis.skip(offset) != offset)
-					throw new IOException("did not move to correct offset in file");
+		try (FileInputStream fis = new FileInputStream(file)) {
+			if (offset > 0 && fis.skip(offset) != offset)
+				throw new IOException("did not move to correct offset in file");
 			read = fis.read(buffer);
-		} finally {
-			if (fis != null)
-				fis.close();
 		}
 		if (read <= 0)
 			return new byte[0];
@@ -87,25 +81,15 @@ public class FileDelegate extends UnicastRemoteObject implements RemoteFile {
 
 	@Override
 	public void setContents(byte[] data) throws IOException {
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream(file);
+		try (FileOutputStream fos = new FileOutputStream(file)) {
 			fos.write(data);
-		} finally {
-			if (fos != null)
-				fos.close();
 		}
 	}
 
 	@Override
 	public void appendContents(byte[] data) throws IOException {
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream(file, true);
+		try (FileOutputStream fos = new FileOutputStream(file, true)) {
 			fos.write(data);
-		} finally {
-			if (fos != null)
-				fos.close();
 		}
 	}
 

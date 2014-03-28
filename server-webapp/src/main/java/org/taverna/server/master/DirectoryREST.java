@@ -174,7 +174,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 		else if (!(de instanceof File))
 			throw new FilesystemAccessException("not a directory or file!");
 		File f = (File) de;
-		List<Variant> variants = new ArrayList<Variant>(INITIAL_FILE_VARIANTS);
+		List<Variant> variants = new ArrayList<>(INITIAL_FILE_VARIANTS);
 		String contentType = support.getEstimatedContentType(f);
 		if (!contentType.equals(APPLICATION_OCTET_STREAM)) {
 			String[] ct = contentType.split("/");
@@ -288,7 +288,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 			throw new FilesystemAccessException(
 					"Cannot create a file that is not in a directory.");
 
-		List<PathSegment> dirPath = new ArrayList<PathSegment>(filePath);
+		List<PathSegment> dirPath = new ArrayList<>(filePath);
 		String name = dirPath.remove(dirPath.size() - 1).getPath();
 		DirectoryEntry de = fileUtils.getDirEntry(run, dirPath);
 		if (!(de instanceof Directory)) {
@@ -324,7 +324,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 	public Response setFileContents(List<PathSegment> filePath,
 			InputStream contents, UriInfo ui) throws NoDirectoryEntryException,
 			NoUpdateException, FilesystemAccessException {
-		Holder<Boolean> isNew = new Holder<Boolean>(true);
+		Holder<Boolean> isNew = new Holder<>(true);
 		support.copyStreamToFile(contents, getFileForWrite(filePath, isNew));
 
 		if (isNew.value)
@@ -351,7 +351,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 			return status(422).entity("URI list must have value URL in it")
 					.build();
 		}
-		Holder<Boolean> isNew = new Holder<Boolean>(true);
+		Holder<Boolean> isNew = new Holder<>(true);
 		File f = getFileForWrite(filePath, isNew);
 
 		try {

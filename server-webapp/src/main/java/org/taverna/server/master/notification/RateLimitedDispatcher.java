@@ -24,7 +24,7 @@ public abstract class RateLimitedDispatcher implements MessageDispatcher {
 	/** Pre-configured logger. */
 	protected Log log = LogFactory.getLog("Taverna.Server.Notification");
 	private int cooldownSeconds;
-	private Map<String, DateTime> lastSend = new HashMap<String, DateTime>();
+	private Map<String, DateTime> lastSend = new HashMap<>();
 
 	String valid(String value, String def) {
 		if (value == null || value.trim().isEmpty()

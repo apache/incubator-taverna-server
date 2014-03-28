@@ -46,7 +46,7 @@ public class RunDatabase implements RunStore, RunDBSupport {
 	private NotificationEngine notificationEngine;
 	@Autowired
 	private FactoryBean factory;
-	private Map<String, TavernaRun> cache = new HashMap<String, TavernaRun>();
+	private Map<String, TavernaRun> cache = new HashMap<>();
 
 	@Override
 	@Required
@@ -55,7 +55,7 @@ public class RunDatabase implements RunStore, RunDBSupport {
 	}
 
 	public void setTypeNotifiers(List<CompletionNotifier> notifiers) {
-		typedNotifiers = new HashMap<String, CompletionNotifier>();
+		typedNotifiers = new HashMap<>();
 		for (CompletionNotifier n : notifiers)
 			typedNotifiers.put(n.getName(), n);
 	}
@@ -198,7 +198,7 @@ public class RunDatabase implements RunStore, RunDBSupport {
 	@Override
 	public Map<String, TavernaRun> listRuns(UsernamePrincipal user, Policy p) {
 		synchronized (cache) {
-			Map<String, TavernaRun> cached = new HashMap<String, TavernaRun>();
+			Map<String, TavernaRun> cached = new HashMap<>();
 			for (Entry<String, TavernaRun> e : cache.entrySet()) {
 				TavernaRun r = e.getValue();
 				if (p.permitAccess(user, r))
@@ -215,9 +215,9 @@ public class RunDatabase implements RunStore, RunDBSupport {
 			return;
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			ObjectOutputStream oos = new ObjectOutputStream(baos);
-			oos.writeObject(obj);
-			oos.close();
+			try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+				oos.writeObject(obj);
+			}
 			log.debug(message + ": " + baos.size());
 		} catch (Exception e) {
 			log.warn("oops", e);

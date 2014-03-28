@@ -16,7 +16,7 @@ import org.taverna.server.master.interfaces.File;
  * @author Donal Fellows
  */
 public class FileConcatenation implements Iterable<File> {
-	private List<File> files = new ArrayList<File>();
+	private List<File> files = new ArrayList<>();
 
 	public void add(File f) {
 		files.add(f);
@@ -55,9 +55,7 @@ public class FileConcatenation implements Iterable<File> {
 		for (File f : files)
 			try {
 				baos.write(f.getContents(0, -1));
-			} catch (FilesystemAccessException e) {
-				continue;
-			} catch (IOException e) {
+			} catch (FilesystemAccessException | IOException e) {
 				continue;
 			}
 		return baos.toString(encoding);

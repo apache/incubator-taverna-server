@@ -50,7 +50,7 @@ public class StrippedDownAuthProvider implements AuthenticationProvider {
 	private String userNotFoundEncodedPassword;
 	private UserDetailsService userDetailsService;
 	private PasswordEncoder passwordEncoder;
-	private Map<String, AuthCacheEntry> authCache = new HashMap<String, AuthCacheEntry>();
+	private Map<String, AuthCacheEntry> authCache = new HashMap<>();
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	private static class AuthCacheEntry {

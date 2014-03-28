@@ -78,7 +78,7 @@ abstract class ListenersREST implements TavernaServerListenersREST,
 	@CallCounted
 	@PerfLogged
 	public Listeners getDescription(UriInfo ui) {
-		List<ListenerDescription> result = new ArrayList<ListenerDescription>();
+		List<ListenerDescription> result = new ArrayList<>();
 		UriBuilder ub = secure(ui).path("{name}");
 		for (Listener l : run.getListeners())
 			result.add(new ListenerDescription(l,

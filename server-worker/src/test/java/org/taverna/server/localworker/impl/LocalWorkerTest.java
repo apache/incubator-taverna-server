@@ -106,13 +106,12 @@ public class LocalWorkerTest {
 			events.add(Integer.toString(dirLen));
 			events.add(inputBaclava == null ? "<null>" : inputBaclava
 					.toString().substring(dirLen));
-			Map<String, String> in = new TreeMap<String, String>();
-			for (Entry<String, File> name : inputFiles.entrySet()) {
+			Map<String, String> in = new TreeMap<>();
+			for (Entry<String, File> name : inputFiles.entrySet())
 				in.put(name.getKey(), name.getValue() == null ? "<null>" : name
 						.getValue().getName());
-			}
 			events.add(in.toString());
-			events.add(new TreeMap<String, String>(inputValues).toString());
+			events.add(new TreeMap<>(inputValues).toString());
 			events.add(outputBaclava == null ? "<null>" : outputBaclava
 					.getName());
 			// TODO: check cmdir and cmpass
@@ -160,7 +159,7 @@ public class LocalWorkerTest {
 	public void setUp() throws Exception {
 		lw = new LocalWorker("XWC", "WF", null, randomUUID(),
 				new HashMap<String, String>(), new ArrayList<String>(), factory);
-		events = new ArrayList<String>();
+		events = new ArrayList<>();
 		returnThisStatus = RemoteStatus.Operating;
 	}
 

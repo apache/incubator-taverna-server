@@ -44,9 +44,9 @@ public class Registry {
 		}
 		try {
 			Object registryHandle = makeRegistry();
-			ObjectOutputStream oos = new ObjectOutputStream(System.out);
-			oos.writeObject(registryHandle);
-			oos.close();
+			try (ObjectOutputStream oos = new ObjectOutputStream(System.out)) {
+				oos.writeObject(registryHandle);
+			}
 		} catch (Exception e) {
 			System.err.println("problem creating registry: " + e.getMessage());
 			System.exit(1);
@@ -56,19 +56,17 @@ public class Registry {
 	private static int port = REGISTRY_PORT;
 	private static boolean localhostOnly = false;
 
-	private static MarshalledObject<Object> makeRegistry() throws IOException {
-		if (localhostOnly) {
-			setProperty("java.rmi.server.hostname", "127.0.0.1");
-			return new MarshalledObject<Object>(createRegistry(port,
-					getDefaultSocketFactory(), new RMIServerSocketFactory() {
-						@Override
-						public ServerSocket createServerSocket(int port)
-								throws IOException {
-							return new ServerSocket(port, 0, getLocalHost());
-						}
-					}));
-		} else {
-			return new MarshalledObject<Object>(createRegistry(port));
-		}
+	private static MarshalledObject<java.rmi.registry.Registry> makeRegistry() throws IOException {
+		if (!localhostOnly)
+			return new MarshalledObject<>(createRegistry(port));
+		setProperty("java.rmi.server.hostname", "127.0.0.1");
+		return new MarshalledObject<>(createRegistry(port,
+				getDefaultSocketFactory(), new RMIServerSocketFactory() {
+					@Override
+					public ServerSocket createServerSocket(int port)
+							throws IOException {
+						return new ServerSocket(port, 0, getLocalHost());
+					}
+				}));
 	}
 }

@@ -164,9 +164,9 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	 */
 	char[] keystorePassword = KEYSTORE_PASSWORD;
 	/** Additional server-specified environment settings. */
-	Map<String, String> environment = new HashMap<String, String>();
+	Map<String, String> environment = new HashMap<>();
 	/** Additional server-specified java runtime settings. */
-	List<String> runtimeSettings = new ArrayList<String>();
+	List<String> runtimeSettings = new ArrayList<>();
 	URL interactionFeedURL;
 	URL webdavURL;
 	private boolean doProvenance = true;
@@ -332,7 +332,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 
 	@Override
 	public List<RemoteInput> getInputs() throws RemoteException {
-		ArrayList<RemoteInput> result = new ArrayList<RemoteInput>();
+		ArrayList<RemoteInput> result = new ArrayList<>();
 		for (String name : inputFiles.keySet())
 			result.add(new InputDelegate(name));
 		return result;
@@ -473,13 +473,13 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		}
 
 		@Override
-		public void setUriToAliasMap(HashMap<URI, String> uriToAliasMap)
+		public void setUriToAliasMap(Map<URI, String> uriToAliasMap)
 				throws RemoteException {
 			if (status != Initialized)
 				throw new RemoteException("not initializing");
 			if (uriToAliasMap == null)
 				return;
-			ArrayList<String> lines = new ArrayList<String>();
+			ArrayList<String> lines = new ArrayList<>();
 			for (Entry<URI, String> site : uriToAliasMap.entrySet())
 				lines.add(site.getKey().toASCIIString() + " " + site.getValue());
 			// write(URI_ALIAS_MAP, lines);

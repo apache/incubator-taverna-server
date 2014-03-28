@@ -528,7 +528,7 @@ public interface TavernaServerSecurityREST {
 			public URI href;
 			/** Descriptions of the credentials themselves. */
 			@XmlElement
-			public List<CredentialHolder> credential = new ArrayList<CredentialHolder>();
+			public List<CredentialHolder> credential = new ArrayList<>();
 
 			public Credentials() {
 			}
@@ -639,7 +639,7 @@ public interface TavernaServerSecurityREST {
 		/** The descriptions of the credentials */
 		@XmlElement
 		@NonNull
-		public List<CredentialHolder> credential = new ArrayList<CredentialHolder>();
+		public List<CredentialHolder> credential = new ArrayList<>();
 
 		public CredentialList() {
 		}
@@ -750,9 +750,8 @@ public interface TavernaServerSecurityREST {
 		 */
 		public PermissionsDescription(@NonNull UriBuilder ub,
 				@NonNull Map<String, Permission> permissionMap) {
-			permission = new ArrayList<LinkedPermissionDescription>();
-			List<String> userNames = new ArrayList<String>(
-					permissionMap.keySet());
+			permission = new ArrayList<>();
+			List<String> userNames = new ArrayList<>(permissionMap.keySet());
 			Collections.sort(userNames);
 			for (String user : userNames)
 				permission.add(new LinkedPermissionDescription(ub, user,

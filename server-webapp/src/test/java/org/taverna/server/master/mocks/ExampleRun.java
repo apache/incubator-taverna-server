@@ -62,12 +62,12 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 
 	public ExampleRun(UsernamePrincipal creator, Workflow workflow, Date expiry) {
 		this.id = randomUUID().toString();
-		this.listeners = new ArrayList<Listener>();
+		this.listeners = new ArrayList<>();
 		this.status = Initialized;
 		this.owner = creator;
 		this.workflow = workflow;
 		this.expiry = expiry;
-		this.inputs = new ArrayList<Input>();
+		this.inputs = new ArrayList<>();
 		listeners.add(new DefaultListener());
 	}
 

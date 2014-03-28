@@ -78,7 +78,7 @@ public class WorkflowInternalAuthProvider extends
 	}
 
 	public void setAuthorizedAddresses(String[] addresses) {
-		authorizedAddresses = new HashSet<String>(localAddresses);
+		authorizedAddresses = new HashSet<>(localAddresses);
 		for (String s : addresses)
 			authorizedAddresses.add(s);
 	}
@@ -94,7 +94,7 @@ public class WorkflowInternalAuthProvider extends
 		log = null;
 	}
 
-	private final Set<String> localAddresses = new HashSet<String>();
+	private final Set<String> localAddresses = new HashSet<>();
 	private Set<String> authorizedAddresses;
 	{
 		localAddresses.add("127.0.0.1"); // IPv4
@@ -106,7 +106,7 @@ public class WorkflowInternalAuthProvider extends
 		} catch (UnknownHostException e) {
 			// Ignore the exception
 		}
-		authorizedAddresses = new HashSet<String>(localAddresses);
+		authorizedAddresses = new HashSet<>(localAddresses);
 	}
 
 	/**

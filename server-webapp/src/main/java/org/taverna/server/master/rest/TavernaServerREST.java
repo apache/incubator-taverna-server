@@ -429,7 +429,7 @@ public interface TavernaServerREST {
 		@XmlType(name = "")
 		public static class CapabilityList {
 			@XmlElement(name = "capability", namespace = SERVER)
-			public List<Capability> capability = new ArrayList<Capability>();
+			public List<Capability> capability = new ArrayList<>();
 		}
 	}
 
@@ -449,7 +449,7 @@ public interface TavernaServerREST {
 		 * Make an empty list of permitted workflows.
 		 */
 		public PermittedWorkflows() {
-			workflow = new ArrayList<URI>();
+			workflow = new ArrayList<>();
 		}
 
 		/**
@@ -459,9 +459,9 @@ public interface TavernaServerREST {
 		 */
 		public PermittedWorkflows(List<URI> permitted) {
 			if (permitted == null)
-				workflow = new ArrayList<URI>();
+				workflow = new ArrayList<>();
 			else
-				workflow = new ArrayList<URI>(permitted);
+				workflow = new ArrayList<>(permitted);
 		}
 	}
 
@@ -481,7 +481,7 @@ public interface TavernaServerREST {
 		 * Make an empty list of permitted listener types.
 		 */
 		public PermittedListeners() {
-			type = new ArrayList<String>();
+			type = new ArrayList<>();
 		}
 
 		/**
@@ -510,7 +510,7 @@ public interface TavernaServerREST {
 		 * Make an empty list of run references.
 		 */
 		public RunList() {
-			run = new ArrayList<RunReference>();
+			run = new ArrayList<>();
 		}
 
 		/**
@@ -523,7 +523,7 @@ public interface TavernaServerREST {
 		 *            secured as it needs to have its pattern applied.
 		 */
 		public RunList(Map<String, TavernaRun> runs, UriBuilder ub) {
-			run = new ArrayList<RunReference>(runs.size());
+			run = new ArrayList<>(runs.size());
 			for (String name : runs.keySet())
 				run.add(new RunReference(name, ub));
 		}
@@ -545,7 +545,7 @@ public interface TavernaServerREST {
 		 * Make an empty list of enabled notifiers.
 		 */
 		public EnabledNotificationFabrics() {
-			notifier = new ArrayList<String>();
+			notifier = new ArrayList<>();
 		}
 
 		/**

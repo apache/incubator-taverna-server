@@ -186,9 +186,9 @@ public class RunConnection {
 		rrd.creationInstant = creationInstant;
 		rrd.workflow = workflow;
 		rrd.expiry = expiry;
-		rrd.readers = new HashSet<String>(list(readers));
-		rrd.writers = new HashSet<String>(list(writers));
-		rrd.destroyers = new HashSet<String>(list(destroyers));
+		rrd.readers = new HashSet<>(list(readers));
+		rrd.writers = new HashSet<>(list(writers));
+		rrd.destroyers = new HashSet<>(list(destroyers));
 		rrd.run = run.get();
 		rrd.doneTransitionToFinished = isFinished();
 		rrd.generateProvenance = isProvenanceGenerated();
@@ -215,7 +215,7 @@ public class RunConnection {
 		if (creationInstant == null) {
 			creationInstant = rrd.getCreationTimestamp();
 			workflow = rrd.getWorkflow();
-			run = new MarshalledObject<RemoteSingleRun>(rrd.run);
+			run = new MarshalledObject<>(rrd.run);
 			securityContextFactory = rrd.getSecurityContext().getFactory();
 			owner = rrd.getSecurityContext().getOwner().getName();
 			securityToken = ((org.taverna.server.master.worker.SecurityContextFactory) securityContextFactory)

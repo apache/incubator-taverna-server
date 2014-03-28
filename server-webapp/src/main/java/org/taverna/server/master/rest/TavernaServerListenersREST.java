@@ -309,9 +309,9 @@ public interface TavernaServerListenersREST {
 			type = listener.getType();
 			configuration = new Uri(ub.clone().path("configuration"));
 			UriBuilder ub2 = ub.clone().path("properties/{prop}");
-			properties = new ArrayList<PropertyDescription>(
-					listener.listProperties().length);
-			for (String propName : listener.listProperties())
+			String[] props = listener.listProperties();
+			properties = new ArrayList<>(props.length);
+			for (String propName : props)
 				properties.add(new PropertyDescription(propName, ub2));
 		}
 	}
@@ -369,7 +369,7 @@ public interface TavernaServerListenersREST {
 		 * Make a blank description of listeners.
 		 */
 		public Listeners() {
-			listener = new ArrayList<ListenerDescription>();
+			listener = new ArrayList<>();
 		}
 
 		/**
@@ -421,7 +421,7 @@ public interface TavernaServerListenersREST {
 		 */
 		public Properties(UriBuilder ub, String[] properties) {
 			super(true);
-			property = new ArrayList<PropertyDescription>(properties.length);
+			property = new ArrayList<>(properties.length);
 			for (String propName : properties)
 				property.add(new PropertyDescription(propName, ub));
 		}

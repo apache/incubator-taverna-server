@@ -182,9 +182,7 @@ public class RemoteRunDelegate implements TavernaRun {
 	public void destroy() {
 		try {
 			run.destroy();
-		} catch (RemoteException e) {
-			log.warn("failed to destroy run", e);
-		} catch (ImplementationException e) {
+		} catch (RemoteException | ImplementationException e) {
 			log.warn("failed to destroy run", e);
 		}
 	}
@@ -196,7 +194,7 @@ public class RemoteRunDelegate implements TavernaRun {
 
 	@Override
 	public List<Listener> getListeners() {
-		ArrayList<Listener> listeners = new ArrayList<Listener>();
+		List<Listener> listeners = new ArrayList<>();
 		try {
 			for (RemoteListener rl : run.getListeners())
 				listeners.add(new ListenerDelegate(rl));
@@ -289,9 +287,7 @@ public class RemoteRunDelegate implements TavernaRun {
 			throw new BadStateChangeException(e.getMessage());
 		} catch (RemoteException e) {
 			throw new BadStateChangeException(e.getMessage(), e.getCause());
-		} catch (GeneralSecurityException e) {
-			throw new BadStateChangeException(e.getMessage(), e);
-		} catch (IOException e) {
+		} catch (GeneralSecurityException | IOException e) {
 			throw new BadStateChangeException(e.getMessage(), e);
 		} catch (ImplementationException e) {
 			if (e.getCause() != null)
@@ -328,7 +324,7 @@ public class RemoteRunDelegate implements TavernaRun {
 
 	@Override
 	public List<Input> getInputs() {
-		ArrayList<Input> inputs = new ArrayList<Input>();
+		ArrayList<Input> inputs = new ArrayList<>();
 		try {
 			for (RemoteInput ri : run.getInputs())
 				inputs.add(new RunInput(ri));
@@ -412,7 +408,7 @@ public class RemoteRunDelegate implements TavernaRun {
 	 *            the readers to set
 	 */
 	public void setReaders(Set<String> readers) {
-		this.readers = new HashSet<String>(readers);
+		this.readers = new HashSet<>(readers);
 		db.flushToDisk(this);
 	}
 
@@ -429,7 +425,7 @@ public class RemoteRunDelegate implements TavernaRun {
 	 *            the writers to set
 	 */
 	public void setWriters(Set<String> writers) {
-		this.writers = new HashSet<String>(writers);
+		this.writers = new HashSet<>(writers);
 		db.flushToDisk(this);
 	}
 
@@ -446,7 +442,7 @@ public class RemoteRunDelegate implements TavernaRun {
 	 *            the destroyers to set
 	 */
 	public void setDestroyers(Set<String> destroyers) {
-		this.destroyers = new HashSet<String>(destroyers);
+		this.destroyers = new HashSet<>(destroyers);
 		db.flushToDisk(this);
 	}
 
@@ -462,7 +458,7 @@ public class RemoteRunDelegate implements TavernaRun {
 		out.defaultWriteObject();
 		out.writeUTF(secContext.getOwner().getName());
 		out.writeObject(secContext.getFactory());
-		out.writeObject(new MarshalledObject<RemoteSingleRun>(run));
+		out.writeObject(new MarshalledObject<>(run));
 	}
 
 	@Override
@@ -488,9 +484,7 @@ public class RemoteRunDelegate implements TavernaRun {
 		try {
 			secContext = factory.create(this,
 					new UsernamePrincipal(creatorName));
-		} catch (RuntimeException e) {
-			throw e;
-		} catch (IOException e) {
+		} catch (RuntimeException | IOException e) {
 			throw e;
 		} catch (Exception e) {
 			throw new SecurityContextReconstructionException(e);
@@ -619,7 +613,7 @@ class DirectoryDelegate extends DEDelegate implements Directory {
 	@Override
 	public Collection<DirectoryEntry> getContents()
 			throws FilesystemAccessException {
-		ArrayList<DirectoryEntry> result = new ArrayList<DirectoryEntry>();
+		ArrayList<DirectoryEntry> result = new ArrayList<>();
 		try {
 			for (RemoteDirectoryEntry rde : rd.getContents()) {
 				if (rde instanceof RemoteDirectory)
@@ -637,8 +631,7 @@ class DirectoryDelegate extends DEDelegate implements Directory {
 	@Override
 	public Collection<DirectoryEntry> getContentsByDate()
 			throws FilesystemAccessException {
-		ArrayList<DirectoryEntry> result = new ArrayList<DirectoryEntry>(
-				getContents());
+		ArrayList<DirectoryEntry> result = new ArrayList<>(getContents());
 		sort(result, new DateComparator());
 		return result;
 	}

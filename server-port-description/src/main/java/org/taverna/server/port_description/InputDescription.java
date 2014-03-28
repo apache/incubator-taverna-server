@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement
 public class InputDescription extends AbstractPortDescription {
 	@XmlElement
-	public List<InputPort> input = new ArrayList<InputPort>();
+	public List<InputPort> input = new ArrayList<>();
 
 	@XmlType(name = "InputPort")
 	public static class InputPort extends AbstractPort {

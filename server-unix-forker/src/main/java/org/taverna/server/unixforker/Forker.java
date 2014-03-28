@@ -45,18 +45,15 @@ public class Forker extends Thread {
 	 */
 	private static void loadPassword(@NonNull File passwordFile)
 			throws IOException {
-		FileReader fr = null;
 		try {
 			err.println("attempting to load password from " + passwordFile);
-			fr = new FileReader(passwordFile);
-			password = new BufferedReader(fr).readLine();
+			try (FileReader fr = new FileReader(passwordFile)) {
+				password = new BufferedReader(fr).readLine();
+			}
 		} catch (IOException e) {
 			err.println("failed to read password from file " + passwordFile
 					+ "described in password.file property");
 			throw e;
-		} finally {
-			if (fr != null)
-				fr.close();
 		}
 	}
 

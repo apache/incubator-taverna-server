@@ -41,7 +41,7 @@ public class DirectoryContents {
 	 * Make an empty directory description. Required for JAXB.
 	 */
 	public DirectoryContents() {
-		contents = new ArrayList<DirEntryReference>();
+		contents = new ArrayList<>();
 	}
 
 	/**
@@ -53,7 +53,7 @@ public class DirectoryContents {
 	 *            The real directory contents that we are to describe.
 	 */
 	public DirectoryContents(UriInfo ui, Collection<DirectoryEntry> collection) {
-		contents = new ArrayList<DirEntryReference>();
+		contents = new ArrayList<>();
 		UriBuilder ub = secure(ui).path("{filename}");
 		for (DirectoryEntry e : collection)
 			contents.add(DirEntryReference.newInstance(ub, e));

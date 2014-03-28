@@ -612,12 +612,12 @@ public class TavernaServerSupport {
 		permSet = context.getPermittedReaders();
 		if (doRead) {
 			if (!permSet.contains(userName)) {
-				permSet = new HashSet<String>(permSet);
+				permSet = new HashSet<>(permSet);
 				permSet.add(userName);
 				context.setPermittedReaders(permSet);
 			}
 		} else if (permSet.contains(userName)) {
-			permSet = new HashSet<String>(permSet);
+			permSet = new HashSet<>(permSet);
 			permSet.remove(userName);
 			context.setPermittedReaders(permSet);
 		}
@@ -625,12 +625,12 @@ public class TavernaServerSupport {
 		permSet = context.getPermittedUpdaters();
 		if (doWrite) {
 			if (!permSet.contains(userName)) {
-				permSet = new HashSet<String>(permSet);
+				permSet = new HashSet<>(permSet);
 				permSet.add(userName);
 				context.setPermittedUpdaters(permSet);
 			}
 		} else if (permSet.contains(userName)) {
-			permSet = new HashSet<String>(permSet);
+			permSet = new HashSet<>(permSet);
 			permSet.remove(userName);
 			context.setPermittedUpdaters(permSet);
 		}
@@ -638,12 +638,12 @@ public class TavernaServerSupport {
 		permSet = context.getPermittedDestroyers();
 		if (doKill) {
 			if (!permSet.contains(userName)) {
-				permSet = new HashSet<String>(permSet);
+				permSet = new HashSet<>(permSet);
 				permSet.add(userName);
 				context.setPermittedDestroyers(permSet);
 			}
 		} else if (permSet.contains(userName)) {
-			permSet = new HashSet<String>(permSet);
+			permSet = new HashSet<>(permSet);
 			permSet.remove(userName);
 			context.setPermittedDestroyers(permSet);
 		}
@@ -651,7 +651,7 @@ public class TavernaServerSupport {
 
 	public Map<String, Permission> getPermissionMap(
 			TavernaSecurityContext context) {
-		Map<String, Permission> perm = new HashMap<String, Permission>();
+		Map<String, Permission> perm = new HashMap<>();
 		for (String u : context.getPermittedReaders())
 			perm.put(u, Permission.Read);
 		for (String u : context.getPermittedUpdaters())
@@ -902,9 +902,7 @@ public class TavernaServerSupport {
 		for (String name : LOGS) {
 			try {
 				fc.add(fileUtils.getFile(run, name));
-			} catch (FilesystemAccessException e) {
-				// Ignore
-			} catch (NoDirectoryEntryException e) {
+			} catch (FilesystemAccessException | NoDirectoryEntryException e) {
 				// Ignore
 			}
 		}

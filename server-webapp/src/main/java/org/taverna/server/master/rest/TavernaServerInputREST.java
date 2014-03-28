@@ -241,7 +241,7 @@ public interface TavernaServerInputREST {
 			super(true);
 			expected = new Uri(ui, EXPECTED);
 			baclava = new Uri(ui, BACLAVA);
-			input = new ArrayList<Uri>();
+			input = new ArrayList<>();
 			for (Input i : run.getInputs())
 				input.add(new Uri(ui, ONE_INPUT, i.getName()));
 		}

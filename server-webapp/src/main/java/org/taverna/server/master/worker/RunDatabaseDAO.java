@@ -109,7 +109,7 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	@NonNull
 	private List<RunConnection> allRuns() {
 		try {
-			List<RunConnection> rcs = new ArrayList<RunConnection>();
+			List<RunConnection> rcs = new ArrayList<>();
 			List<String> names = nameRuns();
 			for (String id : names) {
 				try {
@@ -158,8 +158,8 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	@NonNull
 	@WithinSingleTransaction
 	public Map<String, TavernaRun> listRuns(UsernamePrincipal user, Policy p) {
-		Map<String, TavernaRun> result = new HashMap<String, TavernaRun>();
-		for (String id : nameRuns()) {
+		Map<String, TavernaRun> result = new HashMap<>();
+		for (String id : nameRuns())
 			try {
 				RemoteRunDelegate rrd = pickRun(id).fromDBform(facade);
 				if (p.permitAccess(user, rrd))
@@ -167,7 +167,6 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 			} catch (Exception e) {
 				continue;
 			}
-		}
 		return result;
 	}
 
@@ -177,11 +176,10 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	@NonNull
 	@WithinSingleTransaction
 	public List<String> listRunNames() {
-		ArrayList<String> runNames = new ArrayList<String>();
-		for (RunConnection rc : allRuns()) {
+		List<String> runNames = new ArrayList<>();
+		for (RunConnection rc : allRuns())
 			if (rc.getId() != null)
 				runNames.add(rc.getId());
-		}
 		return runNames;
 	}
 
@@ -279,15 +277,14 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	@PerfLogged
 	@WithinSingleTransaction
 	public List<RemoteRunDelegate> getPotentiallyNotifiable() {
-		List<RemoteRunDelegate> toNotify = new ArrayList<RemoteRunDelegate>();
+		List<RemoteRunDelegate> toNotify = new ArrayList<>();
 		for (String id : unterminatedRuns())
 			try {
 				RunConnection rc = getById(id);
 				toNotify.add(rc.fromDBform(facade));
 			} catch (Exception e) {
-				log.warn(
-						"failed to fetch for notification of completion check",
-						e);
+				log.warn("failed to fetch connection token"
+						+ "for notification of completion check", e);
 			}
 		return toNotify;
 	}

@@ -95,7 +95,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 public class WorkerCore extends UnicastRemoteObject implements Worker,
 		RemoteListener {
 	@NonNull
-	static final Map<String, Property> pmap = new HashMap<String, Property>();
+	static final Map<String, Property> pmap = new HashMap<>();
 	/**
 	 * Regular expression to extract the detailed timing information from the
 	 * output of /usr/bin/time
@@ -157,7 +157,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		super();
 		stdout = new StringWriter();
 		stderr = new StringWriter();
-		pid = new Holder<Integer>();
+		pid = new Holder<>();
 		this.accounting = accounting;
 	}
 
@@ -479,7 +479,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	@Override
 	public void killWorker() {
 		if (!finished && subprocess != null) {
-			final Holder<Integer> code = new Holder<Integer>();
+			final Holder<Integer> code = new Holder<>();
 			for (TimingOutTask tot : new TimingOutTask[] { new TimingOutTask() {
 				/** Check if the workflow terminated of its own accord */
 				@Override
@@ -583,8 +583,6 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			ur.addDisk(sizeOfDirectory(wd)).setStorageUnit("B");
 			if (urreceiver != null)
 				urreceiver.acceptUsageRecord(ur.marshal());
-		} catch (RuntimeException e) {
-			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -854,9 +852,8 @@ class PasswordWriterThread extends Thread {
 
 	@Override
 	public void run() {
-		PrintWriter pw = null;
-		try {
-			pw = new PrintWriter(new OutputStreamWriter(to, SYSTEM_ENCODING));
+		try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(to,
+				SYSTEM_ENCODING))) {
 			pw.println(chars);
 		} catch (UnsupportedEncodingException e) {
 			// Not much we can do here
@@ -868,8 +865,6 @@ class PasswordWriterThread extends Thread {
 			 */
 			if (chars != KEYSTORE_PASSWORD)
 				Arrays.fill(chars, '\00');
-			if (pw != null)
-				pw.close();
 		}
 	}
 }

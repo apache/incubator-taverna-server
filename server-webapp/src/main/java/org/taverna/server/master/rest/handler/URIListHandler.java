@@ -67,7 +67,7 @@ public class URIListHandler implements MessageBodyReader<List<URI>>,
 				.forName(enc);
 		BufferedReader br = new BufferedReader(new InputStreamReader(
 				entityStream, c));
-		ArrayList<URI> uris = new ArrayList<URI>();
+		ArrayList<URI> uris = new ArrayList<>();
 		String line;
 		while ((line = br.readLine()) != null) {
 			if (line.startsWith("#"))

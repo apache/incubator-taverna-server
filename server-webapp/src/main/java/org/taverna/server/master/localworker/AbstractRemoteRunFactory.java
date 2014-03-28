@@ -157,14 +157,14 @@ public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
 			} catch (IllegalThreadStateException ise) {
 				// Still running!
 			}
-			ObjectInputStream ois = new ObjectInputStream(proc.getInputStream());
-			@SuppressWarnings("unchecked")
-			java.rmi.MarshalledObject<Registry> handle = (MarshalledObject<Registry>) ois
-					.readObject();
-			ois.close();
-			Registry r = handle.get();
-			registryProcess = proc;
-			return r;
+			try (ObjectInputStream ois = new ObjectInputStream(
+					proc.getInputStream())) {
+				@SuppressWarnings("unchecked")
+				Registry r = ((MarshalledObject<Registry>) ois.readObject())
+						.get();
+				registryProcess = proc;
+				return r;
+			}
 		} catch (RemoteException e) {
 			throw e;
 		} catch (ClassNotFoundException e) {
@@ -313,7 +313,7 @@ public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
 		} catch (Exception e) {
 			log.warn("failed to get list of listener types", e);
 		}
-		return new ArrayList<String>();
+		return new ArrayList<>();
 	}
 
 	@Override

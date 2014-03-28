@@ -64,7 +64,7 @@ public class User implements UserDetails {
 
 	@Override
 	public Collection<GrantedAuthority> getAuthorities() {
-		List<GrantedAuthority> auths = new ArrayList<GrantedAuthority>();
+		List<GrantedAuthority> auths = new ArrayList<>();
 		auths.add(new LiteralGrantedAuthority(USER));
 		if (admin)
 			auths.add(new LiteralGrantedAuthority(ADMIN));
