@@ -21,7 +21,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.List;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import javax.annotation.Nonnull;
 
 /**
  * A simple class that forks off processes when asked to over its standard
@@ -43,7 +43,7 @@ public class Forker extends Thread {
 	 * @throws IOException
 	 *             If anything goes wrong.
 	 */
-	private static void loadPassword(@NonNull File passwordFile)
+	private static void loadPassword(@Nonnull File passwordFile)
 			throws IOException {
 		try {
 			err.println("attempting to load password from " + passwordFile);

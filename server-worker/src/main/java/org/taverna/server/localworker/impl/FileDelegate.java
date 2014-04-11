@@ -19,11 +19,10 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
 
+import javax.annotation.Nonnull;
+
 import org.taverna.server.localworker.remote.RemoteDirectory;
 import org.taverna.server.localworker.remote.RemoteFile;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
  * This class acts as a remote-aware delegate for the files in a workflow run's
@@ -32,7 +31,6 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @author Donal Fellows
  * @see DirectoryDelegate
  */
-@SuppressWarnings("SE_NO_SERIALVERSIONID")
 @java.lang.SuppressWarnings("serial")
 public class FileDelegate extends UnicastRemoteObject implements RemoteFile {
 	private File file;
@@ -44,7 +42,7 @@ public class FileDelegate extends UnicastRemoteObject implements RemoteFile {
 	 * @throws RemoteException
 	 *             If registration of the file fails.
 	 */
-	public FileDelegate(@NonNull File file, @NonNull DirectoryDelegate parent)
+	public FileDelegate(@Nonnull File file, @Nonnull DirectoryDelegate parent)
 			throws RemoteException {
 		super();
 		this.file = file;

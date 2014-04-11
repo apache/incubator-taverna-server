@@ -36,6 +36,8 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.logging.Log;
 import org.taverna.server.localworker.remote.IllegalStateTransitionException;
 import org.taverna.server.localworker.remote.ImplementationException;
@@ -65,14 +67,11 @@ import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-
 /**
  * Bridging shim between the WebApp world and the RMI world.
  * 
  * @author Donal Fellows
  */
-@edu.umd.cs.findbugs.annotations.SuppressWarnings("SE_NO_SERIALVERSIONID")
 @SuppressWarnings("serial")
 public class RemoteRunDelegate implements TavernaRun {
 	private transient Log log = getLog("Taverna.Server.Worker");
@@ -502,7 +501,7 @@ public class RemoteRunDelegate implements TavernaRun {
 	}
 
 	@Override
-	public void setName(@NonNull String name) {
+	public void setName(@Nonnull String name) {
 		if (name.length() > RunConnection.NAME_LENGTH)
 			this.name = name.substring(0, RunConnection.NAME_LENGTH);
 		else

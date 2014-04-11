@@ -36,6 +36,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
@@ -105,10 +107,6 @@ import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 import org.taverna.server.port_description.OutputDescription;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 /**
  * The core implementation of the web application.
  * 
@@ -140,7 +138,6 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 	@Resource
 	WebServiceContext jaxws;
 	@Context
-	@SuppressWarnings("UWF_UNWRITTEN_FIELD")
 	private HttpHeaders jaxrsHeaders;
 
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -1243,7 +1240,7 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 		return DEFAULT_HOST;
 	}
 
-	@NonNull
+	@Nonnull
 	private URI getPossiblyInsecureBaseUri() {
 		// See if JAX-RS can supply the info
 		UriInfo ui = getUriInfo();

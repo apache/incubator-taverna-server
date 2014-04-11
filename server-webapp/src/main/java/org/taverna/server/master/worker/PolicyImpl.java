@@ -26,8 +26,6 @@ import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 /**
  * Basic policy implementation that allows any workflow to be instantiated by
  * any user, but which does not permit users to access each others workflow
@@ -35,7 +33,6 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * 
  * @author Donal Fellows
  */
-@SuppressWarnings("IS2_INCONSISTENT_SYNC")
 class PolicyImpl implements Policy {
 	Log log = LogFactory.getLog("Taverna.Server.Worker.Policy");
 	private PolicyLimits limits;

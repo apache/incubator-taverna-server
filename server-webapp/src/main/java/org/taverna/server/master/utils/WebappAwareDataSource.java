@@ -19,15 +19,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 /**
  * Add some awareness of the context so that we can locate databases internally
  * to the webapp.
  * 
  * @author Donal Fellows
  */
-@SuppressWarnings("IS2_INCONSISTENT_SYNC")
 public class WebappAwareDataSource extends BasicDataSource {
 	Log log = LogFactory.getLog("Taverna.Server.Utils");
 	private transient boolean init;

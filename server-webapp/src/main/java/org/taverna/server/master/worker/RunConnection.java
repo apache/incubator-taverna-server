@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.jdo.annotations.Column;
 import javax.jdo.annotations.Join;
 import javax.jdo.annotations.PersistenceCapable;
@@ -35,9 +36,6 @@ import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.interfaces.SecurityContextFactory;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 /**
  * The representation of the connections to the runs that actually participates
  * in the persistence system.
@@ -50,7 +48,6 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 		@Query(name = "names", language = "SQL", value = NAMES_QUERY, unique = "false", resultClass = String.class),
 		@Query(name = "unterminated", language = "SQL", value = UNTERMINATED_QUERY, unique = "false", resultClass = String.class),
 		@Query(name = "timedout", language = "SQL", value = TIMEOUT_QUERY, unique = "false", resultClass = String.class) })
-@SuppressWarnings("IS2_INCONSISTENT_SYNC")
 public class RunConnection {
 	static final String SCHEMA = "TAVERNA";
 	static final String TABLE = "RUN_CONNECTION";
@@ -153,8 +150,8 @@ public class RunConnection {
 	 * @throws IOException
 	 *             If serialisation fails.
 	 */
-	@NonNull
-	public static RunConnection toDBform(@NonNull RemoteRunDelegate rrd)
+	@Nonnull
+	public static RunConnection toDBform(@Nonnull RemoteRunDelegate rrd)
 			throws IOException {
 		RunConnection rc = new RunConnection();
 		rc.id = rrd.id;
@@ -178,8 +175,8 @@ public class RunConnection {
 	 * @throws Exception
 	 *             If anything goes wrong.
 	 */
-	@NonNull
-	public RemoteRunDelegate fromDBform(@NonNull RunDBSupport db)
+	@Nonnull
+	public RemoteRunDelegate fromDBform(@Nonnull RunDBSupport db)
 			throws Exception {
 		RemoteRunDelegate rrd = new RemoteRunDelegate();
 		rrd.id = getId();
@@ -210,7 +207,7 @@ public class RunConnection {
 	 * @throws IOException
 	 *             If anything goes wrong in serialization.
 	 */
-	public void makeChanges(@NonNull RemoteRunDelegate rrd) throws IOException {
+	public void makeChanges(@Nonnull RemoteRunDelegate rrd) throws IOException {
 		// Properties that are set exactly once
 		if (creationInstant == null) {
 			creationInstant = rrd.getCreationTimestamp();

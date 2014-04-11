@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.xml.bind.JAXBException;
@@ -51,8 +52,6 @@ import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.factories.ConfigurableRunFactory;
 import org.taverna.server.master.interfaces.LocalIdentityMapper;
 import org.taverna.server.master.utils.UsernamePrincipal;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * A simple factory for workflow runs that forks runs from a subprocess.
@@ -272,8 +271,8 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	 * @throws RemoteException
 	 *             If anything fails (communications error, etc.)
 	 */
-	private RemoteSingleRun getRealRun(@NonNull UsernamePrincipal creator,
-			@NonNull String username, @NonNull String wf, UUID id)
+	private RemoteSingleRun getRealRun(@Nonnull UsernamePrincipal creator,
+			@Nonnull String username, @Nonnull String wf, UUID id)
 			throws RemoteException {
 		String globaluser = "Unknown Person";
 		if (creator != null)

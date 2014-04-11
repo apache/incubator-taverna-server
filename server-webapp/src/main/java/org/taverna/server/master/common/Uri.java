@@ -25,8 +25,7 @@ import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.PortMapper;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import javax.annotation.Nonnull;
 
 /**
  * A class that makes it simpler to work with an element with a {@link URI} in
@@ -56,7 +55,7 @@ public class Uri {
 	 * @param ref
 	 *            Where to point to.
 	 */
-	public Uri(@NonNull URI ref) {
+	public Uri(@Nonnull URI ref) {
 		this.ref = secure(ref);
 	}
 
@@ -68,7 +67,7 @@ public class Uri {
 	 * @param strings
 	 *            The parameters to the factory.
 	 */
-	public Uri(@NonNull UriBuilder ub, String... strings) {
+	public Uri(@Nonnull UriBuilder ub, String... strings) {
 		ref = secure(ub).build((Object[]) strings);
 	}
 
@@ -82,7 +81,7 @@ public class Uri {
 	 * @param strings
 	 *            The parameters to the factory.
 	 */
-	public Uri(@NonNull UriInfo ui, @NonNull String path, String... strings) {
+	public Uri(@Nonnull UriInfo ui, @Nonnull String path, String... strings) {
 		this(ui, true, path, strings);
 	}
 
@@ -98,7 +97,7 @@ public class Uri {
 	 * @param strings
 	 *            The parameters to the factory.
 	 */
-	public Uri(@NonNull UriInfo ui, boolean secure, @NonNull String path,
+	public Uri(@Nonnull UriInfo ui, boolean secure, @Nonnull String path,
 			String... strings) {
 		UriBuilder ub = ui.getAbsolutePathBuilder();
 		if (secure) {
@@ -190,27 +189,25 @@ public class Uri {
 			return null;
 		}
 
-		@SuppressWarnings
 		public Rewriter() {
 			instance = this;
 		}
 
 		@PreDestroy
-		@SuppressWarnings
 		public void done() {
 			instance = null;
 			Uri.log = null;
 		}
 
-		@NonNull
-		URI rewrite(@NonNull String url) {
+		@Nonnull
+		URI rewrite(@Nonnull String url) {
 			if (rewriteTarget != null)
 				url = url.replaceFirst(rewriteRE, rewriteTarget);
 			return URI.create(url);
 		}
 
-		@NonNull
-		public UriBuilder getSecuredUriBuilder(@NonNull UriBuilder uribuilder) {
+		@Nonnull
+		public UriBuilder getSecuredUriBuilder(@Nonnull UriBuilder uribuilder) {
 			if (suppress)
 				return uribuilder.clone();
 			UriBuilder ub = new RewritingUriBuilder(uribuilder);

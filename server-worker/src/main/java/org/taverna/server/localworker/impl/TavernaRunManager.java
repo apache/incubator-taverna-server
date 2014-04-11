@@ -49,8 +49,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 /**
  * The registered factory for runs, this class is responsible for constructing
  * runs that are suitable for particular users. It is also the entry point for
@@ -59,7 +57,6 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @author Donal Fellows
  * @see LocalWorker
  */
-@SuppressWarnings({ "SE_BAD_FIELD", "SE_NO_SERIALVERSIONID" })
 @java.lang.SuppressWarnings("serial")
 public class TavernaRunManager extends UnicastRemoteObject implements
 		RemoteRunFactory, RunAccounting, WorkerFactory {
@@ -118,7 +115,6 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	 * @throws RemoteException
 	 *             If anything goes wrong.
 	 */
-	@SuppressWarnings("REC_CATCH_EXCEPTION")
 	private String unwrapWorkflow(String workflow, Holder<String> wfid)
 			throws RemoteException {
 		StringReader sr = new StringReader(workflow);
@@ -184,7 +180,6 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 
 	static class DelayedDeath implements Runnable {
 		@Override
-		@SuppressWarnings("DM_EXIT")
 		public void run() {
 			try {
 				Thread.sleep(DEATH_DELAY);

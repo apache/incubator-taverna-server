@@ -8,7 +8,7 @@ package org.taverna.server.localworker.remote;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import javax.annotation.Nonnull;
 
 /**
  * Represents a file in the working directory of a workflow instance run, or in
@@ -31,7 +31,7 @@ public interface RemoteFile extends RemoteDirectoryEntry {
 	 * @throws IOException
 	 *             If things go wrong reading the file.
 	 */
-	@NonNull
+	@Nonnull
 	byte[] getContents(int offset, int length) throws RemoteException,
 			IOException;
 
@@ -45,7 +45,7 @@ public interface RemoteFile extends RemoteDirectoryEntry {
 	 * @throws IOException
 	 *             If things go wrong writing the contents.
 	 */
-	void setContents(@NonNull byte[] data) throws RemoteException, IOException;
+	void setContents(@Nonnull byte[] data) throws RemoteException, IOException;
 
 	/**
 	 * Append the data to the file.
@@ -57,7 +57,7 @@ public interface RemoteFile extends RemoteDirectoryEntry {
 	 * @throws IOException
 	 *             If things go wrong writing the contents.
 	 */
-	void appendContents(@NonNull byte[] data) throws RemoteException,
+	void appendContents(@Nonnull byte[] data) throws RemoteException,
 			IOException;
 
 	/**
@@ -77,7 +77,7 @@ public interface RemoteFile extends RemoteDirectoryEntry {
 	 * @throws IOException
 	 *             If things go wrong during the copy.
 	 */
-	void copy(@NonNull RemoteFile sourceFile) throws RemoteException,
+	void copy(@Nonnull RemoteFile sourceFile) throws RemoteException,
 			IOException;
 
 	/**
@@ -85,7 +85,7 @@ public interface RemoteFile extends RemoteDirectoryEntry {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	@NonNull
+	@Nonnull
 	String getNativeName() throws RemoteException;
 
 	/**
@@ -93,6 +93,6 @@ public interface RemoteFile extends RemoteDirectoryEntry {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	@NonNull
+	@Nonnull
 	String getNativeHost() throws RemoteException;
 }

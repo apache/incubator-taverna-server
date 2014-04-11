@@ -8,7 +8,7 @@ package org.taverna.server.localworker.remote;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import javax.annotation.Nonnull;
 
 /**
  * An event listener that is attached to a {@link RemoteSingleRun}.
@@ -21,7 +21,7 @@ public interface RemoteListener extends Remote {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	@NonNull
+	@Nonnull
 	public String getName() throws RemoteException;
 
 	/**
@@ -29,7 +29,7 @@ public interface RemoteListener extends Remote {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	@NonNull
+	@Nonnull
 	public String getType() throws RemoteException;
 
 	/**
@@ -37,7 +37,7 @@ public interface RemoteListener extends Remote {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	@NonNull
+	@Nonnull
 	public String getConfiguration() throws RemoteException;
 
 	/**
@@ -45,7 +45,7 @@ public interface RemoteListener extends Remote {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	@NonNull
+	@Nonnull
 	public String[] listProperties() throws RemoteException;
 
 	/**
@@ -58,8 +58,8 @@ public interface RemoteListener extends Remote {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	@NonNull
-	public String getProperty(@NonNull String propName) throws RemoteException;
+	@Nonnull
+	public String getProperty(@Nonnull String propName) throws RemoteException;
 
 	/**
 	 * Set the value of a particular property, which should be listed in the
@@ -72,6 +72,6 @@ public interface RemoteListener extends Remote {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	public void setProperty(@NonNull String propName, @NonNull String value)
+	public void setProperty(@Nonnull String propName, @Nonnull String value)
 			throws RemoteException;
 }

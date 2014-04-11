@@ -13,6 +13,7 @@ import static org.taverna.server.master.utils.RestUtils.opt;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
@@ -26,8 +27,6 @@ import org.taverna.server.master.rest.ListenerDefinition;
 import org.taverna.server.master.rest.TavernaServerListenersREST;
 import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * RESTful interface to a single workflow run's event listeners.
@@ -71,7 +70,7 @@ abstract class ListenersREST implements TavernaServerListenersREST,
 		return makeListenerInterface().connect(l, run);
 	}
 
-	@NonNull
+	@Nonnull
 	protected abstract SingleListenerREST makeListenerInterface();
 
 	@Override

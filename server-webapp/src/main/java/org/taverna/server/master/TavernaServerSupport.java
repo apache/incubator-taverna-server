@@ -32,6 +32,8 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.activation.DataHandler;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.PreDestroy;
 import javax.ws.rs.WebApplicationException;
 import javax.xml.bind.JAXBException;
@@ -76,10 +78,6 @@ import org.taverna.server.master.utils.CapabilityLister;
 import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.InvocationCounter;
 import org.taverna.server.master.utils.UsernamePrincipal;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
  * Web application support utilities.
@@ -365,7 +363,7 @@ public class TavernaServerSupport {
 	 * @throws NoUpdateException
 	 *             If the current user is not permitted to update the run.
 	 */
-	public void permitUpdate(@NonNull TavernaRun run) throws NoUpdateException {
+	public void permitUpdate(@Nonnull TavernaRun run) throws NoUpdateException {
 		if (isSuperUser()) {
 			accessLog
 					.warn("check for admin powers passed; elevated access rights granted for update");
@@ -405,7 +403,7 @@ public class TavernaServerSupport {
 	 * 
 	 * @return The identity of the user accessing the webapp.
 	 */
-	@NonNull
+	@Nonnull
 	public UsernamePrincipal getPrincipal() {
 		try {
 			Authentication auth = SecurityContextHolder.getContext()
@@ -446,8 +444,8 @@ public class TavernaServerSupport {
 	 *             If the workflow run doesn't exist or the current user doesn't
 	 *             have permission to see it.
 	 */
-	@NonNull
-	public TavernaRun getRun(@NonNull String name) throws UnknownRunException {
+	@Nonnull
+	public TavernaRun getRun(@Nonnull String name) throws UnknownRunException {
 		if (isSuperUser()) {
 			accessLog
 					.info("check for admin powers passed; elevated access rights granted for read");
@@ -481,9 +479,9 @@ public class TavernaServerSupport {
 	 *             If the run does not permit the current user to add listeners
 	 *             (or perform other types of update).
 	 */
-	@NonNull
-	public Listener makeListener(@NonNull TavernaRun run, @NonNull String type,
-			@NonNull String configuration) throws NoListenerException,
+	@Nonnull
+	public Listener makeListener(@Nonnull TavernaRun run, @Nonnull String type,
+			@Nonnull String configuration) throws NoListenerException,
 			NoUpdateException {
 		permitUpdate(run);
 		return listenerFactory.makeListener(run, type, configuration);
@@ -500,7 +498,7 @@ public class TavernaServerSupport {
 	 * @throws NoListenerException
 	 *             If no listener with that name exists.
 	 */
-	@NonNull
+	@Nonnull
 	public Listener getListener(TavernaRun run, String listenerName)
 			throws NoListenerException {
 		for (Listener l : run.getListeners())
@@ -526,7 +524,7 @@ public class TavernaServerSupport {
 	 * @throws UnknownRunException
 	 *             If no run with that name exists.
 	 */
-	@NonNull
+	@Nonnull
 	public String getProperty(String runName, String listenerName,
 			String propertyName) throws NoListenerException,
 			UnknownRunException {
@@ -548,7 +546,7 @@ public class TavernaServerSupport {
 	 *             If no listener with that name exists, or no property with
 	 *             that name exists.
 	 */
-	@NonNull
+	@Nonnull
 	public String getProperty(TavernaRun run, String listenerName,
 			String propertyName) throws NoListenerException {
 		return getListener(run, listenerName).getProperty(propertyName);
@@ -565,9 +563,9 @@ public class TavernaServerSupport {
 	 *            The name of the user to look up the permission for.
 	 * @return A permission description.
 	 */
-	@NonNull
-	public Permission getPermission(@NonNull TavernaSecurityContext context,
-			@NonNull String userName) {
+	@Nonnull
+	public Permission getPermission(@Nonnull TavernaSecurityContext context,
+			@Nonnull String userName) {
 		if (context.getPermittedDestroyers().contains(userName))
 			return Permission.Destroy;
 		if (context.getPermittedUpdaters().contains(userName))
@@ -592,7 +590,6 @@ public class TavernaServerSupport {
 	 *            {@link Permission#Destroy}; this is always enforced before
 	 *            checking for other permissions.
 	 */
-	@SuppressWarnings("SF_SWITCH_FALLTHROUGH")
 	public void setPermission(TavernaSecurityContext context, String userName,
 			Permission permission) {
 		Set<String> permSet;
@@ -674,7 +671,7 @@ public class TavernaServerSupport {
 	 *             If the run is unknown (e.g., because it is already
 	 *             destroyed).
 	 */
-	public void unregisterRun(@NonNull String runName, @NonNull TavernaRun run)
+	public void unregisterRun(@Nonnull String runName, @Nonnull TavernaRun run)
 			throws NoDestroyException, UnknownRunException {
 		if (run == null)
 			run = getRun(runName);
@@ -697,8 +694,8 @@ public class TavernaServerSupport {
 	 *             (Note that lifespan management requires the ability to
 	 *             destroy.)
 	 */
-	@NonNull
-	public Date updateExpiry(@NonNull TavernaRun run, @NonNull Date date)
+	@Nonnull
+	public Date updateExpiry(@Nonnull TavernaRun run, @Nonnull Date date)
 			throws NoDestroyException {
 		permitDestroy(run);
 		run.setExpiry(date);
@@ -821,8 +818,8 @@ public class TavernaServerSupport {
 	 * @return The content type. If all else fails, produces good old
 	 *         "application/octet-stream".
 	 */
-	@NonNull
-	public String getEstimatedContentType(@NonNull File f) {
+	@Nonnull
+	public String getEstimatedContentType(@Nonnull File f) {
 		String name = f.getName();
 		for (int idx = name.indexOf('.'); idx != -1; idx = name.indexOf('.',
 				idx + 1)) {
@@ -830,7 +827,7 @@ public class TavernaServerSupport {
 			if (mt != null)
 				return mt;
 		}
-		@NonNull
+		@Nonnull
 		String type = getExtensionMimeTypes(name);
 		if (!type.equals(UNKNOWN_MIME_TYPE))
 			return type;
@@ -909,7 +906,7 @@ public class TavernaServerSupport {
 		return fc;
 	}
 
-	@NonNull
+	@Nonnull
 	public List<Capability> getCapabilities() {
 		return capabilitySource.getCapabilities();
 	}

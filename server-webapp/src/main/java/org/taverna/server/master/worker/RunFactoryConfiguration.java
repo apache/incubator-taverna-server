@@ -6,6 +6,8 @@ import static org.taverna.server.master.TavernaServer.JMX_ROOT;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.PreDestroy;
 
 import org.apache.commons.logging.Log;
@@ -17,9 +19,6 @@ import org.springframework.jmx.export.annotation.ManagedMetric;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.taverna.server.master.factories.ConfigurableRunFactory;
 import org.taverna.server.master.localworker.LocalWorkerState;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 
 @ManagedResource(objectName = JMX_ROOT + "Factory", description = "The factory for runs.")
 public abstract class RunFactoryConfiguration implements ConfigurableRunFactory {
@@ -103,7 +102,7 @@ public abstract class RunFactoryConfiguration implements ConfigurableRunFactory 
 		reinitFactory();
 	}
 
-	@NonNull
+	@Nonnull
 	@Override
 	@ManagedAttribute(description = "What JAR do we use to start the RMI registry process?")
 	public final String getRmiRegistryJar() {
@@ -191,7 +190,7 @@ public abstract class RunFactoryConfiguration implements ConfigurableRunFactory 
 	}
 
 	/** @return The script to run to start running a workflow. */
-	@NonNull
+	@Nonnull
 	@Override
 	@ManagedAttribute(description = "The script to run to start running a workflow.", currencyTimeLimit = 300)
 	public final String getExecuteWorkflowScript() {
@@ -210,7 +209,7 @@ public abstract class RunFactoryConfiguration implements ConfigurableRunFactory 
 	}
 
 	/** @return The location of the JAR implementing the server worker processes. */
-	@NonNull
+	@Nonnull
 	@Override
 	@ManagedAttribute(description = "The location of the JAR implementing the server worker processes.")
 	public final String getServerWorkerJar() {
@@ -230,7 +229,7 @@ public abstract class RunFactoryConfiguration implements ConfigurableRunFactory 
 	}
 
 	/** @return The list of additional arguments used to make a worker process. */
-	@NonNull
+	@Nonnull
 	@Override
 	@ManagedAttribute(description = "The list of additional arguments used to make a worker process.", currencyTimeLimit = 300)
 	public final String[] getExtraArguments() {
@@ -244,13 +243,13 @@ public abstract class RunFactoryConfiguration implements ConfigurableRunFactory 
 	 */
 	@Override
 	@ManagedAttribute(description = "The list of additional arguments used to make a worker process.", currencyTimeLimit = 300)
-	public final void setExtraArguments(@NonNull String[] extraArguments) {
+	public final void setExtraArguments(@Nonnull String[] extraArguments) {
 		state.setExtraArgs(extraArguments);
 		reinitFactory();
 	}
 
 	/** @return Which java executable to run. */
-	@NonNull
+	@Nonnull
 	@Override
 	@ManagedAttribute(description = "Which java executable to run.", currencyTimeLimit = 300)
 	public final String getJavaBinary() {
@@ -263,7 +262,7 @@ public abstract class RunFactoryConfiguration implements ConfigurableRunFactory 
 	 */
 	@Override
 	@ManagedAttribute(description = "Which java executable to run.", currencyTimeLimit = 300)
-	public final void setJavaBinary(@NonNull String javaBinary) {
+	public final void setJavaBinary(@Nonnull String javaBinary) {
 		state.setJavaBinary(javaBinary);
 		reinitFactory();
 	}
@@ -294,7 +293,7 @@ public abstract class RunFactoryConfiguration implements ConfigurableRunFactory 
 	/**
 	 * @return The location of the JAR implementing the secure-fork process.
 	 */
-	@NonNull
+	@Nonnull
 	@Override
 	@ManagedAttribute(description = "The location of the JAR implementing the secure-fork process.", currencyTimeLimit = 300)
 	public final String getServerForkerJar() {
@@ -330,7 +329,7 @@ public abstract class RunFactoryConfiguration implements ConfigurableRunFactory 
 	@ManagedAttribute(description = "How many checks were done for the worker process the last time a spawn was tried.", currencyTimeLimit = 60)
 	public abstract int getLastStartupCheckCount();
 
-	@NonNull
+	@Nonnull
 	@Override
 	@ManagedAttribute(description = "The names of the current runs.", currencyTimeLimit = 5)
 	public final String[] getCurrentRunNames() {

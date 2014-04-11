@@ -20,9 +20,6 @@ import org.taverna.server.master.mocks.MockPolicy;
 import org.taverna.server.master.mocks.SimpleListenerFactory;
 import org.taverna.server.master.mocks.SimpleNonpersistentRunStore;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
-@SuppressWarnings
 public class TavernaServerImplTest {
 	private TavernaServer server;
 	private MockPolicy policy;
@@ -74,7 +71,6 @@ public class TavernaServerImplTest {
 	}
 
 	@Before
-	@SuppressWarnings
 	public void wireup() throws Exception {
 		// Wire everything up; ought to be done with Spring, but this works...
 		server = new TavernaServer() {

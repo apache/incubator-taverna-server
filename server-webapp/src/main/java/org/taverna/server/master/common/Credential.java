@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import javax.annotation.Nonnull;
 
 /**
  * A description of a private credential. This description is characterised by a
@@ -65,7 +65,7 @@ public abstract class Credential implements Serializable {
 		return equals((Credential) o);
 	}
 
-	protected boolean equals(@NonNull Credential c) {
+	protected boolean equals(@Nonnull Credential c) {
 		return id.equals(c.id);
 	}
 

@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -57,8 +58,6 @@ import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.soap.TavernaServerSOAP;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-
 /**
  * The REST service interface to Taverna 2.5.3 Server.
  * 
@@ -80,8 +79,8 @@ public interface TavernaServerREST {
 	@Path(ROOT)
 	@Produces({ XML, JSON })
 	@Description("Produces the description of the service.")
-	@NonNull
-	ServerDescription describeService(@NonNull @Context UriInfo ui);
+	@Nonnull
+	ServerDescription describeService(@Nonnull @Context UriInfo ui);
 
 	/** Get an outline of the operations supported. */
 	@OPTIONS
@@ -101,8 +100,8 @@ public interface TavernaServerREST {
 	@Produces({ XML, JSON })
 	@RolesAllowed(USER)
 	@Description("Produces a list of all runs visible to the user.")
-	@NonNull
-	RunList listUsersRuns(@NonNull @Context UriInfo ui);
+	@Nonnull
+	RunList listUsersRuns(@Nonnull @Context UriInfo ui);
 
 	/**
 	 * Accepts (or not) a request to create a new run executing the given
@@ -122,9 +121,9 @@ public interface TavernaServerREST {
 	@RolesAllowed(USER)
 	@Description("Accepts (or not) a request to create a new run executing "
 			+ "the given workflow.")
-	@NonNull
-	Response submitWorkflow(@NonNull Workflow workflow,
-			@NonNull @Context UriInfo ui) throws NoUpdateException;
+	@Nonnull
+	Response submitWorkflow(@Nonnull Workflow workflow,
+			@Nonnull @Context UriInfo ui) throws NoUpdateException;
 
 	/**
 	 * Accepts (or not) a request to create a new run executing the workflow at
@@ -147,9 +146,9 @@ public interface TavernaServerREST {
 	@RolesAllowed(USER)
 	@Description("Accepts a URL to a workflow to download and run. The URL "
 			+ "must be hosted on a publicly-accessible service.")
-	@NonNull
-	Response submitWorkflowByURL(@NonNull List<URI> referenceList,
-			@NonNull @Context UriInfo ui) throws NoCreateException,
+	@Nonnull
+	Response submitWorkflowByURL(@Nonnull List<URI> referenceList,
+			@Nonnull @Context UriInfo ui) throws NoCreateException,
 			NoUpdateException;
 
 	/** Get an outline of the operations supported. */
@@ -164,7 +163,7 @@ public interface TavernaServerREST {
 	 */
 	@Path(POL)
 	@Description("The policies supported by this server.")
-	@NonNull
+	@Nonnull
 	PolicyView getPolicyDescription();
 
 	/**
@@ -181,10 +180,10 @@ public interface TavernaServerREST {
 	@Path(RUNS + "/{runName}")
 	@RolesAllowed(USER)
 	@Description("Get a particular named run resource to dispatch to.")
-	@NonNull
+	@Nonnull
 	TavernaServerRunREST getRunResource(
-			@NonNull @PathParam("runName") String runName,
-			@NonNull @Context UriInfo uriInfo) throws UnknownRunException;
+			@Nonnull @PathParam("runName") String runName,
+			@Nonnull @Context UriInfo uriInfo) throws UnknownRunException;
 
 	/**
 	 * Factored out path names used in the {@link TavernaServerREST} interface
@@ -271,8 +270,8 @@ public interface TavernaServerREST {
 		@Path(ROOT)
 		@Produces({ XML, JSON })
 		@Description("Describe the parts of this policy.")
-		@NonNull
-		public PolicyDescription getDescription(@NonNull @Context UriInfo ui);
+		@Nonnull
+		public PolicyDescription getDescription(@Nonnull @Context UriInfo ui);
 
 		/**
 		 * Gets the maximum number of simultaneous runs that the user may
@@ -288,7 +287,7 @@ public interface TavernaServerREST {
 		@RolesAllowed(USER)
 		@Description("Gets the maximum number of simultaneous runs in any "
 				+ "state that the user may create.")
-		@NonNull
+		@Nonnull
 		public int getMaxSimultaneousRuns();
 
 		/**
@@ -324,7 +323,7 @@ public interface TavernaServerREST {
 		@Produces({ XML, JSON })
 		@RolesAllowed(USER)
 		@Description("Gets the list of permitted workflows.")
-		@NonNull
+		@Nonnull
 		public PermittedWorkflows getPermittedWorkflows();
 
 		/**
@@ -338,7 +337,7 @@ public interface TavernaServerREST {
 		@Produces({ XML, JSON })
 		@RolesAllowed(USER)
 		@Description("Gets the list of permitted event listener types.")
-		@NonNull
+		@Nonnull
 		public PermittedListeners getPermittedListeners();
 
 		/**
@@ -355,7 +354,7 @@ public interface TavernaServerREST {
 		@Description("Gets the list of supported, enabled notification "
 				+ "fabrics. Each corresponds (approximately) to a protocol, "
 				+ "e.g., email.")
-		@NonNull
+		@Nonnull
 		public EnabledNotificationFabrics getEnabledNotifiers();
 
 		@GET
@@ -364,7 +363,7 @@ public interface TavernaServerREST {
 		@RolesAllowed(USER)
 		@Description("Gets a description of the capabilities supported by "
 				+ "this installation of Taverna Server.")
-		@NonNull
+		@Nonnull
 		public CapabilityList getCapabilities();
 
 		/**
@@ -572,7 +571,7 @@ public interface TavernaServerREST {
 		@Path("/")
 		@Produces("application/atom+xml;type=feed")
 		@Description("Get an Atom feed for the user's events.")
-		@NonNull
+		@Nonnull
 		Feed getFeed(@Context UriInfo ui);
 
 		/**
@@ -584,7 +583,7 @@ public interface TavernaServerREST {
 		@Path("{id}")
 		@Produces("application/atom+xml;type=entry")
 		@Description("Get a particular Atom event.")
-		@NonNull
-		Entry getEvent(@NonNull @PathParam("id") String id);
+		@Nonnull
+		Entry getEvent(@Nonnull @PathParam("id") String id);
 	}
 }
