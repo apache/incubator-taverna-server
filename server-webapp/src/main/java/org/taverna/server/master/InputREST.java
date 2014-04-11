@@ -131,8 +131,12 @@ class InputREST implements TavernaServerInputREST, InputBean {
 			throw new BadInputPortNameException("bad input name");
 		if (ac == null)
 			throw new BadPropertyValueException("no content!");
+		if (inputDescriptor.delimiter != null
+				&& inputDescriptor.delimiter.isEmpty())
+			inputDescriptor.delimiter = null;
 		if (ac instanceof InDesc.Reference)
-			return setRemoteInput(name, (InDesc.Reference) ac, inputDescriptor.delimiter, ui);
+			return setRemoteInput(name, (InDesc.Reference) ac,
+					inputDescriptor.delimiter, ui);
 		if (!(ac instanceof InDesc.File || ac instanceof InDesc.Value))
 			throw new BadPropertyValueException("unknown content type");
 		support.permitUpdate(run);

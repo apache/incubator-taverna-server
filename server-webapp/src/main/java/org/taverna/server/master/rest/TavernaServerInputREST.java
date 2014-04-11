@@ -292,7 +292,7 @@ public interface TavernaServerInputREST {
 		@XmlAttribute(required = false)
 		public Uri descriptorRef;
 		/** The character to use to split the input into a list. */
-		@XmlAttribute(required = false)
+		@XmlAttribute(name = "listDelimiter", required = false)
 		public String delimiter;
 
 		/**
