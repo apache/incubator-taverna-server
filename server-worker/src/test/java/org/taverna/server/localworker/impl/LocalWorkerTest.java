@@ -96,9 +96,9 @@ public class LocalWorkerTest {
 				String executeWorkflowCommand, String workflow,
 				File workingDir, File inputBaclava,
 				Map<String, File> inputFiles, Map<String, String> inputValues,
-				File outputBaclava, File cmdir, char[] cmpass, boolean doprov,
-				Map<String, String> env, String id, List<String> conf)
-				throws Exception {
+				Map<String, String> delimiters, File outputBaclava, File cmdir,
+				char[] cmpass, boolean doprov, Map<String, String> env,
+				String id, List<String> conf) throws Exception {
 			events.add("init[");
 			events.add(executeWorkflowCommand);
 			events.add(workflow);
@@ -118,6 +118,7 @@ public class LocalWorkerTest {
 			// TODO: check cmdir and cmpass
 			// TODO: check doprov
 			// TODO: log env
+			// TODO: check delimiters
 			events.add("]");
 			return true;
 		}

@@ -9,6 +9,9 @@ import org.taverna.server.master.common.Status;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+
 /**
  * This represents the assignment of inputs to input ports of the workflow. Note
  * that the <tt>file</tt> and <tt>value</tt> properties are never set at the
@@ -21,18 +24,28 @@ public interface Input {
 	 * @return The file currently assigned to this input port, or <tt>null</tt>
 	 *         if no file is assigned.
 	 */
+	@Nullable
 	public String getFile();
 
 	/**
 	 * @return The name of this input port. This may not be changed.
 	 */
+	@NonNull
 	public String getName();
 
 	/**
 	 * @return The value currently assigned to this input port, or <tt>null</tt>
 	 *         if no value is assigned.
 	 */
+	@Nullable
 	public String getValue();
+
+	/**
+	 * @return The delimiter for the input port, or <tt>null</tt> if the value
+	 *         is not to be split.
+	 */
+	@Nullable
+	public String getDelimiter();
 
 	/**
 	 * Sets the file to use for this input. This overrides the use of the
@@ -62,4 +75,18 @@ public interface Input {
 	 *             Initialized} state.
 	 */
 	public void setValue(String value) throws BadStateChangeException;
+
+	/**
+	 * Sets (or clears) the delimiter for the input port.
+	 * 
+	 * @param delimiter
+	 *            The delimiter character, or <tt>null</tt> if the value is not
+	 *            to be split.
+	 * @throws BadStateChangeException
+	 *             If the run isn't in the {@link Status#Initialized
+	 *             Initialized} state.
+	 */
+	@Nullable
+	public void setDelimiter(String delimiter) throws BadStateChangeException;
+
 }

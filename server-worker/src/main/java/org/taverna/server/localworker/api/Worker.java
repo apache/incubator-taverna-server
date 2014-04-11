@@ -44,6 +44,9 @@ public interface Worker {
 	 *            A mapping of input names to values to supply to them. Note
 	 *            that we assume that nothing mapped here will be mapped in
 	 *            <b>inputFiles</b>.
+	 * @param inputDelimiters
+	 *            A mapping of input names to characters used to split them into
+	 *            lists.
 	 * @param outputBaclavaFile
 	 *            What baclava file to write the output from the workflow into,
 	 *            or <tt>null</tt> to have it written into the <tt>out</tt>
@@ -70,10 +73,10 @@ public interface Worker {
 	boolean initWorker(LocalWorker local, String executeWorkflowCommand,
 			String workflow, File workingDir, File inputBaclavaFile,
 			Map<String, File> inputRealFiles, Map<String, String> inputValues,
-			File outputBaclavaFile, File contextDirectory,
-			char[] keystorePassword, boolean generateProvenance,
-			Map<String, String> environment, String masterToken,
-			List<String> runtimeSettings) throws Exception;
+			Map<String, String> inputDelimiters, File outputBaclavaFile,
+			File contextDirectory, char[] keystorePassword,
+			boolean generateProvenance, Map<String, String> environment,
+			String masterToken, List<String> runtimeSettings) throws Exception;
 
 	/**
 	 * Kills off the subprocess if it exists and is alive.

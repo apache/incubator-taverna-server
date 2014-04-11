@@ -24,7 +24,10 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -34,7 +37,6 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
 import org.apache.cxf.jaxrs.model.wadl.Description;
-import org.taverna.server.port_description.InputDescription;
 import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.exceptions.BadInputPortNameException;
@@ -44,6 +46,7 @@ import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.Input;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.port_description.InputDescription;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 
@@ -137,6 +140,8 @@ public interface TavernaServerInputREST {
 	 * 
 	 * @param name
 	 *            The input to set.
+	 * @param uriInfo
+	 *            About the URI used to access this resource.
 	 * @return A description of the input.
 	 * @throws BadInputPortNameException
 	 *             If no input with that name exists.
@@ -147,8 +152,8 @@ public interface TavernaServerInputREST {
 	@Description("Gives a description of what is used to supply a particular "
 			+ "input.")
 	@NonNull
-	InDesc getInput(@NonNull @PathParam("name") String name)
-			throws BadInputPortNameException;
+	InDesc getInput(@NonNull @PathParam("name") String name,
+			@Context UriInfo uriInfo) throws BadInputPortNameException;
 
 	/**
 	 * Set what an input uses to provide data into the workflow run.
@@ -157,6 +162,8 @@ public interface TavernaServerInputREST {
 	 *            The name of the input.
 	 * @param inputDescriptor
 	 *            A description of the input
+	 * @param uriInfo
+	 *            About the URI used to access this resource.
 	 * @return A description of the input.
 	 * @throws NoUpdateException
 	 *             If the user can't update the run.
@@ -177,7 +184,7 @@ public interface TavernaServerInputREST {
 	@Description("Sets the source for a particular input port.")
 	@NonNull
 	InDesc setInput(@NonNull @PathParam("name") String name,
-			@NonNull InDesc inputDescriptor) throws NoUpdateException,
+			@NonNull InDesc inputDescriptor, @Context UriInfo uriInfo) throws NoUpdateException,
 			BadStateChangeException, FilesystemAccessException,
 			BadPropertyValueException, BadInputPortNameException;
 
@@ -258,7 +265,7 @@ public interface TavernaServerInputREST {
 		 * 
 		 * @param inputPort
 		 */
-		public InDesc(Input inputPort) {
+		public InDesc(Input inputPort, UriInfo ui) {
 			super(true);
 			name = inputPort.getName();
 			if (inputPort.getFile() != null) {
@@ -268,11 +275,25 @@ public interface TavernaServerInputREST {
 				assignment = new InDesc.Value();
 				assignment.contents = inputPort.getValue();
 			}
+			// .../runs/{id}/input/input/{name} ->
+			// .../runs/{id}/input/expected#{name}
+			UriBuilder ub = ui.getBaseUriBuilder();
+			List<PathSegment> segments = ui.getPathSegments();
+			for (PathSegment s : segments.subList(0, segments.size() - 2))
+				ub.segment(s.getPath());
+			ub.fragment(name);
+			descriptorRef = new Uri(ub);
 		}
 
 		/** The name of the port. */
 		@XmlAttribute(required = false)
 		public String name;
+		/** Where the port is described. Ignored in user input. */
+		@XmlAttribute(required = false)
+		public Uri descriptorRef;
+		/** The character to use to split the input into a list. */
+		@XmlAttribute(name = "listDelimiter", required = false)
+		public String delimiter;
 
 		/**
 		 * Either a filename or a literal string, used to provide input to a

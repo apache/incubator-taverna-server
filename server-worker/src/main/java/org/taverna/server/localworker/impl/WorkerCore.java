@@ -207,6 +207,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			@Nullable final File inputBaclava,
 			@NonNull final Map<String, File> inputFiles,
 			@NonNull final Map<String, String> inputValues,
+			@NonNull final Map<String, String> inputDelimiters,
 			@Nullable final File outputBaclava,
 			@NonNull final File securityDir, @Nullable final char[] password,
 			final boolean generateProvenance,
@@ -220,9 +221,10 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 					startExecutorSubprocess(
 							createProcessBuilder(local, executeWorkflowCommand,
 									workflow, workingDir, inputBaclava,
-									inputFiles, inputValues, outputBaclava,
-									securityDir, password, generateProvenance,
-									environment, token, runtime), password);
+									inputFiles, inputValues, inputDelimiters,
+									outputBaclava, securityDir, password,
+									generateProvenance, environment, token,
+									runtime), password);
 				}
 			}.doOrTimeOut(START_WAIT_TIME);
 		} catch (IOException e) {
@@ -289,11 +291,15 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	 *             If we can't write the workflow out (unlikely)
 	 */
 	@NonNull
-	ProcessBuilder createProcessBuilder(@NonNull LocalWorker local,
-			@NonNull String executeWorkflowCommand, @NonNull String workflow,
-			@NonNull File workingDir, @Nullable File inputBaclava,
+	ProcessBuilder createProcessBuilder(
+			@NonNull LocalWorker local,
+			@NonNull String executeWorkflowCommand,
+			@NonNull String workflow,
+			@NonNull File workingDir,
+			@Nullable File inputBaclava,
 			@NonNull Map<String, File> inputFiles,
 			@NonNull Map<String, String> inputValues,
+			@NonNull Map<String, String> inputDelimiters,
 			@Nullable File outputBaclava, @NonNull File securityDir,
 			@NonNull char[] password, boolean generateProvenance,
 			@NonNull Map<String, String> environment, @NonNull String token,
@@ -367,6 +373,13 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 				File f = createTempFile(".tav_in_", null, workingDir);
 				pb.command().add(f.getAbsolutePath());
 				write(f, port.getValue(), "UTF-8");
+			}
+			for (Entry<String, String> delim : inputDelimiters.entrySet()) {
+				if (delim.getValue() == null)
+					continue;
+				pb.command().add("-inputdelimiter");
+				pb.command().add(delim.getKey());
+				pb.command().add(delim.getValue());
 			}
 		}
 

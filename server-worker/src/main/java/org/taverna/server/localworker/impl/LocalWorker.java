@@ -109,6 +109,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	final Map<String, File> inputRealFiles;
 	/** What inputs to pass as direct values. */
 	final Map<String, String> inputValues;
+	/** What delimiters to use. */
+	final Map<String, String> inputDelimiters;
 	/** The interface to the workflow engine subprocess. */
 	private final Worker core;
 	/** Our descriptor token (UUID). */
@@ -220,9 +222,10 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 					"problem creating run working directory", e);
 		}
 		baseDir = new DirectoryDelegate(base, null);
-		inputFiles = new HashMap<String, String>();
-		inputRealFiles = new HashMap<String, File>();
-		inputValues = new HashMap<String, String>();
+		inputFiles = new HashMap<>();
+		inputRealFiles = new HashMap<>();
+		inputValues = new HashMap<>();
+		inputDelimiters = new HashMap<>();
 		environment.putAll(seedEnvironment);
 		runtimeSettings.addAll(javaParams);
 		try {
@@ -546,6 +549,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 				inputFiles.put(name, null);
 				inputRealFiles.put(name, null);
 				inputValues.put(name, null);
+				inputDelimiters.put(name, null);
 			}
 		}
 
@@ -562,6 +566,11 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		@Override
 		public String getValue() {
 			return inputValues.get(name);
+		}
+		
+		@Override
+		public String getDelimiter() throws RemoteException {
+			return inputDelimiters.get(name);
 		}
 
 		@Override
@@ -582,6 +591,26 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			inputFiles.put(name, null);
 			inputRealFiles.put(name, null);
 			inputBaclava = null;
+		}
+
+		@Override
+		public void setDelimiter(String delimiter) throws RemoteException {
+			if (status != Initialized)
+				throw new IllegalStateException("not initializing");
+			if (inputBaclava != null)
+				throw new IllegalStateException("input baclava file set");
+			if (delimiter!=null) {
+				if (delimiter.length() > 1)
+					throw new IllegalStateException(
+							"multi-character delimiter not permitted");
+				if (delimiter.charAt(0) == 0)
+					throw new IllegalStateException(
+							"may not use NUL for splitting");
+				if (delimiter.charAt(0) > 127)
+					throw new IllegalStateException(
+							"only ASCII characters supported for splitting");
+			}
+			inputDelimiters.put(name, delimiter);
 		}
 	}
 
@@ -715,7 +744,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		 * clear it after use.
 		 */
 		return core.initWorker(this, executeWorkflowCommand, workflow, base,
-				inputBaclavaFile, inputRealFiles, inputValues,
+				inputBaclavaFile, inputRealFiles, inputValues, inputDelimiters,
 				outputBaclavaFile, securityDirectory, pw, doProvenance,
 				environment, masterToken, runtimeSettings);
 	}

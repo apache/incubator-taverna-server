@@ -333,6 +333,38 @@ public interface TavernaServerSOAP {
 			BadStateChangeException, BadPropertyValueException;
 
 	/**
+	 * Tells the given run to use the given list delimiter (a single-character
+	 * string value) for splitting the input on the given port. Note that
+	 * nullability of the delimiter is supported here.
+	 * 
+	 * @param runName
+	 *            The handle of the run.
+	 * @param portName
+	 *            The port to set the list delimiter for.
+	 * @param delimiter
+	 *            The single-character value (in range U+00001..U+0007F) to use
+	 *            as the delimiter, or <tt>null</tt> for no delimiter at all.
+	 * @throws UnknownRunException
+	 *             If the server doesn't know about the run or if the user is
+	 *             not permitted to see it.
+	 * @throws NoUpdateException
+	 *             If the user isn't allowed to manipulate the run.
+	 * @throws BadStateChangeException
+	 *             If the run is not in the {@link Status#Initialized
+	 *             Initialized} state.
+	 * @throws BadPropertyValueException
+	 *             If the delimiter may not be changed to the given literal
+	 *             value.
+	 */
+	@WSDLDocumentation("Tells the given run to use the given list delimiter (a single-character string value) for splitting the input on the given port. Note that nullability of the delimiter is supported here.")
+	void setRunInputPortListDelimiter(
+			@WebParam(name = "runName") String runName,
+			@WebParam(name = "portName") String portName,
+			@WebParam(name = "delimiter") String delimiter)
+			throws UnknownRunException, NoUpdateException,
+			BadStateChangeException, BadPropertyValueException;
+
+	/**
 	 * Get the Baclava file where the output of the run will be written.
 	 * 
 	 * @param runName
