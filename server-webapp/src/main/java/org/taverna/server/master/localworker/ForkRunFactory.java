@@ -24,6 +24,7 @@ import java.rmi.RemoteException;
 import java.util.Calendar;
 import java.util.UUID;
 
+import javax.annotation.PostConstruct;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
@@ -59,6 +60,12 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	 *             Shouldn't happen.
 	 */
 	public ForkRunFactory() throws JAXBException {
+	}
+
+	@PostConstruct
+	protected void initRegistry() {
+		log.info("waiting for availability of default RMI registry");
+		getTheRegistry();
 	}
 
 	@Override

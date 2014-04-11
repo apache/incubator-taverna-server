@@ -179,6 +179,9 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	 */
 	@PostConstruct
 	void initMetaFactory() throws IOException {
+		log.info("waiting for availability of default RMI registry");
+		getTheRegistry();
+		log.info("constructing secure fork subprocess");
 		forker = new SecureFork(this, state, log);
 	}
 
