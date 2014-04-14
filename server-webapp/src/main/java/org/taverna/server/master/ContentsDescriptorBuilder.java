@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
@@ -89,7 +90,7 @@ public class ContentsDescriptorBuilder {
 
 	private List<Element> inputPorts(Element dataflow)
 			throws XPathExpressionException {
-		List<Element> result = new ArrayList<Element>();
+		List<Element> result = new ArrayList<>();
 		if (dataflow == null)
 			return result;
 		NodeList nl = (NodeList) inputPorts.evaluate(dataflow, NODESET);
@@ -101,7 +102,7 @@ public class ContentsDescriptorBuilder {
 
 	private List<Element> outputPorts(Element dataflow)
 			throws XPathExpressionException {
-		List<Element> result = new ArrayList<Element>();
+		List<Element> result = new ArrayList<>();
 		if (dataflow == null)
 			return result;
 		NodeList nl = (NodeList) outputPorts.evaluate(dataflow, NODESET);
@@ -164,10 +165,7 @@ public class ContentsDescriptorBuilder {
 		Collection<DirectoryEntry> outs = null;
 		try {
 			outs = fileUtils.getDirectory(run, "out").getContents();
-		} catch (FilesystemAccessException e) {
-			log.warn("unexpected failure in construction of output descriptor",
-					e);
-		} catch (NoDirectoryEntryException e) {
+		} catch (FilesystemAccessException | NoDirectoryEntryException e) {
 			log.warn("unexpected failure in construction of output descriptor",
 					e);
 		}
@@ -258,8 +256,7 @@ public class ContentsDescriptorBuilder {
 			throws FilesystemAccessException {
 		ListValue v = new ListValue();
 		v.length = 0;
-		HashSet<DirectoryEntry> contents = new HashSet<DirectoryEntry>(
-				dir.getContents());
+		Set<DirectoryEntry> contents = new HashSet<>(dir.getContents());
 		Iterator<DirectoryEntry> it = contents.iterator();
 		while (it.hasNext())
 			if (!it.next().getName().matches("^[0-9]+([.].*)?$"))

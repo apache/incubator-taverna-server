@@ -21,7 +21,7 @@ import org.taverna.server.master.utils.UsernamePrincipal;
  * @author Donal Fellows
  */
 public class SimpleNonpersistentRunStore implements RunStore {
-	private Map<String, TavernaRun> store = new HashMap<String, TavernaRun>();
+	private Map<String, TavernaRun> store = new HashMap<>();
 	private Object lock = new Object();
 
 	Timer timer;
@@ -107,12 +107,11 @@ public class SimpleNonpersistentRunStore implements RunStore {
 
 	@Override
 	public Map<String, TavernaRun> listRuns(UsernamePrincipal user, Policy p) {
-		HashMap<String, TavernaRun> filtered = new HashMap<String, TavernaRun>();
+		Map<String, TavernaRun> filtered = new HashMap<>();
 		synchronized (lock) {
-			for (Map.Entry<String, TavernaRun> entry : store.entrySet()) {
+			for (Map.Entry<String, TavernaRun> entry : store.entrySet())
 				if (p.permitAccess(user, entry.getValue()))
 					filtered.put(entry.getKey(), entry.getValue());
-			}
 		}
 		return filtered;
 	}
@@ -137,7 +136,7 @@ class CleanerTask extends TimerTask {
 	WeakReference<SimpleNonpersistentRunStore> store;
 
 	CleanerTask(SimpleNonpersistentRunStore store, int interval) {
-		this.store = new WeakReference<SimpleNonpersistentRunStore>(store);
+		this.store = new WeakReference<>(store);
 		int tms = interval * 1000;
 		store.timer.scheduleAtFixedRate(this, tms, tms);
 	}

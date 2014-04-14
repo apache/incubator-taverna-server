@@ -12,6 +12,8 @@ import static org.apache.commons.logging.LogFactory.getLog;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.PreDestroy;
 import javax.jdo.JDOException;
 import javax.jdo.PersistenceManager;
@@ -24,9 +26,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Required;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
  * Simple support class that wraps up and provides access to the correct parts
@@ -47,7 +46,7 @@ public abstract class JDOSupport<T> {
 	 * @param contextClass
 	 *            Must match the type parameter to the class itself.
 	 */
-	protected JDOSupport(@NonNull Class<T> contextClass) {
+	protected JDOSupport(@Nonnull Class<T> contextClass) {
 		this.contextClass = contextClass;
 	}
 
@@ -83,8 +82,8 @@ public abstract class JDOSupport<T> {
 	 *            The filter part of the query.
 	 * @return The query, which should be executed to retrieve the results.
 	 */
-	@NonNull
-	protected Query query(@NonNull String filter) {
+	@Nonnull
+	protected Query query(@Nonnull String filter) {
 		return pm.newQuery(contextClass, filter);
 	}
 
@@ -97,8 +96,8 @@ public abstract class JDOSupport<T> {
 	 * @return The query, which should be executed to retrieve the results.
 	 * @see javax.jdo.annotations.Query
 	 */
-	@NonNull
-	protected Query namedQuery(@NonNull String name) {
+	@Nonnull
+	protected Query namedQuery(@Nonnull String name) {
 		return pm.newNamedQuery(contextClass, name);
 	}
 

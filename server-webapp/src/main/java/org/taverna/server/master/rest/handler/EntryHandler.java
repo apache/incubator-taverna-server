@@ -2,6 +2,7 @@ package org.taverna.server.master.rest.handler;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
+import static javax.ws.rs.core.Response.notAcceptable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,7 +20,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Variant;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
@@ -40,7 +40,8 @@ public class EntryHandler implements MessageBodyWriter<Entry>,
 	private static final String ENC = "UTF-8";
 	private static final MediaType ENTRY = new MediaType("application",
 			"atom+xml", singletonMap("type", "entry"));
-	private static final Variant VARIANT = new Variant(ENTRY, (String) null, ENC);
+	private static final Variant VARIANT = new Variant(ENTRY, (String) null,
+			ENC);
 	private static final Charset UTF8 = Charset.forName(ENC);
 
 	@Required
@@ -76,26 +77,23 @@ public class EntryHandler implements MessageBodyWriter<Entry>,
 			if (charset != null)
 				cs = Charset.forName(charset);
 		} catch (IllegalCharsetNameException e) {
-			throw new WebApplicationException(Response
-					.notAcceptable(asList(VARIANT)).entity("bad charset name")
-					.build());
+			throw new WebApplicationException(notAcceptable(asList(VARIANT))
+					.entity("bad charset name").build());
 		} catch (UnsupportedCharsetException e) {
-			throw new WebApplicationException(Response
-					.notAcceptable(asList(VARIANT))
+			throw new WebApplicationException(notAcceptable(asList(VARIANT))
 					.entity("unsupportd charset name").build());
 		}
 		try {
 			Document<Entry> doc = parser.parse(new InputStreamReader(
 					entityStream, cs));
 			if (!Entry.class.isAssignableFrom(doc.getRoot().getClass())) {
-				throw new WebApplicationException(Response
-						.notAcceptable(asList(VARIANT))
-						.entity("not really a feed entry").build());
+				throw new WebApplicationException(
+						notAcceptable(asList(VARIANT)).entity(
+								"not really a feed entry").build());
 			}
 			return doc.getRoot();
 		} catch (ClassCastException e) {
-			throw new WebApplicationException(Response
-					.notAcceptable(asList(VARIANT))
+			throw new WebApplicationException(notAcceptable(asList(VARIANT))
 					.entity("not really a feed entry").build());
 
 		}

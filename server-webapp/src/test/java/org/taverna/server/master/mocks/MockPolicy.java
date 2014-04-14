@@ -10,9 +10,6 @@ import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
-@SuppressWarnings
 public class MockPolicy extends SimpleServerPolicy {
 	public MockPolicy() {
 		super();
@@ -21,7 +18,7 @@ public class MockPolicy extends SimpleServerPolicy {
 
 	public int maxruns = 10;
 	Integer usermaxruns;
-	Set<TavernaRun> denyaccess = new HashSet<TavernaRun>();
+	Set<TavernaRun> denyaccess = new HashSet<>();
 	boolean exnOnUpdate, exnOnCreate, exnOnDelete;
 
 	@Override

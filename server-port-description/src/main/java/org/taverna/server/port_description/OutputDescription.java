@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlType;
 public class OutputDescription extends AbstractPortDescription {
 	private static final AbsentValue ABSENT_VALUE = new AbsentValue();
 	@XmlElement(name = "output")
-	public List<OutputPort> ports = new ArrayList<OutputPort>();
+	public List<OutputPort> ports = new ArrayList<>();
 
 	@XmlType(name = "OutputPort")
 	public static class OutputPort extends AbstractPort {

@@ -220,8 +220,8 @@ class PersistedState implements WorkerModel {
 	public List<URI> getPermittedWorkflowURIs() {
 		String[] pw = this.permittedWorkflows;
 		if (pw == null)
-			return new ArrayList<URI>();
-		List<URI> uris = new ArrayList<URI>(pw.length);
+			return new ArrayList<>();
+		List<URI> uris = new ArrayList<>(pw.length);
 		for (String uri : pw)
 			uris.add(URI.create(uri));
 		return uris;

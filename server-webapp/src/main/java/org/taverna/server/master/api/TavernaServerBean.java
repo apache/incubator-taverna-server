@@ -5,6 +5,8 @@
  */
 package org.taverna.server.master.api;
 
+import javax.annotation.Nonnull;
+
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.ContentsDescriptorBuilder;
 import org.taverna.server.master.TavernaServerSupport;
@@ -17,8 +19,6 @@ import org.taverna.server.master.notification.atom.EventDAO;
 import org.taverna.server.master.rest.TavernaServerREST;
 import org.taverna.server.master.soap.TavernaServerSOAP;
 import org.taverna.server.master.utils.FilenameUtils;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * The methods of the webapp that are accessed by beans other than itself or
@@ -34,21 +34,21 @@ public interface TavernaServerBean extends TavernaServerSOAP, TavernaServerREST,
 	 *            The policy being installed by Spring.
 	 */
 	@Required
-	void setPolicy(@NonNull Policy policy);
+	void setPolicy(@Nonnull Policy policy);
 
 	/**
 	 * @param runStore
 	 *            The run store being installed by Spring.
 	 */
 	@Required
-	void setRunStore(@NonNull RunStore runStore);
+	void setRunStore(@Nonnull RunStore runStore);
 
 	/**
 	 * @param converter
 	 *            The filename converter being installed by Spring.
 	 */
 	@Required
-	void setFileUtils(@NonNull FilenameUtils converter);
+	void setFileUtils(@Nonnull FilenameUtils converter);
 
 	/**
 	 * @param cdBuilder
@@ -56,28 +56,28 @@ public interface TavernaServerBean extends TavernaServerSOAP, TavernaServerREST,
 	 */
 	@Required
 	void setContentsDescriptorBuilder(
-			@NonNull ContentsDescriptorBuilder cdBuilder);
+			@Nonnull ContentsDescriptorBuilder cdBuilder);
 
 	/**
 	 * @param notificationEngine
 	 *            The notification engine being installed by Spring.
 	 */
 	@Required
-	void setNotificationEngine(@NonNull NotificationEngine notificationEngine);
+	void setNotificationEngine(@Nonnull NotificationEngine notificationEngine);
 
 	/**
 	 * @param support
 	 *            The support bean being installed by Spring.
 	 */
 	@Required
-	void setSupport(@NonNull TavernaServerSupport support);
+	void setSupport(@Nonnull TavernaServerSupport support);
 
 	/**
 	 * @param eventSource
 	 *            The event source bean being installed by Spring.
 	 */
 	@Required
-	void setEventSource(@NonNull EventDAO eventSource);
+	void setEventSource(@Nonnull EventDAO eventSource);
 
 	/**
 	 * The nastier parts of security initialisation in SOAP calls, which we want
@@ -87,7 +87,7 @@ public interface TavernaServerBean extends TavernaServerSOAP, TavernaServerREST,
 	 *            The context to configure.
 	 * @return True if we did <i>not</i> initialise things.
 	 */
-	boolean initObsoleteSOAPSecurity(@NonNull TavernaSecurityContext context);
+	boolean initObsoleteSOAPSecurity(@Nonnull TavernaSecurityContext context);
 
 	/**
 	 * The nastier parts of security initialisation in REST calls, which we want
@@ -97,5 +97,5 @@ public interface TavernaServerBean extends TavernaServerSOAP, TavernaServerREST,
 	 *            The context to configure.
 	 * @return True if we did <i>not</i> initialise things.
 	 */
-	boolean initObsoleteRESTSecurity(@NonNull TavernaSecurityContext context);
+	boolean initObsoleteRESTSecurity(@Nonnull TavernaSecurityContext context);
 }

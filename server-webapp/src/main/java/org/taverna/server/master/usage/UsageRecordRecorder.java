@@ -83,9 +83,8 @@ public class UsageRecordRecorder extends JDOSupport<UsageRecord> {
 	 */
 	public void storeUsageRecord(String usageRecord) {
 		String logfile = state.getUsageRecordLogFile();
-		if (logfile == null) {
-			logfile = logFile;
-		}
+		if (logfile == null)
+			logfile = this.logFile;
 		if (logfile != null) {
 			logfile = contextualizer.contextualize(logfile);
 			synchronized (lock) {
@@ -144,7 +143,7 @@ public class UsageRecordRecorder extends JDOSupport<UsageRecord> {
 		@SuppressWarnings("unchecked")
 		Collection<String> urs = (Collection<String>) namedQuery("allByDate")
 				.execute();
-		List<JobUsageRecord> result = new ArrayList<JobUsageRecord>();
+		List<JobUsageRecord> result = new ArrayList<>();
 		for (String ur : urs)
 			try {
 				result.add(JobUsageRecord.unmarshal(ur));

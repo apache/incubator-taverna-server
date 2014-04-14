@@ -43,10 +43,7 @@ import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
-@SuppressWarnings
-@java.lang.SuppressWarnings("serial")
+@SuppressWarnings("serial")
 public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	String id;
 	List<Listener> listeners;
@@ -62,12 +59,12 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 
 	public ExampleRun(UsernamePrincipal creator, Workflow workflow, Date expiry) {
 		this.id = randomUUID().toString();
-		this.listeners = new ArrayList<Listener>();
+		this.listeners = new ArrayList<>();
 		this.status = Initialized;
 		this.owner = creator;
 		this.workflow = workflow;
 		this.expiry = expiry;
-		this.inputs = new ArrayList<Input>();
+		this.inputs = new ArrayList<>();
 		listeners.add(new DefaultListener());
 	}
 

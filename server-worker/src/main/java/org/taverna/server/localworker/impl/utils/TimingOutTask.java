@@ -1,6 +1,6 @@
 package org.taverna.server.localworker.impl.utils;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
+import javax.annotation.Nullable;
 
 /**
  * A class that handles running a task that can take some time.

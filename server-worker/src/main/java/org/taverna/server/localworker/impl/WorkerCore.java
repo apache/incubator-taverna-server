@@ -65,6 +65,8 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.ws.Holder;
 
@@ -77,10 +79,6 @@ import org.taverna.server.localworker.remote.RemoteListener;
 import org.taverna.server.localworker.remote.RemoteStatus;
 import org.taverna.server.localworker.server.UsageRecordReceiver;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 /**
  * The core class that connects to a Taverna command-line workflow execution
  * engine. This implementation always registers a single listener, &lquo;
@@ -90,17 +88,16 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * 
  * @author Donal Fellows
  */
-@SuppressWarnings({ "SE_BAD_FIELD", "SE_NO_SERIALVERSIONID" })
-@java.lang.SuppressWarnings("serial")
+@SuppressWarnings("serial")
 public class WorkerCore extends UnicastRemoteObject implements Worker,
 		RemoteListener {
-	@NonNull
-	static final Map<String, Property> pmap = new HashMap<String, Property>();
+	@Nonnull
+	static final Map<String, Property> pmap = new HashMap<>();
 	/**
 	 * Regular expression to extract the detailed timing information from the
 	 * output of /usr/bin/time
 	 */
-	@NonNull
+	@Nonnull
 	private static final Pattern TimeRE;
 	static {
 		final String TIMERE = "([0-9.:]+)";
@@ -114,16 +111,16 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	 * potentially leaky).
 	 */
 	// TODO Conduct a proper survey of what to remove
-	@NonNull
+	@Nonnull
 	private static final String[] ENVIRONMENT_TO_REMOVE = { "SUDO_COMMAND",
 			"SUDO_USER", "SUDO_GID", "SUDO_UID", "DISPLAY", "LS_COLORS",
 			"XFILESEARCHPATH", "SSH_AGENT_PID", "SSH_AUTH_SOCK" };
 
 	@Nullable
 	Process subprocess;
-	@NonNull
+	@Nonnull
 	final StringWriter stdout;
-	@NonNull
+	@Nonnull
 	final StringWriter stderr;
 	@Nullable
 	Integer exitCode;
@@ -132,9 +129,9 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	String emailAddress;
 	@Nullable
 	Date start;
-	@NonNull
+	@Nonnull
 	final RunAccounting accounting;
-	@NonNull
+	@Nonnull
 	final Holder<Integer> pid;
 
 	private boolean finished;
@@ -153,11 +150,11 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	 *            Object that looks after how many runs are executing.
 	 * @throws RemoteException
 	 */
-	public WorkerCore(@NonNull RunAccounting accounting) throws RemoteException {
+	public WorkerCore(@Nonnull RunAccounting accounting) throws RemoteException {
 		super();
 		stdout = new StringWriter();
 		stderr = new StringWriter();
-		pid = new Holder<Integer>();
+		pid = new Holder<>();
 		this.accounting = accounting;
 	}
 
@@ -201,18 +198,18 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	 *             If any of quite a large number of things goes wrong.
 	 */
 	@Override
-	public boolean initWorker(@NonNull final LocalWorker local,
-			@NonNull final String executeWorkflowCommand,
-			@NonNull final String workflow, @NonNull final File workingDir,
+	public boolean initWorker(@Nonnull final LocalWorker local,
+			@Nonnull final String executeWorkflowCommand,
+			@Nonnull final String workflow, @Nonnull final File workingDir,
 			@Nullable final File inputBaclava,
-			@NonNull final Map<String, File> inputFiles,
-			@NonNull final Map<String, String> inputValues,
-			@NonNull final Map<String, String> inputDelimiters,
+			@Nonnull final Map<String, File> inputFiles,
+			@Nonnull final Map<String, String> inputValues,
+			@Nonnull final Map<String, String> inputDelimiters,
 			@Nullable final File outputBaclava,
-			@NonNull final File securityDir, @Nullable final char[] password,
+			@Nonnull final File securityDir, @Nullable final char[] password,
 			final boolean generateProvenance,
-			@NonNull final Map<String, String> environment,
-			@NonNull final String token, @NonNull final List<String> runtime)
+			@Nonnull final Map<String, String> environment,
+			@Nonnull final String token, @Nonnull final List<String> runtime)
 			throws IOException {
 		try {
 			new TimingOutTask() {
@@ -235,7 +232,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		return subprocess != null;
 	}
 
-	private void startExecutorSubprocess(@NonNull ProcessBuilder pb,
+	private void startExecutorSubprocess(@Nonnull ProcessBuilder pb,
 			@Nullable char[] password) throws IOException {
 		// Start the subprocess
 		out.println("starting " + pb.command() + " in directory "
@@ -290,20 +287,17 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	 * @throws FileNotFoundException
 	 *             If we can't write the workflow out (unlikely)
 	 */
-	@NonNull
-	ProcessBuilder createProcessBuilder(
-			@NonNull LocalWorker local,
-			@NonNull String executeWorkflowCommand,
-			@NonNull String workflow,
-			@NonNull File workingDir,
-			@Nullable File inputBaclava,
-			@NonNull Map<String, File> inputFiles,
-			@NonNull Map<String, String> inputValues,
-			@NonNull Map<String, String> inputDelimiters,
-			@Nullable File outputBaclava, @NonNull File securityDir,
-			@NonNull char[] password, boolean generateProvenance,
-			@NonNull Map<String, String> environment, @NonNull String token,
-			@NonNull List<String> runtime) throws IOException,
+	@Nonnull
+	ProcessBuilder createProcessBuilder(@Nonnull LocalWorker local,
+			@Nonnull String executeWorkflowCommand, @Nonnull String workflow,
+			@Nonnull File workingDir, @Nullable File inputBaclava,
+			@Nonnull Map<String, File> inputFiles,
+			@Nonnull Map<String, String> inputValues,
+			@Nonnull Map<String, String> inputDelimiters,
+			@Nullable File outputBaclava, @Nonnull File securityDir,
+			@Nonnull char[] password, boolean generateProvenance,
+			@Nonnull Map<String, String> environment, @Nonnull String token,
+			@Nonnull List<String> runtime) throws IOException,
 			UnsupportedEncodingException, FileNotFoundException {
 		ProcessBuilder pb = new ProcessBuilder();
 		pb.command().add(TIME);
@@ -479,7 +473,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	@Override
 	public void killWorker() {
 		if (!finished && subprocess != null) {
-			final Holder<Integer> code = new Holder<Integer>();
+			final Holder<Integer> code = new Holder<>();
 			for (TimingOutTask tot : new TimingOutTask[] { new TimingOutTask() {
 				/** Check if the workflow terminated of its own accord */
 				@Override
@@ -535,7 +529,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		}
 	}
 
-	@NonNull
+	@Nonnull
 	private JobUsageRecord newUR() throws DatatypeConfigurationException {
 		try {
 			if (wd != null)
@@ -551,7 +545,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	 * @param exitCode
 	 *            The exit code from the program.
 	 */
-	private void buildUR(@NonNull Status status, int exitCode) {
+	private void buildUR(@Nonnull Status status, int exitCode) {
 		try {
 			Date now = new Date();
 			long user = -1, sys = -1, real = -1;
@@ -583,14 +577,12 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			ur.addDisk(sizeOfDirectory(wd)).setStorageUnit("B");
 			if (urreceiver != null)
 				urreceiver.acceptUsageRecord(ur.marshal());
-		} catch (RuntimeException e) {
-			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	private long parseDuration(@NonNull String durationString) {
+	private long parseDuration(@Nonnull String durationString) {
 		try {
 			return (long) (parseDouble(durationString) * 1000);
 		} catch (NumberFormatException nfe) {
@@ -607,7 +599,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		return dur * 1000;
 	}
 
-	private void signal(@NonNull String signal) throws Exception {
+	private void signal(@Nonnull String signal) throws Exception {
 		int pid = getPID();
 		if (pid > 0
 				&& getRuntime().exec("kill -" + signal + " " + pid).waitFor() == 0)
@@ -695,7 +687,6 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	}
 
 	@Override
-	@SuppressWarnings("REC_CATCH_EXCEPTION")
 	public String getProperty(String propName) throws RemoteException {
 		switch (Property.is(propName)) {
 		case STDOUT:
@@ -772,7 +763,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 	}
 
 	@Override
-	public void setURReceiver(@NonNull UsageRecordReceiver receiver) {
+	public void setURReceiver(@Nonnull UsageRecordReceiver receiver) {
 		urreceiver = receiver;
 	}
 
@@ -795,19 +786,19 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
  * @author Donal Fellows
  */
 class AsyncCopy extends Thread {
-	@NonNull
+	@Nonnull
 	private BufferedReader from;
-	@NonNull
+	@Nonnull
 	private Writer to;
 	@Nullable
 	private Holder<Integer> pidHolder;
 
-	AsyncCopy(@NonNull InputStream from, @NonNull Writer to)
+	AsyncCopy(@Nonnull InputStream from, @Nonnull Writer to)
 			throws UnsupportedEncodingException {
 		this(from, to, null);
 	}
 
-	AsyncCopy(@NonNull InputStream from, @NonNull Writer to,
+	AsyncCopy(@Nonnull InputStream from, @Nonnull Writer to,
 			@Nullable Holder<Integer> pid) throws UnsupportedEncodingException {
 		this.from = new BufferedReader(new InputStreamReader(from,
 				SYSTEM_ENCODING));
@@ -844,7 +835,7 @@ class PasswordWriterThread extends Thread {
 	private OutputStream to;
 	private char[] chars;
 
-	PasswordWriterThread(@NonNull Process to, @NonNull char[] chars) {
+	PasswordWriterThread(@Nonnull Process to, @Nonnull char[] chars) {
 		this.to = to.getOutputStream();
 		assert chars != null;
 		this.chars = chars;
@@ -854,9 +845,8 @@ class PasswordWriterThread extends Thread {
 
 	@Override
 	public void run() {
-		PrintWriter pw = null;
-		try {
-			pw = new PrintWriter(new OutputStreamWriter(to, SYSTEM_ENCODING));
+		try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(to,
+				SYSTEM_ENCODING))) {
 			pw.println(chars);
 		} catch (UnsupportedEncodingException e) {
 			// Not much we can do here
@@ -868,8 +858,6 @@ class PasswordWriterThread extends Thread {
 			 */
 			if (chars != KEYSTORE_PASSWORD)
 				Arrays.fill(chars, '\00');
-			if (pw != null)
-				pw.close();
 		}
 	}
 }
@@ -890,11 +878,11 @@ enum Property {
 		return s;
 	}
 
-	public static Property is(@NonNull String s) {
+	public static Property is(@Nonnull String s) {
 		return pmap.get(s);
 	}
 
-	@NonNull
+	@Nonnull
 	public static String[] names() {
 		return pmap.keySet().toArray(new String[pmap.size()]);
 	}

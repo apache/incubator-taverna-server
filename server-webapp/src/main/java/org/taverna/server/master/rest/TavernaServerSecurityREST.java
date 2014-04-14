@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -58,8 +59,6 @@ import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.InvalidCredentialException;
 import org.taverna.server.master.exceptions.NoCredentialException;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Manages the security of the workflow run. In general, only the owner of a run
@@ -96,8 +95,8 @@ public interface TavernaServerSecurityREST {
 	@Produces({ XML, JSON })
 	@Description("Gives a description of the security information supported "
 			+ "by the workflow run.")
-	@NonNull
-	Descriptor describe(@NonNull @Context UriInfo ui);
+	@Nonnull
+	Descriptor describe(@Nonnull @Context UriInfo ui);
 
 	/** Get an outline of the operations supported. */
 	@OPTIONS
@@ -114,7 +113,7 @@ public interface TavernaServerSecurityREST {
 	@Path(OWNER)
 	@Produces(TEXT)
 	@Description("Gives the identity of who owns the workflow run.")
-	@NonNull
+	@Nonnull
 	String getOwner();
 
 	/** Get an outline of the operations supported. */
@@ -124,8 +123,8 @@ public interface TavernaServerSecurityREST {
 	Response ownerOptions();
 
 	/*
-	 * @PUT @Path("/") @Consumes(ContentTypes.BYTES) @CallCounted @NonNull
-	 * public void set(@NonNull InputStream contents, @NonNull @Context UriInfo
+	 * @PUT @Path("/") @Consumes(ContentTypes.BYTES) @CallCounted @Nonnull
+	 * public void set(@Nonnull InputStream contents, @Nonnull @Context UriInfo
 	 * ui);
 	 */
 
@@ -136,7 +135,7 @@ public interface TavernaServerSecurityREST {
 	@Path(CREDS)
 	@Produces({ XML, JSON })
 	@Description("Gives a list of credentials supplied to this workflow run.")
-	@NonNull
+	@Nonnull
 	CredentialList listCredentials();
 
 	/** Get an outline of the operations supported. */
@@ -164,8 +163,8 @@ public interface TavernaServerSecurityREST {
 	@Path(ONE_CRED)
 	@Produces({ XML, JSON })
 	@Description("Describes a particular credential.")
-	@NonNull
-	CredentialHolder getParticularCredential(@NonNull @PathParam("id") String id)
+	@Nonnull
+	CredentialHolder getParticularCredential(@Nonnull @PathParam("id") String id)
 			throws NoCredentialException;
 
 	/**
@@ -188,10 +187,10 @@ public interface TavernaServerSecurityREST {
 	@Consumes({ XML, JSON })
 	@Produces({ XML, JSON })
 	@Description("Updates a particular credential.")
-	@NonNull
+	@Nonnull
 	CredentialHolder setParticularCredential(
-			@NonNull @PathParam("id") String id, @NonNull CredentialHolder c,
-			@NonNull @Context UriInfo ui) throws InvalidCredentialException,
+			@Nonnull @PathParam("id") String id, @Nonnull CredentialHolder c,
+			@Nonnull @Context UriInfo ui) throws InvalidCredentialException,
 			BadStateChangeException;
 
 	/**
@@ -211,9 +210,9 @@ public interface TavernaServerSecurityREST {
 	@Path(CREDS)
 	@Consumes({ XML, JSON })
 	@Description("Creates a new credential.")
-	@NonNull
-	Response addCredential(@NonNull CredentialHolder c,
-			@NonNull @Context UriInfo ui) throws InvalidCredentialException,
+	@Nonnull
+	Response addCredential(@Nonnull CredentialHolder c,
+			@Nonnull @Context UriInfo ui) throws InvalidCredentialException,
 			BadStateChangeException;
 
 	/**
@@ -228,8 +227,8 @@ public interface TavernaServerSecurityREST {
 	@DELETE
 	@Path(CREDS)
 	@Description("Deletes all credentials.")
-	@NonNull
-	Response deleteAllCredentials(@NonNull @Context UriInfo ui)
+	@Nonnull
+	Response deleteAllCredentials(@Nonnull @Context UriInfo ui)
 			throws BadStateChangeException;
 
 	/**
@@ -246,9 +245,9 @@ public interface TavernaServerSecurityREST {
 	@DELETE
 	@Path(ONE_CRED)
 	@Description("Deletes a particular credential.")
-	@NonNull
-	Response deleteCredential(@NonNull @PathParam("id") String id,
-			@NonNull @Context UriInfo ui) throws BadStateChangeException;
+	@Nonnull
+	Response deleteCredential(@Nonnull @PathParam("id") String id,
+			@Nonnull @Context UriInfo ui) throws BadStateChangeException;
 
 	/** Get an outline of the operations supported. */
 	@OPTIONS
@@ -272,7 +271,7 @@ public interface TavernaServerSecurityREST {
 	@Produces({ XML, JSON })
 	@Description("Gives a list of trusted identities supplied to this "
 			+ "workflow run.")
-	@NonNull
+	@Nonnull
 	TrustList listTrusted();
 
 	/**
@@ -288,8 +287,8 @@ public interface TavernaServerSecurityREST {
 	@Path(ONE_TRUST)
 	@Produces({ XML, JSON })
 	@Description("Describes a particular trusted identity.")
-	@NonNull
-	Trust getParticularTrust(@NonNull @PathParam("id") String id)
+	@Nonnull
+	Trust getParticularTrust(@Nonnull @PathParam("id") String id)
 			throws NoCredentialException;
 
 	/**
@@ -312,9 +311,9 @@ public interface TavernaServerSecurityREST {
 	@Consumes({ XML, JSON })
 	@Produces({ XML, JSON })
 	@Description("Updates a particular trusted identity.")
-	@NonNull
-	Trust setParticularTrust(@NonNull @PathParam("id") String id,
-			@NonNull Trust t, @NonNull @Context UriInfo ui)
+	@Nonnull
+	Trust setParticularTrust(@Nonnull @PathParam("id") String id,
+			@Nonnull Trust t, @Nonnull @Context UriInfo ui)
 			throws InvalidCredentialException, BadStateChangeException;
 
 	/**
@@ -334,8 +333,8 @@ public interface TavernaServerSecurityREST {
 	@Path(TRUSTS)
 	@Consumes({ XML, JSON })
 	@Description("Adds a new trusted identity.")
-	@NonNull
-	Response addTrust(@NonNull Trust t, @NonNull @Context UriInfo ui)
+	@Nonnull
+	Response addTrust(@Nonnull Trust t, @Nonnull @Context UriInfo ui)
 			throws InvalidCredentialException, BadStateChangeException;
 
 	/**
@@ -350,8 +349,8 @@ public interface TavernaServerSecurityREST {
 	@DELETE
 	@Path(TRUSTS)
 	@Description("Deletes all trusted identities.")
-	@NonNull
-	Response deleteAllTrusts(@NonNull @Context UriInfo ui)
+	@Nonnull
+	Response deleteAllTrusts(@Nonnull @Context UriInfo ui)
 			throws BadStateChangeException;
 
 	/**
@@ -368,9 +367,9 @@ public interface TavernaServerSecurityREST {
 	@DELETE
 	@Path(ONE_TRUST)
 	@Description("Deletes a particular trusted identity.")
-	@NonNull
-	Response deleteTrust(@NonNull @PathParam("id") String id,
-			@NonNull @Context UriInfo ui) throws BadStateChangeException;
+	@Nonnull
+	Response deleteTrust(@Nonnull @PathParam("id") String id,
+			@Nonnull @Context UriInfo ui) throws BadStateChangeException;
 
 	/** Get an outline of the operations supported. */
 	@OPTIONS
@@ -396,8 +395,8 @@ public interface TavernaServerSecurityREST {
 	@Description("Gives a list of all non-default permissions associated with "
 			+ "the enclosing workflow run. By default, nobody has any access "
 			+ "at all except for the owner of the run.")
-	@NonNull
-	PermissionsDescription describePermissions(@NonNull @Context UriInfo ui);
+	@Nonnull
+	PermissionsDescription describePermissions(@Nonnull @Context UriInfo ui);
 
 	/**
 	 * Describe the particular permission granted to a user.
@@ -410,8 +409,8 @@ public interface TavernaServerSecurityREST {
 	@Path(ONE_PERM)
 	@Produces(TEXT)
 	@Description("Describes the permission granted to a particular user.")
-	@NonNull
-	Permission describePermission(@NonNull @PathParam("id") String id);
+	@Nonnull
+	Permission describePermission(@Nonnull @PathParam("id") String id);
 
 	/**
 	 * Update the permission granted to a user.
@@ -428,9 +427,9 @@ public interface TavernaServerSecurityREST {
 	@Produces(TEXT)
 	@Path(ONE_PERM)
 	@Description("Updates the permissions granted to a particular user.")
-	@NonNull
-	Permission setPermission(@NonNull @PathParam("id") String id,
-			@NonNull Permission perm);
+	@Nonnull
+	Permission setPermission(@Nonnull @PathParam("id") String id,
+			@Nonnull Permission perm);
 
 	/**
 	 * Delete the permissions associated with a user, which restores them to the
@@ -446,9 +445,9 @@ public interface TavernaServerSecurityREST {
 	@Path(ONE_PERM)
 	@Description("Deletes (by resetting to default) the permissions "
 			+ "associated with a particular user.")
-	@NonNull
-	Response deletePermission(@NonNull @PathParam("id") String id,
-			@NonNull @Context UriInfo ui);
+	@Nonnull
+	Response deletePermission(@Nonnull @PathParam("id") String id,
+			@Nonnull @Context UriInfo ui);
 
 	/**
 	 * Manufacture a permission setting for a previously-unknown user.
@@ -464,9 +463,9 @@ public interface TavernaServerSecurityREST {
 	@Path(PERMS)
 	@Consumes({ XML, JSON })
 	@Description("Creates a new assignment of permissions to a particular user.")
-	@NonNull
-	Response makePermission(@NonNull PermissionDescription desc,
-			@NonNull @Context UriInfo ui);
+	@Nonnull
+	Response makePermission(@Nonnull PermissionDescription desc,
+			@Nonnull @Context UriInfo ui);
 
 	/**
 	 * A description of the security resources associated with a workflow run.
@@ -505,8 +504,8 @@ public interface TavernaServerSecurityREST {
 		 * @param trust
 		 *            The trusted certificates associated with the context.
 		 */
-		public Descriptor(@NonNull UriBuilder ub, @NonNull String owner,
-				@NonNull Credential[] credential, @NonNull Trust[] trust) {
+		public Descriptor(@Nonnull UriBuilder ub, @Nonnull String owner,
+				@Nonnull Credential[] credential, @Nonnull Trust[] trust) {
 			super(true);
 			this.owner = owner;
 			this.permissions = new Uri(ub, PERMS);
@@ -528,7 +527,7 @@ public interface TavernaServerSecurityREST {
 			public URI href;
 			/** Descriptions of the credentials themselves. */
 			@XmlElement
-			public List<CredentialHolder> credential = new ArrayList<CredentialHolder>();
+			public List<CredentialHolder> credential = new ArrayList<>();
 
 			public Credentials() {
 			}
@@ -541,8 +540,8 @@ public interface TavernaServerSecurityREST {
 			 * @param credential
 			 *            The credentials in the collection.
 			 */
-			public Credentials(@NonNull URI uri,
-					@NonNull Credential[] credential) {
+			public Credentials(@Nonnull URI uri,
+					@Nonnull Credential[] credential) {
 				this.href = uri;
 				for (Credential c : credential)
 					this.credential.add(new CredentialHolder(c));
@@ -575,7 +574,7 @@ public interface TavernaServerSecurityREST {
 			 * @param trust
 			 *            The trusted certificates in the collection.
 			 */
-			public Trusts(@NonNull URI uri, @NonNull Trust[] trust) {
+			public Trusts(@Nonnull URI uri, @Nonnull Trust[] trust) {
 				this.href = uri;
 				this.trust = trust.clone();
 			}
@@ -638,8 +637,8 @@ public interface TavernaServerSecurityREST {
 	public static final class CredentialList extends VersionedElement {
 		/** The descriptions of the credentials */
 		@XmlElement
-		@NonNull
-		public List<CredentialHolder> credential = new ArrayList<CredentialHolder>();
+		@Nonnull
+		public List<CredentialHolder> credential = new ArrayList<>();
 
 		public CredentialList() {
 		}
@@ -650,7 +649,7 @@ public interface TavernaServerSecurityREST {
 		 * @param credential
 		 *            The descriptions of individual credentials.
 		 */
-		public CredentialList(@NonNull Credential[] credential) {
+		public CredentialList(@Nonnull Credential[] credential) {
 			super(true);
 			for (Credential c : credential)
 				this.credential.add(new CredentialHolder(c));
@@ -677,7 +676,7 @@ public interface TavernaServerSecurityREST {
 		 * @param trust
 		 *            The descriptions of individual certificates.
 		 */
-		public TrustList(@NonNull Trust[] trust) {
+		public TrustList(@Nonnull Trust[] trust) {
 			super(true);
 			this.trust = trust.clone();
 		}
@@ -722,8 +721,8 @@ public interface TavernaServerSecurityREST {
 			 * @param strings
 			 *            Parameters to the URI builder.
 			 */
-			LinkedPermissionDescription(@NonNull UriBuilder ub,
-					@NonNull String userName, @NonNull Permission permission,
+			LinkedPermissionDescription(@Nonnull UriBuilder ub,
+					@Nonnull String userName, @Nonnull Permission permission,
 					String... strings) {
 				super(ub, strings);
 				this.userName = userName;
@@ -748,11 +747,10 @@ public interface TavernaServerSecurityREST {
 		 * @param permissionMap
 		 *            The permissions to describe.
 		 */
-		public PermissionsDescription(@NonNull UriBuilder ub,
-				@NonNull Map<String, Permission> permissionMap) {
-			permission = new ArrayList<LinkedPermissionDescription>();
-			List<String> userNames = new ArrayList<String>(
-					permissionMap.keySet());
+		public PermissionsDescription(@Nonnull UriBuilder ub,
+				@Nonnull Map<String, Permission> permissionMap) {
+			permission = new ArrayList<>();
+			List<String> userNames = new ArrayList<>(permissionMap.keySet());
 			Collections.sort(userNames);
 			for (String user : userNames)
 				permission.add(new LinkedPermissionDescription(ub, user,

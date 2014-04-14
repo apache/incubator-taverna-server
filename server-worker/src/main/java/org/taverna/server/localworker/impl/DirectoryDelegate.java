@@ -17,14 +17,15 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Nonnull;
 
 import org.apache.commons.collections.MapIterator;
 import org.apache.commons.collections.map.ReferenceMap;
 import org.taverna.server.localworker.remote.RemoteDirectory;
 import org.taverna.server.localworker.remote.RemoteDirectoryEntry;
 import org.taverna.server.localworker.remote.RemoteFile;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * This class acts as a remote-aware delegate for the workflow run's working
@@ -33,7 +34,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * @author Donal Fellows
  * @see FileDelegate
  */
-@edu.umd.cs.findbugs.annotations.SuppressWarnings("SE_NO_SERIALVERSIONID")
 @SuppressWarnings("serial")
 public class DirectoryDelegate extends UnicastRemoteObject implements
 		RemoteDirectory {
@@ -47,8 +47,8 @@ public class DirectoryDelegate extends UnicastRemoteObject implements
 	 * @throws RemoteException
 	 *             If registration of the directory fails.
 	 */
-	public DirectoryDelegate(@NonNull File dir,
-			@NonNull DirectoryDelegate parent) throws RemoteException {
+	public DirectoryDelegate(@Nonnull File dir,
+			@Nonnull DirectoryDelegate parent) throws RemoteException {
 		super();
 		this.localCache = new ReferenceMap();
 		this.dir = dir;
@@ -58,7 +58,7 @@ public class DirectoryDelegate extends UnicastRemoteObject implements
 	@Override
 	public Collection<RemoteDirectoryEntry> getContents()
 			throws RemoteException {
-		ArrayList<RemoteDirectoryEntry> result = new ArrayList<RemoteDirectoryEntry>();
+		List<RemoteDirectoryEntry> result = new ArrayList<>();
 		for (String s : dir.list()) {
 			if (s.equals(".") || s.equals(".."))
 				continue;
@@ -115,7 +115,7 @@ public class DirectoryDelegate extends UnicastRemoteObject implements
 			throw new IOException("tried to destroy main job working directory");
 		Collection<RemoteDirectoryEntry> values;
 		synchronized (localCache) {
-			values = new ArrayList<RemoteDirectoryEntry>(localCache.values());
+			values = new ArrayList<>(localCache.values());
 		}
 		for (RemoteDirectoryEntry obj : values) {
 			if (obj == null)
@@ -134,7 +134,7 @@ public class DirectoryDelegate extends UnicastRemoteObject implements
 		return parent;
 	}
 
-	void forgetEntry(@NonNull RemoteDirectoryEntry entry) {
+	void forgetEntry(@Nonnull RemoteDirectoryEntry entry) {
 		synchronized (localCache) {
 			MapIterator i = localCache.mapIterator();
 			while (i.hasNext()) {

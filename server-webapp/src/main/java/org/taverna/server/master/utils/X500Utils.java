@@ -10,6 +10,7 @@ import static javax.security.auth.x500.X500Principal.RFC2253;
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.annotation.PreDestroy;
 import javax.security.auth.x500.X500Principal;
@@ -53,7 +54,7 @@ public class X500Utils {
 		int startIndex = 0;
 		boolean ignoreThisChar = false;
 		boolean inQuotes = false;
-		HashMap<String, String> tokenized = new HashMap<String, String>();
+		Map<String, String> tokenized = new HashMap<>();
 
 		for (i = 0; i < dn.length(); i++)
 			if (ignoreThisChar)
@@ -82,7 +83,7 @@ public class X500Utils {
 		return "none";
 	}
 
-	private void storeDNField(HashMap<String, String> container, String[] split) {
+	private void storeDNField(Map<String, String> container, String[] split) {
 		if (split == null || split.length != 2)
 			return;
 		String key = split[0].toUpperCase();

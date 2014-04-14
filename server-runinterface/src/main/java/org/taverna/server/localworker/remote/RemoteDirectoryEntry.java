@@ -10,8 +10,8 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.Date;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * An entry in a {@link RemoteDirectory} representing a file or sub-directory.
@@ -27,7 +27,7 @@ public interface RemoteDirectoryEntry extends Remote {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	@NonNull
+	@Nonnull
 	public String getName() throws RemoteException;
 
 	/**
@@ -35,7 +35,7 @@ public interface RemoteDirectoryEntry extends Remote {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	@NonNull
+	@Nonnull
 	public Date getModificationDate() throws RemoteException;
 
 	/**

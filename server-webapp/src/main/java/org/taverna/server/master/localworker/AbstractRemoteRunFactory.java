@@ -157,14 +157,14 @@ public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
 			} catch (IllegalThreadStateException ise) {
 				// Still running!
 			}
-			ObjectInputStream ois = new ObjectInputStream(proc.getInputStream());
-			@SuppressWarnings("unchecked")
-			java.rmi.MarshalledObject<Registry> handle = (MarshalledObject<Registry>) ois
-					.readObject();
-			ois.close();
-			Registry r = handle.get();
-			registryProcess = proc;
-			return r;
+			try (ObjectInputStream ois = new ObjectInputStream(
+					proc.getInputStream())) {
+				@SuppressWarnings("unchecked")
+				Registry r = ((MarshalledObject<Registry>) ois.readObject())
+						.get();
+				registryProcess = proc;
+				return r;
+			}
 		} catch (RemoteException e) {
 			throw e;
 		} catch (ClassNotFoundException e) {
@@ -266,8 +266,7 @@ public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
 	 * Configures the Java security model. Not currently used, as it is
 	 * viciously difficult to get right!
 	 */
-	// @SuppressWarnings("unused")
-	@edu.umd.cs.findbugs.annotations.SuppressWarnings("UPM_UNCALLED_PRIVATE_METHOD")
+	@SuppressWarnings("unused")
 	private static void installSecurityManager() {
 		if (getSecurityManager() == null) {
 			setProperty("java.security.policy", AbstractRemoteRunFactory.class
@@ -313,7 +312,7 @@ public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
 		} catch (Exception e) {
 			log.warn("failed to get list of listener types", e);
 		}
-		return new ArrayList<String>();
+		return new ArrayList<>();
 	}
 
 	@Override
@@ -388,8 +387,6 @@ public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
 	 */
 	protected UsageRecordReceiver makeURReciver(UsernamePrincipal creator) {
 		try {
-			@edu.umd.cs.findbugs.annotations.SuppressWarnings({
-					"SE_BAD_FIELD_INNER_CLASS", "SE_NO_SERIALVERSIONID" })
 			@SuppressWarnings("serial")
 			class URReceiver extends UnicastRemoteObject implements
 					UsageRecordReceiver {

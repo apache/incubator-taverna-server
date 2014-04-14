@@ -8,9 +8,9 @@ package org.taverna.server.localworker.remote;
 import java.net.URI;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.util.HashMap;
+import java.util.Map;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import javax.annotation.Nonnull;
 
 /**
  * Outline of the security context for a workflow run.
@@ -18,14 +18,17 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * @author Donal Fellows
  */
 public interface RemoteSecurityContext extends Remote {
-	void setKeystore(@NonNull byte[] keystore) throws RemoteException, ImplementationException;
+	void setKeystore(@Nonnull byte[] keystore) throws RemoteException,
+			ImplementationException;
 
-	void setPassword(@NonNull char[] password) throws RemoteException, ImplementationException;
+	void setPassword(@Nonnull char[] password) throws RemoteException,
+			ImplementationException;
 
-	void setTruststore(@NonNull byte[] truststore) throws RemoteException, ImplementationException;
+	void setTruststore(@Nonnull byte[] truststore) throws RemoteException,
+			ImplementationException;
 
-	void setUriToAliasMap(@NonNull HashMap<URI, String> uriToAliasMap)
+	void setUriToAliasMap(@Nonnull Map<URI, String> uriToAliasMap)
 			throws RemoteException;
 
-	void setHelioToken(@NonNull String helioToken) throws RemoteException;
+	void setHelioToken(@Nonnull String helioToken) throws RemoteException;
 }

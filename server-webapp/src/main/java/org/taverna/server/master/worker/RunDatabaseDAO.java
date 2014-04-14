@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.jdo.annotations.PersistenceAware;
 
 import org.apache.commons.logging.Log;
@@ -25,9 +27,6 @@ import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
 import org.taverna.server.master.utils.JDOSupport;
 import org.taverna.server.master.utils.UsernamePrincipal;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
  * This handles storing runs, interfacing with the underlying state engine as
@@ -79,7 +78,7 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	}
 
 	@Nullable
-	private RunConnection pickRun(@NonNull String name) {
+	private RunConnection pickRun(@Nonnull String name) {
 		if (log.isDebugEnabled())
 			log.debug("fetching the run called " + name);
 		try {
@@ -95,21 +94,21 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 
 	@Nullable
 	@WithinSingleTransaction
-	public String getSecurityToken(@NonNull String name) {
+	public String getSecurityToken(@Nonnull String name) {
 		RunConnection rc = getById(name);
 		if (rc == null)
 			return null;
 		return rc.getSecurityToken();
 	}
 
-	private void persist(@NonNull RemoteRunDelegate rrd) throws IOException {
+	private void persist(@Nonnull RemoteRunDelegate rrd) throws IOException {
 		persist(toDBform(rrd));
 	}
 
-	@NonNull
+	@Nonnull
 	private List<RunConnection> allRuns() {
 		try {
-			List<RunConnection> rcs = new ArrayList<RunConnection>();
+			List<RunConnection> rcs = new ArrayList<>();
 			List<String> names = nameRuns();
 			for (String id : names) {
 				try {
@@ -155,11 +154,11 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	 *            The policy that determines what they can see.
 	 * @return A mapping from run IDs to run handles.
 	 */
-	@NonNull
+	@Nonnull
 	@WithinSingleTransaction
 	public Map<String, TavernaRun> listRuns(UsernamePrincipal user, Policy p) {
-		Map<String, TavernaRun> result = new HashMap<String, TavernaRun>();
-		for (String id : nameRuns()) {
+		Map<String, TavernaRun> result = new HashMap<>();
+		for (String id : nameRuns())
 			try {
 				RemoteRunDelegate rrd = pickRun(id).fromDBform(facade);
 				if (p.permitAccess(user, rrd))
@@ -167,21 +166,19 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 			} catch (Exception e) {
 				continue;
 			}
-		}
 		return result;
 	}
 
 	/**
 	 * @return A list of the IDs for all workflow runs.
 	 */
-	@NonNull
+	@Nonnull
 	@WithinSingleTransaction
 	public List<String> listRunNames() {
-		ArrayList<String> runNames = new ArrayList<String>();
-		for (RunConnection rc : allRuns()) {
+		List<String> runNames = new ArrayList<>();
+		for (RunConnection rc : allRuns())
 			if (rc.getId() != null)
 				runNames.add(rc.getId());
-		}
 		return runNames;
 	}
 
@@ -211,7 +208,7 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	 *             If anything goes wrong with serialisation of the run.
 	 */
 	@WithinSingleTransaction
-	public void persistRun(@NonNull RemoteRunDelegate rrd) throws IOException {
+	public void persistRun(@Nonnull RemoteRunDelegate rrd) throws IOException {
 		persist(rrd);
 	}
 
@@ -239,7 +236,7 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	 *             If serialization of anything fails.
 	 */
 	@WithinSingleTransaction
-	public void flushToDisk(@NonNull RemoteRunDelegate run) throws IOException {
+	public void flushToDisk(@Nonnull RemoteRunDelegate run) throws IOException {
 		getById(run.id).makeChanges(run);
 	}
 
@@ -248,7 +245,7 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	 * 
 	 * @return The ids of the deleted runs.
 	 */
-	@NonNull
+	@Nonnull
 	@PerfLogged
 	@WithinSingleTransaction
 	public List<String> doClean() {
@@ -275,26 +272,25 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	 * @return A list of workflow runs that are candidates for doing
 	 *         notification of termination.
 	 */
-	@NonNull
+	@Nonnull
 	@PerfLogged
 	@WithinSingleTransaction
 	public List<RemoteRunDelegate> getPotentiallyNotifiable() {
-		List<RemoteRunDelegate> toNotify = new ArrayList<RemoteRunDelegate>();
+		List<RemoteRunDelegate> toNotify = new ArrayList<>();
 		for (String id : unterminatedRuns())
 			try {
 				RunConnection rc = getById(id);
 				toNotify.add(rc.fromDBform(facade));
 			} catch (Exception e) {
-				log.warn(
-						"failed to fetch for notification of completion check",
-						e);
+				log.warn("failed to fetch connection token"
+						+ "for notification of completion check", e);
 			}
 		return toNotify;
 	}
 
 	@PerfLogged
 	@WithinSingleTransaction
-	public void markFinished(@NonNull Set<String> terminated) {
+	public void markFinished(@Nonnull Set<String> terminated) {
 		for (String id : terminated) {
 			RunConnection rc = getById(id);
 			if (rc == null)

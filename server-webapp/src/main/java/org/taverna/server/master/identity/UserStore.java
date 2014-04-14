@@ -61,7 +61,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService,
 		log = null;
 	}
 
-	private Map<String, BootstrapUserInfo> base = new HashMap<String, BootstrapUserInfo>();
+	private Map<String, BootstrapUserInfo> base = new HashMap<>();
 	private String defLocalUser;
 	private PasswordEncoder encoder;
 	private volatile int epoch;
@@ -157,7 +157,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService,
 	@ManagedOperationParameters(@ManagedOperationParameter(name = "userName", description = "The username to look up."))
 	public Map<String, String> getUserInfo(String userName) {
 		User u = getById(userName);
-		Map<String, String> info = new HashMap<String, String>();
+		Map<String, String> info = new HashMap<>();
 		info.put("name", u.getUsername());
 		info.put("admin", u.isAdmin() ? "yes" : "no");
 		info.put("enabled", u.isEnabled() ? "yes" : "no");
@@ -173,7 +173,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService,
 	@PerfLogged
 	@WithinSingleTransaction
 	public List<UserDetails> listUsers() {
-		ArrayList<UserDetails> result = new ArrayList<UserDetails>();
+		ArrayList<UserDetails> result = new ArrayList<>();
 		for (String id : getUsers())
 			result.add(detach(getById(id)));
 		return result;
@@ -324,7 +324,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService,
 
 	public static class CachedUserStore implements UserDetailsService {
 		private int epoch;
-		private Map<String, UserDetails> cache = new HashMap<String, UserDetails>();
+		private Map<String, UserDetails> cache = new HashMap<>();
 		private UserStore realStore;
 
 		@Required

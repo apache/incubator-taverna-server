@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import javax.annotation.Nonnull;
 import javax.jdo.annotations.PersistenceAware;
 
 import org.apache.commons.logging.Log;
@@ -23,8 +24,6 @@ import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.UriBuilderFactory;
 import org.taverna.server.master.utils.JDOSupport;
 import org.taverna.server.master.utils.UsernamePrincipal;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * The database interface that supports the event feed.
@@ -63,16 +62,16 @@ public class EventDAO extends JDOSupport<Event> implements MessageDispatcher {
 	 *            The identity of the user to get the events for.
 	 * @return A copy of the list of events currently known about.
 	 */
-	@NonNull
+	@Nonnull
 	@WithinSingleTransaction
-	public List<Event> getEvents(@NonNull UsernamePrincipal user) {
+	public List<Event> getEvents(@Nonnull UsernamePrincipal user) {
 		@SuppressWarnings("unchecked")
 		List<String> ids = (List<String>) namedQuery("eventsForUser").execute(
 				user.getName());
 		if (log.isDebugEnabled())
 			log.debug("found " + ids.size() + " events for user " + user);
 
-		List<Event> result = new ArrayList<Event>();
+		List<Event> result = new ArrayList<>();
 		for (String id : ids) {
 			Event event = getById(id);
 			result.add(detach(event));
@@ -89,9 +88,9 @@ public class EventDAO extends JDOSupport<Event> implements MessageDispatcher {
 	 *            The handle of the event to look up.
 	 * @return A copy of the event.
 	 */
-	@NonNull
+	@Nonnull
 	@WithinSingleTransaction
-	public Event getEvent(@NonNull UsernamePrincipal user, @NonNull String id) {
+	public Event getEvent(@Nonnull UsernamePrincipal user, @Nonnull String id) {
 		@SuppressWarnings("unchecked")
 		List<String> ids = (List<String>) namedQuery("eventForUserAndId")
 				.execute(user.getName(), id);
@@ -111,7 +110,7 @@ public class EventDAO extends JDOSupport<Event> implements MessageDispatcher {
 	 *            The identifier of the event to delete.
 	 */
 	@WithinSingleTransaction
-	public void deleteEventById(@NonNull String id) {
+	public void deleteEventById(@Nonnull String id) {
 		delete(getById(id));
 	}
 
@@ -139,7 +138,7 @@ public class EventDAO extends JDOSupport<Event> implements MessageDispatcher {
 		return true;
 	}
 
-	private BlockingQueue<Event> insertQueue = new ArrayBlockingQueue<Event>(16);
+	private BlockingQueue<Event> insertQueue = new ArrayBlockingQueue<>(16);
 
 	@Override
 	public void dispatch(TavernaRun originator, String messageSubject,
@@ -163,7 +162,7 @@ public class EventDAO extends JDOSupport<Event> implements MessageDispatcher {
 			public void run() {
 				try {
 					while (true) {
-						ArrayList<Event> e = new ArrayList<Event>();
+						ArrayList<Event> e = new ArrayList<>();
 						e.add(insertQueue.take());
 						insertQueue.drainTo(e);
 						dao.storeEvents(e);

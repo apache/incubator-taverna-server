@@ -16,7 +16,7 @@ import org.taverna.server.master.interfaces.TavernaRun;
  * @author Donal Fellows
  */
 public class SimpleListenerFactory implements ListenerFactory {
-	private Map<String, Builder> builders = new HashMap<String, Builder>();
+	private Map<String, Builder> builders = new HashMap<>();
 
 	public void setBuilders(Map<String, Builder> builders) {
 		this.builders = builders;
@@ -24,7 +24,7 @@ public class SimpleListenerFactory implements ListenerFactory {
 
 	@Override
 	public List<String> getSupportedListenerTypes() {
-		return new ArrayList<String>(builders.keySet());
+		return new ArrayList<>(builders.keySet());
 	}
 
 	@Override

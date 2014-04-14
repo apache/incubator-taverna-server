@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.xml.bind.JAXBException;
@@ -51,8 +52,6 @@ import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.factories.ConfigurableRunFactory;
 import org.taverna.server.master.interfaces.LocalIdentityMapper;
 import org.taverna.server.master.utils.UsernamePrincipal;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * A simple factory for workflow runs that forks runs from a subprocess.
@@ -73,8 +72,8 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	 *             Shouldn't happen.
 	 */
 	public IdAwareForkRunFactory() throws JAXBException {
-		factory = new HashMap<String, RemoteRunFactory>();
-		factoryProcessName = new HashMap<String, String>();
+		factory = new HashMap<>();
+		factoryProcessName = new HashMap<>();
 	}
 
 	@Override
@@ -119,9 +118,8 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	@Override
 	@ManagedAttribute(description = "The mapping of user names to RMI factory IDs.", currencyTimeLimit = 60)
 	public String[] getFactoryProcessMapping() {
-		ArrayList<String> result = new ArrayList<String>();
-		ArrayList<String> keys = new ArrayList<String>(
-				factoryProcessName.keySet());
+		ArrayList<String> result = new ArrayList<>();
+		ArrayList<String> keys = new ArrayList<>(factoryProcessName.keySet());
 		String[] ks = keys.toArray(new String[keys.size()]);
 		Arrays.sort(ks);
 		for (String k : ks) {
@@ -273,8 +271,8 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	 * @throws RemoteException
 	 *             If anything fails (communications error, etc.)
 	 */
-	private RemoteSingleRun getRealRun(@NonNull UsernamePrincipal creator,
-			@NonNull String username, @NonNull String wf, UUID id)
+	private RemoteSingleRun getRealRun(@Nonnull UsernamePrincipal creator,
+			@Nonnull String username, @Nonnull String wf, UUID id)
 			throws RemoteException {
 		String globaluser = "Unknown Person";
 		if (creator != null)
@@ -299,9 +297,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 				initFactory(username);
 			try {
 				return getRealRun(creator, username, wf, id);
-			} catch (ConnectException e) {
-				// factory was lost; try to recreate
-			} catch (ConnectIOException e) {
+			} catch (ConnectException | ConnectIOException e) {
 				// factory was lost; try to recreate
 			}
 			factory.remove(username);
@@ -512,9 +508,7 @@ class SecureFork implements IdAwareForkRunFactory.MetaFactory {
 	public RemoteRunFactory make(String username) throws Exception {
 		try {
 			main.getTheRegistry().list(); // Validate registry connection first
-		} catch (ConnectException e) {
-			log.warn("connection problems with registry", e);
-		} catch (ConnectIOException e) {
+		} catch (ConnectException | ConnectIOException e) {
 			log.warn("connection problems with registry", e);
 		} catch (RemoteException e) {
 			if (e.getCause() != null && e.getCause() instanceof Exception) {

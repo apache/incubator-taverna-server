@@ -34,7 +34,7 @@ public class NotificationEngine {
 	 */
 	@Required
 	public void setDispatchers(List<MessageDispatcher> dispatchers) {
-		this.dispatchers = new HashMap<String, MessageDispatcher>();
+		this.dispatchers = new HashMap<>();
 		for (MessageDispatcher d : dispatchers)
 			this.dispatchers.put(d.getName(), d);
 	}
@@ -116,7 +116,7 @@ public class NotificationEngine {
 				URI toURI = new URI(destination.trim());
 				dispatchToChosenTarget(originator, toURI.getScheme(),
 						toURI.getSchemeSpecificPart(), message);
-			} catch (java.net.URISyntaxException e) {
+			} catch (URISyntaxException e) {
 				// Ignore
 			}
 		}
@@ -128,7 +128,7 @@ public class NotificationEngine {
 	 *         disabled by configuration somewhere).
 	 */
 	public List<String> listAvailableDispatchers() {
-		ArrayList<String> result = new ArrayList<String>();
+		ArrayList<String> result = new ArrayList<>();
 		for (Map.Entry<String, MessageDispatcher> entry : dispatchers
 				.entrySet()) {
 			if (entry.getValue().isAvailable())

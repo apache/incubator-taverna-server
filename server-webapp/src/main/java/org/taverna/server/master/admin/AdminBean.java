@@ -753,7 +753,7 @@ public class AdminBean implements Admin {
 	@RolesAllowed(ADMIN)
 	@Override
 	public StringList setPermittedWorkflowURIs(StringList permitted) {
-		List<URI> uris = new ArrayList<URI>();
+		List<URI> uris = new ArrayList<>();
 		for (String uri : permitted.string)
 			try {
 				uris.add(myExp.resolve(uri));

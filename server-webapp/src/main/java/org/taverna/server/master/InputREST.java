@@ -156,7 +156,7 @@ class InputREST implements TavernaServerInputREST, InputBean {
 			BadPropertyValueException, FilesystemAccessException {
 		URITemplate tmpl = new URITemplate(ui.getBaseUri()
 				+ "/runs/{runName}/wd/{path:.+}");
-		MultivaluedMap<String, String> mvm = new MetadataMap<String, String>();
+		MultivaluedMap<String, String> mvm = new MetadataMap<>();
 		if (!tmpl.match(ref.contents, mvm)) {
 			throw new BadPropertyValueException(
 					"URI in reference does not refer to local disk resource");

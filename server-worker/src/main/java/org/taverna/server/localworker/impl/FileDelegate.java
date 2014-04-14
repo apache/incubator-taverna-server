@@ -19,11 +19,10 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
 
+import javax.annotation.Nonnull;
+
 import org.taverna.server.localworker.remote.RemoteDirectory;
 import org.taverna.server.localworker.remote.RemoteFile;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
  * This class acts as a remote-aware delegate for the files in a workflow run's
@@ -32,7 +31,6 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @author Donal Fellows
  * @see DirectoryDelegate
  */
-@SuppressWarnings("SE_NO_SERIALVERSIONID")
 @java.lang.SuppressWarnings("serial")
 public class FileDelegate extends UnicastRemoteObject implements RemoteFile {
 	private File file;
@@ -44,7 +42,7 @@ public class FileDelegate extends UnicastRemoteObject implements RemoteFile {
 	 * @throws RemoteException
 	 *             If registration of the file fails.
 	 */
-	public FileDelegate(@NonNull File file, @NonNull DirectoryDelegate parent)
+	public FileDelegate(@Nonnull File file, @Nonnull DirectoryDelegate parent)
 			throws RemoteException {
 		super();
 		this.file = file;
@@ -58,17 +56,11 @@ public class FileDelegate extends UnicastRemoteObject implements RemoteFile {
 		if (length < 0 || length > 1024 * 64)
 			length = 1024 * 64;
 		byte[] buffer = new byte[length];
-		FileInputStream fis = null;
 		int read;
-		try {
-			fis = new FileInputStream(file);
-			if (offset > 0)
-				if (fis.skip(offset) != offset)
-					throw new IOException("did not move to correct offset in file");
+		try (FileInputStream fis = new FileInputStream(file)) {
+			if (offset > 0 && fis.skip(offset) != offset)
+				throw new IOException("did not move to correct offset in file");
 			read = fis.read(buffer);
-		} finally {
-			if (fis != null)
-				fis.close();
 		}
 		if (read <= 0)
 			return new byte[0];
@@ -87,25 +79,15 @@ public class FileDelegate extends UnicastRemoteObject implements RemoteFile {
 
 	@Override
 	public void setContents(byte[] data) throws IOException {
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream(file);
+		try (FileOutputStream fos = new FileOutputStream(file)) {
 			fos.write(data);
-		} finally {
-			if (fos != null)
-				fos.close();
 		}
 	}
 
 	@Override
 	public void appendContents(byte[] data) throws IOException {
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream(file, true);
+		try (FileOutputStream fos = new FileOutputStream(file, true)) {
 			fos.write(data);
-		} finally {
-			if (fos != null)
-				fos.close();
 		}
 	}
 

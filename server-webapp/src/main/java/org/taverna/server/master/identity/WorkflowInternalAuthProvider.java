@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.servlet.http.HttpServletRequest;
@@ -43,8 +44,6 @@ import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
 import org.taverna.server.master.utils.UsernamePrincipal;
 import org.taverna.server.master.worker.RunDatabaseDAO;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * A special authentication provider that allows a workflow to authenticate to
@@ -78,7 +77,7 @@ public class WorkflowInternalAuthProvider extends
 	}
 
 	public void setAuthorizedAddresses(String[] addresses) {
-		authorizedAddresses = new HashSet<String>(localAddresses);
+		authorizedAddresses = new HashSet<>(localAddresses);
 		for (String s : addresses)
 			authorizedAddresses.add(s);
 	}
@@ -94,7 +93,7 @@ public class WorkflowInternalAuthProvider extends
 		log = null;
 	}
 
-	private final Set<String> localAddresses = new HashSet<String>();
+	private final Set<String> localAddresses = new HashSet<>();
 	private Set<String> authorizedAddresses;
 	{
 		localAddresses.add("127.0.0.1"); // IPv4
@@ -106,7 +105,7 @@ public class WorkflowInternalAuthProvider extends
 		} catch (UnknownHostException e) {
 			// Ignore the exception
 		}
-		authorizedAddresses = new HashSet<String>(localAddresses);
+		authorizedAddresses = new HashSet<>(localAddresses);
 	}
 
 	/**
@@ -132,9 +131,9 @@ public class WorkflowInternalAuthProvider extends
 	 *             generic AuthenticationException.
 	 */
 	protected void additionalAuthenticationChecks(UserDetails userRecord,
-			@NonNull Object principal, @NonNull Object credentials)
+			@Nonnull Object principal, @Nonnull Object credentials)
 			throws Exception {
-		@NonNull
+		@Nonnull
 		HttpServletRequest req = ((ServletRequestAttributes) currentRequestAttributes())
 				.getRequest();
 
@@ -189,7 +188,7 @@ public class WorkflowInternalAuthProvider extends
 	 *             If something goes wrong. It will be logged and converted into
 	 *             a general AuthenticationException.
 	 */
-	@NonNull
+	@Nonnull
 	protected UserDetails retrieveUser(String username, Object details)
 			throws Exception {
 		if (details == null || !(details instanceof WebAuthenticationDetails))
@@ -234,7 +233,7 @@ public class WorkflowInternalAuthProvider extends
 	}
 
 	@Override
-	@NonNull
+	@Nonnull
 	@PerfLogged
 	protected final UserDetails retrieveUser(String username,
 			UsernamePasswordAuthenticationToken token) {

@@ -21,7 +21,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.List;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import javax.annotation.Nonnull;
 
 /**
  * A simple class that forks off processes when asked to over its standard
@@ -43,20 +43,17 @@ public class Forker extends Thread {
 	 * @throws IOException
 	 *             If anything goes wrong.
 	 */
-	private static void loadPassword(@NonNull File passwordFile)
+	private static void loadPassword(@Nonnull File passwordFile)
 			throws IOException {
-		FileReader fr = null;
 		try {
 			err.println("attempting to load password from " + passwordFile);
-			fr = new FileReader(passwordFile);
-			password = new BufferedReader(fr).readLine();
+			try (FileReader fr = new FileReader(passwordFile)) {
+				password = new BufferedReader(fr).readLine();
+			}
 		} catch (IOException e) {
 			err.println("failed to read password from file " + passwordFile
 					+ "described in password.file property");
 			throw e;
-		} finally {
-			if (fr != null)
-				fr.close();
 		}
 	}
 

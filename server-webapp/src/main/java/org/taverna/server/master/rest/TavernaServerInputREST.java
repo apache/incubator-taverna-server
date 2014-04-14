@@ -17,6 +17,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -50,8 +51,6 @@ import org.taverna.server.master.interfaces.Input;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.port_description.InputDescription;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-
 /**
  * This represents how a Taverna Server workflow run's inputs looks to a RESTful
  * API.
@@ -70,7 +69,7 @@ public interface TavernaServerInputREST {
 	@Path("/")
 	@Produces({ XML, JSON })
 	@Description("Describe the sub-URIs of this resource.")
-	@NonNull
+	@Nonnull
 	InputsDescriptor get();
 
 	/** Get an outline of the operations supported. */
@@ -87,7 +86,7 @@ public interface TavernaServerInputREST {
 	@Path(EXPECTED)
 	@Produces({ XML, JSON })
 	@Description("Describe the expected inputs of this workflow run.")
-	@NonNull
+	@Nonnull
 	InputDescription getExpected();
 
 	/** Get an outline of the operations supported. */
@@ -105,7 +104,7 @@ public interface TavernaServerInputREST {
 	@Produces(TEXT)
 	@Description("Gives the Baclava file describing the inputs, or empty if "
 			+ "individual files are used.")
-	@NonNull
+	@Nonnull
 	String getBaclavaFile();
 
 	/**
@@ -127,8 +126,8 @@ public interface TavernaServerInputREST {
 	@Consumes(TEXT)
 	@Produces(TEXT)
 	@Description("Sets the Baclava file describing the inputs.")
-	@NonNull
-	String setBaclavaFile(@NonNull String filename) throws NoUpdateException,
+	@Nonnull
+	String setBaclavaFile(@Nonnull String filename) throws NoUpdateException,
 			BadStateChangeException, FilesystemAccessException;
 
 	/** Get an outline of the operations supported. */
@@ -153,8 +152,8 @@ public interface TavernaServerInputREST {
 	@Produces({ XML, JSON })
 	@Description("Gives a description of what is used to supply a particular "
 			+ "input.")
-	@NonNull
-	InDesc getInput(@NonNull @PathParam("name") String name,
+	@Nonnull
+	InDesc getInput(@Nonnull @PathParam("name") String name,
 			@Context UriInfo uriInfo) throws BadInputPortNameException;
 
 	/**
@@ -184,9 +183,9 @@ public interface TavernaServerInputREST {
 	@Consumes({ XML, JSON })
 	@Produces({ XML, JSON })
 	@Description("Sets the source for a particular input port.")
-	@NonNull
-	InDesc setInput(@NonNull @PathParam("name") String name,
-			@NonNull InDesc inputDescriptor, @Context UriInfo uriInfo) throws NoUpdateException,
+	@Nonnull
+	InDesc setInput(@Nonnull @PathParam("name") String name,
+			@Nonnull InDesc inputDescriptor, @Context UriInfo uriInfo) throws NoUpdateException,
 			BadStateChangeException, FilesystemAccessException,
 			BadPropertyValueException, BadInputPortNameException;
 
@@ -243,7 +242,7 @@ public interface TavernaServerInputREST {
 			super(true);
 			expected = new Uri(ui, EXPECTED);
 			baclava = new Uri(ui, BACLAVA);
-			input = new ArrayList<Uri>();
+			input = new ArrayList<>();
 			for (Input i : run.getInputs())
 				input.add(new Uri(ui, ONE_INPUT, i.getName()));
 		}

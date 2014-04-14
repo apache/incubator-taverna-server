@@ -35,7 +35,7 @@ public class InputDescription extends VersionedElement {
 	 * The port/value assignment.
 	 */
 	@XmlElement(nillable = false)
-	public List<Port> port = new ArrayList<Port>();
+	public List<Port> port = new ArrayList<>();
 
 	/**
 	 * Make a blank input description.

@@ -59,8 +59,6 @@ import org.taverna.server.localworker.remote.RemoteStatus;
 import org.taverna.server.localworker.remote.StillWorkingOnItException;
 import org.taverna.server.localworker.server.UsageRecordReceiver;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 /**
  * This class implements one side of the connection between the Taverna Server
  * master server and this process. It delegates to a {@link Worker} instance the
@@ -71,8 +69,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @see FileDelegate
  * @see WorkerCore
  */
-@SuppressWarnings({ "SE_BAD_FIELD", "SE_NO_SERIALVERSIONID" })
-@java.lang.SuppressWarnings("serial")
+@SuppressWarnings("serial")
 public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun {
 	// ----------------------- CONSTANTS -----------------------
 
@@ -164,9 +161,9 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	 */
 	char[] keystorePassword = KEYSTORE_PASSWORD;
 	/** Additional server-specified environment settings. */
-	Map<String, String> environment = new HashMap<String, String>();
+	Map<String, String> environment = new HashMap<>();
 	/** Additional server-specified java runtime settings. */
-	List<String> runtimeSettings = new ArrayList<String>();
+	List<String> runtimeSettings = new ArrayList<>();
 	URL interactionFeedURL;
 	URL webdavURL;
 	private boolean doProvenance = true;
@@ -332,7 +329,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 
 	@Override
 	public List<RemoteInput> getInputs() throws RemoteException {
-		ArrayList<RemoteInput> result = new ArrayList<RemoteInput>();
+		ArrayList<RemoteInput> result = new ArrayList<>();
 		for (String name : inputFiles.keySet())
 			result.add(new InputDelegate(name));
 		return result;
@@ -353,7 +350,6 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		return outputBaclava;
 	}
 
-	@SuppressWarnings("SE_INNER_CLASS")
 	class SecurityDelegate extends UnicastRemoteObject implements
 			RemoteSecurityContext {
 		private void setPrivatePerms(File dir) {
@@ -473,13 +469,13 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		}
 
 		@Override
-		public void setUriToAliasMap(HashMap<URI, String> uriToAliasMap)
+		public void setUriToAliasMap(Map<URI, String> uriToAliasMap)
 				throws RemoteException {
 			if (status != Initialized)
 				throw new RemoteException("not initializing");
 			if (uriToAliasMap == null)
 				return;
-			ArrayList<String> lines = new ArrayList<String>();
+			ArrayList<String> lines = new ArrayList<>();
 			for (Entry<URI, String> site : uriToAliasMap.entrySet())
 				lines.add(site.getKey().toASCIIString() + " " + site.getValue());
 			// write(URI_ALIAS_MAP, lines);
@@ -536,7 +532,6 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		}
 	}
 
-	@SuppressWarnings("SE_INNER_CLASS")
 	class InputDelegate extends UnicastRemoteObject implements RemoteInput {
 		private String name;
 
@@ -567,7 +562,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		public String getValue() {
 			return inputValues.get(name);
 		}
-		
+
 		@Override
 		public String getDelimiter() throws RemoteException {
 			return inputDelimiters.get(name);
@@ -599,7 +594,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 				throw new IllegalStateException("not initializing");
 			if (inputBaclava != null)
 				throw new IllegalStateException("input baclava file set");
-			if (delimiter!=null) {
+			if (delimiter != null) {
 				if (delimiter.length() > 1)
 					throw new IllegalStateException(
 							"multi-character delimiter not permitted");

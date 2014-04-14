@@ -32,14 +32,15 @@ public class WorkflowSerializationTest {
 		w.content[0].setAttribute("xyz", "abc");
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ObjectOutputStream oos = new ObjectOutputStream(baos);
-		oos.writeObject(w);
-		oos.close();
+		try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+			oos.writeObject(w);
+		}
 
-		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-		ObjectInputStream ois = new ObjectInputStream(bais);
-		Object o = ois.readObject();
-		ois.close();
+		Object o;
+		try (ObjectInputStream ois = new ObjectInputStream(
+				new ByteArrayInputStream(baos.toByteArray()))) {
+			o = ois.readObject();
+		}
 
 		Assert.assertNotNull(o);
 		Assert.assertEquals(w.getClass(), o.getClass());

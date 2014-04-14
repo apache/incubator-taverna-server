@@ -7,10 +7,10 @@ package org.taverna.server.master.worker;
 
 import java.util.List;
 
-import org.taverna.server.master.notification.NotificationEngine;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import org.taverna.server.master.notification.NotificationEngine;
 
 /**
  * The interface to the database of runs.
@@ -43,7 +43,7 @@ public interface RunDBSupport {
 	 * @param run
 	 *            The run to persist.
 	 */
-	void flushToDisk(@NonNull RemoteRunDelegate run);
+	void flushToDisk(@Nonnull RemoteRunDelegate run);
 
 	/**
 	 * Select an arbitrary representative run.
@@ -60,7 +60,7 @@ public interface RunDBSupport {
 	 * 
 	 * @return The names (i.e., UUIDs) of all the runs.
 	 */
-	@NonNull
+	@Nonnull
 	List<String> listRunNames();
 
 	/**

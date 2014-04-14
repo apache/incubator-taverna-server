@@ -88,11 +88,10 @@ public class Workflow implements Serializable,Externalizable {
 			int len = in.readInt();
 			byte[] bytes = new byte[len];
 			in.readFully(bytes);
-			Reader r = new InputStreamReader(new InflaterInputStream(
-					new ByteArrayInputStream(bytes)), ENCODING);
-			Workflow w = (Workflow) unmarshaller.unmarshal(r);
-			r.close();
-			this.content = w.content;
+			try (Reader r = new InputStreamReader(new InflaterInputStream(
+					new ByteArrayInputStream(bytes)), ENCODING)) {
+				this.content = ((Workflow) unmarshaller.unmarshal(r)).content;
+			}
 			return;
 		} catch (JAXBException e) {
 			throw new IOException("failed to unmarshal", e);
@@ -105,10 +104,10 @@ public class Workflow implements Serializable,Externalizable {
 	public void writeExternal(ObjectOutput out) throws IOException {
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			OutputStreamWriter w = new OutputStreamWriter(
-					new DeflaterOutputStream(baos), ENCODING);
-			marshaller.marshal(this, w);
-			w.close();
+			try (OutputStreamWriter w = new OutputStreamWriter(
+					new DeflaterOutputStream(baos), ENCODING)) {
+				marshaller.marshal(this, w);
+			}
 			byte[] bytes = baos.toByteArray();
 			out.writeInt(bytes.length);
 			out.write(bytes);

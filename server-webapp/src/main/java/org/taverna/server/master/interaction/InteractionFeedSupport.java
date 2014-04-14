@@ -141,8 +141,8 @@ public class InteractionFeedSupport {
 
 	private List<DirectoryEntry> listPossibleEntries(TavernaRun run)
 			throws FilesystemAccessException, NoDirectoryEntryException {
-		List<DirectoryEntry> entries = new ArrayList<DirectoryEntry>(utils
-				.getDirectory(run, FEED_DIR).getContentsByDate());
+		List<DirectoryEntry> entries = new ArrayList<>(utils.getDirectory(run,
+				FEED_DIR).getContentsByDate());
 		reverse(entries);
 		return entries;
 	}

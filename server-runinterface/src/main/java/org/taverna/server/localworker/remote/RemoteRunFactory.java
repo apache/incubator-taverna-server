@@ -11,8 +11,8 @@ import java.util.UUID;
 
 import org.taverna.server.localworker.server.UsageRecordReceiver;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * The main RMI-enabled interface for creating runs.
@@ -37,8 +37,8 @@ public interface RemoteRunFactory extends Remote {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	@NonNull
-	RemoteSingleRun make(@NonNull String workflow, @NonNull String creator,
+	@Nonnull
+	RemoteSingleRun make(@Nonnull String workflow, @Nonnull String creator,
 			@Nullable UsageRecordReceiver usageRecordReceiver,
 			@Nullable UUID masterID) throws RemoteException;
 
@@ -67,9 +67,9 @@ public interface RemoteRunFactory extends Remote {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	void setInteractionServiceDetails(@NonNull String host,
-			@NonNull String port, @NonNull String webdavPath,
-			@NonNull String feedPath) throws RemoteException;
+	void setInteractionServiceDetails(@Nonnull String host,
+			@Nonnull String port, @Nonnull String webdavPath,
+			@Nonnull String feedPath) throws RemoteException;
 
 	/**
 	 * Gets a count of the number of {@linkplain RemoteSingleRun workflow runs}
