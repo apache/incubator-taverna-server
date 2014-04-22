@@ -1,7 +1,7 @@
-Taverna 2.5.3 Server Release Notes
+Taverna 2.5.4 Server Release Notes
 ==================================
 
-This is the third public release of Taverna 2.5 Server. We welcome feedback
+This is the fourth public release of Taverna 2.5 Server. We welcome feedback
 on both the things that are there and the things that are not.
 
 Key Features
@@ -45,13 +45,13 @@ Key Features
 
 Significant Changes
 -------------------
+ * Supports full Taverna 2.5.0 Enterprise execution platform
  * Now requires Java 7
 
 Planned Future Features
 -----------------------
  * Support for Cluster Deployment
  * Full WebDAV access to run working directory
- * Access to Provenance
 
 Specific Issues Addressed in This Release
 -----------------------------------------
@@ -86,3 +86,9 @@ TAVSERV-297 Running instance of Taverna Server 2.4.1 hangs after a while;
 TAVSERV-329 Master feed broken
 TAVSERV-332 Massively degraded performance of 2.5.2
 ---- 2.5.3 release ----
+    Updated to use Taverna 2.5.0 Enterprise Execution Core
+TAVSERV-331 Add an option for the provenance export using the new -provbundle
+            command line tool switch
+TAVSERV-337 RMI registry subprocess race condition
+SERVINF-395 Fix race condition in XML parsing
+---- 2.5.4 release ----
