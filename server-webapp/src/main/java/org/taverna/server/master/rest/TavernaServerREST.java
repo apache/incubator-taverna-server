@@ -59,7 +59,7 @@ import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.soap.TavernaServerSOAP;
 
 /**
- * The REST service interface to Taverna 2.5.3 Server.
+ * The REST service interface to Taverna 2.5.4 Server.
  * 
  * @author Donal Fellows
  * @see TavernaServerSOAP
