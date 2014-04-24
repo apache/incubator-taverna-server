@@ -89,6 +89,7 @@ TAVSERV-332 Massively degraded performance of 2.5.2
     Updated to use Taverna 2.5.0 Enterprise Execution Core
 TAVSERV-331 Add an option for the provenance export using the new -provbundle
             command line tool switch
+TAVSERV-336 Support splitting inputs 
 TAVSERV-337 RMI registry subprocess race condition
 SERVINF-395 Fix race condition in XML parsing
 ---- 2.5.4 release ----
