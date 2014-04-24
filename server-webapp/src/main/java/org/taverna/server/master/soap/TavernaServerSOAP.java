@@ -17,6 +17,7 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
 import javax.jws.WebService;
+import javax.xml.bind.annotation.XmlElement;
 
 import org.apache.cxf.annotations.WSDLDocumentation;
 import org.ogf.usage.JobUsageRecord;
@@ -65,7 +66,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "Run")
 	@WSDLDocumentation("Make a run for a particular workflow.")
-	RunReference submitWorkflow(@WebParam(name = "workflow") Workflow workflow)
+	RunReference submitWorkflow(
+			@WebParam(name = "workflow") @XmlElement(required = true) Workflow workflow)
 			throws NoUpdateException, NoCreateException;
 
 	/**
@@ -81,7 +83,7 @@ public interface TavernaServerSOAP {
 	@WebResult(name = "Run")
 	@WSDLDocumentation("Make a run for a particular workflow where that workflow is given by publicly readable URI.")
 	RunReference submitWorkflowByURI(
-			@WebParam(name = "workflowURI") URI workflowURI)
+			@WebParam(name = "workflowURI") @XmlElement(required = true) URI workflowURI)
 			throws NoCreateException, NoUpdateException;
 
 	/**
@@ -156,7 +158,8 @@ public interface TavernaServerSOAP {
 	 *             run.
 	 */
 	@WSDLDocumentation("Destroy a run immediately.")
-	void destroyRun(@WebParam(name = "runName") String runName)
+	void destroyRun(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException, NoUpdateException;
 
 	/**
@@ -171,7 +174,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "CreationWorkflow")
 	@WSDLDocumentation("Get the workflow document used to create the given run.")
-	Workflow getRunWorkflow(@WebParam(name = "runName") String runName)
+	Workflow getRunWorkflow(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException;
 
 	/**
@@ -187,7 +191,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "DescriptiveName")
 	@WSDLDocumentation("Get the descriptive name of the workflow run. Carries no deep information.")
-	String getRunDescriptiveName(@WebParam(name = "runName") String runName)
+	String getRunDescriptiveName(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException;
 
 	/**
@@ -206,8 +211,9 @@ public interface TavernaServerSOAP {
 	 *             If the user is not permitted to update this run.
 	 */
 	@WSDLDocumentation("Set the descriptive name of the workflow run. Carries no deep information.")
-	void setRunDescriptiveName(@WebParam(name = "runName") String runName,
-			@WebParam(name = "descriptiveName") String descriptiveName)
+	void setRunDescriptiveName(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "descriptiveName") @XmlElement(required = true) String descriptiveName)
 			throws UnknownRunException, NoUpdateException;
 
 	/**
@@ -222,7 +228,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "RunInputDescription")
 	@WSDLDocumentation("Get the description of the inputs currently set up for the given workflow run.")
-	InputDescription getRunInputs(@WebParam(name = "runName") String runName)
+	InputDescription getRunInputs(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException;
 
 	/**
@@ -239,7 +246,7 @@ public interface TavernaServerSOAP {
 	@WebResult(name = "RunInputDescriptor")
 	@WSDLDocumentation("Get a description of what inputs the given workflow run expects to receive.")
 	org.taverna.server.port_description.InputDescription getRunInputDescriptor(
-			@WebParam(name = "runName") String runName)
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException;
 
 	/**
@@ -262,7 +269,8 @@ public interface TavernaServerSOAP {
 	 *             Initialized} state
 	 */
 	@WSDLDocumentation("Tells the given run to use the given already-uploaded Baclava file for all inputs.")
-	void setRunInputBaclavaFile(@WebParam(name = "runName") String runName,
+	void setRunInputBaclavaFile(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
 			@WebParam(name = "baclavaFileName") String fileName)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, BadStateChangeException;
@@ -294,9 +302,10 @@ public interface TavernaServerSOAP {
 	 *             given file.
 	 */
 	@WSDLDocumentation("Tells the given run to use the given file for input on the given port.")
-	void setRunInputPortFile(@WebParam(name = "runName") String runName,
-			@WebParam(name = "portName") String portName,
-			@WebParam(name = "portFileName") String portFilename)
+	void setRunInputPortFile(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "portName") @XmlElement(required = true) String portName,
+			@WebParam(name = "portFileName") @XmlElement(required = true) String portFilename)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, BadStateChangeException,
 			BadPropertyValueException;
@@ -326,9 +335,10 @@ public interface TavernaServerSOAP {
 	 *             value.
 	 */
 	@WSDLDocumentation("Tells the given run to use the given literal string value for input on the given port.")
-	void setRunInputPortValue(@WebParam(name = "runName") String runName,
-			@WebParam(name = "portName") String portName,
-			@WebParam(name = "portValue") String portValue)
+	void setRunInputPortValue(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "portName") @XmlElement(required = true) String portName,
+			@WebParam(name = "portValue") @XmlElement(required = true) String portValue)
 			throws UnknownRunException, NoUpdateException,
 			BadStateChangeException, BadPropertyValueException;
 
@@ -358,8 +368,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WSDLDocumentation("Tells the given run to use the given list delimiter (a single-character string value) for splitting the input on the given port. Note that nullability of the delimiter is supported here.")
 	void setRunInputPortListDelimiter(
-			@WebParam(name = "runName") String runName,
-			@WebParam(name = "portName") String portName,
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "portName") @XmlElement(required = true) String portName,
 			@WebParam(name = "delimiter") String delimiter)
 			throws UnknownRunException, NoUpdateException,
 			BadStateChangeException, BadPropertyValueException;
@@ -377,7 +387,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "OutputBaclavaFile")
 	@WSDLDocumentation("Get the Baclava file where the output of the run will be written.")
-	String getRunOutputBaclavaFile(@WebParam(name = "runName") String runName)
+	String getRunOutputBaclavaFile(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException;
 
 	/**
@@ -402,7 +413,8 @@ public interface TavernaServerSOAP {
 	 *             Initialized} state
 	 */
 	@WSDLDocumentation("Set the Baclava file where the output of the run will be written.")
-	void setRunOutputBaclavaFile(@WebParam(name = "runName") String runName,
+	void setRunOutputBaclavaFile(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
 			@WebParam(name = "baclavaFileName") String outputFile)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, BadStateChangeException;
@@ -427,7 +439,7 @@ public interface TavernaServerSOAP {
 	@WebResult(name = "OutputDescription")
 	@WSDLDocumentation("Return a description of the outputs of a run. Only known during/after the run.")
 	OutputDescription getRunOutputDescription(
-			@WebParam(name = "runName") String runName)
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException, BadStateChangeException,
 			FilesystemAccessException, NoDirectoryEntryException;
 
@@ -445,7 +457,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "Expiry")
 	@WSDLDocumentation("Get the time when the run will be eligible to be automatically deleted.")
-	Date getRunExpiry(@WebParam(name = "runName") String runName)
+	Date getRunExpiry(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException;
 
 	/**
@@ -465,9 +478,10 @@ public interface TavernaServerSOAP {
 	 *             run.
 	 */
 	@WSDLDocumentation("Set when the run will be eligible to be automatically deleted.")
-	void setRunExpiry(@WebParam(name = "runName") String runName,
-			@WebParam(name = "expiry") Date expiry) throws UnknownRunException,
-			NoUpdateException;
+	void setRunExpiry(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "expiry") @XmlElement(required = true) Date expiry)
+			throws UnknownRunException, NoUpdateException;
 
 	/**
 	 * Get the time when the run was created.
@@ -482,7 +496,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "CreationTime")
 	@WSDLDocumentation("Get the time when the run was created.")
-	Date getRunCreationTime(@WebParam(name = "runName") String runName)
+	Date getRunCreationTime(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException;
 
 	/**
@@ -498,7 +513,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "StartTime")
 	@WSDLDocumentation("Get the time when the run was started.")
-	Date getRunStartTime(@WebParam(name = "runName") String runName)
+	Date getRunStartTime(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException;
 
 	/**
@@ -515,7 +531,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "FinishTime")
 	@WSDLDocumentation("Get the time when the run was detected as having finished.")
-	Date getRunFinishTime(@WebParam(name = "runName") String runName)
+	Date getRunFinishTime(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException;
 
 	/**
@@ -530,7 +547,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "Status")
 	@WSDLDocumentation("Get the current status of the given workflow run.")
-	Status getRunStatus(@WebParam(name = "runName") String runName)
+	Status getRunStatus(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException;
 
 	/**
@@ -555,8 +573,9 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "PartialityReason")
 	@WSDLDocumentation("Set the status of a given workflow run.")
-	String setRunStatus(@WebParam(name = "runName") String runName,
-			@WebParam(name = "status") Status status)
+	String setRunStatus(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "status") @XmlElement(required = true) Status status)
 			throws UnknownRunException, NoUpdateException,
 			BadStateChangeException;
 
@@ -572,7 +591,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "ListenerName")
 	@WSDLDocumentation("Get the names of the event listeners attached to the run.")
-	String[] getRunListeners(@WebParam(name = "runName") String runName)
+	String[] getRunListeners(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException;
 
 	/**
@@ -599,9 +619,10 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "ListenerName")
 	@WSDLDocumentation("Adds an event listener to the run.")
-	String addRunListener(@WebParam(name = "runName") String runName,
-			@WebParam(name = "listenerType") String listenerType,
-			@WebParam(name = "configuration") String configuration)
+	String addRunListener(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "listenerType") @XmlElement(required = true) String listenerType,
+			@WebParam(name = "configuration") @XmlElement(required = true) String configuration)
 			throws UnknownRunException, NoUpdateException, NoListenerException;
 
 	/**
@@ -620,7 +641,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "StandardOutput")
 	@WSDLDocumentation("Returns the stdout from the run engine.")
-	String getRunStdout(@WebParam(name = "runName") String runName)
+	String getRunStdout(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException;
 
 	/**
@@ -639,7 +661,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "StandardError")
 	@WSDLDocumentation("Returns the stderr from the run engine.")
-	String getRunStderr(@WebParam(name = "runName") String runName)
+	String getRunStderr(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException;
 
 	/**
@@ -658,7 +681,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "ResourceUsage")
 	@WSDLDocumentation("Returns the resource usage from the run engine.")
-	JobUsageRecord getRunUsageRecord(@WebParam(name = "runName") String runName)
+	JobUsageRecord getRunUsageRecord(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException;
 
 	/**
@@ -677,7 +701,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "Log")
 	@WSDLDocumentation("Returns the detailed log from the run engine.")
-	String getRunLog(@WebParam(name = "runName") String runName)
+	String getRunLog(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException;
 
 	/**
@@ -698,7 +723,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "RunBundle")
 	@WSDLDocumentation("Gets the run bundle of a finished run. MTOM support recommended!")
-	FileContents getRunBundle(@WebParam(name = "runName") String runName)
+	FileContents getRunBundle(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException;
 
@@ -714,7 +740,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "GenerateProvenance")
 	@WSDLDocumentation("Gets whether a run generates provenance.")
-	boolean getRunGenerateProvenance(@WebParam(name = "runName") String runName)
+	boolean getRunGenerateProvenance(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException;
 
 	/**
@@ -732,8 +759,9 @@ public interface TavernaServerSOAP {
 	 */
 	@WSDLDocumentation("Sets whether a run generates provenance. "
 			+ "Only usefully settable before the run is started.")
-	void setRunGenerateProvenance(@WebParam(name = "runName") String runName,
-			@WebParam(name = "generateProvenance") boolean generateProvenance)
+	void setRunGenerateProvenance(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "generateProvenance") @XmlElement(required = true) boolean generateProvenance)
 			throws UnknownRunException, NoUpdateException;
 
 	/**
@@ -748,7 +776,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "Owner")
 	@WSDLDocumentation("Get the owner of the given workflow run.")
-	String getRunOwner(@WebParam(name = "runName") String runName)
+	String getRunOwner(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException;
 
 	/**
@@ -766,7 +795,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "PermissionList")
 	@WSDLDocumentation("Get the list of permissions associated with a given workflow run.")
-	PermissionList listRunPermissions(@WebParam(name = "runName") String runName)
+	PermissionList listRunPermissions(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException, NotOwnerException;
 
 	/**
@@ -787,9 +817,10 @@ public interface TavernaServerSOAP {
 	 *             current user may see but where they are not the owner of it.
 	 */
 	@WSDLDocumentation("Set the permission for a user to access and update a given workflow run.")
-	void setRunPermission(@WebParam(name = "runName") String runName,
-			@WebParam(name = "userName") String userName,
-			@WebParam(name = "permission") Permission permission)
+	void setRunPermission(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "userName") @XmlElement(required = true) String userName,
+			@WebParam(name = "permission") @XmlElement(required = true) Permission permission)
 			throws UnknownRunException, NotOwnerException;
 
 	/**
@@ -807,7 +838,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "Credentials")
 	@WSDLDocumentation("Get the credentials (passwords, private keys) associated with the given workflow run. Only the owner may do this.")
-	Credential[] getRunCredentials(@WebParam(name = "runName") String runName)
+	Credential[] getRunCredentials(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException, NotOwnerException;
 
 	/**
@@ -838,9 +870,10 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "credentialID")
 	@WSDLDocumentation("Set a credential (password, private key, etc.) associated with the given run. Only the owner may do this.")
-	String setRunCredential(@WebParam(name = "runName") String runName,
-			@WebParam(name = "credentialID") String credentialID,
-			@WebParam(name = "credential") Credential credential)
+	String setRunCredential(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "credentialID") @XmlElement(required = true) String credentialID,
+			@WebParam(name = "credential") @XmlElement(required = true) Credential credential)
 			throws UnknownRunException, NotOwnerException,
 			InvalidCredentialException, NoCredentialException,
 			BadStateChangeException;
@@ -866,8 +899,9 @@ public interface TavernaServerSOAP {
 	 *             workflow has started running.
 	 */
 	@WSDLDocumentation("Delete a credential associated with the given run. Only the owner may do this.")
-	void deleteRunCredential(@WebParam(name = "runName") String runName,
-			@WebParam(name = "credentialID") String credentialID)
+	void deleteRunCredential(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "credentialID") @XmlElement(required = true) String credentialID)
 			throws UnknownRunException, NotOwnerException,
 			NoCredentialException, BadStateChangeException;
 
@@ -886,7 +920,8 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "CertificateCollections")
 	@WSDLDocumentation("Get the trusted (server or CA) certificates associated with the run. Only the owner may do this.")
-	Trust[] getRunCertificates(@WebParam(name = "runName") String runName)
+	Trust[] getRunCertificates(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException, NotOwnerException;
 
 	/**
@@ -917,9 +952,10 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "certificateID")
 	@WSDLDocumentation("Set a trusted (server or CA) certificate associated with the run. Only the owner may do this.")
-	String setRunCertificates(@WebParam(name = "runName") String runName,
+	String setRunCertificates(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
 			@WebParam(name = "certificateID") String certificateID,
-			@WebParam(name = "certificate") Trust certificate)
+			@WebParam(name = "certificate") @XmlElement(required = true) Trust certificate)
 			throws UnknownRunException, NotOwnerException,
 			InvalidCredentialException, NoCredentialException,
 			BadStateChangeException;
@@ -930,8 +966,7 @@ public interface TavernaServerSOAP {
 	 * @param runName
 	 *            The handle of the run.
 	 * @param certificateID
-	 *            The handle of the credential to delete. If empty, a new
-	 *            credential will be created.
+	 *            The handle of the credential to delete.
 	 * @throws UnknownRunException
 	 *             If the server doesn't know about the run or if the user is
 	 *             not permitted to see it.
@@ -945,8 +980,9 @@ public interface TavernaServerSOAP {
 	 *             workflow has started running.
 	 */
 	@WSDLDocumentation("Delete a trusted (server or CA) certificate associated with the run. Only the owner may do this.")
-	void deleteRunCertificates(@WebParam(name = "runName") String runName,
-			@WebParam(name = "certificateID") String certificateID)
+	void deleteRunCertificates(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "certificateID") @XmlElement(required = true) String certificateID)
 			throws UnknownRunException, NotOwnerException,
 			NoCredentialException, BadStateChangeException;
 
@@ -973,8 +1009,8 @@ public interface TavernaServerSOAP {
 	@WebResult(name = "DirectoryEntry")
 	@WSDLDocumentation("Get the contents of any directory at/under the run's working directory.")
 	DirEntry[] getRunDirectoryContents(
-			@WebParam(name = "runName") String runName,
-			@WebParam(name = "directory") DirEntry directory)
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "directory") @XmlElement(required = true) DirEntry directory)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException;
 
@@ -1000,8 +1036,9 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "ZipFile")
 	@WSDLDocumentation("Get the contents of any directory (and its subdirectories) at/under the run's working directory, returning it as a compressed ZIP file.")
-	byte[] getRunDirectoryAsZip(@WebParam(name = "runName") String runName,
-			@WebParam(name = "directory") DirEntry directory)
+	byte[] getRunDirectoryAsZip(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "directory") @XmlElement(required = true) DirEntry directory)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException;
 
@@ -1028,8 +1065,8 @@ public interface TavernaServerSOAP {
 	@WebResult(name = "ZipStream")
 	@WSDLDocumentation("Get the contents of any directory (and its subdirectories) at/under the run's working directory, returning it as a compressed ZIP file that is streamed by MTOM.")
 	ZippedDirectory getRunDirectoryAsZipMTOM(
-			@WebParam(name = "runName") String runName,
-			@WebParam(name = "directory") DirEntry directory)
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "directory") @XmlElement(required = true) DirEntry directory)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException;
 
@@ -1062,9 +1099,10 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "CreatedDirectory")
 	@WSDLDocumentation("Make a new empty directory beneath an existing one, all relative to the given run's main working directory.")
-	DirEntry makeRunDirectory(@WebParam(name = "runName") String runName,
-			@WebParam(name = "parentDirectory") DirEntry parent,
-			@WebParam(name = "directoryName") String name)
+	DirEntry makeRunDirectory(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "parentDirectory") @XmlElement(required = true) DirEntry parent,
+			@WebParam(name = "directoryName") @XmlElement(required = true) String name)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, NoDirectoryEntryException;
 
@@ -1096,9 +1134,10 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "CreatedFile")
 	@WSDLDocumentation("Make a new empty file in an existing directory, which may be the run's working directory or any directory beneath it.")
-	DirEntry makeRunFile(@WebParam(name = "runName") String runName,
-			@WebParam(name = "parentDirectory") DirEntry parent,
-			@WebParam(name = "fileNameTail") String name)
+	DirEntry makeRunFile(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "parentDirectory") @XmlElement(required = true) DirEntry parent,
+			@WebParam(name = "fileNameTail") @XmlElement(required = true) String name)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, NoDirectoryEntryException;
 
@@ -1124,8 +1163,9 @@ public interface TavernaServerSOAP {
 	 *             If the name of the file or directory can't be looked up.
 	 */
 	@WSDLDocumentation("Destroy an entry (file or directory) in or beneath a run's working directory.")
-	void destroyRunDirectoryEntry(@WebParam(name = "runName") String runName,
-			@WebParam(name = "directoryEntry") DirEntry dirEntry)
+	void destroyRunDirectoryEntry(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "directoryEntry") @XmlElement(required = true) DirEntry dirEntry)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, NoDirectoryEntryException;
 
@@ -1150,8 +1190,9 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "FileContents")
 	@WSDLDocumentation("Get the contents of a file under the run's working directory.")
-	byte[] getRunFileContents(@WebParam(name = "runName") String runName,
-			@WebParam(name = "fileName") DirEntry file)
+	byte[] getRunFileContents(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "fileName") @XmlElement(required = true) DirEntry file)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException;
 
@@ -1177,8 +1218,8 @@ public interface TavernaServerSOAP {
 	@WebResult(name = "FileContentsMTOM")
 	@WSDLDocumentation("Get the contents of a file via MTOM.")
 	FileContents getRunFileContentsMTOM(
-			@WebParam(name = "runName") String runName,
-			@WebParam(name = "fileName") DirEntry file)
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "fileName") @XmlElement(required = true) DirEntry file)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException;
 
@@ -1205,9 +1246,10 @@ public interface TavernaServerSOAP {
 	 *             If the file doesn't exist.
 	 */
 	@WSDLDocumentation("Set the contents of a file under the run's working directory.")
-	void setRunFileContents(@WebParam(name = "runName") String runName,
-			@WebParam(name = "fileName") DirEntry file,
-			@WebParam(name = "contents") byte[] newContents)
+	void setRunFileContents(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "fileName") @XmlElement(required = true) DirEntry file,
+			@WebParam(name = "contents") @XmlElement(required = true) byte[] newContents)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, NoDirectoryEntryException;
 
@@ -1232,8 +1274,9 @@ public interface TavernaServerSOAP {
 	 *             If the file doesn't exist.
 	 */
 	@WSDLDocumentation("Set the contents of a file under the run's working directory.")
-	void setRunFileContentsMTOM(@WebParam(name = "runName") String runName,
-			@WebParam(name = "contents") FileContents newContents)
+	void setRunFileContentsMTOM(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "contents") @XmlElement(required = true) FileContents newContents)
 			throws UnknownRunException, NoUpdateException,
 			FilesystemAccessException, NoDirectoryEntryException;
 
@@ -1258,8 +1301,9 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "FileLength")
 	@WSDLDocumentation("Get the length of any file (in bytes) at/under the run's working directory.")
-	long getRunFileLength(@WebParam(name = "runName") String runName,
-			@WebParam(name = "fileName") DirEntry file)
+	long getRunFileLength(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "fileName") @XmlElement(required = true) DirEntry file)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException;
 
@@ -1285,8 +1329,9 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "FileModified")
 	@WSDLDocumentation("Get the length of any file (in bytes) at/under the run's working directory.")
-	Date getRunFileModified(@WebParam(name = "runName") String runName,
-			@WebParam(name = "fileName") DirEntry file)
+	Date getRunFileModified(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "fileName") @XmlElement(required = true) DirEntry file)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException;
 
@@ -1311,8 +1356,9 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "FileContentType")
 	@WSDLDocumentation("Get the content type of any file at/under the run's working directory.")
-	String getRunFileType(@WebParam(name = "runName") String runName,
-			@WebParam(name = "fileName") DirEntry file)
+	String getRunFileType(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "fileName") @XmlElement(required = true) DirEntry file)
 			throws UnknownRunException, FilesystemAccessException,
 			NoDirectoryEntryException;
 
@@ -1333,8 +1379,8 @@ public interface TavernaServerSOAP {
 	@WebResult(name = "ListenerConfiguration")
 	@WSDLDocumentation("Get the configuration document for an event listener attached to a run.")
 	String getRunListenerConfiguration(
-			@WebParam(name = "runName") String runName,
-			@WebParam(name = "listenerName") String listenerName)
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "listenerName") @XmlElement(required = true) String listenerName)
 			throws UnknownRunException, NoListenerException;
 
 	/**
@@ -1355,8 +1401,8 @@ public interface TavernaServerSOAP {
 	@WebResult(name = "ListenerPropertyName")
 	@WSDLDocumentation("Get the list of properties supported by an event listener attached to a run.")
 	String[] getRunListenerProperties(
-			@WebParam(name = "runName") String runName,
-			@WebParam(name = "listenerName") String listenerName)
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "listenerName") @XmlElement(required = true) String listenerName)
 			throws UnknownRunException, NoListenerException;
 
 	/**
@@ -1378,9 +1424,10 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "ListenerPropertyValue")
 	@WSDLDocumentation("Get the value of a property for an event listener attached to a run.")
-	String getRunListenerProperty(@WebParam(name = "runName") String runName,
-			@WebParam(name = "listenerName") String listenerName,
-			@WebParam(name = "propertyName") String propertyName)
+	String getRunListenerProperty(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "listenerName") @XmlElement(required = true) String listenerName,
+			@WebParam(name = "propertyName") @XmlElement(required = true) String propertyName)
 			throws UnknownRunException, NoListenerException;
 
 	/**
@@ -1405,10 +1452,11 @@ public interface TavernaServerSOAP {
 	 *             If the user is not allowed to make modifications to the run.
 	 */
 	@WSDLDocumentation("Set the value of a property for an event listener attached to a run.")
-	void setRunListenerProperty(@WebParam(name = "runName") String runName,
-			@WebParam(name = "listenerName") String listenerName,
-			@WebParam(name = "propertyName") String propertyName,
-			@WebParam(name = "propertyValue") String value)
+	void setRunListenerProperty(
+			@WebParam(name = "runName") @XmlElement(required = true) String runName,
+			@WebParam(name = "listenerName") @XmlElement(required = true) String listenerName,
+			@WebParam(name = "propertyName") @XmlElement(required = true) String propertyName,
+			@WebParam(name = "propertyValue") @XmlElement(required = true) String value)
 			throws UnknownRunException, NoUpdateException, NoListenerException;
 
 	/**

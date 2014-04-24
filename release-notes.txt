@@ -87,6 +87,8 @@ TAVSERV-329 Master feed broken
 TAVSERV-332 Massively degraded performance of 2.5.2
 ---- 2.5.3 release ----
     Updated to use Taverna 2.5.0 Enterprise Execution Core
+TAVSERV-103 Generated WSDL interface incorrectly claims that parameters are
+            optional
 TAVSERV-331 Add an option for the provenance export using the new -provbundle
             command line tool switch
 TAVSERV-336 Support splitting inputs 
