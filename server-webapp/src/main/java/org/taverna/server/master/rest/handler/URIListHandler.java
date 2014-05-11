@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2012 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.rest.handler;
 
@@ -67,7 +67,7 @@ public class URIListHandler implements MessageBodyReader<List<URI>>,
 				.forName(enc);
 		BufferedReader br = new BufferedReader(new InputStreamReader(
 				entityStream, c));
-		ArrayList<URI> uris = new ArrayList<URI>();
+		ArrayList<URI> uris = new ArrayList<>();
 		String line;
 		while ((line = br.readLine()) != null) {
 			if (line.startsWith("#"))

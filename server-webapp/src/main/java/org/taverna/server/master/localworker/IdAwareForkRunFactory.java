@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010-2012 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.localworker;
 
@@ -11,9 +11,7 @@ import static java.util.Arrays.asList;
 import static java.util.Calendar.SECOND;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.logging.LogFactory.getLog;
-import static org.springframework.jmx.support.MetricType.COUNTER;
-import static org.springframework.jmx.support.MetricType.GAUGE;
-import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
+import static org.taverna.server.master.TavernaServer.JMX_ROOT;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -36,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.xml.bind.JAXBException;
@@ -43,8 +42,8 @@ import javax.xml.bind.JAXBException;
 import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
-import org.springframework.jmx.export.annotation.ManagedMetric;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
@@ -54,8 +53,6 @@ import org.taverna.server.master.factories.ConfigurableRunFactory;
 import org.taverna.server.master.interfaces.LocalIdentityMapper;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-
 /**
  * A simple factory for workflow runs that forks runs from a subprocess.
  * 
@@ -64,7 +61,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 @ManagedResource(objectName = JMX_ROOT + "RunFactory", description = "The factory for a user-specific forked run.")
 public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 		ConfigurableRunFactory {
-	private int totalRuns;
 	private MetaFactory forker;
 	private Map<String, RemoteRunFactory> factory;
 	private Map<String, String> factoryProcessName;
@@ -76,11 +72,12 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	 *             Shouldn't happen.
 	 */
 	public IdAwareForkRunFactory() throws JAXBException {
-		factory = new HashMap<String, RemoteRunFactory>();
-		factoryProcessName = new HashMap<String, String>();
+		factory = new HashMap<>();
+		factoryProcessName = new HashMap<>();
 	}
 
-	private void reinitFactory() {
+	@Override
+	protected void reinitFactory() {
 		boolean makeForker = forker != null;
 		try {
 			killForker();
@@ -95,159 +92,6 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 		}
 	}
 
-	/** @return Which java executable to run. */
-	@Override
-	@ManagedAttribute(description = "Which java executable to run.", currencyTimeLimit = 300)
-	public String getJavaBinary() {
-		return state.getJavaBinary();
-	}
-
-	/**
-	 * @param javaBinary
-	 *            Which java executable to run.
-	 */
-	@Override
-	@ManagedAttribute(description = "Which java executable to run.", currencyTimeLimit = 300)
-	public void setJavaBinary(String javaBinary) {
-		state.setJavaBinary(javaBinary);
-		reinitFactory();
-	}
-
-	/** @return The list of additional arguments used to make a worker process. */
-	@Override
-	@ManagedAttribute(description = "The list of additional arguments used to make a worker process.", currencyTimeLimit = 300)
-	public String[] getExtraArguments() {
-		return state.getExtraArgs();
-	}
-
-	/**
-	 * @param firstArguments
-	 *            The list of additional arguments used to make a worker
-	 *            process.
-	 */
-	@Override
-	@ManagedAttribute(description = "The list of additional arguments used to make a worker process.", currencyTimeLimit = 300)
-	public void setExtraArguments(String[] firstArguments) {
-		state.setExtraArgs(firstArguments);
-		reinitFactory();
-	}
-
-	/** @return The location of the JAR implementing the server worker processes. */
-	@Override
-	@ManagedAttribute(description = "The location of the JAR implementing the server worker processes.")
-	public String getServerWorkerJar() {
-		return state.getServerWorkerJar();
-	}
-
-	/**
-	 * @param serverWorkerJar
-	 *            The location of the JAR implementing the server worker
-	 *            processes.
-	 */
-	@Override
-	@ManagedAttribute(description = "The location of the JAR implementing the server worker processes.")
-	public void setServerWorkerJar(String serverWorkerJar) {
-		state.setServerWorkerJar(serverWorkerJar);
-		reinitFactory();
-	}
-
-	/** @return The script to run to start running a workflow. */
-	@Override
-	@ManagedAttribute(description = "The script to run to start running a workflow.", currencyTimeLimit = 300)
-	public String getExecuteWorkflowScript() {
-		return state.getExecuteWorkflowScript();
-	}
-
-	/**
-	 * @param executeWorkflowScript
-	 *            The script to run to start running a workflow.
-	 */
-	@Override
-	@ManagedAttribute(description = "The script to run to start running a workflow.", currencyTimeLimit = 300)
-	public void setExecuteWorkflowScript(String executeWorkflowScript) {
-		state.setExecuteWorkflowScript(executeWorkflowScript);
-		reinitFactory();
-	}
-
-	/** @return How many seconds to wait for a worker process to register itself. */
-	@Override
-	@ManagedAttribute(description = "How many seconds to wait for a worker process to register itself.", currencyTimeLimit = 300)
-	public int getWaitSeconds() {
-		return state.getWaitSeconds();
-	}
-
-	/**
-	 * @param seconds
-	 *            How many seconds to wait for a worker process to register
-	 *            itself.
-	 */
-	@Override
-	@ManagedAttribute(description = "How many seconds to wait for a worker process to register itself.", currencyTimeLimit = 300)
-	public void setWaitSeconds(int seconds) {
-		state.setWaitSeconds(seconds);
-	}
-
-	/**
-	 * @return How many milliseconds to wait between checks to see if a worker
-	 *         process has registered.
-	 */
-	@Override
-	@ManagedAttribute(description = "How many milliseconds to wait between checks to see if a worker process has registered.", currencyTimeLimit = 300)
-	public int getSleepTime() {
-		return state.getSleepMS();
-	}
-
-	/**
-	 * @param sleepTime
-	 *            How many milliseconds to wait between checks to see if a
-	 *            worker process has registered.
-	 */
-	@Override
-	@ManagedAttribute(description = "How many milliseconds to wait between checks to see if a worker process has registered.", currencyTimeLimit = 300)
-	public void setSleepTime(int sleepTime) {
-		state.setSleepMS(sleepTime);
-	}
-
-	/**
-	 * @return A file containing a password to use when running a program as
-	 *         another user (e.g., with sudo).
-	 */
-	@Override
-	@ManagedAttribute(description = "A file containing a password to use when running a program as another user (e.g., with sudo).", currencyTimeLimit = 300)
-	public String getPasswordFile() {
-		return state.getPasswordFile();
-	}
-
-	/**
-	 * @param passwordFile
-	 *            A file containing a password to use when running a program as
-	 *            another user (e.g., with sudo).
-	 */
-	@Override
-	@ManagedAttribute(description = "A file containing a password to use when running a program as another user (e.g., with sudo).", currencyTimeLimit = 300)
-	public void setPasswordFile(String passwordFile) {
-		state.setPasswordFile(passwordFile);
-	}
-
-	/**
-	 * @return The location of the JAR implementing the secure-fork process.
-	 */
-	@Override
-	@ManagedAttribute(description = "The location of the JAR implementing the secure-fork process.", currencyTimeLimit = 300)
-	public String getServerForkerJar() {
-		return state.getServerForkerJar();
-	}
-
-	/**
-	 * @param serverForkerJar
-	 *            The location of the JAR implementing the secure-fork process.
-	 */
-	@Override
-	@ManagedAttribute(description = "The location of the JAR implementing the secure-fork process.", currencyTimeLimit = 300)
-	public void setServerForkerJar(String serverForkerJar) {
-		state.setServerForkerJar(serverForkerJar);
-	}
-
 	/**
 	 * @return How many checks were done for the worker process the last time a
 	 *         spawn was tried.
@@ -256,13 +100,6 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	@ManagedAttribute(description = "How many checks were done for the worker process the last time a spawn was tried.", currencyTimeLimit = 60)
 	public int getLastStartupCheckCount() {
 		return forker == null ? 0 : forker.lastStartupCheckCount();
-	}
-
-	/** @return How many times has a workflow run been spawned by this engine. */
-	@Override
-	@ManagedMetric(description = "How many times has a workflow run been spawned by this engine.", currencyTimeLimit = 10, metricType = COUNTER, category = "throughput")
-	public int getTotalRuns() {
-		return totalRuns;
 	}
 
 	/**
@@ -281,9 +118,8 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	@Override
 	@ManagedAttribute(description = "The mapping of user names to RMI factory IDs.", currencyTimeLimit = 60)
 	public String[] getFactoryProcessMapping() {
-		ArrayList<String> result = new ArrayList<String>();
-		ArrayList<String> keys = new ArrayList<String>(
-				factoryProcessName.keySet());
+		ArrayList<String> result = new ArrayList<>();
+		ArrayList<String> keys = new ArrayList<>(factoryProcessName.keySet());
 		String[] ks = keys.toArray(new String[keys.size()]);
 		Arrays.sort(ks);
 		for (String k : ks) {
@@ -341,7 +177,10 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	 */
 	@PostConstruct
 	void initMetaFactory() throws IOException {
-		forker = new SecureFork(this);
+		log.info("waiting for availability of default RMI registry");
+		getTheRegistry();
+		log.info("constructing secure fork subprocess");
+		forker = new SecureFork(this, state, log);
 	}
 
 	private void killForker() throws IOException, InterruptedException {
@@ -391,16 +230,17 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 			try {
 				sleep(700);
 			} catch (InterruptedException e) {
-				log.debug(
-						"interrupted during wait after asking factories to shut down",
-						e);
+				if (log.isDebugEnabled())
+					log.debug("interrupted during wait after "
+							+ "asking factories to shut down", e);
 			}
 		}
 
 		try {
 			killForker();
 		} catch (Exception e) {
-			log.debug("exception in shutdown of secure-fork process", e);
+			if (log.isDebugEnabled())
+				log.debug("exception in shutdown of secure-fork process", e);
 		}
 	}
 
@@ -431,15 +271,15 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	 * @throws RemoteException
 	 *             If anything fails (communications error, etc.)
 	 */
-	private RemoteSingleRun getRealRun(@NonNull UsernamePrincipal creator,
-			@NonNull String username, @NonNull byte[] wf, UUID id)
+	private RemoteSingleRun getRealRun(@Nonnull UsernamePrincipal creator,
+			@Nonnull String username, @Nonnull byte[] wf, UUID id)
 			throws RemoteException {
 		String globaluser = "Unknown Person";
 		if (creator != null)
 			globaluser = creator.getName();
 		RemoteSingleRun rsr = factory.get(username).make(wf, globaluser,
 				makeURReciver(creator), id);
-		totalRuns++;
+		incrementRunCount();
 		return rsr;
 	}
 
@@ -457,9 +297,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 				initFactory(username);
 			try {
 				return getRealRun(creator, username, wf, id);
-			} catch (ConnectException e) {
-				// factory was lost; try to recreate
-			} catch (ConnectIOException e) {
+			} catch (ConnectException | ConnectIOException e) {
 				// factory was lost; try to recreate
 			}
 			factory.remove(username);
@@ -469,6 +307,7 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	}
 
 	@Value("${secureForkPasswordFile}")
+	@Order(20)
 	public void setPasswordSource(String passwordSource) {
 		if (passwordSource == null || passwordSource.isEmpty()
 				|| passwordSource.startsWith("${"))
@@ -487,9 +326,8 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 		return "<PROPERTY-NOT-SUPPORTED>";
 	}
 
-	@ManagedMetric(description = "How many workflow runs are currently actually executing.", currencyTimeLimit = 10, metricType = GAUGE, category = "throughput")
 	@Override
-	public int getOperatingCount() throws Exception {
+	protected int operatingCount() throws Exception {
 		int total = 0;
 		for (RemoteRunFactory rrf : factory.values())
 			total += rrf.countOperatingRuns();
@@ -546,6 +384,7 @@ class StdOut extends StreamLogger {
 		super("forker", process.getInputStream());
 	}
 
+	@Override
 	protected void write(String msg) {
 		log.info(msg);
 	}
@@ -556,6 +395,7 @@ class StdErr extends StreamLogger {
 		super("forker", process.getErrorStream());
 	}
 
+	@Override
 	protected void write(String msg) {
 		log.info(msg);
 	}
@@ -598,10 +438,11 @@ class SecureFork implements IdAwareForkRunFactory.MetaFactory {
 		args.addAll(asList(main.getExtraArguments()));
 	}
 
-	SecureFork(IdAwareForkRunFactory main) throws IOException {
+	SecureFork(IdAwareForkRunFactory main, LocalWorkerState state, Log log)
+			throws IOException {
 		this.main = main;
-		this.log = main.log;
-		this.state = main.state;
+		this.log = log;
+		this.state = state;
 		ProcessBuilder p = new ProcessBuilder();
 		initFactoryArgs(p.command());
 		p.redirectErrorStream(true);
@@ -667,9 +508,7 @@ class SecureFork implements IdAwareForkRunFactory.MetaFactory {
 	public RemoteRunFactory make(String username) throws Exception {
 		try {
 			main.getTheRegistry().list(); // Validate registry connection first
-		} catch (ConnectException e) {
-			log.warn("connection problems with registry", e);
-		} catch (ConnectIOException e) {
+		} catch (ConnectException | ConnectIOException e) {
 			log.warn("connection problems with registry", e);
 		} catch (RemoteException e) {
 			if (e.getCause() != null && e.getCause() instanceof Exception) {
@@ -716,6 +555,8 @@ class SecureFork implements IdAwareForkRunFactory.MetaFactory {
 				lastException = e;
 			}
 		}
+		if (lastException == null)
+			lastException = new InterruptedException();
 		throw lastException;
 	}
 

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010-2012 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master;
 
@@ -11,11 +11,14 @@ import static javax.ws.rs.core.Response.noContent;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.seeOther;
 import static javax.ws.rs.core.Response.status;
-import static org.taverna.server.master.ContentTypes.APPLICATION_ZIP_TYPE;
-import static org.taverna.server.master.ContentTypes.DIRECTORY_VARIANTS;
-import static org.taverna.server.master.ContentTypes.INITIAL_FILE_VARIANTS;
-import static org.taverna.server.master.TavernaServerImpl.log;
+import static org.taverna.server.master.TavernaServer.log;
+import static org.taverna.server.master.api.ContentTypes.APPLICATION_ZIP_TYPE;
+import static org.taverna.server.master.api.ContentTypes.DIRECTORY_VARIANTS;
+import static org.taverna.server.master.api.ContentTypes.INITIAL_FILE_VARIANTS;
+import static org.taverna.server.master.common.Roles.SELF;
+import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.common.Uri.secure;
+import static org.taverna.server.master.utils.RestUtils.opt;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +27,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.PathSegment;
@@ -34,7 +38,7 @@ import javax.ws.rs.core.Variant;
 import javax.xml.ws.Holder;
 
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.TavernaServerImpl.SupportAware;
+import org.taverna.server.master.api.DirectoryBean;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoUpdateException;
@@ -48,6 +52,7 @@ import org.taverna.server.master.rest.MakeOrUpdateDirEntry;
 import org.taverna.server.master.rest.MakeOrUpdateDirEntry.MakeDirectory;
 import org.taverna.server.master.rest.TavernaServerDirectoryREST;
 import org.taverna.server.master.utils.FilenameUtils;
+import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 /**
@@ -79,6 +84,8 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
+	@RolesAllowed({ USER, SELF })
 	public Response destroyDirectoryEntry(List<PathSegment> path)
 			throws NoUpdateException, FilesystemAccessException,
 			NoDirectoryEntryException {
@@ -89,10 +96,18 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
+	@RolesAllowed({ USER, SELF })
 	public DirectoryContents getDescription(UriInfo ui)
 			throws FilesystemAccessException {
 		return new DirectoryContents(ui, run.getWorkingDirectory()
 				.getContents());
+	}
+
+	@Override
+	@CallCounted
+	public Response options(List<PathSegment> path) {
+		return opt("PUT", "POST", "DELETE");
 	}
 
 	/*
@@ -133,8 +148,9 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 	 */
 
 	private boolean matchType(MediaType a, MediaType b) {
-		log.debug("comparing " + a.getType() + "/" + a.getSubtype() + " and "
-				+ b.getType() + "/" + b.getSubtype());
+		if (log.isDebugEnabled())
+			log.debug("comparing " + a.getType() + "/" + a.getSubtype()
+					+ " and " + b.getType() + "/" + b.getSubtype());
 		return (a.isWildcardType() || b.isWildcardType() || a.getType().equals(
 				b.getType()))
 				&& (a.isWildcardSubtype() || b.isWildcardSubtype() || a
@@ -158,12 +174,12 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 		else if (!(de instanceof File))
 			throw new FilesystemAccessException("not a directory or file!");
 		File f = (File) de;
-		List<Variant> variants = new ArrayList<Variant>(INITIAL_FILE_VARIANTS);
+		List<Variant> variants = new ArrayList<>(INITIAL_FILE_VARIANTS);
 		String contentType = support.getEstimatedContentType(f);
 		if (!contentType.equals(APPLICATION_OCTET_STREAM)) {
 			String[] ct = contentType.split("/");
 			variants.add(0,
-					new Variant(new MediaType(ct[0], ct[1]), null, null));
+					new Variant(new MediaType(ct[0], ct[1]), (String) null, null));
 		}
 		return variants;
 	}
@@ -183,6 +199,8 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
+	@RolesAllowed({ USER, SELF })
 	public Response getDirectoryOrFileContents(List<PathSegment> path,
 			UriInfo ui, HttpHeaders headers) throws FilesystemAccessException,
 			NoDirectoryEntryException, NegotiationFailedException {
@@ -198,10 +216,9 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 			// Only for files...
 			result = de;
 			List<String> range = headers.getRequestHeader("Range");
-			if (range != null && range.size() == 1) {
+			if (range != null && range.size() == 1)
 				return new FileSegment((File) de, range.get(0))
 						.toResponse(wanted);
-			}
 		} else {
 			// Only for directories...
 			Directory d = (Directory) de;
@@ -218,6 +235,8 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
+	@RolesAllowed({ USER, SELF })
 	public Response makeDirectoryOrUpdateFile(List<PathSegment> parent,
 			MakeOrUpdateDirEntry op, UriInfo ui) throws NoUpdateException,
 			FilesystemAccessException, NoDirectoryEntryException {
@@ -269,7 +288,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 			throw new FilesystemAccessException(
 					"Cannot create a file that is not in a directory.");
 
-		List<PathSegment> dirPath = new ArrayList<PathSegment>(filePath);
+		List<PathSegment> dirPath = new ArrayList<>(filePath);
 		String name = dirPath.remove(dirPath.size() - 1).getPath();
 		DirectoryEntry de = fileUtils.getDirEntry(run, dirPath);
 		if (!(de instanceof Directory)) {
@@ -300,10 +319,12 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 
 	@Override
 	@CallCounted
+	@PerfLogged
+	@RolesAllowed({ USER, SELF })
 	public Response setFileContents(List<PathSegment> filePath,
 			InputStream contents, UriInfo ui) throws NoDirectoryEntryException,
 			NoUpdateException, FilesystemAccessException {
-		Holder<Boolean> isNew = new Holder<Boolean>(true);
+		Holder<Boolean> isNew = new Holder<>(true);
 		support.copyStreamToFile(contents, getFileForWrite(filePath, isNew));
 
 		if (isNew.value)
@@ -313,6 +334,9 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 	}
 
 	@Override
+	@CallCounted
+	@PerfLogged
+	@RolesAllowed(USER)
 	public Response setFileContentsFromURL(List<PathSegment> filePath,
 			List<URI> referenceList, UriInfo ui)
 			throws NoDirectoryEntryException, NoUpdateException,
@@ -327,7 +351,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 			return status(422).entity("URI list must have value URL in it")
 					.build();
 		}
-		Holder<Boolean> isNew = new Holder<Boolean>(true);
+		Holder<Boolean> isNew = new Holder<>(true);
 		File f = getFileForWrite(filePath, isNew);
 
 		try {
@@ -403,15 +427,4 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 		else
 			return noContent().build();
 	}
-}
-
-/**
- * Description of properties supported by {@link DirectoryREST}.
- * 
- * @author Donal Fellows
- */
-interface DirectoryBean extends SupportAware {
-	void setFileUtils(FilenameUtils fileUtils);
-
-	DirectoryREST connect(TavernaRun run);
 }

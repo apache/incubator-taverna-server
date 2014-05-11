@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.usage;
 
@@ -81,6 +81,7 @@ public class UsageRecord {
 
 	@Persistent
 	@Column(name = "USAGE_RECORD", length = 32000)
+	// TODO Consider moving to BLOB (CLOB?) type
 	private String usageRecord;
 
 	public String getId() {

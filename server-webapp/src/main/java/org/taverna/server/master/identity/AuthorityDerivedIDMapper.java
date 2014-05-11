@@ -1,15 +1,17 @@
 /*
  * Copyright (C) 2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.identity;
 
-import org.taverna.server.master.interfaces.LocalIdentityMapper;
-import org.taverna.server.master.utils.UsernamePrincipal;
+import static org.taverna.server.master.defaults.Default.AUTHORITY_PREFIX;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.taverna.server.master.interfaces.LocalIdentityMapper;
+import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * Extracts the local user id from the set of Spring Security authorities
@@ -20,9 +22,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * @author Donal Fellows
  */
 public class AuthorityDerivedIDMapper implements LocalIdentityMapper {
-	/** The default value of the <tt>prefix</tt> property. */
-	public static final String DEFAULT_PREFIX = "LOCALUSER_";
-	private String prefix = DEFAULT_PREFIX;
+	private String prefix = AUTHORITY_PREFIX;
 
 	public String getPrefix() {
 		return prefix;

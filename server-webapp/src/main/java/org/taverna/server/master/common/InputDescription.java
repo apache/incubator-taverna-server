@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.common;
 
@@ -35,7 +35,7 @@ public class InputDescription extends VersionedElement {
 	 * The port/value assignment.
 	 */
 	@XmlElement(nillable = false)
-	public List<Port> port = new ArrayList<Port>();
+	public List<Port> port = new ArrayList<>();
 
 	/**
 	 * Make a blank input description.
@@ -74,6 +74,11 @@ public class InputDescription extends VersionedElement {
 		@XmlAttribute(name = "portFile", required = false)
 		public String file;
 		/**
+		 * The file assigned to this port.
+		 */
+		@XmlAttribute(name = "listDelimiter", required = false)
+		public String delimiter;
+		/**
 		 * The value assigned to this port.
 		 */
 		@XmlValue
@@ -99,6 +104,7 @@ public class InputDescription extends VersionedElement {
 				file = null;
 				value = input.getValue();
 			}
+			delimiter = input.getDelimiter();
 		}
 	}
 }

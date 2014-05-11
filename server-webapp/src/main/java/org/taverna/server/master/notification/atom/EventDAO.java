@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.notification.atom;
 
@@ -9,21 +9,21 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
+import javax.annotation.Nonnull;
 import javax.jdo.annotations.PersistenceAware;
-import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.ContentsDescriptorBuilder.UriBuilderFactory;
 import org.taverna.server.master.interfaces.MessageDispatcher;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.interfaces.UriBuilderFactory;
 import org.taverna.server.master.utils.JDOSupport;
 import org.taverna.server.master.utils.UsernamePrincipal;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * The database interface that supports the event feed.
@@ -31,10 +31,14 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * @author Donal Fellows
  */
 @PersistenceAware
-public class EventDAO extends JDOSupport<AbstractEvent> implements
-		MessageDispatcher {
+public class EventDAO extends JDOSupport<Event> implements MessageDispatcher {
 	public EventDAO() {
-		super(AbstractEvent.class);
+		super(Event.class);
+	}
+
+	@Override
+	public String getName() {
+		return "atom";
 	}
 
 	private Log log = LogFactory.getLog("Taverna.Server.Atom");
@@ -58,17 +62,18 @@ public class EventDAO extends JDOSupport<AbstractEvent> implements
 	 *            The identity of the user to get the events for.
 	 * @return A copy of the list of events currently known about.
 	 */
-	@NonNull
+	@Nonnull
 	@WithinSingleTransaction
-	public List<AbstractEvent> getEvents(@NonNull UsernamePrincipal user) {
+	public List<Event> getEvents(@Nonnull UsernamePrincipal user) {
 		@SuppressWarnings("unchecked")
 		List<String> ids = (List<String>) namedQuery("eventsForUser").execute(
 				user.getName());
-		log.debug("found " + ids.size() + " events for user " + user);
+		if (log.isDebugEnabled())
+			log.debug("found " + ids.size() + " events for user " + user);
 
-		List<AbstractEvent> result = new ArrayList<AbstractEvent>();
+		List<Event> result = new ArrayList<>();
 		for (String id : ids) {
-			AbstractEvent event = getById(id);
+			Event event = getById(id);
 			result.add(detach(event));
 		}
 		return result;
@@ -83,15 +88,15 @@ public class EventDAO extends JDOSupport<AbstractEvent> implements
 	 *            The handle of the event to look up.
 	 * @return A copy of the event.
 	 */
-	@NonNull
+	@Nonnull
 	@WithinSingleTransaction
-	public AbstractEvent getEvent(@NonNull UsernamePrincipal user,
-			@NonNull String id) {
+	public Event getEvent(@Nonnull UsernamePrincipal user, @Nonnull String id) {
 		@SuppressWarnings("unchecked")
 		List<String> ids = (List<String>) namedQuery("eventForUserAndId")
 				.execute(user.getName(), id);
-		log.debug("found " + ids.size() + " events for user " + user
-				+ " with id = " + id);
+		if (log.isDebugEnabled())
+			log.debug("found " + ids.size() + " events for user " + user
+					+ " with id = " + id);
 
 		if (ids.size() != 1)
 			throw new IllegalArgumentException("no such id");
@@ -105,7 +110,7 @@ public class EventDAO extends JDOSupport<AbstractEvent> implements
 	 *            The identifier of the event to delete.
 	 */
 	@WithinSingleTransaction
-	public void deleteEventById(@NonNull String id) {
+	public void deleteEventById(@Nonnull String id) {
 		delete(getById(id));
 	}
 
@@ -120,7 +125,7 @@ public class EventDAO extends JDOSupport<AbstractEvent> implements
 		@SuppressWarnings("unchecked")
 		List<String> ids = (List<String>) namedQuery("eventsFromBefore")
 				.execute(death);
-		if (!ids.isEmpty())
+		if (log.isDebugEnabled() && !ids.isEmpty())
 			log.debug("found " + ids.size()
 					+ " events to be squelched (older than " + death + ")");
 
@@ -133,13 +138,48 @@ public class EventDAO extends JDOSupport<AbstractEvent> implements
 		return true;
 	}
 
+	private BlockingQueue<Event> insertQueue = new ArrayBlockingQueue<>(16);
+
 	@Override
-	@WithinSingleTransaction
 	public void dispatch(TavernaRun originator, String messageSubject,
 			String messageContent, String targetParameter) throws Exception {
-		UsernamePrincipal owner = originator.getSecurityContext().getOwner();
-		UriBuilder ub = ubf.getRunUriBuilder(originator);
-		persist(new TerminationEvent(ub.build(), owner, messageSubject,
-				messageContent));
+		insertQueue.put(new Event("finish", ubf.getRunUriBuilder(originator)
+				.build(), originator.getSecurityContext().getOwner(),
+				messageSubject, messageContent));
+	}
+
+	public void started(TavernaRun originator, String messageSubject,
+			String messageContent) throws InterruptedException {
+		insertQueue.put(new Event("start", ubf.getRunUriBuilder(originator)
+				.build(), originator.getSecurityContext().getOwner(),
+				messageSubject, messageContent));
+	}
+
+	@Required
+	public void setSelf(final EventDAO dao) {
+		Thread t = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					while (true) {
+						ArrayList<Event> e = new ArrayList<>();
+						e.add(insertQueue.take());
+						insertQueue.drainTo(e);
+						dao.storeEvents(e);
+						Thread.sleep(5000);
+					}
+				} catch (InterruptedException e) {
+				}
+			}
+		});
+		t.setDaemon(true);
+		t.start();
+	}
+
+	@WithinSingleTransaction
+	protected void storeEvents(List<Event> events) {
+		for (Event e : events)
+			persist(e);
+		log.info("stored " + events.size() + " notification events");
 	}
 }

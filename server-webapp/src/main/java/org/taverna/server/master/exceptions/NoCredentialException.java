@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.exceptions;
 
@@ -10,6 +10,7 @@ package org.taverna.server.master.exceptions;
  * 
  * @author Donal Fellows
  */
+@SuppressWarnings("serial")
 public class NoCredentialException extends Exception {
 	public NoCredentialException() {
 		super("no such credential");

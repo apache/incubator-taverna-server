@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.common;
 
@@ -24,6 +24,10 @@ public interface Namespaces {
 	 * The Usage Record specification's namespace name.
 	 */
 	public static final String UR = "http://schema.ogf.org/urf/2003/09/urf";
+	/**
+	 * The T2flow document format's namespace name.
+	 */
+	public static final String T2FLOW = "http://taverna.sf.net/2008/xml/t2flow";
 	/**
 	 * The namespace for the server.
 	 */

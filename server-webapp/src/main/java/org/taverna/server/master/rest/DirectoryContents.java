@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.rest;
 
@@ -41,7 +41,7 @@ public class DirectoryContents {
 	 * Make an empty directory description. Required for JAXB.
 	 */
 	public DirectoryContents() {
-		contents = new ArrayList<DirEntryReference>();
+		contents = new ArrayList<>();
 	}
 
 	/**
@@ -53,10 +53,9 @@ public class DirectoryContents {
 	 *            The real directory contents that we are to describe.
 	 */
 	public DirectoryContents(UriInfo ui, Collection<DirectoryEntry> collection) {
-		contents = new ArrayList<DirEntryReference>();
-		UriBuilder ub = secure(ui).path("{path}");
-		for (DirectoryEntry e : collection) {
+		contents = new ArrayList<>();
+		UriBuilder ub = secure(ui).path("{filename}");
+		for (DirectoryEntry e : collection)
 			contents.add(DirEntryReference.newInstance(ub, e));
-		}
 	}
 }

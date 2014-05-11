@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.localworker.remote;
 
@@ -12,6 +12,7 @@ package org.taverna.server.localworker.remote;
  * 
  * @author Donal Fellows
  */
+@SuppressWarnings("serial")
 public class StillWorkingOnItException extends Exception {
 	public StillWorkingOnItException(String string) {
 		super(string);

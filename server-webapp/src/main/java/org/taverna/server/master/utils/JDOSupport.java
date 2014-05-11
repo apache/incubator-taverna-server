@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.utils;
 
@@ -12,6 +12,8 @@ import static org.apache.commons.logging.LogFactory.getLog;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.PreDestroy;
 import javax.jdo.JDOException;
 import javax.jdo.PersistenceManager;
@@ -19,6 +21,7 @@ import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
 
+import org.apache.commons.logging.Log;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -43,7 +46,7 @@ public abstract class JDOSupport<T> {
 	 * @param contextClass
 	 *            Must match the type parameter to the class itself.
 	 */
-	protected JDOSupport(Class<T> contextClass) {
+	protected JDOSupport(@Nonnull Class<T> contextClass) {
 		this.contextClass = contextClass;
 	}
 
@@ -79,7 +82,8 @@ public abstract class JDOSupport<T> {
 	 *            The filter part of the query.
 	 * @return The query, which should be executed to retrieve the results.
 	 */
-	protected Query query(String filter) {
+	@Nonnull
+	protected Query query(@Nonnull String filter) {
 		return pm.newQuery(contextClass, filter);
 	}
 
@@ -92,7 +96,8 @@ public abstract class JDOSupport<T> {
 	 * @return The query, which should be executed to retrieve the results.
 	 * @see javax.jdo.annotations.Query
 	 */
-	protected Query namedQuery(String name) {
+	@Nonnull
+	protected Query namedQuery(@Nonnull String name) {
 		return pm.newNamedQuery(contextClass, name);
 	}
 
@@ -104,7 +109,10 @@ public abstract class JDOSupport<T> {
 	 *            The instance to persist.
 	 * @return The persistence-coupled instance.
 	 */
-	protected T persist(T value) {
+	@Nullable
+	protected T persist(@Nullable T value) {
+		if (value == null)
+			return null;
 		return pm.makePersistent(value);
 	}
 
@@ -116,7 +124,10 @@ public abstract class JDOSupport<T> {
 	 *            The value to decouple.
 	 * @return The non-persistent copy.
 	 */
-	protected T detach(T value) {
+	@Nullable
+	protected T detach(@Nullable T value) {
+		if (value == null)
+			return null;
 		return pm.detachCopy(value);
 	}
 
@@ -127,6 +138,7 @@ public abstract class JDOSupport<T> {
 	 *            The identity of the object.
 	 * @return The instance, which is persistence-coupled.
 	 */
+	@Nullable
 	protected T getById(Object id) {
 		try {
 			return pm.getObjectById(contextClass, id);
@@ -141,8 +153,9 @@ public abstract class JDOSupport<T> {
 	 * @param value
 	 *            The value to delete.
 	 */
-	protected void delete(T value) {
-		pm.deletePersistent(value);
+	protected void delete(@Nullable T value) {
+		if (value != null)
+			pm.deletePersistent(value);
 	}
 
 	/**
@@ -153,30 +166,41 @@ public abstract class JDOSupport<T> {
 	@Aspect
 	public static class TransactionAspect {
 		private Object lock = new Object();
+		private Log log = getLog("Taverna.Server.Utils");
+		private volatile int txid;
 
 		@Around(value = "@annotation(org.taverna.server.master.utils.JDOSupport.WithinSingleTransaction) && target(support)", argNames = "support")
 		Object applyTransaction(ProceedingJoinPoint pjp, JDOSupport<?> support)
 				throws Throwable {
 			synchronized (lock) {
+				int id = ++txid;
 				Transaction tx = support.pm == null ? null : support.pm
 						.currentTransaction();
 				if (tx != null && tx.isActive())
 					tx = null;
-				if (tx != null)
+				if (tx != null) {
+					if (log.isDebugEnabled())
+						log.debug("starting transaction #" + id);
 					tx.begin();
+				}
 				try {
 					Object result = pjp.proceed();
-					if (tx != null)
+					if (tx != null) {
 						tx.commit();
+						if (log.isDebugEnabled())
+							log.debug("committed transaction #" + id);
+					}
 					tx = null;
 					return result;
 				} catch (Throwable t) {
 					try {
-						if (tx != null)
+						if (tx != null) {
 							tx.rollback();
+							if (log.isDebugEnabled())
+								log.debug("rolled back transaction #" + id);
+						}
 					} catch (JDOException e) {
-						getLog("Taverna.Server.Utils").warn("rollback failed unexpectedly",
-								e);
+						log.warn("rollback failed unexpectedly", e);
 					}
 					throw t;
 				}

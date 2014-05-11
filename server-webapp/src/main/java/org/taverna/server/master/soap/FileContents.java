@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.soap;
 
@@ -55,8 +55,7 @@ public class FileContents {
 	 */
 	public void writeToFile(File file) throws IOException,
 			FilesystemAccessException {
-		InputStream is = fileData.getInputStream();
-		try {
+		try (InputStream is = fileData.getInputStream()) {
 			byte[] buf = new byte[65536];
 			file.setContents(new byte[0]);
 			while (true) {
@@ -71,8 +70,6 @@ public class FileContents {
 					file.appendContents(shortbuf);
 				}
 			}
-		} finally {
-			is.close();
 		}
 	}
 }

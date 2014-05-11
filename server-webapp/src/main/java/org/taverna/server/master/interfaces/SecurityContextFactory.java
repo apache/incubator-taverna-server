@@ -1,13 +1,12 @@
 /*
  * Copyright (C) 2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.interfaces;
 
 import java.io.Serializable;
 
-import org.taverna.server.master.localworker.RemoteRunDelegate;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
 /**
@@ -28,6 +27,6 @@ public interface SecurityContextFactory extends Serializable {
 	 * @throws Exception
 	 *             If anything goes wrong.
 	 */
-	TavernaSecurityContext create(RemoteRunDelegate run, UsernamePrincipal owner)
+	TavernaSecurityContext create(TavernaRun run, UsernamePrincipal owner)
 			throws Exception;
 }

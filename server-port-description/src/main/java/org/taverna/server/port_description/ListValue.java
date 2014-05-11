@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.port_description;
 
@@ -28,5 +28,5 @@ public class ListValue extends AbstractValue {
 			@XmlElement(name = "list", type = ListValue.class, nillable = false),
 			@XmlElement(name = "error", type = ErrorValue.class, nillable = false),
 			@XmlElement(name = "absent", type = AbsentValue.class, nillable = false) })
-	public List<AbstractValue> contents = new ArrayList<AbstractValue>();
+	public List<AbstractValue> contents = new ArrayList<>();
 }

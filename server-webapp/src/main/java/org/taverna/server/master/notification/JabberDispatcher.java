@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 
 package org.taverna.server.master.notification;
@@ -25,6 +25,11 @@ import org.taverna.server.master.interfaces.TavernaRun;
  * @author Donal Fellows
  */
 public class JabberDispatcher implements MessageDispatcher {
+	@Override
+	public String getName() {
+		return "xmpp";
+	}
+
 	private Log log = LogFactory.getLog("Taverna.Server.Notification");
 	private XMPPConnection conn;
 	private String resource = "TavernaServer";
@@ -127,8 +132,9 @@ public class JabberDispatcher implements MessageDispatcher {
 
 		@Override
 		public void processMessage(Chat chat, Message message) {
-			log.debug("unexpectedly received XMPP message from <"
-					+ message.getFrom() + ">; ignoring");
+			if (log.isDebugEnabled())
+				log.debug("unexpectedly received XMPP message from <"
+						+ message.getFrom() + ">; ignoring");
 		}
 	}
 }

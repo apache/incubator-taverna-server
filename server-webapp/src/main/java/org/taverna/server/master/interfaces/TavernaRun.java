@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.interfaces;
 
@@ -14,6 +14,7 @@ import org.taverna.server.master.common.Status;
 import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDestroyException;
+import org.taverna.server.master.exceptions.UnknownRunException;
 
 /**
  * The interface to a taverna workflow run, or "run" for short.
@@ -30,6 +31,17 @@ public interface TavernaRun extends Serializable {
 	 * @return What was this run was create to execute.
 	 */
 	Workflow getWorkflow();
+
+	/**
+	 * @return The name of the run.
+	 */
+	String getName();
+
+	/**
+	 * @param name
+	 *            The new name of the run. May be truncated.
+	 */
+	void setName(String name);
 
 	/**
 	 * @return The name of the Baclava file to use for all inputs, or
@@ -180,4 +192,28 @@ public interface TavernaRun extends Serializable {
 	 *         never started).
 	 */
 	Date getFinishTimestamp();
+
+	/**
+	 * Test if this run is really there.
+	 * 
+	 * <p>
+	 * <i>Implementation note:</i> Used to test communication fabrics, etc. so
+	 * implementations of this interface that do not delegate to another object
+	 * should do nothing.
+	 * 
+	 * @throws UnknownRunException
+	 *             If things fail.
+	 */
+	void ping() throws UnknownRunException;
+
+	/**
+	 * @return whether the run generates provenance data
+	 */
+	boolean getGenerateProvenance();
+
+	/**
+	 * @param generateProvenance
+	 *            whether the run generates provenance data
+	 */
+	void setGenerateProvenance(boolean generateProvenance);
 }

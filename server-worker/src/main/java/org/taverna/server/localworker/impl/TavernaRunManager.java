@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.localworker.impl;
 
@@ -12,6 +12,12 @@ import static java.lang.System.out;
 import static java.lang.System.setProperty;
 import static java.lang.System.setSecurityManager;
 import static java.rmi.registry.LocateRegistry.getRegistry;
+import static org.taverna.server.localworker.api.Constants.DEATH_DELAY;
+import static org.taverna.server.localworker.api.Constants.LOCALHOST;
+import static org.taverna.server.localworker.api.Constants.RMI_HOST_PROP;
+import static org.taverna.server.localworker.api.Constants.SECURITY_POLICY_FILE;
+import static org.taverna.server.localworker.api.Constants.SEC_POLICY_PROP;
+import static org.taverna.server.localworker.api.Constants.UNSECURE_PROP;
 
 import java.io.ByteArrayInputStream;
 import java.net.URI;
@@ -25,14 +31,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.taverna.server.localworker.remote.ImplementationException;
+import org.taverna.server.localworker.api.RunAccounting;
+import org.taverna.server.localworker.api.Worker;
+import org.taverna.server.localworker.api.WorkerFactory;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.localworker.server.UsageRecordReceiver;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import uk.org.taverna.scufl2.api.io.WorkflowBundleIO;
-
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
  * The registered factory for runs, this class is responsible for constructing
@@ -42,12 +50,12 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @author Donal Fellows
  * @see LocalWorker
  */
-@SuppressWarnings({ "SE_BAD_FIELD", "SE_NO_SERIALVERSIONID" })
+@SuppressWarnings("serial")
 public class TavernaRunManager extends UnicastRemoteObject implements
 		RemoteRunFactory, RunAccounting, WorkerFactory {
 	String command;
-	Map<String, String> seedEnvironment = new HashMap<String, String>();
-	List<String> javaInitParams = new ArrayList<String>();
+	Map<String, String> seedEnvironment = new HashMap<>();
+	List<String> javaInitParams = new ArrayList<>();
 	private WorkflowBundleIO io;
 	private int activeRuns = 0;
 	// Hacks!
@@ -55,6 +63,19 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	public static String interactionPort;
 	public static String interactionWebdavPath;
 	public static String interactionFeedPath;
+
+	/**
+	 * How to get the actual workflow document from the XML document that it is
+	 * contained in.
+	 * 
+	 * @param containerDocument
+	 *            The document sent from the web interface.
+	 * @return The element describing the workflow, as expected by the Taverna
+	 *         command line executor.
+	 */
+	protected Element unwrapWorkflow(Document containerDocument) {
+		return (Element) containerDocument.getDocumentElement().getFirstChild();
+	}
 
 	private static final String usage = "java -jar server.worker.jar workflowExecScript ?-Ekey=val...? ?-Jconfig? UUID";
 
@@ -114,10 +135,9 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 
 	static class DelayedDeath implements Runnable {
 		@Override
-		@SuppressWarnings("DM_EXIT")
 		public void run() {
 			try {
-				Thread.sleep(500);
+				Thread.sleep(DEATH_DELAY);
 			} catch (InterruptedException e) {
 			} finally {
 				exit(0);
@@ -125,15 +145,28 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 		}
 	}
 
-	/**
-	 * The name of the file (in this code's resources) that provides the default
-	 * security policy that we use.
-	 */
-	public static final String SECURITY_POLICY_FILE = "security.policy";
-
-	private static final String SEC_POLICY_PROP = "java.security.policy";
-	private static final String UNSECURE_PROP = "taverna.suppressrestrictions.rmi";
-	private static final String RMI_HOST_PROP = "java.rmi.server.hostname";
+	private void addArgument(String arg) {
+		if (arg.startsWith("-E")) {
+			String trimmed = arg.substring(2);
+			int idx = trimmed.indexOf('=');
+			if (idx > 0) {
+				addEnvironmentDefinition(trimmed.substring(0, idx),
+						trimmed.substring(idx + 1));
+				return;
+			}
+		} else if (arg.startsWith("-D")) {
+			if (arg.indexOf('=') > 0) {
+				addJavaParameter(arg);
+				return;
+			}
+		} else if (arg.startsWith("-J")) {
+			addJavaParameter(arg.substring(2));
+			return;
+		}
+		throw new IllegalArgumentException("argument \"" + arg
+				+ "\" must start with -D, -E or -J; "
+				+ "-D and -E must contain a \"=\"");
+	}
 
 	/**
 	 * @param args
@@ -149,35 +182,15 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 		if (!getProperty(UNSECURE_PROP, "no").equals("yes")) {
 			setProperty(SEC_POLICY_PROP, LocalWorker.class.getClassLoader()
 					.getResource(SECURITY_POLICY_FILE).toExternalForm());
-			setProperty(RMI_HOST_PROP, "127.0.0.1");
+			setProperty(RMI_HOST_PROP, LOCALHOST);
 		}
 		setSecurityManager(new RMISecurityManager());
-		String command = args[0];
 		factoryName = args[args.length - 1];
-		registry = getRegistry();
-		TavernaRunManager man = new TavernaRunManager(command);
-		for (int i = 1; i < args.length - 1; i++) {
-			if (args[i].startsWith("-E")) {
-				String arg = args[i].substring(2);
-				int idx = arg.indexOf('=');
-				if (idx > 0) {
-					man.addEnvironmentDefinition(arg.substring(0, idx),
-							arg.substring(idx + 1));
-					continue;
-				}
-			} else if (args[i].startsWith("-D")) {
-				if (args[i].indexOf('=') > 0) {
-					man.addJavaParameter(args[i]);
-					continue;
-				}
-			} else if (args[i].startsWith("-J")) {
-				man.addJavaParameter(args[i].substring(2));
-				continue;
-			}
-			throw new IllegalArgumentException("argument \"" + args[i]
-					+ "\" must start with -D, -E or -J; "
-					+ "-D and -E must contain a \"=\"");
-		}
+		TavernaRunManager man = new TavernaRunManager(args[0]);
+		for (int i = 1; i < args.length - 1; i++)
+			man.addArgument(args[i]);
+		registry = getRegistry(LOCALHOST);
+
 		registry.bind(factoryName, man);
 		getRuntime().addShutdownHook(new Thread() {
 			@Override

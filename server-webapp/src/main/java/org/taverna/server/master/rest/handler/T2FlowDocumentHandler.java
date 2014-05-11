@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.rest.handler;
 
@@ -18,10 +18,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -46,16 +44,14 @@ public class T2FlowDocumentHandler implements MessageBodyReader<Workflow>,
 	public static final String T2FLOW = "application/vnd.taverna.t2flow+xml";
 	public static final String T2FLOW_ROOTNAME = "workflow";
 	public static final String T2FLOW_NS = "http://taverna.sf.net/2008/xml/t2flow";
-	private DocumentBuilder db;
-	private Transformer transformer;
+	private DocumentBuilderFactory db;
+	private TransformerFactory transformer;
 
 	public T2FlowDocumentHandler() throws ParserConfigurationException,
 			TransformerConfigurationException {
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		dbf.setNamespaceAware(true);
-		db = dbf.newDocumentBuilder();
-		TransformerFactory transFactory = TransformerFactory.newInstance();
-		transformer = transFactory.newTransformer();
+		db = DocumentBuilderFactory.newInstance();
+		db.setNamespaceAware(true);
+		transformer = TransformerFactory.newInstance();
 	}
 
 	@Override
@@ -73,9 +69,11 @@ public class T2FlowDocumentHandler implements MessageBodyReader<Workflow>,
 			throws IOException, WebApplicationException {
 		Document doc;
 		try {
-			doc = db.parse(entityStream);
+			doc = db.newDocumentBuilder().parse(entityStream);
 		} catch (SAXException e) {
 			throw new WebApplicationException(e, 403);
+		} catch (ParserConfigurationException e) {
+			throw new WebApplicationException(e);
 		}
 		Workflow workflow = new Workflow(doc.getDocumentElement());
 		if (doc.getDocumentElement().getNamespaceURI().equals(T2FLOW_NS)
@@ -108,9 +106,12 @@ public class T2FlowDocumentHandler implements MessageBodyReader<Workflow>,
 			OutputStream entityStream) throws IOException,
 			WebApplicationException {
 		try {
-			transformer.transform(new DOMSource(workflow.getT2flowWorkflow()),
+			transformer.newTransformer().transform(
+					new DOMSource(workflow.getT2flowWorkflow()),
 					new StreamResult(entityStream));
 		} catch (TransformerException e) {
+			if (e.getCause() != null && e.getCause() instanceof IOException)
+				throw (IOException) e.getCause();
 			throw new WebApplicationException(e);
 		}
 	}

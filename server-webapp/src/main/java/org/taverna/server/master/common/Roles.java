@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.common;
 
@@ -18,4 +18,8 @@ public interface Roles {
 	 * normal user role as well.
 	 */
 	static final String ADMIN = "ROLE_tavernasuperuser";
+	/**
+	 * The role of a workflow accessing itself. Do not give users this role.
+	 */
+	static final String SELF = "ROLE_tavernaworkflow";
 }

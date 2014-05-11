@@ -1,8 +1,6 @@
 package org.taverna.server.master.mocks;
 
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.taverna.server.master.common.Workflow;
@@ -12,9 +10,6 @@ import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
-@SuppressWarnings
 public class MockPolicy extends SimpleServerPolicy {
 	public MockPolicy() {
 		super();
@@ -23,7 +18,7 @@ public class MockPolicy extends SimpleServerPolicy {
 
 	public int maxruns = 10;
 	Integer usermaxruns;
-	Set<TavernaRun> denyaccess = new HashSet<TavernaRun>();
+	Set<TavernaRun> denyaccess = new HashSet<>();
 	boolean exnOnUpdate, exnOnCreate, exnOnDelete;
 
 	@Override
@@ -34,11 +29,6 @@ public class MockPolicy extends SimpleServerPolicy {
 	@Override
 	public Integer getMaxRuns(UsernamePrincipal user) {
 		return usermaxruns;
-	}
-
-	@Override
-	public List<Workflow> listPermittedWorkflows(UsernamePrincipal user) {
-		return Arrays.asList();
 	}
 
 	@Override

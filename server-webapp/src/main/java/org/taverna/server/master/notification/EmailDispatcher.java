@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.notification;
 
@@ -20,6 +20,11 @@ import org.springframework.mail.javamail.JavaMailSender;
  * @author Donal Fellows
  */
 public class EmailDispatcher extends RateLimitedDispatcher {
+	@Override
+	public String getName() {
+		return "mailto";
+	}
+
 	/**
 	 * @param from
 	 *            Email address that the notification is to come from.

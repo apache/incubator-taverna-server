@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010-2012 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.rest.handler;
 
@@ -57,16 +57,18 @@ public class InputStreamMessageHandler implements
  * @author Donal Fellows
  */
 class TransferStream extends InputStream {
-	private static final Log log = getLog("Taverna.Server.Handlers");
+	private Log log = getLog("Taverna.Server.Handlers");
 
 	public TransferStream(InputStream entityStream, List<String> contentLength) {
 		this.entityStream = new BufferedInputStream(entityStream);
 		if (contentLength != null && contentLength.size() > 0) {
 			this.limit = parseLong(contentLength.get(0));
-			log.debug("will attempt to transfer " + this.limit + " bytes");
+			if (log.isDebugEnabled())
+				log.debug("will attempt to transfer " + this.limit + " bytes");
 		} else {
 			this.limit = -1;
-			log.debug("will attempt to transfer until EOF");
+			if (log.isDebugEnabled())
+				log.debug("will attempt to transfer until EOF");
 		}
 	}
 

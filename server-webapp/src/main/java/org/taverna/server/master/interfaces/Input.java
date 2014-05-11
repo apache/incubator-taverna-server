@@ -1,9 +1,12 @@
 /*
  * Copyright (C) 2010 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.interfaces;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.exceptions.BadStateChangeException;
@@ -21,18 +24,28 @@ public interface Input {
 	 * @return The file currently assigned to this input port, or <tt>null</tt>
 	 *         if no file is assigned.
 	 */
+	@Nullable
 	public String getFile();
 
 	/**
 	 * @return The name of this input port. This may not be changed.
 	 */
+	@Nonnull
 	public String getName();
 
 	/**
 	 * @return The value currently assigned to this input port, or <tt>null</tt>
 	 *         if no value is assigned.
 	 */
+	@Nullable
 	public String getValue();
+
+	/**
+	 * @return The delimiter for the input port, or <tt>null</tt> if the value
+	 *         is not to be split.
+	 */
+	@Nullable
+	public String getDelimiter();
 
 	/**
 	 * Sets the file to use for this input. This overrides the use of the
@@ -62,4 +75,18 @@ public interface Input {
 	 *             Initialized} state.
 	 */
 	public void setValue(String value) throws BadStateChangeException;
+
+	/**
+	 * Sets (or clears) the delimiter for the input port.
+	 * 
+	 * @param delimiter
+	 *            The delimiter character, or <tt>null</tt> if the value is not
+	 *            to be split.
+	 * @throws BadStateChangeException
+	 *             If the run isn't in the {@link Status#Initialized
+	 *             Initialized} state.
+	 */
+	@Nullable
+	public void setDelimiter(String delimiter) throws BadStateChangeException;
+
 }

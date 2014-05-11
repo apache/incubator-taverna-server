@@ -1,25 +1,42 @@
 /*
- * Copyright (C) 2010-2011 The University of Manchester
+ * Copyright (C) 2010-2013 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.localworker;
 
 import static java.io.File.separator;
 import static java.lang.System.getProperty;
 import static java.rmi.registry.Registry.REGISTRY_PORT;
-import static org.taverna.server.master.localworker.LocalWorkerManagementState.KEY;
-import static org.taverna.server.master.localworker.LocalWorkerManagementState.makeInstance;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
+import static org.taverna.server.master.defaults.Default.EXTRA_ARGUMENTS;
+import static org.taverna.server.master.defaults.Default.PASSWORD_FILE;
+import static org.taverna.server.master.defaults.Default.REGISTRY_JAR;
+import static org.taverna.server.master.defaults.Default.RMI_PREFIX;
+import static org.taverna.server.master.defaults.Default.RUN_LIFE_MINUTES;
+import static org.taverna.server.master.defaults.Default.RUN_OPERATING_LIMIT;
+import static org.taverna.server.master.defaults.Default.SECURE_FORK_IMPLEMENTATION_JAR;
+import static org.taverna.server.master.defaults.Default.SERVER_WORKER_IMPLEMENTATION_JAR;
+import static org.taverna.server.master.defaults.Default.SUBPROCESS_START_POLL_SLEEP;
+import static org.taverna.server.master.defaults.Default.SUBPROCESS_START_WAIT;
+import static org.taverna.server.master.localworker.PersistedState.KEY;
+import static org.taverna.server.master.localworker.PersistedState.makeInstance;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.net.URI;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.jdo.annotations.PersistenceAware;
 
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.common.Status;
+import org.taverna.server.master.defaults.Default;
 import org.taverna.server.master.utils.JDOSupport;
+import org.taverna.server.master.worker.WorkerModel;
 
 /**
  * The persistent state of a local worker factory.
@@ -27,9 +44,10 @@ import org.taverna.server.master.utils.JDOSupport;
  * @author Donal Fellows
  */
 @PersistenceAware
-public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
+public class LocalWorkerState extends JDOSupport<PersistedState> implements
+		WorkerModel {
 	public LocalWorkerState() {
-		super(LocalWorkerManagementState.class);
+		super(PersistedState.class);
 	}
 
 	private LocalWorkerState self;
@@ -39,33 +57,18 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 		this.self = self;
 	}
 
-	/**
-	 * The name of the resource that is the implementation of the subprocess
-	 * that this class will fork off.
-	 */
-	public static final String SERVER_WORKER_IMPLEMENTATION_JAR = "util/server.worker.jar";
-
-	/**
-	 * The name of the resource that is the implementation of the subprocess
-	 * that manages secure forking.
-	 */
-	public static final String SECURE_FORK_IMPLEMENTATION_JAR = "util/secure.fork.jar";
-
 	/** Initial lifetime of runs, in minutes. */
 	int defaultLifetime;
-	private static final int DEFAULT_DEFAULT_LIFE = 20;
 	/**
 	 * Maximum number of runs to exist at once. Note that this includes when
 	 * they are just existing for the purposes of file transfer (
 	 * {@link Status#Initialized}/{@link Status#Finished} states).
 	 */
 	int maxRuns;
-	private static final int DEFAULT_MAX = 5;
 	/**
 	 * Prefix to use for RMI names.
 	 */
 	String factoryProcessNamePrefix;
-	private static final String DEFAULT_PREFIX = "ForkRunFactory.";
 	/**
 	 * Full path name of the script used to start running a workflow; normally
 	 * expected to be "<i>somewhere/</i><tt>executeWorkflow.sh</tt>".
@@ -83,22 +86,19 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 */
 	String passwordFile;
 	/** Default value for {@link #passwordFile}. */
-	private transient String defaultPasswordFile;
+	private transient String defaultPasswordFile = PASSWORD_FILE;
 	/**
 	 * The extra arguments to pass to the subprocess.
 	 */
 	String[] extraArgs;
-	private static final String[] DEFAULT_EXTRA_ARGS = new String[0];
 	/**
 	 * How long to wait for subprocess startup, in seconds.
 	 */
 	int waitSeconds;
-	private static final int DEFAULT_WAIT = 40;
 	/**
 	 * Polling interval to use during startup, in milliseconds.
 	 */
 	int sleepMS;
-	private static final int DEFAULT_SLEEP = 1000;
 	/**
 	 * Full path name to the worker process's implementation JAR.
 	 */
@@ -124,90 +124,69 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	int registryPort;
 
 	int operatingLimit;
-	private static final int DEFAULT_OPERATING_LIMIT = 10;
 
-	/**
-	 * @param defaultLifetime
-	 *            how long a workflow run should live by default, in minutes.
-	 */
+	URI[] permittedWorkflows;
+	private String registryJar;
+	private static final String DEFAULT_REGISTRY_JAR = LocalWorkerState.class
+			.getClassLoader().getResource(REGISTRY_JAR).getFile();
+
+	@Override
 	public void setDefaultLifetime(int defaultLifetime) {
 		this.defaultLifetime = defaultLifetime;
 		if (loadedState)
 			self.store();
 	}
 
-	/**
-	 * @return how long a workflow run should live by default, in minutes.
-	 */
+	@Override
 	public int getDefaultLifetime() {
-		return defaultLifetime < 1 ? DEFAULT_DEFAULT_LIFE : defaultLifetime;
+		return defaultLifetime < 1 ? RUN_LIFE_MINUTES : defaultLifetime;
 	}
 
-	/**
-	 * @param maxRuns
-	 *            the maxRuns to set
-	 */
+	@Override
 	public void setMaxRuns(int maxRuns) {
 		this.maxRuns = maxRuns;
 		if (loadedState)
 			self.store();
 	}
 
-	/**
-	 * @return the maxRuns
-	 */
+	@Override
 	public int getMaxRuns() {
-		return maxRuns < 1 ? DEFAULT_MAX : maxRuns;
+		return maxRuns < 1 ? Default.RUN_COUNT_MAX : maxRuns;
 	}
 
-	/**
-	 * @return the operatingLimit
-	 */
+	@Override
 	public int getOperatingLimit() {
-		return operatingLimit < 1 ? DEFAULT_OPERATING_LIMIT : operatingLimit;
+		return operatingLimit < 1 ? RUN_OPERATING_LIMIT : operatingLimit;
 	}
 
-	/**
-	 * @param operatingLimit
-	 *            the operatingLimit to set
-	 */
+	@Override
 	public void setOperatingLimit(int operatingLimit) {
 		this.operatingLimit = operatingLimit;
 		if (loadedState)
 			self.store();
 	}
 
-	/**
-	 * @param factoryProcessNamePrefix
-	 *            the factoryProcessNamePrefix to set
-	 */
+	@Override
 	public void setFactoryProcessNamePrefix(String factoryProcessNamePrefix) {
 		this.factoryProcessNamePrefix = factoryProcessNamePrefix;
 		if (loadedState)
 			self.store();
 	}
 
-	/**
-	 * @return the factoryProcessNamePrefix
-	 */
+	@Override
 	public String getFactoryProcessNamePrefix() {
-		return factoryProcessNamePrefix == null ? DEFAULT_PREFIX
+		return factoryProcessNamePrefix == null ? RMI_PREFIX
 				: factoryProcessNamePrefix;
 	}
 
-	/**
-	 * @param executeWorkflowScript
-	 *            the executeWorkflowScript to set
-	 */
+	@Override
 	public void setExecuteWorkflowScript(String executeWorkflowScript) {
 		this.executeWorkflowScript = executeWorkflowScript;
 		if (loadedState)
 			self.store();
 	}
 
-	/**
-	 * @return the executeWorkflowScript
-	 */
+	@Override
 	public String getExecuteWorkflowScript() {
 		return executeWorkflowScript == null ? defaultExecuteWorkflowScript
 				: executeWorkflowScript;
@@ -233,7 +212,7 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	 *            Full path to the script to use.
 	 */
 	public void setDefaultExecuteWorkflowScript(String defaultScript) {
-		if (defaultScript.startsWith("${")) {
+		if (defaultScript.startsWith("${") || defaultScript.equals("NONE")) {
 			this.defaultExecuteWorkflowScript = guessWorkflowScript();
 			return;
 		}
@@ -244,121 +223,86 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 		return defaultExecuteWorkflowScript;
 	}
 
-	/**
-	 * @param extraArgs
-	 *            the extraArgs to set
-	 */
+	@Override
 	public void setExtraArgs(String[] extraArgs) {
 		this.extraArgs = extraArgs.clone();
 		if (loadedState)
 			self.store();
 	}
 
-	/**
-	 * @return the extraArgs
-	 */
+	@Override
 	public String[] getExtraArgs() {
-		return extraArgs == null ? DEFAULT_EXTRA_ARGS : extraArgs.clone();
+		return extraArgs == null ? EXTRA_ARGUMENTS : extraArgs.clone();
 	}
 
-	/**
-	 * @param waitSeconds
-	 *            the waitSeconds to set
-	 */
+	@Override
 	public void setWaitSeconds(int waitSeconds) {
 		this.waitSeconds = waitSeconds;
 		if (loadedState)
 			self.store();
 	}
 
-	/**
-	 * @return the waitSeconds
-	 */
+	@Override
 	public int getWaitSeconds() {
-		return waitSeconds < 1 ? DEFAULT_WAIT : waitSeconds;
+		return waitSeconds < 1 ? SUBPROCESS_START_WAIT : waitSeconds;
 	}
 
-	/**
-	 * @param sleepMS
-	 *            the sleepMS to set
-	 */
+	@Override
 	public void setSleepMS(int sleepMS) {
 		this.sleepMS = sleepMS;
 		if (loadedState)
 			self.store();
 	}
 
-	/**
-	 * @return the sleepMS
-	 */
+	@Override
 	public int getSleepMS() {
-		return sleepMS < 1 ? DEFAULT_SLEEP : sleepMS;
+		return sleepMS < 1 ? SUBPROCESS_START_POLL_SLEEP : sleepMS;
 	}
 
-	/**
-	 * @param serverWorkerJar
-	 *            the serverWorkerJar to set
-	 */
+	@Override
 	public void setServerWorkerJar(String serverWorkerJar) {
 		this.serverWorkerJar = serverWorkerJar;
 		if (loadedState)
 			self.store();
 	}
 
-	/**
-	 * @return the serverWorkerJar
-	 */
+	@Override
 	public String getServerWorkerJar() {
 		return serverWorkerJar == null ? DEFAULT_WORKER_JAR : serverWorkerJar;
 	}
 
-	/**
-	 * @param serverForkerJar
-	 *            the serverForkerJar to set
-	 */
+	@Override
 	public void setServerForkerJar(String serverForkerJar) {
 		this.serverForkerJar = serverForkerJar;
 		if (loadedState)
 			self.store();
 	}
 
-	/**
-	 * @return the serverForkerJar
-	 */
+	@Override
 	public String getServerForkerJar() {
 		return serverForkerJar == null ? DEFAULT_FORKER_JAR : serverForkerJar;
 	}
 
-	/**
-	 * @param javaBinary
-	 *            the javaBinary to set
-	 */
+	@Override
 	public void setJavaBinary(String javaBinary) {
 		this.javaBinary = javaBinary;
 		if (loadedState)
 			self.store();
 	}
 
-	/**
-	 * @return the javaBinary
-	 */
+	@Override
 	public String getJavaBinary() {
 		return javaBinary == null ? DEFAULT_JAVA_BINARY : javaBinary;
 	}
 
-	/**
-	 * @param passwordFile
-	 *            the passwordFile to set
-	 */
+	@Override
 	public void setPasswordFile(String passwordFile) {
 		this.passwordFile = passwordFile;
 		if (loadedState)
 			self.store();
 	}
 
-	/**
-	 * @return the passwordFile
-	 */
+	@Override
 	public String getPasswordFile() {
 		return passwordFile == null ? defaultPasswordFile : passwordFile;
 	}
@@ -367,28 +311,20 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 		this.defaultPasswordFile = defaultPasswordFile;
 	}
 
-	/**
-	 * @param registryHost
-	 *            the registryHost to set
-	 */
+	@Override
 	public void setRegistryHost(String registryHost) {
 		this.registryHost = (registryHost == null ? "" : registryHost);
 		if (loadedState)
 			self.store();
 	}
 
-	/**
-	 * @return the registryHost
-	 */
+	@Override
 	public String getRegistryHost() {
 		return (registryHost == null || registryHost.isEmpty()) ? null
 				: registryHost;
 	}
 
-	/**
-	 * @param registryPort
-	 *            the registryPort to set
-	 */
+	@Override
 	public void setRegistryPort(int registryPort) {
 		this.registryPort = ((registryPort < 1 || registryPort > 65534) ? REGISTRY_PORT
 				: registryPort);
@@ -396,11 +332,56 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 			self.store();
 	}
 
-	/**
-	 * @return the registryPort
-	 */
+	@Override
 	public int getRegistryPort() {
 		return registryPort == 0 ? REGISTRY_PORT : registryPort;
+	}
+
+	@Override
+	public String getRegistryJar() {
+		return registryJar == null ? DEFAULT_REGISTRY_JAR : registryJar;
+	}
+
+	@Override
+	public void setRegistryJar(String rmiRegistryJar) {
+		this.registryJar = (rmiRegistryJar == null || rmiRegistryJar.isEmpty()) ? null
+				: rmiRegistryJar;
+		if (loadedState)
+			self.store();
+	}
+
+	@Override
+	public List<URI> getPermittedWorkflowURIs() {
+		if (permittedWorkflows == null || permittedWorkflows.length == 0)
+			return emptyList();
+		return unmodifiableList(asList(permittedWorkflows));
+	}
+
+	@Override
+	public void setPermittedWorkflowURIs(List<URI> permittedWorkflows) {
+		if (permittedWorkflows == null || permittedWorkflows.isEmpty())
+			this.permittedWorkflows = new URI[0];
+		else
+			this.permittedWorkflows = permittedWorkflows
+					.toArray(new URI[permittedWorkflows.size()]);
+		if (loadedState)
+			self.store();
+	}
+
+	public static final boolean DEFAULT_GENERATE_PROVENANCE = false;
+	private Boolean generateProvenance;
+
+	@Override
+	public boolean getGenerateProvenance() {
+		Boolean g = generateProvenance;
+		return g == null ? DEFAULT_GENERATE_PROVENANCE : (boolean) g;
+	}
+
+	@Override
+	public void setGenerateProvenance(boolean generate) {
+		this.generateProvenance = generate;
+		if (loadedState)
+			self.store();
 	}
 
 	// --------------------------------------------------------------
@@ -412,7 +393,7 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	public void load() {
 		if (loadedState || !isPersistent())
 			return;
-		LocalWorkerManagementState state = getById(KEY);
+		WorkerModel state = getById(KEY);
 		if (state == null) {
 			store();
 			return;
@@ -432,6 +413,10 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 		registryHost = state.getRegistryHost();
 		registryPort = state.getRegistryPort();
 		operatingLimit = state.getOperatingLimit();
+		List<URI> pwu = state.getPermittedWorkflowURIs();
+		permittedWorkflows = (URI[]) pwu.toArray(new URI[pwu.size()]);
+		registryJar = state.getRegistryJar();
+		generateProvenance = state.getGenerateProvenance();
 
 		loadedState = true;
 	}
@@ -440,10 +425,9 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 	public void store() {
 		if (!isPersistent())
 			return;
-		LocalWorkerManagementState state = getById(KEY);
-		if (state == null) {
+		WorkerModel state = getById(KEY);
+		if (state == null)
 			state = persist(makeInstance());
-		}
 
 		state.setDefaultLifetime(defaultLifetime);
 		state.setExecuteWorkflowScript(executeWorkflowScript);
@@ -459,6 +443,11 @@ public class LocalWorkerState extends JDOSupport<LocalWorkerManagementState> {
 		state.setRegistryHost(registryHost);
 		state.setRegistryPort(registryPort);
 		state.setOperatingLimit(operatingLimit);
+		if (permittedWorkflows != null)
+			state.setPermittedWorkflowURIs(asList(permittedWorkflows));
+		state.setRegistryJar(registryJar);
+		if (generateProvenance != null)
+			state.setGenerateProvenance(generateProvenance);
 
 		loadedState = true;
 	}

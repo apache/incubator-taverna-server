@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2011-2012 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.common;
 
@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import javax.annotation.Nonnull;
 
 /**
  * A description of a private credential. This description is characterised by a
@@ -30,6 +30,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  */
 @XmlType(name = "CredentialDescriptor")
 @XmlSeeAlso({ Credential.KeyPair.class, Credential.Password.class })
+@SuppressWarnings("serial")
 public abstract class Credential implements Serializable {
 	/** The location of this descriptor in the REST world. */
 	@XmlAttribute(namespace = XLINK)
@@ -64,7 +65,7 @@ public abstract class Credential implements Serializable {
 		return equals((Credential) o);
 	}
 
-	protected boolean equals(@NonNull Credential c) {
+	protected boolean equals(@Nonnull Credential c) {
 		return id.equals(c.id);
 	}
 

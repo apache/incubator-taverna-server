@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.taverna.server.master.api.ManagementModel;
 import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.exceptions.BadPropertyValueException;
 import org.taverna.server.master.exceptions.NoListenerException;
@@ -19,11 +20,8 @@ import org.taverna.server.master.mocks.MockPolicy;
 import org.taverna.server.master.mocks.SimpleListenerFactory;
 import org.taverna.server.master.mocks.SimpleNonpersistentRunStore;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
-@SuppressWarnings
 public class TavernaServerImplTest {
-	private TavernaServerImpl server;
+	private TavernaServer server;
 	private MockPolicy policy;
 	private SimpleNonpersistentRunStore store;
 	@java.lang.SuppressWarnings("unused")
@@ -73,10 +71,9 @@ public class TavernaServerImplTest {
 	}
 
 	@Before
-	@SuppressWarnings
 	public void wireup() throws Exception {
 		// Wire everything up; ought to be done with Spring, but this works...
-		server = new TavernaServerImpl() {
+		server = new TavernaServer() {
 			@Override
 			protected RunREST makeRunInterface() {
 				return new RunREST() {
@@ -112,6 +109,11 @@ public class TavernaServerImplTest {
 					protected InputREST makeInputInterface() {
 						return new InputREST() {
 						};
+					}
+
+					@Override
+					protected InteractionFeed makeInteractionFeed() {
+						return null; // TODO...
 					}
 				};
 			}
@@ -187,12 +189,12 @@ public class TavernaServerImplTest {
 
 	@Test
 	public void defaults2() {
-		assertEquals(10, server.getMaxSimultaneousRuns());
+		assertEquals(10, server.getServerMaxRuns());
 	}
 
 	@Test
 	public void defaults3() {
-		assertEquals(1, server.getAllowedListeners().length);
+		assertEquals(1, server.getServerListeners().length);
 	}
 
 	@Test
@@ -205,7 +207,7 @@ public class TavernaServerImplTest {
 		int oldmax = policy.maxruns;
 		try {
 			policy.maxruns = 1;
-			assertEquals(1, server.getMaxSimultaneousRuns());
+			assertEquals(1, server.getServerMaxRuns());
 		} finally {
 			policy.maxruns = oldmax;
 		}
@@ -224,7 +226,7 @@ public class TavernaServerImplTest {
 		RunReference run = server.submitWorkflow(null);
 		try {
 			lrunname = lrunconf = null;
-			assertEquals(asList("foo"), asList(server.getAllowedListeners()));
+			assertEquals(asList("foo"), asList(server.getServerListeners()));
 			String l = server.addRunListener(run.name, "foo", "foobar");
 			assertEquals("bar", l);
 			assertEquals("foobar", lrunconf);

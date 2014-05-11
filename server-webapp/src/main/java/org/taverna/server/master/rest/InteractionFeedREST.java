@@ -1,15 +1,18 @@
 /*
  * Copyright (C) 2013 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.rest;
+
+import static org.taverna.server.master.rest.ContentTypes.ATOM;
 
 import java.net.MalformedURLException;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -40,7 +43,7 @@ public interface InteractionFeedREST {
 	 */
 	@GET
 	@Path("/")
-	@Produces("application/atom+xml")
+	@Produces(ATOM)
 	@Description("Get the feed document for this ATOM feed.")
 	Feed getFeed() throws FilesystemAccessException, NoDirectoryEntryException;
 
@@ -62,11 +65,18 @@ public interface InteractionFeedREST {
 	 */
 	@POST
 	@Path("/")
-	@Consumes("application/atom+xml")
+	@Consumes(ATOM)
+	@Produces(ATOM)
 	@Description("Adds an entry to this ATOM feed.")
 	Response addEntry(Entry entry) throws MalformedURLException,
 			FilesystemAccessException, NoDirectoryEntryException,
 			NoUpdateException;
+
+	/** Handles the OPTIONS request. */
+	@OPTIONS
+	@Path("/")
+	@Description("Describes what HTTP operations are supported on the feed.")
+	Response feedOptions();
 
 	/**
 	 * Gets the content of an entry in this ATOM feed.
@@ -81,7 +91,7 @@ public interface InteractionFeedREST {
 	 */
 	@GET
 	@Path("{id}")
-	@Produces("application/atom+xml")
+	@Produces(ATOM)
 	@Description("Get the entry with a particular ID within this ATOM feed.")
 	Entry getEntry(@PathParam("id") String id)
 			throws FilesystemAccessException, NoDirectoryEntryException;
@@ -107,4 +117,10 @@ public interface InteractionFeedREST {
 	String deleteEntry(@PathParam("id") String id)
 			throws FilesystemAccessException, NoDirectoryEntryException,
 			NoUpdateException;
+
+	/** Handles the OPTIONS request. */
+	@OPTIONS
+	@Path("{id}")
+	@Description("Describes what HTTP operations are supported on an entry.")
+	Response entryOptions(@PathParam("{id}") String id);
 }

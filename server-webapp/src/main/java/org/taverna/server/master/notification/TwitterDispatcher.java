@@ -1,14 +1,9 @@
 /*
  * Copyright (C) 2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.notification;
-
-import static twitter4j.conf.PropertyConfiguration.OAUTH_ACCESS_TOKEN;
-import static twitter4j.conf.PropertyConfiguration.OAUTH_ACCESS_TOKEN_SECRET;
-import static twitter4j.conf.PropertyConfiguration.OAUTH_CONSUMER_KEY;
-import static twitter4j.conf.PropertyConfiguration.OAUTH_CONSUMER_SECRET;
 
 import java.util.Properties;
 
@@ -27,6 +22,11 @@ import twitter4j.auth.AuthorizationFactory;
  * @author Donal Fellows
  */
 public class TwitterDispatcher extends RateLimitedDispatcher {
+	@Override
+	public String getName() {
+		return "twitter";
+	}
+
 	public static final int MAX_MESSAGE_LENGTH = 140;
 	public static final char ELLIPSIS = '\u2026';
 
@@ -50,16 +50,16 @@ public class TwitterDispatcher extends RateLimitedDispatcher {
 		return p;
 	}
 
-	public static final String ACCESS_TOKEN_PROP = OAUTH_ACCESS_TOKEN;
-	public static final String ACCESS_SECRET_PROP = OAUTH_ACCESS_TOKEN_SECRET;
+	public static final String ACCESS_TOKEN_PROP = "oauth.accessToken";
+	public static final String ACCESS_SECRET_PROP = "oauth.accessTokenSecret";
 
 	private Twitter getTwitter(String key, String secret) throws Exception {
 		if (key.isEmpty() || secret.isEmpty())
 			throw new NoCredentialsException();
 
 		Properties p = getConfig();
-		p.setProperty(OAUTH_CONSUMER_KEY, key);
-		p.setProperty(OAUTH_CONSUMER_SECRET, secret);
+		p.setProperty("oauth.consumerKey", key);
+		p.setProperty("oauth.consumerSecret", secret);
 
 		Configuration config = new PropertyConfiguration(p);
 		TwitterFactory factory = new TwitterFactory(config);
@@ -109,6 +109,7 @@ public class TwitterDispatcher extends RateLimitedDispatcher {
 	 * 
 	 * @author Donal Fellows
 	 */
+	@SuppressWarnings("serial")
 	public static class NotConfiguredException extends Exception {
 		NotConfiguredException() {
 			super("not configured with xAuth key and secret; "
@@ -121,6 +122,7 @@ public class TwitterDispatcher extends RateLimitedDispatcher {
 	 * 
 	 * @author Donal Fellows
 	 */
+	@SuppressWarnings("serial")
 	public static class NoCredentialsException extends Exception {
 		NoCredentialsException() {
 			super("no consumer key and secret present; "

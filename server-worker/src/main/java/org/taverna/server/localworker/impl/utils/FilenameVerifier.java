@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.localworker.impl.utils;
 
@@ -20,6 +20,7 @@ public abstract class FilenameVerifier {
 
 	static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
 
+	@SuppressWarnings("serial")
 	private static final Set<String> ILLEGAL_NAMES = new HashSet<String>(){{
 		add("");
 		add("..");
@@ -35,6 +36,7 @@ public abstract class FilenameVerifier {
 			}
 		}
 	}};
+	@SuppressWarnings("serial")
 	private static final Set<Character> ILLEGAL_CHARS = new HashSet<Character>(){{
 		add('/');
 		for (char i=0 ; i<32 ; i++)
@@ -55,6 +57,7 @@ public abstract class FilenameVerifier {
 			add('\n');
 		}
 	}};
+	@SuppressWarnings("serial")
 	private static final Set<String> ILLEGAL_PREFIXES = new HashSet<String>(){{
 		if (IS_WINDOWS) {
 			add("con.");
@@ -67,6 +70,7 @@ public abstract class FilenameVerifier {
 			}
 		}
 	}};
+	@SuppressWarnings("serial")
 	private static final Set<String> ILLEGAL_SUFFIXES = new HashSet<String>(){{
 		if (IS_WINDOWS) {
 			add(" ");

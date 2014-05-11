@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.ogf.usage;
 
@@ -171,8 +171,17 @@ public class JobUsageRecord extends org.ogf.usage.v1_0.UsageRecordType {
 		getWallDurationOrCpuDurationOrNodeCount().add(consumable);
 	}
 
-	public void addResource(ResourceType resource) {
+	public ResourceType addResource(ResourceType resource) {
 		getWallDurationOrCpuDurationOrNodeCount().add(resource);
+		return resource;
+	}
+
+	public ResourceType addResource(String description, String value) {
+		ResourceType resource = new ResourceType();
+		resource.setDescription(description);
+		resource.setValue(value);
+		getWallDurationOrCpuDurationOrNodeCount().add(resource);
+		return resource;
 	}
 
 	public ServiceLevel addServiceLevel(String service) {

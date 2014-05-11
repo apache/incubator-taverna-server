@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.mocks;
 
@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -32,6 +33,7 @@ import org.taverna.server.master.exceptions.BadStateChangeException;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.InvalidCredentialException;
 import org.taverna.server.master.exceptions.NoListenerException;
+import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.factories.RunFactory;
 import org.taverna.server.master.interfaces.Directory;
 import org.taverna.server.master.interfaces.Input;
@@ -41,9 +43,7 @@ import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
-@SuppressWarnings
+@SuppressWarnings("serial")
 public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	String id;
 	List<Listener> listeners;
@@ -55,15 +55,16 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	String outputBaclava;
 	java.io.File realRoot;
 	List<Input> inputs;
+	String name;
 
 	public ExampleRun(UsernamePrincipal creator, Workflow workflow, Date expiry) {
 		this.id = randomUUID().toString();
-		this.listeners = new ArrayList<Listener>();
+		this.listeners = new ArrayList<>();
 		this.status = Initialized;
 		this.owner = creator;
 		this.workflow = workflow;
 		this.expiry = expiry;
-		this.inputs = new ArrayList<Input>();
+		this.inputs = new ArrayList<>();
 		listeners.add(new DefaultListener());
 	}
 
@@ -199,6 +200,7 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 		public String name;
 		public String file;
 		public String value;
+		public String delim;
 
 		public ExampleInput(String name) {
 			this.name = name;
@@ -243,6 +245,22 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 			this.file = null;
 			this.value = null;
 		}
+
+		@Override
+		public String getDelimiter() {
+			return delim;
+		}
+
+		@Override
+		public void setDelimiter(String delimiter)
+				throws BadStateChangeException {
+			if (status != Status.Initialized)
+				throw new BadStateChangeException();
+			if (delimiter == null)
+				delim = null;
+			else
+				delim = delimiter.substring(0, 1);
+		}
 	}
 
 	@Override
@@ -284,131 +302,114 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 		outputBaclava = filename;
 	}
 
+	private Date created = new Date();
 	@Override
 	public Date getCreationTimestamp() {
-		// TODO Auto-generated method stub
-		return null;
+		return created;
 	}
 
 	@Override
 	public Date getFinishTimestamp() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Date getStartTimestamp() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Credential[] getCredentials() {
-		// TODO Auto-generated method stub
 		return new Credential[0];
 	}
 
 	@Override
 	public void addCredential(Credential toAdd) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void deleteCredential(Credential toDelete) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public Trust[] getTrusted() {
-		// TODO Auto-generated method stub
 		return new Trust[0];
 	}
 
 	@Override
 	public void addTrusted(Trust toAdd) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void deleteTrusted(Trust toDelete) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void validateCredential(Credential c)
 			throws InvalidCredentialException {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void validateTrusted(Trust t) throws InvalidCredentialException {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void initializeSecurityFromSOAPContext(MessageContext context) {
-		// TODO Auto-generated method stub
-		
+		// Do nothing
 	}
 
 	@Override
 	public void initializeSecurityFromRESTContext(HttpHeaders headers) {
-		// TODO Auto-generated method stub
-		
+		// Do nothing
 	}
 
 	@Override
 	public void conveySecurity() throws GeneralSecurityException, IOException {
-		// TODO Auto-generated method stub
-		
+		// Do nothing
 	}
 
 	@Override
 	public SecurityContextFactory getFactory() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
+	private Set<String> destroyers = new HashSet<String>();
+	private Set<String> updaters = new HashSet<String>();
+	private Set<String> readers = new HashSet<String>();
 	@Override
 	public Set<String> getPermittedDestroyers() {
-		// TODO Auto-generated method stub
-		return null;
+		return destroyers;
 	}
 
 	@Override
 	public void setPermittedDestroyers(Set<String> destroyers) {
-		// TODO Auto-generated method stub
-		
+		this.destroyers = destroyers;
+		updaters.addAll(destroyers);
+		readers.addAll(destroyers);
 	}
 
 	@Override
 	public Set<String> getPermittedUpdaters() {
-		// TODO Auto-generated method stub
-		return null;
+		return updaters;
 	}
 
 	@Override
 	public void setPermittedUpdaters(Set<String> updaters) {
-		// TODO Auto-generated method stub
-		
+		this.updaters = updaters;
+		this.updaters.addAll(destroyers);
+		readers.addAll(updaters);
 	}
 
 	@Override
 	public Set<String> getPermittedReaders() {
-		// TODO Auto-generated method stub
-		return null;
+		return readers;
 	}
 
 	@Override
 	public void setPermittedReaders(Set<String> readers) {
-		// TODO Auto-generated method stub
-		
+		this.readers = readers;
+		this.readers.addAll(destroyers);
+		this.readers.addAll(updaters);
 	}
 
 	@Override
@@ -419,6 +420,32 @@ public class ExampleRun implements TavernaRun, TavernaSecurityContext {
 	@Override
 	public void initializeSecurityFromContext(SecurityContext securityContext)
 			throws Exception {
+		// Do nothing
+	}
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public void setName(String name) {
+		this.name = (name.length() > 5 ? name.substring(0, 5) : name);
+	}
+
+	@Override
+	public void ping() throws UnknownRunException {
+		// Do nothing
+	}
+
+	@Override
+	public boolean getGenerateProvenance() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setGenerateProvenance(boolean generateProvenance) {
 		// TODO Auto-generated method stub
 		
 	}

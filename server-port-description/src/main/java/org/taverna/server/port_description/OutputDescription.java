@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.port_description;
 
@@ -21,8 +21,9 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlRootElement(name = "workflowOutputs")
 public class OutputDescription extends AbstractPortDescription {
+	private static final AbsentValue ABSENT_VALUE = new AbsentValue();
 	@XmlElement(name = "output")
-	public List<OutputPort> ports = new ArrayList<OutputPort>();
+	public List<OutputPort> ports = new ArrayList<>();
 
 	@XmlType(name = "OutputPort")
 	public static class OutputPort extends AbstractPort {
@@ -44,6 +45,7 @@ public class OutputDescription extends AbstractPortDescription {
 	public OutputPort addPort(String name) {
 		OutputPort p = new OutputPort();
 		p.name = name;
+		p.output = ABSENT_VALUE;
 		ports.add(p);
 		return p;
 	}

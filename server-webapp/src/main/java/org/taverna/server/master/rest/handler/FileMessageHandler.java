@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.rest.handler;
 
-import static org.taverna.server.master.TavernaServerImpl.log;
+import static org.taverna.server.master.TavernaServer.log;
 
 import java.io.IOException;
 import java.io.OutputStream;

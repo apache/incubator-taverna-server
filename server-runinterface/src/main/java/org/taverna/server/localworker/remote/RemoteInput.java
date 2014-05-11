@@ -1,15 +1,15 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.localworker.remote;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * This represents the assignment of inputs to input ports of the workflow. Note
@@ -26,15 +26,15 @@ public interface RemoteInput extends Remote {
 	 *             If anything goes wrong with the communication.
 	 */
 	@Nullable
-	public String getFile() throws RemoteException;
+	String getFile() throws RemoteException;
 
 	/**
 	 * @return The name of this input port. This may not be changed.
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	@NonNull
-	public String getName() throws RemoteException;
+	@Nonnull
+	String getName() throws RemoteException;
 
 	/**
 	 * @return The value currently assigned to this input port, or <tt>null</tt>
@@ -43,7 +43,17 @@ public interface RemoteInput extends Remote {
 	 *             If anything goes wrong with the communication.
 	 */
 	@Nullable
-	public String getValue() throws RemoteException;
+	String getValue() throws RemoteException;
+
+	/**
+	 * @return The delimiter currently used to split this input port's value
+	 *         into a list, or <tt>null</tt> if no delimiter is to be used
+	 *         (i.e., the value is a singleton).
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
+	 */
+	@Nullable
+	String getDelimiter() throws RemoteException;
 
 	/**
 	 * Sets the file to use for this input. This overrides the use of the
@@ -56,7 +66,7 @@ public interface RemoteInput extends Remote {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	public void setFile(@NonNull String file) throws RemoteException;
+	void setFile(@Nonnull String file) throws RemoteException;
 
 	/**
 	 * Sets the value to use for this input. This overrides the use of the
@@ -67,5 +77,16 @@ public interface RemoteInput extends Remote {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	public void setValue(@NonNull String value) throws RemoteException;
+	void setValue(@Nonnull String value) throws RemoteException;
+
+	/**
+	 * Sets the delimiter used to split this input port's value into a list.
+	 * 
+	 * @param delimiter
+	 *            The delimiter character, or <tt>null</tt> if no delimiter is
+	 *            to be used (i.e., the value is a singleton).
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
+	 */
+	void setDelimiter(@Nullable String delimiter) throws RemoteException;
 }

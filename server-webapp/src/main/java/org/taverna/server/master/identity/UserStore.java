@@ -1,15 +1,15 @@
 /*
  * Copyright (C) 2011-2012 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.identity;
 
 import static org.apache.commons.logging.LogFactory.getLog;
-import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
+import static org.taverna.server.master.TavernaServer.JMX_ROOT;
 import static org.taverna.server.master.common.Roles.ADMIN;
 import static org.taverna.server.master.common.Roles.USER;
-import static org.taverna.server.master.identity.AuthorityDerivedIDMapper.DEFAULT_PREFIX;
+import static org.taverna.server.master.defaults.Default.AUTHORITY_PREFIX;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,22 +19,25 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.jdo.annotations.PersistenceAware;
 
 import org.apache.commons.logging.Log;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedOperationParameter;
 import org.springframework.jmx.export.annotation.ManagedOperationParameters;
 import org.springframework.jmx.export.annotation.ManagedResource;
-import org.springframework.security.authentication.encoding.PasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.core.userdetails.memory.UserAttribute;
 import org.springframework.security.core.userdetails.memory.UserAttributeEditor;
+import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
 import org.taverna.server.master.utils.JDOSupport;
 
 /**
@@ -44,17 +47,24 @@ import org.taverna.server.master.utils.JDOSupport;
  */
 @PersistenceAware
 @ManagedResource(objectName = JMX_ROOT + "Users", description = "The user database.")
-public class UserStore extends JDOSupport<User> implements UserDetailsService {
+public class UserStore extends JDOSupport<User> implements UserDetailsService,
+		UserStoreAPI {
 	/** The logger for the user store. */
-	private static final Log log = getLog("Taverna.Server.UserDB");
+	private static Log log = getLog("Taverna.Server.UserDB");
 
 	public UserStore() {
 		super(User.class);
 	}
 
-	private Map<String, BootstrapUserInfo> base = new HashMap<String, BootstrapUserInfo>();
+	@PreDestroy
+	void closeLog() {
+		log = null;
+	}
+
+	private Map<String, BootstrapUserInfo> base = new HashMap<>();
 	private String defLocalUser;
 	private PasswordEncoder encoder;
+	private volatile int epoch;
 
 	/**
 	 * Install the encoder that will be used to turn a plaintext password into
@@ -85,7 +95,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 	}
 
 	private void installPassword(User u, String password) {
-		u.setEncodedPassword(encoder.encodePassword(password, u.getUsername()));
+		u.setEncodedPassword(encoder.encode(password));
 	}
 
 	public void setDefaultLocalUser(String defLocalUser) {
@@ -100,45 +110,35 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 	@WithinSingleTransaction
 	@PostConstruct
 	void initDB() {
-		if (base == null || base.isEmpty()) {
+		if (base == null || base.isEmpty())
 			log.warn("no baseline user collection");
-			return;
-		}
-		if (!getUsers().isEmpty()) {
+		else if (!getUsers().isEmpty())
 			log.info("using existing users from database");
-			return;
-		}
-		for (String username : base.keySet()) {
-			BootstrapUserInfo ud = base.get(username);
-			if (ud == null)
-				continue;
-			User u = ud.get(encoder);
-			if (u == null)
-				continue;
-			log.info("bootstrapping user " + username + " in the database");
-			persist(u);
-		}
+		else
+			for (String username : base.keySet()) {
+				BootstrapUserInfo ud = base.get(username);
+				if (ud == null)
+					continue;
+				User u = ud.get(encoder);
+				if (u == null)
+					continue;
+				log.info("bootstrapping user " + username + " in the database");
+				persist(u);
+			}
 		base = null;
+		epoch++;
 	}
 
-	/**
-	 * List the currently-known account names.
-	 * 
-	 * @return A list of users in the database. Note that this is a snapshot.
-	 */
+	@Override
+	@PerfLogged
 	@WithinSingleTransaction
 	@ManagedAttribute(description = "The list of server accounts known about.", currencyTimeLimit = 30)
 	public List<String> getUserNames() {
 		return getUsers();
 	}
 
-	/**
-	 * Get a particular user's description.
-	 * 
-	 * @param userName
-	 *            The username to look up.
-	 * @return A <i>copy</i> of the user description.
-	 */
+	@Override
+	@PerfLogged
 	@WithinSingleTransaction
 	public User getUser(String userName) {
 		return detach(getById(userName));
@@ -151,12 +151,13 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 	 *            The username to look up.
 	 * @return A description map intended for use by a server admin over JMX.
 	 */
+	@PerfLogged
 	@WithinSingleTransaction
 	@ManagedOperation(description = "Get information about a server account.")
 	@ManagedOperationParameters(@ManagedOperationParameter(name = "userName", description = "The username to look up."))
 	public Map<String, String> getUserInfo(String userName) {
 		User u = getById(userName);
-		Map<String, String> info = new HashMap<String, String>();
+		Map<String, String> info = new HashMap<>();
 		info.put("name", u.getUsername());
 		info.put("admin", u.isAdmin() ? "yes" : "no");
 		info.put("enabled", u.isEnabled() ? "yes" : "no");
@@ -169,28 +170,20 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 	 * 
 	 * @return A list of user details, <i>copied</i> out of the database.
 	 */
+	@PerfLogged
 	@WithinSingleTransaction
 	public List<UserDetails> listUsers() {
-		ArrayList<UserDetails> result = new ArrayList<UserDetails>();
+		ArrayList<UserDetails> result = new ArrayList<>();
 		for (String id : getUsers())
 			result.add(detach(getById(id)));
 		return result;
 	}
 
-	/**
-	 * Create a new user account; the account will be disabled and
-	 * non-administrative by default. Does not create any underlying system
-	 * account.
-	 * 
-	 * @param username
-	 *            The username to create.
-	 * @param password
-	 *            The password to use.
-	 * @param coupleLocalUsername
-	 *            Whether to set the local user name to the 'main' one.
-	 */
+	@Override
+	@PerfLogged
 	@WithinSingleTransaction
-	@ManagedOperation(description = "Create a new user account; the account will be disabled and non-administrative by default. Does not create any underlying system account.")
+	@ManagedOperation(description = "Create a new user account; the account will be disabled and "
+			+ "non-administrative by default. Does not create any underlying system account.")
 	@ManagedOperationParameters({
 			@ManagedOperationParameter(name = "username", description = "The username to create."),
 			@ManagedOperationParameter(name = "password", description = "The password to use."),
@@ -200,6 +193,8 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		if (username.matches(".*[^a-zA-Z0-9].*"))
 			throw new IllegalArgumentException(
 					"bad user name; must be pure alphanumeric");
+		if (getById(username) != null)
+			throw new IllegalArgumentException("user name already exists");
 		User u = new User();
 		u.setDisabled(true);
 		u.setAdmin(false);
@@ -211,19 +206,14 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 			u.setLocalUsername(defLocalUser);
 		log.info("creating user for " + username);
 		persist(u);
+		epoch++;
 	}
 
-	/**
-	 * Set or clear whether this account is enabled. Disabled accounts cannot be
-	 * used to log in.
-	 * 
-	 * @param username
-	 *            The username to adjust.
-	 * @param enabled
-	 *            Whether to enable the account.
-	 */
+	@Override
+	@PerfLogged
 	@WithinSingleTransaction
-	@ManagedOperation(description = "Set or clear whether this account is enabled. Disabled accounts cannot be used to log in.")
+	@ManagedOperation(description = "Set or clear whether this account is enabled. "
+			+ "Disabled accounts cannot be used to log in.")
 	@ManagedOperationParameters({
 			@ManagedOperationParameter(name = "username", description = "The username to adjust."),
 			@ManagedOperationParameter(name = "enabled", description = "Whether to enable the account.") })
@@ -232,20 +222,15 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		if (u != null) {
 			u.setDisabled(!enabled);
 			log.info((enabled ? "enabling" : "disabling") + " user " + username);
+			epoch++;
 		}
 	}
 
-	/**
-	 * Set or clear the mark on an account that indicates that it has
-	 * administrative privileges.
-	 * 
-	 * @param username
-	 *            The username to adjust.
-	 * @param admin
-	 *            Whether the account has admin privileges.
-	 */
+	@Override
+	@PerfLogged
 	@WithinSingleTransaction
-	@ManagedOperation(description = "Set or clear the mark on an account that indicates that it has administrative privileges.")
+	@ManagedOperation(description = "Set or clear the mark on an account that indicates "
+			+ "that it has administrative privileges.")
 	@ManagedOperationParameters({
 			@ManagedOperationParameter(name = "username", description = "The username to adjust."),
 			@ManagedOperationParameter(name = "admin", description = "Whether the account has admin privileges.") })
@@ -255,17 +240,12 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 			u.setAdmin(admin);
 			log.info((admin ? "enabling" : "disabling") + " user " + username
 					+ " admin status");
+			epoch++;
 		}
 	}
 
-	/**
-	 * Change the password for an account.
-	 * 
-	 * @param username
-	 *            The username to adjust.
-	 * @param password
-	 *            The new password to use.
-	 */
+	@Override
+	@PerfLogged
 	@WithinSingleTransaction
 	@ManagedOperation(description = "Change the password for an account.")
 	@ManagedOperationParameters({
@@ -276,17 +256,12 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		if (u != null) {
 			installPassword(u, password);
 			log.info("changing password for user " + username);
+			epoch++;
 		}
 	}
 
-	/**
-	 * Change what local system account to use for a server account.
-	 * 
-	 * @param username
-	 *            The username to adjust.
-	 * @param localUsername
-	 *            The new local user account use.
-	 */
+	@Override
+	@PerfLogged
 	@WithinSingleTransaction
 	@ManagedOperation(description = "Change what local system account to use for a server account.")
 	@ManagedOperationParameters({
@@ -298,24 +273,24 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 			u.setLocalUsername(localUsername);
 			log.info("mapping user " + username + " to local account "
 					+ localUsername);
+			epoch++;
 		}
 	}
 
-	/**
-	 * Delete a server account. The underlying system account is not modified.
-	 * 
-	 * @param username
-	 *            The username to delete.
-	 */
+	@Override
+	@PerfLogged
 	@WithinSingleTransaction
-	@ManagedOperation(description = "Delete a server account. The underlying system account is not modified.")
+	@ManagedOperation(description = "Delete a server account. The underlying "
+			+ "system account is not modified.")
 	@ManagedOperationParameters(@ManagedOperationParameter(name = "username", description = "The username to delete."))
 	public void deleteUser(String username) {
 		delete(getById(username));
 		log.info("deleting user " + username);
+		epoch++;
 	}
 
 	@Override
+	@PerfLogged
 	@WithinSingleTransaction
 	public UserDetails loadUserByUsername(String username)
 			throws UsernameNotFoundException, DataAccessException {
@@ -343,6 +318,43 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 		throw new UsernameNotFoundException("who are you?");
 	}
 
+	int getEpoch() {
+		return epoch;
+	}
+
+	public static class CachedUserStore implements UserDetailsService {
+		private int epoch;
+		private Map<String, UserDetails> cache = new HashMap<>();
+		private UserStore realStore;
+
+		@Required
+		public void setRealStore(UserStore store) {
+			this.realStore = store;
+		}
+
+		@Override
+		@PerfLogged
+		public UserDetails loadUserByUsername(String username) {
+			int epoch = realStore.getEpoch();
+			UserDetails details;
+			synchronized (cache) {
+				if (epoch != this.epoch) {
+					cache.clear();
+					this.epoch = epoch;
+					details = null;
+				} else
+					details = cache.get(username);
+			}
+			if (details == null) {
+				details = realStore.loadUserByUsername(username);
+				synchronized (cache) {
+					cache.put(username, details);
+				}
+			}
+			return details;
+		}
+	}
+
 	private static class BootstrapUserInfo {
 		private String user;
 		private String pass;
@@ -359,8 +371,8 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 			boolean realUser = false;
 			for (GrantedAuthority ga : auth) {
 				String a = ga.getAuthority();
-				if (a.startsWith(DEFAULT_PREFIX))
-					u.setLocalUsername(a.substring(DEFAULT_PREFIX.length()));
+				if (a.startsWith(AUTHORITY_PREFIX))
+					u.setLocalUsername(a.substring(AUTHORITY_PREFIX.length()));
 				else if (a.equals(USER))
 					realUser = true;
 				else if (a.equals(ADMIN))
@@ -369,7 +381,7 @@ public class UserStore extends JDOSupport<User> implements UserDetailsService {
 			if (!realUser)
 				return null;
 			u.setUsername(user);
-			u.setEncodedPassword(encoder.encodePassword(pass, user));
+			u.setEncodedPassword(encoder.encode(pass));
 			u.setDisabled(false);
 			return u;
 		}

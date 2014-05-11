@@ -7,11 +7,8 @@
 		<version>3.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>server-unix-forker</artifactId>
-	<name>Taverna Forking Invoker for Unix</name>
 	<scm>
-		<connection>scm:svn:http://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/branches/2.4-release/server-unix-forker</connection>
-		<developerConnection>scm:svn:https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/branches/2.4-release/server-unix-forker</developerConnection>
-		<url>http://code.google.com/p/taverna/source/browse/taverna/products/uk.org.taverna.server/branches/2.4-release/server-unix-forker</url>
+		<url>${scmBrowseRoot}/server-unix-forker</url>
 	</scm>
 
 	<properties>
@@ -28,20 +25,16 @@
 	</dependencies>
 
 	<build>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<configuration>
-						<encoding>US-ASCII</encoding>
-						<source>1.6</source>
-						<target>1.6</target>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<encoding>US-ASCII</encoding>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -67,4 +60,6 @@
 			</plugin>
 		</plugins>
 	</build>
+	<description>Manages the starting of the worker processes as different users. Unix-specific.</description>
+	<name>Impersonation Module (Unix)</name>
 </project>

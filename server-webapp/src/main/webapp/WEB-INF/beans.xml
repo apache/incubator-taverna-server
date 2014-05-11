@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright (C) 2010-2011 The University of Manchester See the file "LICENSE.txt" 
+<!-- Copyright (C) 2010-2011 The University of Manchester See the file "LICENSE" 
 	for license terms. -->
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
@@ -10,39 +10,44 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-	<bean id="webapp" class="org.taverna.server.master.TavernaServerImpl">
-		<property name="policy" ref="localworker.policy" />
-		<property name="runStore" ref="localworker.rundb" />
+	<bean id="webapp" class="org.taverna.server.master.TavernaServer">
+		<property name="policy" ref="worker.policy" />
+		<property name="runStore" ref="worker.rundb" />
 		<property name="fileUtils" ref="fileUtils" />
 		<property name="contentsDescriptorBuilder" ref="contentsDescriptorBuilder" />
 		<property name="notificationEngine" ref="notificationFabric" />
 		<property name="support" ref="webapp.support" />
 		<property name="eventSource" ref="dispatch.atom" />
+		<property name="interactionFeed" value="${taverna.interaction.feed_path}" />
 		<lookup-method name="makeRunInterface" bean="run.coreView.prototype" />
 		<lookup-method name="getPolicyDescription" bean="webapp.policyView" />
 	</bean>
 
 	<bean id="webapp.support" class="org.taverna.server.master.TavernaServerSupport">
-		<property name="policy" ref="localworker.policy" />
+		<property name="policy" ref="worker.policy" />
 		<property name="listenerFactory" ref="localworker.factory" />
 		<property name="runFactory" ref="localworker.factory" />
-		<property name="runStore" ref="localworker.rundb" />
+		<property name="fileUtils" ref="fileUtils" />
+		<property name="runStore" ref="worker.rundb" />
 		<property name="stateModel" ref="webapp.state" />
 		<property name="idMapper" ref="IdentityMapper" />
 		<property name="invocationCounter" ref="webapp.invocationCounter" />
 		<property name="webapp" ref="webapp" />
 		<property name="contentTypeMap">
 			<map key-type="java.lang.String" value-type="java.lang.String">
-				<description>Maps suffixes (post '.') to content types.
-				</description>
+				<description>Maps suffixes (post '.') to content types.</description>
 				<entry key="baclava" value="application/vnd.taverna.baclava+xml" />
+				<entry key="robundle.zip" value="application/vnd.wf4ever.robundle+zip" />
 			</map>
 		</property>
+		<property name="capabilitySource" ref="capabilities" />
 	</bean>
+
+	<bean id="capabilities" class="org.taverna.server.master.utils.CapabilityLister" />
 
 	<bean id="webapp.policyView" class="org.taverna.server.master.PolicyREST">
 		<property name="support" ref="webapp.support" />
-		<property name="policy" ref="localworker.policy" />
+		<property name="policy" ref="worker.policy" />
 		<property name="listenerFactory" ref="localworker.factory" />
 		<property name="notificationEngine" ref="notificationFabric" />
 	</bean>
@@ -62,16 +67,19 @@
 	</bean>
 
 	<bean id="webapp.invocationCounter" class="org.taverna.server.master.utils.InvocationCounter" />
+	<bean id="webapp.perfLogger" class="org.taverna.server.master.utils.CallTimeLogger">
+		<property name="threshold" value="${calltime.logthreshold:4000000}" />
+	</bean>
 
 	<bean id="run.coreView.prototype" scope="prototype"
 		class="org.taverna.server.master.RunREST">
 		<property name="support" ref="webapp.support" />
 		<property name="cdBuilder" ref="contentsDescriptorBuilder" />
-		<property name="interactionFeed" ref="interactionFeed" />
 		<lookup-method name="makeSecurityInterface" bean="run.securityView.prototype" />
 		<lookup-method name="makeInputInterface" bean="run.inputView.prototype" />
 		<lookup-method name="makeListenersInterface" bean="run.listenersView.prototype" />
 		<lookup-method name="makeDirectoryInterface" bean="run.directoryView.prototype" />
+		<lookup-method name="makeInteractionFeed" bean="run.interactionFeed.prototype" />
 	</bean>
 
 	<bean id="run.directoryView.prototype" scope="prototype"
@@ -108,20 +116,27 @@
 		<property name="support" ref="webapp.support" />
 	</bean>
 
+	<bean id="run.interactionFeed.prototype" scope="prototype"
+		class="org.taverna.server.master.InteractionFeed">
+		<property name="interactionFeedSupport" ref="interactionFeed" />
+	</bean>
+
 	<bean id="feed" class="org.taverna.server.master.notification.atom.AtomFeed">
 		<property name="eventSource" ref="dispatch.atom" />
 		<property name="support" ref="webapp.support" />
 		<property name="feedLanguage" value="${atom.language}" />
+		<property name="abdera" ref="abdera" />
 	</bean>
 
 	<bean id="admin" class="org.taverna.server.master.admin.AdminBean">
-		<property name="state" ref="webapp.state" />
+		<property name="adminHtmlFile" value="/admin.html" />
 		<property name="counter" ref="webapp.invocationCounter" />
-		<property name="runDB" ref="localworker.rundb" />
 		<property name="factory" ref="localworker.factory" />
+		<property name="localWorkerModel" ref="localworker.state" />
+		<property name="runDB" ref="worker.rundb" />
+		<property name="state" ref="webapp.state" />
 		<property name="usageRecords" ref="usageRecordSink" />
 		<property name="userStore" ref="userStore" />
-		<property name="adminHtmlFile" value="/admin.html" />
 	</bean>
 
 	<bean id="IdentityMapper" class="org.taverna.server.master.identity.CompositeIDMapper">
@@ -133,6 +148,12 @@
 						from the LOCALUSER_* Spring Security authority. Thus, if the user
 						has &quot;LOCALUSER_foo&quot;, they will be executing as the local
 						user id &quot;foo&quot;.</description>
+				</bean>
+				<bean id="SelfAccess"
+					class="org.taverna.server.master.identity.WorkflowInternalAuthProvider.WorkflowSelfIDMapper">
+					<description>Handles the case where a workflow is accessing itself for
+						the purpose of publishing interactions.</description>
+					<property name="runStore" ref="worker.rundb" />
 				</bean>
 				<bean id="Extracting" class="org.taverna.server.master.identity.NameIDMapper">
 					<description>An alternate mechanism for mapping users. This tries
@@ -156,7 +177,7 @@
 	</bean>
 
 	<bean id="passwordEncoder"
-		class="org.springframework.security.authentication.encoding.Md5PasswordEncoder" />
+		class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
 	<bean class="org.taverna.server.master.identity.UserStore" id="userStore">
 		<property name="persistenceManagerFactory" ref="pmf" />
 		<property name="baselineUserProperties">
@@ -186,12 +207,25 @@
 				<prop key="datanucleus.validateConstraints">true</prop>
 				<prop key="datanucleus.autoCreateSchema">true</prop>
 				<prop key="datanucleus.PersistenceUnitName">TavernaServer</prop>
+				<prop key="datanucleus.rdbms.datastoreAdapterClassName"
+					>org.taverna.server.master.utils.LoggingDerbyAdapter</prop>
 			</props>
 		</property>
 	</bean>
 	<bean id="transactionAspect"
 		class="org.taverna.server.master.utils.JDOSupport.TransactionAspect" />
 
+	<bean id="systemPrereqs" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<description>http://stackoverflow.com/questions/3339736/set-system-property-with-spring-configuration-file</description>
+		<property name="targetObject" value="#{@systemProperties}" />
+		<property name="targetMethod" value="putAll" />
+		<property name="arguments">
+			<util:properties>
+				<prop key="derby.stream.error.field">org.taverna.server.master.utils.DerbyUtils.TO_LOG</prop>
+				<prop key="derby.stream.error.logSeverityLevel">30000</prop>
+			</util:properties>
+		</property>
+	</bean>
 	<!-- TODO: control the location of the database properly, or move to JNDI 
 		TODO: review whether what we are doing now is correct! -->
 	<bean id="dataSource" class="org.taverna.server.master.utils.WebappAwareDataSource">
@@ -220,29 +254,40 @@
 	<context:property-placeholder
 		ignore-unresolvable="true" order="2" properties-ref="default-factory-properties" />
 	<util:properties id="default-factory-properties">
-		<prop key="backEndFactory">org.taverna.server.master.localworker.IdAwareForkRunFactory
-		</prop>
+		<prop key="backEndFactory">org.taverna.server.master.localworker.IdAwareForkRunFactory</prop>
 	</util:properties>
 
-	<!-- This bean configuration replaced with org.taverna.server.master.localworker.ConfigBean -->
+	<!-- This bean configuration replaced with org.taverna.server.master.localworker.LocalWorkerFactory -->
 	<!-- <bean id="localworker.factory" scope="singleton" lazy-init="false" 
 		class="${backEndFactory}"> <description> The simple policy manager and factory 
 		for the baseline localworker case. </description> <property name="state" 
-		ref="localworker.state" /> <property name="runDB" ref="localworker.rundb" 
+		ref="localworker.state" /> <property name="runDB" ref="worker.rundb" 
 		/> -->
 	<!-- Handled by autowiring to make type-resilient. -->
 	<!-- <property name="idMapper" ref="IdentityMapper" /> -->
-	<!-- <property name="securityContextFactory" ref="localworker.securityContext" 
+	<!-- <property name="securityContextFactory" ref="worker.securityContext" 
 		/> <property name="usageRecordSink" ref="usageRecordSink" /> <property name="URProcessorPool" 
 		ref="URThreads" /> </bean> -->
 
 	<task:executor id="URThreads" pool-size="${pool.size}" />
 
-	<bean id="localworker.securityContext"
-		class="org.taverna.server.master.localworker.SecurityContextFactory">
-		<property name="runDatabase" ref="localworker.rundb" />
+	<bean id="worker.securityContext"
+		class="org.taverna.server.master.worker.SecurityContextFactory">
+		<property name="runDatabase" ref="worker.rundb" />
 		<property name="filenameConverter" ref="fileUtils" />
 		<property name="x500Utils" ref="x500Utils" />
+		<property name="httpRealm" value="${http.realmName}" />
+		<property name="uriSource" ref="webapp" />
+		<property name="certificateFetcher" ref="certificateChainFetcher" />
+		<property name="passwordIssuer" ref="passwordIssuer" />
+	</bean>
+
+	<bean id="passwordIssuer" class="org.taverna.server.master.worker.PasswordIssuer">
+		<!-- <property name="length" value="8" /> -->
+	</bean>
+
+	<bean id="certificateChainFetcher" class="org.taverna.server.master.utils.CertificateChainFetcher">
+		<property name="secure" value="${fetchCertificateChain}" />
 	</bean>
 
 	<bean id="localworker.state" class="org.taverna.server.master.localworker.LocalWorkerState"
@@ -257,6 +302,12 @@
 		</property>
 		<property name="maxRuns" value="${default.runlimit}">
 			<description>The maximum simultaneous number of runs.</description>
+		</property>
+		<property name="operatingLimit" value="${default.operatinglimit}">
+			<description>
+				The maximum number of runs that are in the Operating state,
+				i.e., actually running with a process consuming resources.
+			</description>
 		</property>
 		<property name="extraArgs">
 			<description>Any extra arguments (memory control, etc.) to pass to
@@ -286,35 +337,64 @@
 			to the executeworkflow.sh in either the Taverna 2 Workbench distribution 
 			or the Taverna 2 Command Line distribution.</description> </property> -->
 		<property name="self" ref="localworker.state" />
-		<property name="defaultExecuteWorkflowScript" value="${executeWorkflowScript}" />
+		<property name="defaultExecuteWorkflowScript" value="${executeWorkflowScript:NONE}" />
 	</bean>
 
-	<bean id="localworker.policy" class="org.taverna.server.master.localworker.PolicyImpl">
+	<bean id="worker.policy" class="org.taverna.server.master.worker.PolicyImpl">
 		<description>
-			The implementation of the access control policy
-			supported
+			The implementation of the access control policy supported
 			by the localworker run engine.
 		</description>
-		<property name="state" ref="localworker.state" />
-		<property name="runDB" ref="localworker.rundb" />
+		<property name="limits" ref="localworker.state" />
+		<property name="runDB" ref="worker.rundb" />
 	</bean>
-	<bean id="localworker.rundb" class="org.taverna.server.master.localworker.RunDatabase">
-		<property name="notifier" ref="localworker.notifier" />
+	<bean id="worker.rundb" class="org.taverna.server.master.worker.RunDatabase">
+		<property name="notifier" ref="worker.notifier" />
+		<property name="typeNotifiers">
+			<list>
+				<ref bean="cn.email" />
+				<ref bean="cn.sms" />
+				<ref bean="cn.twitter" />
+				<!-- <ref bean="cn.xmpp"/> -->
+			</list>
+		</property>
 		<property name="notificationEngine" ref="notificationFabric" />
-		<property name="dao" ref="localworker.runDAO" />
+		<property name="dao" ref="worker.runDAO" />
 	</bean>
-	<bean id="localworker.runDAO" class="org.taverna.server.master.localworker.RunDatabaseDAO">
+	<bean id="cn.email"
+		class="org.taverna.server.master.worker.VelocityCompletionNotifier">
+		<property name="name" value="email" />
+		<property name="subject" value="Workflow run finished executing" />
+		<property name="velocityEngine" ref="velocity" />
+		<property name="uriBuilderFactory" ref="webapp" />
+	</bean>
+	<bean id="cn.sms"
+		class="org.taverna.server.master.worker.VelocityCompletionNotifier">
+		<property name="name" value="sms" />
+		<property name="subject" value="Run finished" />
+		<property name="velocityEngine" ref="velocity" />
+		<property name="uriBuilderFactory" ref="webapp" />
+	</bean>
+	<bean id="cn.twitter"
+		class="org.taverna.server.master.worker.VelocityCompletionNotifier">
+		<property name="name" value="twitter" />
+		<property name="subject" value="Run finished" />
+		<property name="velocityEngine" ref="velocity" />
+		<property name="uriBuilderFactory" ref="webapp" />
+	</bean>
+	
+	<bean id="worker.runDAO" class="org.taverna.server.master.worker.RunDatabaseDAO">
 		<description>
 			The implementation of the catalog of workflow runs
 			supported by the localworker run engine.
 		</description>
 		<property name="persistenceManagerFactory" ref="pmf" />
-		<property name="facade" ref="localworker.rundb" />
+		<property name="facade" ref="worker.rundb" />
 	</bean>
 	<task:scheduled-tasks scheduler="taskScheduler">
-		<task:scheduled ref="localworker.rundb" method="cleanNow"
+		<task:scheduled ref="worker.rundb" method="cleanNow"
 			fixed-delay="${purge.interval}" />
-		<task:scheduled ref="localworker.rundb" method="checkForFinishNow"
+		<task:scheduled ref="worker.rundb" method="checkForFinishNow"
 			fixed-delay="${finish.interval}" />
 		<task:scheduled ref="dispatch.atom" method="deleteExpiredEvents"
 			fixed-delay="${atom.cleaninterval}" />
@@ -323,20 +403,12 @@
 	<bean id="notificationFabric"
 		class="org.taverna.server.master.notification.NotificationEngine">
 		<property name="dispatchers">
-			<map>
-				<entry key="mailto">
-					<ref bean="dispatch.email" />
-				</entry>
-				<entry key="twitter">
-					<ref bean="dispatch.twitter" />
-				</entry>
-				<entry key="xmpp">
-					<ref bean="dispatch.xmpp" />
-				</entry>
-				<entry key="sms">
-					<ref bean="dispatch.sms" />
-				</entry>
-			</map>
+			<list>
+				<ref bean="dispatch.email" />
+				<ref bean="dispatch.twitter" />
+				<ref bean="dispatch.xmpp" />
+				<ref bean="dispatch.sms" />
+			</list>
 		</property>
 		<property name="universalDispatchers">
 			<list>
@@ -381,12 +453,14 @@
 		<property name="expiryAgeDays" value="${atom.lifespan}" />
 		<property name="persistenceManagerFactory" ref="pmf" />
 		<property name="uriBuilderFactory" ref="feed" />
+		<property name="self" ref="dispatch.atom" />
 	</bean>
 
-	<bean id="localworker.notifier"
-		class="org.taverna.server.master.localworker.SimpleFormattedCompletionNotifier">
+	<bean id="worker.notifier"
+		class="org.taverna.server.master.worker.SimpleFormattedCompletionNotifier">
 		<property name="subject" value="${message.termination.subject}" />
 		<property name="messageFormat" value="${message.termination.body}" />
+		<property name="name" value="fallback"/>
 	</bean>
 
 	<bean id="fileUtils" class="org.taverna.server.master.utils.FilenameUtils" />
@@ -397,11 +471,44 @@
 
 	<bean class="org.taverna.server.master.interaction.InteractionFeedSupport"
 		id="interactionFeed" scope="singleton">
-		<property name="abdera">
-			<bean class="org.apache.abdera.Abdera" />
-		</property>
+		<property name="abdera" ref="abdera" />
 		<property name="support" ref="webapp.support" />
 		<property name="uriBuilder" ref="webapp" />
 		<property name="utils" ref="fileUtils" />
 	</bean>
+	<bean class="org.taverna.server.master.rest.handler.FeedHandler" id="atomFeedHandler">
+		<property name="abdera" ref="abdera" />
+	</bean>
+	<bean class="org.taverna.server.master.rest.handler.EntryHandler" id="atomEntryHandler">
+		<property name="abdera" ref="abdera" />
+	</bean>
+
+	<bean id="authProvider" class="org.taverna.server.master.identity.StrippedDownAuthProvider">
+		<property name="passwordEncoder" ref="passwordEncoder" />
+		<property name="userDetailsService">
+			<bean class="org.taverna.server.master.identity.UserStore.CachedUserStore">
+				<property name="realStore" ref="userStore" />
+			</bean>
+		</property>
+	</bean>
+	<bean id="workflowInternalAuthProvder"
+		class="org.taverna.server.master.identity.WorkflowInternalAuthProvider">
+		<property name="dao" ref="worker.runDAO" />
+		<property name="cacheBound" value="${default.runlimit}" />
+	</bean>
+	<bean id="velocity" class="org.apache.velocity.app.VelocityEngine"
+		init-method="init" lazy-init="false">
+		<constructor-arg>
+			<props>
+				<prop key="input.encoding">UTF-8</prop>
+				<prop key="output.encoding">UTF-8</prop>
+				<prop key="runtime.log.logsystem.class">org.apache.velocity.runtime.log.Log4JLogChute</prop>
+				<prop key="runtime.log.logsystem.log4j.logger">org.taverna.server.master.worker.VelocityCompletionNotifier</prop>
+				<prop key="resource.loader">class</prop>
+				<prop key="class.resource.loader.description">Velocity Classpath Resource Loader</prop>
+				<prop key="class.resource.loader.class">org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader</prop>
+			</props>
+		</constructor-arg>
+	</bean>
+	<bean id="abdera" class="org.apache.abdera.Abdera"/>
 </beans>

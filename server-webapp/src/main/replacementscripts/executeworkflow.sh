@@ -8,7 +8,7 @@ permsize=-XX:MaxPermSize=140m
 
 ## Parse the command line to extract the pieces to move around to before or
 ## after the JAR filename...
-pre=
+pre=-Djava.awt.headless=true 
 post=
 for arg
 do
@@ -20,7 +20,7 @@ do
 	*) post="$post \"$arg\"" ;;
     esac
 done
-if test "xx" == "x${post}x"; then
+if test "xx" = "x${post}x"; then
     echo "Missing arguments! Bug in argument processing?" >&2
     exit 1
 fi
@@ -48,14 +48,17 @@ RUNID_PROP=
 if test x != "x$TAVERNA_RUN_ID"; then
     RUNID_PROP="-Dtaverna.runid=$TAVERNA_RUN_ID"
 fi
-INTERACTION_PROPS= 
+INTERACTION_PROPS=-Dtaverna.interaction.ignore_requests=true
 if test x != "x$INTERACTION_HOST"; then
-    INTERACTION_PROPS="-Dtaverna.interaction.host=$INTERACTION_HOST"
+    INTERACTION_PROPS="$INTERACTION_PROPS -Dtaverna.interaction.host=$INTERACTION_HOST"
     INTERACTION_PROPS="$INTERACTION_PROPS -Dtaverna.interaction.port=$INTERACTION_PORT"
     INTERACTION_PROPS="$INTERACTION_PROPS -Dtaverna.interaction.webdav_path=$INTERACTION_WEBDAV"
     INTERACTION_PROPS="$INTERACTION_PROPS -Dtaverna.interaction.feed_path=$INTERACTION_FEED"
 fi
 
+MainClass=net.sf.taverna.t2.commandline.CommandLineLauncher
+
+echo "pid:$$"
 exec "$javabin" $memlimit $permsize \
   "-Dlog4j.configuration=file://$taverna_home/conf/log4j.properties " \
   "-Djava.util.logging.config.file=$taverna_home/conf/logging.properties " \

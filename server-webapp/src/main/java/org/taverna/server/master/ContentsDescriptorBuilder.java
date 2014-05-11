@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master;
 
@@ -13,10 +13,10 @@ import static org.taverna.server.master.common.Uri.secure;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
@@ -28,6 +28,7 @@ import org.taverna.server.master.interfaces.Directory;
 import org.taverna.server.master.interfaces.DirectoryEntry;
 import org.taverna.server.master.interfaces.File;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.interfaces.UriBuilderFactory;
 import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.port_description.AbsentValue;
 import org.taverna.server.port_description.AbstractPortDescription;
@@ -154,8 +155,7 @@ public class ContentsDescriptorBuilder {
 			throws FilesystemAccessException {
 		ListValue v = new ListValue();
 		v.length = 0;
-		HashSet<DirectoryEntry> contents = new HashSet<DirectoryEntry>(
-				dir.getContents());
+		Set<DirectoryEntry> contents = new HashSet<>(dir.getContents());
 		Iterator<DirectoryEntry> it = contents.iterator();
 		while (it.hasNext())
 			if (!it.next().getName().matches("^[0-9]+([.].*)?$"))
@@ -207,7 +207,8 @@ public class ContentsDescriptorBuilder {
 				av = constructLeafValue((File) entry);
 			else
 				av = constructListValue((Directory) entry, ub);
-			av.href = ub.build(entry.getFullName().replaceFirst("^/", ""));
+			String fullPath = entry.getFullName().replaceFirst("^/", "");
+			av.href = ub.clone().path(fullPath).build();
 			return av;
 		}
 		return new AbsentValue();
@@ -285,38 +286,5 @@ public class ContentsDescriptorBuilder {
 			log.info("failure in conversion to .scufl2", e);
 		}
 		return desc;
-	}
-
-	/**
-	 * How to manufacture URIs to workflow runs.
-	 * 
-	 * @author Donal Fellows
-	 */
-	public interface UriBuilderFactory {
-		/**
-		 * Given a run, get a factory for RESTful URIs to resources associated
-		 * with it.
-		 * 
-		 * @param run
-		 *            The run in question.
-		 * @return The {@link URI} factory.
-		 */
-		UriBuilder getRunUriBuilder(TavernaRun run);
-
-		/**
-		 * @return a URI factory that is preconfigured to point to the base of
-		 *         the webapp.
-		 */
-		UriBuilder getBaseUriBuilder();
-
-		/**
-		 * Resolves a URI with respect to the base URI of the factory.
-		 * 
-		 * @param uri
-		 *            The URI to resolve, or <tt>null</tt>.
-		 * @return The resolved URI, or <tt>null</tt> if <b>uri</b> is
-		 *         <tt>null</tt>.
-		 */
-		String resolve(String uri);
 	}
 }

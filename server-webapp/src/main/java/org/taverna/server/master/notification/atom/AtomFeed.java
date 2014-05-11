@@ -1,30 +1,34 @@
 /*
  * Copyright (C) 2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.notification.atom;
 
+import static java.lang.String.format;
+import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.taverna.server.master.common.Roles.USER;
+import static org.taverna.server.master.common.Uri.secure;
 
 import java.net.URI;
-import java.util.List;
+import java.util.Date;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 
+import org.apache.abdera.Abdera;
+import org.apache.abdera.model.Entry;
+import org.apache.abdera.model.Feed;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.context.ServletContextAware;
 import org.taverna.server.master.TavernaServerSupport;
-import org.taverna.server.master.ContentsDescriptorBuilder.UriBuilderFactory;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.interfaces.UriBuilderFactory;
 import org.taverna.server.master.rest.TavernaServerREST.EventFeed;
-import org.taverna.server.master.rest.TavernaServerREST.Events;
-import org.taverna.server.master.utils.UsernamePrincipal;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Simple REST handler that allows an Atom feed to be served up of events
@@ -43,12 +47,16 @@ public class AtomFeed implements EventFeed, UriBuilderFactory,
 	private EventDAO eventSource;
 	private TavernaServerSupport support;
 	private URI baseURI;
+	private Abdera abdera;
 	private String feedLanguage = "en";
+	private String uuid = randomUUID().toString();
 
+	@Required
 	public void setEventSource(EventDAO eventSource) {
 		this.eventSource = eventSource;
 	}
 
+	@Required
 	public void setSupport(TavernaServerSupport support) {
 		this.support = support;
 	}
@@ -61,72 +69,66 @@ public class AtomFeed implements EventFeed, UriBuilderFactory,
 		return feedLanguage;
 	}
 
-	/**
-	 * The implementation of a feed of events for a workflow run.
-	 * 
-	 * @author Donal Fellows
-	 */
-	public static class Feed extends Events {
-		private UsernamePrincipal owner;
-		private EventDAO eventSource;
-
-		Feed(@NonNull EventDAO eventSource, @NonNull UsernamePrincipal owner) {
-			this.eventSource = eventSource;
-			this.owner = owner;
-		}
-
-		@Override
-		public String getOwner() {
-			return owner.getName();
-		}
-
-		@Override
-		public List<AbstractEvent> getEvents() {
-			return eventSource.getEvents(owner);
-		}
-
-		@Override
-		public AbstractEvent getEvent(String id) {
-			return eventSource.getEvent(owner, id);
-		}
+	@Required
+	public void setAbdera(Abdera abdera) {
+		this.abdera = abdera;
 	}
 
 	@Override
 	@CallCounted
 	@RolesAllowed(USER)
-	public Events getFeed() {
-		return new Feed(eventSource, support.getPrincipal());
+	public Feed getFeed(UriInfo ui) {
+		Feed feed = abdera.getFactory().newFeed();
+		feed.setTitle("events relating to workflow runs").setLanguage(
+				feedLanguage);
+		String user = support.getPrincipal().toString()
+				.replaceAll("[^A-Za-z0-9]+", "");
+		feed.setId(format("urn:taverna-server:%s:%s", uuid, user));
+		org.joda.time.DateTime modification = null;
+		for (Event e : eventSource.getEvents(support.getPrincipal())) {
+			if (modification == null || e.getPublished().isAfter(modification))
+				modification = e.getPublished();
+			feed.addEntry(e.getEntry(abdera, feedLanguage));
+		}
+		if (modification == null)
+			feed.setUpdated(new Date());
+		else
+			feed.setUpdated(modification.toDate());
+		feed.addLink(ui.getAbsolutePath().toASCIIString(), "self");
+		return feed;
 	}
 
 	@Override
 	@CallCounted
 	@RolesAllowed(USER)
-	public AbstractEvent getEvent(String id) {
-		return eventSource.getEvent(support.getPrincipal(), id);
+	public Entry getEvent(String id) {
+		return eventSource.getEvent(support.getPrincipal(), id).getEntry(
+				abdera, feedLanguage);
 	}
 
 	@Override
 	public UriBuilder getRunUriBuilder(TavernaRun run) {
-		return fromUri(getBaseUriBuilder().path("runs/{uuid}").build(
-				run.getId()));
+		return secure(fromUri(getBaseUriBuilder().path("runs/{uuid}").build(
+				run.getId())));
 	}
 
 	@Override
 	public UriBuilder getBaseUriBuilder() {
-		return fromUri(baseURI);
+		return secure(fromUri(baseURI));
 	}
 
 	@Override
 	public String resolve(String uri) {
-		return baseURI.resolve(uri).toString();
+		if (uri == null)
+			return null;
+		return secure(baseURI, uri).toString();
 	}
 
 	@Override
 	public void setServletContext(ServletContext servletContext) {
 		String base = servletContext.getInitParameter(PREFERRED_URI_PARAM);
 		if (base == null)
-			baseURI = URI.create(servletContext.getContextPath() + "/rest");
-		else
-			baseURI = URI.create(base);
+			base = servletContext.getContextPath() + "/rest";
+		baseURI = URI.create(base);
 	}
 }

@@ -5,11 +5,10 @@
 	<persistence-unit name="TavernaServer">
 		<class>org.taverna.server.master.WebappState</class>
 		<class>org.taverna.server.master.identity.User</class>
-		<class>org.taverna.server.master.localworker.LocalWorkerManagementState</class>
-		<class>org.taverna.server.master.localworker.RunConnection</class>
-		<class>org.taverna.server.master.notification.atom.AbstractEvent</class>
-		<class>org.taverna.server.master.notification.atom.TerminationEvent</class>
+		<class>org.taverna.server.master.localworker.PersistedState</class>
+		<class>org.taverna.server.master.notification.atom.Event</class>
 		<class>org.taverna.server.master.usage.UsageRecord</class>
+		<class>org.taverna.server.master.worker.RunConnection</class>
 		<exclude-unlisted-classes>true</exclude-unlisted-classes>
 	</persistence-unit>
 </persistence>

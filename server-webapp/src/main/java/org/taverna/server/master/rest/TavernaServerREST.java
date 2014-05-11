@@ -1,11 +1,24 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.rest;
 
+import static org.taverna.server.master.common.Namespaces.SERVER;
 import static org.taverna.server.master.common.Roles.USER;
+import static org.taverna.server.master.rest.ContentTypes.JSON;
+import static org.taverna.server.master.rest.ContentTypes.URI_LIST;
+import static org.taverna.server.master.rest.ContentTypes.XML;
+import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL;
+import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_CAPABILITIES;
+import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_NOTIFIERS;
+import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_OP_LIMIT;
+import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_PERM_LIST;
+import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_PERM_WF;
+import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_RUN_LIMIT;
+import static org.taverna.server.master.rest.TavernaServerREST.PathNames.ROOT;
+import static org.taverna.server.master.rest.TavernaServerREST.PathNames.RUNS;
 import static org.taverna.server.master.rest.handler.Scufl2DocumentHandler.SCUFL2;
 import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 
@@ -14,9 +27,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -25,27 +40,26 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
+import org.apache.abdera.model.Entry;
+import org.apache.abdera.model.Feed;
 import org.apache.cxf.jaxrs.model.wadl.Description;
+import org.taverna.server.master.common.Capability;
 import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.common.Workflow;
+import org.taverna.server.master.common.version.Version;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.notification.atom.AbstractEvent;
 import org.taverna.server.master.soap.TavernaServerSOAP;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * The REST service interface to Taverna 3 Server.
@@ -54,7 +68,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * @see TavernaServerSOAP
  */
 @RolesAllowed(USER)
-@Description("This is REST service interface to Taverna 3 Server.")
+@Description("This is REST service interface to Taverna " + Version.JAVA
+		+ " Server.")
 public interface TavernaServerREST {
 	/**
 	 * Produces the description of the service.
@@ -64,10 +79,17 @@ public interface TavernaServerREST {
 	 * @return The description.
 	 */
 	@GET
-	@Produces({ "application/xml", "application/json" })
+	@Path(ROOT)
+	@Produces({ XML, JSON })
 	@Description("Produces the description of the service.")
-	@NonNull
-	ServerDescription describeService(@NonNull @Context UriInfo ui);
+	@Nonnull
+	ServerDescription describeService(@Nonnull @Context UriInfo ui);
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path(ROOT)
+	@Description("Produces the description of the service.")
+	Response serviceOptions();
 
 	/**
 	 * Produces a description of the list of runs.
@@ -77,12 +99,12 @@ public interface TavernaServerREST {
 	 * @return A description of the list of runs that are available.
 	 */
 	@GET
-	@Path("runs")
-	@Produces({ "application/xml", "application/json" })
+	@Path(RUNS)
+	@Produces({ XML, JSON })
 	@RolesAllowed(USER)
 	@Description("Produces a list of all runs visible to the user.")
-	@NonNull
-	RunList listUsersRuns(@NonNull @Context UriInfo ui);
+	@Nonnull
+	RunList listUsersRuns(@Nonnull @Context UriInfo ui);
 
 	/**
 	 * Accepts (or not) a request to create a new run executing the given
@@ -97,13 +119,14 @@ public interface TavernaServerREST {
 	 *             If the POST failed.
 	 */
 	@POST
-	@Path("runs")
-	@Consumes({ T2FLOW, SCUFL2, "application/xml" })
+	@Path(RUNS)
+	@Consumes({ T2FLOW, SCUFL2, XML })
 	@RolesAllowed(USER)
-	@Description("Accepts (or not) a request to create a new run executing the given workflow.")
-	@NonNull
-	Response submitWorkflow(@NonNull Workflow workflow,
-			@NonNull @Context UriInfo ui) throws NoUpdateException;
+	@Description("Accepts (or not) a request to create a new run executing "
+			+ "the given workflow.")
+	@Nonnull
+	Response submitWorkflow(@Nonnull Workflow workflow,
+			@Nonnull @Context UriInfo ui) throws NoUpdateException;
 
 	/**
 	 * Accepts (or not) a request to create a new run executing the workflow at
@@ -120,20 +143,29 @@ public interface TavernaServerREST {
 	 *        or the engine rejects it.
 	 */
 	@POST
-	@Path("runs")
-	@Consumes("application/xml")
+	@Path(RUNS)
+	@Consumes(URI_LIST)
 	@RolesAllowed(USER)
-	@Description("Accepts a wrapped URL to a workflow to download and run. The URL must be hosted on a publicly-accessible service.")
-	@NonNull
-	Response submitWorkflowByURL(@NonNull WorkflowReference workflowReference,
-			@NonNull @Context UriInfo ui) throws NoUpdateException;
+	@Description("Accepts a URL to a workflow to download and run. The URL "
+			+ "must be hosted on a publicly-accessible service.")
+	@Nonnull
+	Response submitWorkflowByURL(@Nonnull List<URI> referenceList,
+			@Nonnull @Context UriInfo ui) throws NoCreateException,
+			NoUpdateException;
+
+	/** Get an outline of the operations supported. */
+	@OPTIONS
+	@Path(RUNS)
+	@Description("Produces the description of the operations on the "
+			+ "collection of runs.")
+	Response runsOptions();
 
 	/**
 	 * @return A description of the policies supported by this server.
 	 */
-	@Path("policy")
+	@Path(POL)
 	@Description("The policies supported by this server.")
-	@NonNull
+	@Nonnull
 	PolicyView getPolicyDescription();
 
 	/**
@@ -141,17 +173,37 @@ public interface TavernaServerREST {
 	 * 
 	 * @param runName
 	 *            The name of the run.
+	 * @param uriInfo
+	 *            About the URI used to access this run.
 	 * @return A RESTful delegate for the run.
 	 * @throws UnknownRunException
 	 *             If the run handle is unknown to the current user.
 	 */
-	@Path("runs/{runName}")
+	@Path(RUNS + "/{runName}")
 	@RolesAllowed(USER)
 	@Description("Get a particular named run resource to dispatch to.")
-	@NonNull
+	@Nonnull
 	TavernaServerRunREST getRunResource(
-			@NonNull @PathParam("runName") String runName)
-			throws UnknownRunException;
+			@Nonnull @PathParam("runName") String runName,
+			@Nonnull @Context UriInfo uriInfo) throws UnknownRunException;
+
+	/**
+	 * Factored out path names used in the {@link TavernaServerREST} interface
+	 * and related places.
+	 * 
+	 * @author Donal Fellows
+	 */
+	interface PathNames {
+		public static final String ROOT = "/";
+		public static final String RUNS = "runs";
+		public static final String POL = "policy";
+		public static final String POL_CAPABILITIES = "capabilities";
+		public static final String POL_RUN_LIMIT = "runLimit";
+		public static final String POL_OP_LIMIT = "operatingLimit";
+		public static final String POL_PERM_WF = "permittedWorkflows";
+		public static final String POL_PERM_LIST = "permittedListenerTypes";
+		public static final String POL_NOTIFIERS = "enabledNotificationFabrics";
+	}
 
 	/**
 	 * Helper class for describing the server's user-facing management API via
@@ -179,12 +231,6 @@ public interface TavernaServerREST {
 		 * Reference to the interaction feed for this server.
 		 */
 		public Uri interactionFeed;
-		/**
-		 * Where to go to make queries on the provenance database. Not yet
-		 * supported, so not handled by JAXB.
-		 */
-		@XmlTransient
-		public Uri database;
 
 		/** Make a blank server description. */
 		public ServerDescription() {
@@ -199,15 +245,13 @@ public interface TavernaServerREST {
 		public ServerDescription(UriInfo ui, String interactionFeed) {
 			super(true);
 			String base = ui.getBaseUri().toString();
-			runs = new Uri(ui, "runs");
-			policy = new Uri(ui, false, "policy");
+			runs = new Uri(ui, RUNS);
+			policy = new Uri(ui, false, POL);
 			feed = new Uri(java.net.URI.create(base.replaceFirst("/rest$",
 					"/feed")));
 			if (interactionFeed != null && !interactionFeed.isEmpty())
 				this.interactionFeed = new Uri(
 						java.net.URI.create(interactionFeed));
-			// database = new Uri(ui, "database");
-			// TODO TAVSERV-69: Make the database point to something real
 		}
 	}
 
@@ -225,11 +269,11 @@ public interface TavernaServerREST {
 		 * @return The description, which may be serialised as XML or JSON.
 		 */
 		@GET
-		@Path("/")
-		@Produces({ "application/xml", "application/json" })
+		@Path(ROOT)
+		@Produces({ XML, JSON })
 		@Description("Describe the parts of this policy.")
-		@NonNull
-		public PolicyDescription getDescription(@NonNull @Context UriInfo ui);
+		@Nonnull
+		public PolicyDescription getDescription(@Nonnull @Context UriInfo ui);
 
 		/**
 		 * Gets the maximum number of simultaneous runs that the user may
@@ -237,15 +281,37 @@ public interface TavernaServerREST {
 		 * this. If this number is lower than the number they currently have,
 		 * they will be unable to create any runs at all.
 		 * 
-		 * @return The maximum number of runs.
+		 * @return The maximum number of existing runs.
 		 */
 		@GET
-		@Path("runLimit")
+		@Path(POL_RUN_LIMIT)
 		@Produces("text/plain")
 		@RolesAllowed(USER)
-		@Description("Gets the maximum number of simultaneous runs that the user may create.")
-		@NonNull
+		@Description("Gets the maximum number of simultaneous runs in any "
+				+ "state that the user may create.")
+		@Nonnull
 		public int getMaxSimultaneousRuns();
+
+		/**
+		 * Gets the maximum number of simultaneous
+		 * {@linkplain org.taverna.server.master.common.Status.Operating
+		 * operating} runs that the user may create. The <i>actual</i> number
+		 * they can start may be lower than this. If this number is lower than
+		 * the number they currently have, they will be unable to start any runs
+		 * at all.
+		 * 
+		 * @return The maximum number of operating runs.
+		 */
+		@GET
+		@Path(POL_OP_LIMIT)
+		@Produces("text/plain")
+		@RolesAllowed(USER)
+		@Description("Gets the maximum number of simultaneously operating "
+				+ "runs that the user may have. Note that this is often a "
+				+ "global limit; it does not represent a promise that a "
+				+ "particular user may be able to have that many operating "
+				+ "runs at once.")
+		public int getMaxOperatingRuns();
 
 		/**
 		 * Gets the list of permitted workflows. Any workflow may be submitted
@@ -255,11 +321,11 @@ public interface TavernaServerREST {
 		 * @return The list of workflow documents.
 		 */
 		@GET
-		@Path("permittedWorkflows")
-		@Produces({ "application/xml", "application/json" })
+		@Path(POL_PERM_WF)
+		@Produces({ XML, JSON })
 		@RolesAllowed(USER)
 		@Description("Gets the list of permitted workflows.")
-		@NonNull
+		@Nonnull
 		public PermittedWorkflows getPermittedWorkflows();
 
 		/**
@@ -269,11 +335,11 @@ public interface TavernaServerREST {
 		 * @return The types of event listeners allowed.
 		 */
 		@GET
-		@Path("permittedListenerTypes")
-		@Produces({ "application/xml", "application/json" })
+		@Path(POL_PERM_LIST)
+		@Produces({ XML, JSON })
 		@RolesAllowed(USER)
 		@Description("Gets the list of permitted event listener types.")
-		@NonNull
+		@Nonnull
 		public PermittedListeners getPermittedListeners();
 
 		/**
@@ -284,12 +350,23 @@ public interface TavernaServerREST {
 		 *         destination URI.
 		 */
 		@GET
-		@Path("enabledNotificationFabrics")
-		@Produces({ "application/xml", "application/json" })
+		@Path(POL_NOTIFIERS)
+		@Produces({ XML, JSON })
 		@RolesAllowed(USER)
-		@Description("Gets the list of supported, enabled notification fabrics. Each corresponds (approximately) to a protocol, e.g., email.")
-		@NonNull
+		@Description("Gets the list of supported, enabled notification "
+				+ "fabrics. Each corresponds (approximately) to a protocol, "
+				+ "e.g., email.")
+		@Nonnull
 		public EnabledNotificationFabrics getEnabledNotifiers();
+
+		@GET
+		@Path(POL_CAPABILITIES)
+		@Produces({ XML, JSON })
+		@RolesAllowed(USER)
+		@Description("Gets a description of the capabilities supported by "
+				+ "this installation of Taverna Server.")
+		@Nonnull
+		public CapabilityList getCapabilities();
 
 		/**
 		 * A description of the parts of a server policy.
@@ -304,6 +381,11 @@ public interface TavernaServerREST {
 			 */
 			public Uri runLimit;
 			/**
+			 * Where to go to find out about the maximum number of operating
+			 * runs.
+			 */
+			public Uri operatingLimit;
+			/**
 			 * Where to go to find out about what workflows are allowed.
 			 */
 			public Uri permittedWorkflows;
@@ -315,6 +397,8 @@ public interface TavernaServerREST {
 			 * How notifications may be sent.
 			 */
 			public Uri enabledNotificationFabrics;
+
+			public Uri capabilities;
 
 			/** Make a blank server description. */
 			public PolicyDescription() {
@@ -328,13 +412,25 @@ public interface TavernaServerREST {
 			 */
 			public PolicyDescription(UriInfo ui) {
 				super(true);
-				runLimit = new Uri(ui, false, "runLimit");
-				permittedWorkflows = new Uri(ui, false, "permittedWorkflows");
-				permittedListenerTypes = new Uri(ui, false,
-						"permittedListenerTypes");
-				this.enabledNotificationFabrics = new Uri(ui, false,
-						"enabledNotificationFabrics");
+				runLimit = new Uri(ui, false, POL_RUN_LIMIT);
+				operatingLimit = new Uri(ui, false, POL_OP_LIMIT);
+				permittedWorkflows = new Uri(ui, false, POL_PERM_WF);
+				permittedListenerTypes = new Uri(ui, false, POL_PERM_LIST);
+				enabledNotificationFabrics = new Uri(ui, false, POL_NOTIFIERS);
+				capabilities = new Uri(ui, false, POL_CAPABILITIES);
 			}
+		}
+
+		/**
+		 * A list of Taverna Server capabilities.
+		 * 
+		 * @author Donal Fellows
+		 */
+		@XmlRootElement(name = "capabilities")
+		@XmlType(name = "")
+		public static class CapabilityList {
+			@XmlElement(name = "capability", namespace = SERVER)
+			public List<Capability> capability = new ArrayList<>();
 		}
 	}
 
@@ -348,13 +444,13 @@ public interface TavernaServerREST {
 	public static class PermittedWorkflows {
 		/** The workflows that are permitted. */
 		@XmlElement
-		public List<Workflow> workflow;
+		public List<URI> workflow;
 
 		/**
 		 * Make an empty list of permitted workflows.
 		 */
 		public PermittedWorkflows() {
-			workflow = new ArrayList<Workflow>();
+			workflow = new ArrayList<>();
 		}
 
 		/**
@@ -362,11 +458,11 @@ public interface TavernaServerREST {
 		 * 
 		 * @param permitted
 		 */
-		public PermittedWorkflows(List<Workflow> permitted) {
+		public PermittedWorkflows(List<URI> permitted) {
 			if (permitted == null)
-				workflow = new ArrayList<Workflow>();
+				workflow = new ArrayList<>();
 			else
-				workflow = new ArrayList<Workflow>(permitted);
+				workflow = new ArrayList<>(permitted);
 		}
 	}
 
@@ -386,7 +482,7 @@ public interface TavernaServerREST {
 		 * Make an empty list of permitted listener types.
 		 */
 		public PermittedListeners() {
-			type = new ArrayList<String>();
+			type = new ArrayList<>();
 		}
 
 		/**
@@ -415,7 +511,7 @@ public interface TavernaServerREST {
 		 * Make an empty list of run references.
 		 */
 		public RunList() {
-			run = new ArrayList<RunReference>();
+			run = new ArrayList<>();
 		}
 
 		/**
@@ -428,7 +524,7 @@ public interface TavernaServerREST {
 		 *            secured as it needs to have its pattern applied.
 		 */
 		public RunList(Map<String, TavernaRun> runs, UriBuilder ub) {
-			run = new ArrayList<RunReference>(runs.size());
+			run = new ArrayList<>(runs.size());
 			for (String name : runs.keySet())
 				run.add(new RunReference(name, ub));
 		}
@@ -450,7 +546,7 @@ public interface TavernaServerREST {
 		 * Make an empty list of enabled notifiers.
 		 */
 		public EnabledNotificationFabrics() {
-			notifier = new ArrayList<String>();
+			notifier = new ArrayList<>();
 		}
 
 		/**
@@ -475,11 +571,10 @@ public interface TavernaServerREST {
 		 */
 		@GET
 		@Path("/")
-		@Produces({ "application/xml", "application/json",
-				"application/atom+xml;type=feed" })
+		@Produces("application/atom+xml;type=feed")
 		@Description("Get an Atom feed for the user's events.")
-		@NonNull
-		Events getFeed();
+		@Nonnull
+		Feed getFeed(@Context UriInfo ui);
 
 		/**
 		 * @param id
@@ -488,38 +583,10 @@ public interface TavernaServerREST {
 		 */
 		@GET
 		@Path("{id}")
-		@Produces({ "application/xml", "application/json",
-				"application/atom+xml;type=entry" })
+		@Produces("application/atom+xml;type=entry")
 		@Description("Get a particular Atom event.")
-		@NonNull
-		AbstractEvent getEvent(@NonNull @PathParam("id") String id);
-	}
-
-	/**
-	 * A description of an collection of events.
-	 * 
-	 * @author Donal Fellows
-	 */
-	@XmlType(name = "Events")
-	public static abstract class Events extends VersionedElement {
-		/**
-		 * @return The owner of the events in question.
-		 */
-		@XmlAttribute
-		public abstract String getOwner();
-
-		/**
-		 * @return The actual list of events.
-		 */
-		@XmlElement
-		public abstract List<AbstractEvent> getEvents();
-
-		/**
-		 * @param id
-		 *            The identifier of a particular event.
-		 * @return The details about that event.
-		 */
-		public abstract AbstractEvent getEvent(String id);
+		@Nonnull
+		Entry getEvent(@Nonnull @PathParam("id") String id);
 	}
 
 	/**

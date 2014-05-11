@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.facade;
 
@@ -21,6 +21,8 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Required;
+import org.taverna.server.master.utils.Contextualizer;
 
 /**
  * This is a simple class that is used to serve up a file (with a simple
@@ -31,19 +33,8 @@ import org.apache.commons.logging.LogFactory;
 @Path("/")
 public class Facade {
 	private Log log = LogFactory.getLog("Taverna.Server.Utils");
-	private String pattern;
 	private String welcome;
-
-	/**
-	 * Set what to replace with the real service URI.
-	 * 
-	 * @param pattern
-	 *            The regexp pattern that matches the content of the file that
-	 *            will be replaced by the actual service address.
-	 */
-	public void setPattern(String pattern) {
-		this.pattern = pattern;
-	}
+	private Contextualizer contextualizer;
 
 	/**
 	 * Set what resource file to use as the template for the response.
@@ -60,6 +51,11 @@ public class Facade {
 		this.welcome = IOUtils.toString(full);
 	}
 
+	@Required
+	public void setContextualizer(Contextualizer contextualizer) {
+		this.contextualizer = contextualizer;
+	}
+
 	/**
 	 * Serve up some HTML as the root of the service.
 	 * 
@@ -71,9 +67,7 @@ public class Facade {
 	@Path("{dummy:.*}")
 	@Produces("text/html")
 	public Response get(@Context UriInfo ui) {
-		String url = ui.getBaseUri().toString().replace("%2D", "-");
-		if (!url.endsWith("/"))
-			url += "/";
-		return ok(welcome.replaceAll(pattern, url), TEXT_HTML_TYPE).build();
+		return ok(contextualizer.contextualize(ui, welcome), TEXT_HTML_TYPE)
+				.build();
 	}
 }

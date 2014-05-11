@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.exceptions;
 
@@ -15,6 +15,7 @@ import javax.xml.ws.WebFault;
  * @author Donal Fellows
  */
 @WebFault(name = "NotOwnerFault")
+@SuppressWarnings("serial")
 public class NotOwnerException extends Exception {
 	public NotOwnerException() {
 		super("not permitted; not the owner");

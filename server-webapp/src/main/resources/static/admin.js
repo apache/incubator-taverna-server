@@ -110,7 +110,7 @@ var NodeAll;
 			node.appendChild(child);
 		}
 		return node;
-	}
+	};
 	NodeAll = function(wrapperElem, wrappedElem, elements) {
 		var node = doc.createElementNS(adminNS, wrapperElem);
 		for ( var i = 0; i < elements.length; i++) {
@@ -120,15 +120,19 @@ var NodeAll;
 			node.appendChild(child);
 		}
 		return node;
-	}
+	};
 })();
 
-var buttonlist = [ "allowNew", "logFaults", "logWorkflows" ];
+/** The IDs of boolean-coupled buttons. */
+var buttonlist = [ "allowNew", "logFaults", "logWorkflows", "generateProvenance" ];
+/** The IDs of values that track server variables without setting things. */
 var readonlies = [ "invokationCount", "lastExitCode", "runCount", "startupTime", "operatingCount" ];
+/** The IDs of text/numeric-coupled entries. */
 var entries = [ "defaultLifetime", "executeWorkflowScript", "javaBinary",
 		"registrationPollMillis", "registrationWaitSeconds", "registryHost",
 		"registryPort", "runLimit", "runasPasswordFile", "serverForkerJar",
-		"serverWorkerJar", "usageRecordDumpFile", "operatingLimit" ];
+		"serverWorkerJar", "usageRecordDumpFile", "operatingLimit",
+		"registryJar" ];
 /** Cached information about users. */
 var userinfo = [];
 /** Extra arguments to pass to the runtime. */
@@ -186,6 +190,31 @@ function userRowHTML(idx) {
 	return "<tr id='usersep" + idx + "' class='userrows'>"
 			+ "<td colspan=6><hr></td></tr>" + "<tr id='userrow" + idx
 			+ "' class='userrows'>" + content + "</tr>";
+}
+
+/** How to get the list of permitted workflows; called on demand */
+function refreshWorkflows() {
+	var wftable = $("#workflows"), wfbut = $("#saveWorkflows"), wfref = $("#refreshWorkflows");
+	wfbut.button("disable");
+	wfref.button("disable");
+	getJSON(where("permittedWorkflowURIs"), function(data) {
+		var s = "";
+		$.each(data.stringList.string || [], function(idx, str) {
+			s += $.trim(str) + "\n";
+		});
+		wftable.val($.trim(s));
+		wfbut.button("enable");
+		wfref.button("enable");
+	});
+}
+/** How to set the list of permitted workflows; called when the user clicks */
+function saveWorkflows() {
+	var wftable = $("#workflows"), wfbut = $("#saveWorkflows");
+	var xml = NodeAll("stringList", "string", wftable.val().split("\n"));
+	wfbut.button("disable");
+	putXML(where("permittedWorkflowURIs"), xml, function() {
+		refreshWorkflows();
+	});
 }
 
 /** How to update the table of users; called on demand */
@@ -329,7 +358,7 @@ function connectButtonsAndEntries() {
 				widget.val(data);
 				return true;
 			});
-		})
+		});
 	});
 }
 
@@ -369,7 +398,6 @@ function loadExtraArgs() {
 				if ((typeof rows) == "string")
 					rows = [ rows ];
 				$(".extraargrow").remove();
-				var prop = "", env = "", run = "";
 				extraAry = rows;
 				var i;
 				function row() {
@@ -415,7 +443,7 @@ function loadExtraArgs() {
 											function() {
 												loadExtraArgs();
 											});
-								}
+								};
 							})(i));
 				}
 			});
@@ -457,6 +485,18 @@ $(function() {
 	$("#body").tabs({
 		selected : 0
 	});
+	$("#saveWorkflows").button({
+		disabled : true
+	}).click(function(event) {
+		saveWorkflows();
+		event.preventDefault();
+	});
+	$("#refreshWorkflows").button({
+		disabled : true
+	}).click(function(event) {
+		refreshWorkflows();
+		event.preventDefault();
+	});
 
 	// Make the link to the list of usage records point correctly
 	// Original plan called for browsable table, but that's too slow
@@ -466,6 +506,7 @@ $(function() {
 	updateRO();
 	setInterval(updateRO, 30000);
 	refreshUsers();
+	refreshWorkflows();
 	$("#newEnabled").button();
 	$("#newAdmin").button({
 		icons : {
@@ -473,7 +514,7 @@ $(function() {
 		}
 	});
 	$("#makeNewUser").button().click(function() {
-		makeNewUser()
+		makeNewUser();
 	});
 	$("#extra-prop-add").button().click(function() {
 		addExtraArg("#dialog-property", "-D", "#prop-key", "#prop-value");

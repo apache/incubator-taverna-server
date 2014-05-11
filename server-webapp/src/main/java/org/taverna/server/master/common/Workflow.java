@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010-2012 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.common;
 
@@ -51,6 +51,8 @@ import uk.org.taverna.scufl2.api.io.ReaderException;
 import uk.org.taverna.scufl2.api.io.WorkflowBundleIO;
 import uk.org.taverna.scufl2.api.io.WriterException;
 import uk.org.taverna.scufl2.api.profiles.Profile;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Encapsulation of a T2flow or Scufl2 document.
@@ -252,17 +254,14 @@ public class Workflow implements Serializable, Externalizable {
 			ClassNotFoundException {
 		try {
 			ByteArrayInputStream bytes = readbytes(in);
-			if (bytes != null) {
-				Reader r = new InputStreamReader(bytes, ENCODING);
-				Workflow w = (Workflow) unmarshaller.unmarshal(r);
-				r.close();
-				this.content = w.content;
-			}
+			if (bytes != null)
+				try (Reader r = new InputStreamReader(bytes, ENCODING)) {
+					content = ((Workflow) unmarshaller.unmarshal(r)).content;
+				}
 			bytes = readbytes(in);
-			if (bytes != null) {
-				this.bundle = io.readBundle(bytes, SCUFL2);
-			}
-			this.isBundleFirst = in.readBoolean();
+			if (bytes != null)
+				bundle = io.readBundle(bytes, SCUFL2);
+			isBundleFirst = in.readBoolean();
 			return;
 		} catch (JAXBException e) {
 			throw new IOException("failed to unmarshal", e);
@@ -290,22 +289,16 @@ public class Workflow implements Serializable, Externalizable {
 
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
-		if (content != null)
-			try {
-				writebytes(out, getAsT2Flow());
-			} catch (JAXBException e) {
-				throw new IOException("failed to marshal t2flow", e);
-			}
-		else
-			writebytes(out, null);
-		if (bundle != null)
-			try {
-				writebytes(out, getAsScufl2());
-			} catch (WriterException e) {
-				throw new IOException("failed to marshal scufl2", e);
-			}
-		else
-			writebytes(out, null);
+		try {
+			writebytes(out, (content != null) ? getAsT2Flow() : null);
+		} catch (JAXBException e) {
+			throw new IOException("failed to marshal t2flow", e);
+		}
+		try {
+			writebytes(out, (bundle != null) ? getAsScufl2() : null);
+		} catch (WriterException e) {
+			throw new IOException("failed to marshal scufl2", e);
+		}
 		out.writeBoolean(isBundleFirst);
 	}
 
@@ -323,5 +316,52 @@ public class Workflow implements Serializable, Externalizable {
 		out.writeInt(data == null ? 0 : data.length);
 		if (data != null && data.length > 0)
 			out.write(data);
+	}
+
+	/**
+	 * Make up for the lack of an integrated XPath engine.
+	 * 
+	 * @param name
+	 *            The element names to look up from the root of the contained
+	 *            document.
+	 * @return The looked up element, or <tt>null</tt> if it doesn't exist.
+	 */
+	private Element getEl(String... name) {
+		Element el = content;
+		boolean skip = true;
+		for (String n : name) {
+			if (skip) {
+				skip = false;
+				continue;
+			}
+			if (el == null)
+				return null;
+			NodeList nl = el.getElementsByTagNameNS(T2FLOW_NS, n);
+			if (nl.getLength() == 0)
+				return null;
+			Node node = nl.item(0);
+			if (node instanceof Element)
+				el = (Element) node;
+			else
+				return null;
+		}
+		return el;
+	}
+
+	/**
+	 * @return The content of the embedded
+	 *         <tt>&lt;workflow&gt;&lt;dataflow&gt;&lt;name&gt;</tt> element.
+	 */
+	@XmlTransient
+	public String getName() {
+		return getEl("workflow", "dataflow", "name").getTextContent();
+	}
+
+	/**
+	 * @return The embedded <tt>&lt;workflow&gt;</tt> element.
+	 */
+	@XmlTransient
+	public Element getWorkflowRoot() {
+		return getEl("workflow");
 	}
 }

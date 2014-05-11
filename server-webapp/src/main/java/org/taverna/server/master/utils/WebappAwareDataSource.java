@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.utils;
 
-import static org.taverna.server.master.utils.Contextualizer.SUBSTITUAND;
+import static org.taverna.server.master.utils.Contextualizer.ROOT_PLACEHOLDER;
 
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -19,15 +19,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 /**
  * Add some awareness of the context so that we can locate databases internally
  * to the webapp.
  * 
  * @author Donal Fellows
  */
-@SuppressWarnings("IS2_INCONSISTENT_SYNC")
 public class WebappAwareDataSource extends BasicDataSource {
 	Log log = LogFactory.getLog("Taverna.Server.Utils");
 	private transient boolean init;
@@ -53,12 +50,12 @@ public class WebappAwareDataSource extends BasicDataSource {
 		synchronized (this) {
 			if (!init) {
 				String url = getUrl();
-				if (url.contains(SUBSTITUAND)) {
+				if (url.contains(ROOT_PLACEHOLDER)) {
 					String newurl = ctxt.contextualize(url);
 					setUrl(newurl);
 					log.info("mapped " + url + " to " + newurl);
 				} else {
-					log.info("did not find " + SUBSTITUAND + " in " + url);
+					log.info("did not find " + ROOT_PLACEHOLDER + " in " + url);
 				}
 				init = true;
 			}

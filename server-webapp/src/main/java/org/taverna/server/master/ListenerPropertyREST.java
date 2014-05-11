@@ -1,18 +1,22 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master;
 
-import static org.taverna.server.master.TavernaServerImpl.log;
+import static org.taverna.server.master.TavernaServer.log;
+import static org.taverna.server.master.utils.RestUtils.opt;
 
-import org.taverna.server.master.TavernaServerImpl.SupportAware;
+import javax.ws.rs.core.Response;
+
+import org.taverna.server.master.api.ListenerPropertyBean;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.rest.TavernaServerListenersREST;
+import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 /**
@@ -43,6 +47,7 @@ class ListenerPropertyREST implements TavernaServerListenersREST.Property,
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	public String getValue() {
 		try {
 			return listen.getProperty(propertyName);
@@ -55,20 +60,17 @@ class ListenerPropertyREST implements TavernaServerListenersREST.Property,
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	public String setValue(String value) throws NoUpdateException,
 			NoListenerException {
 		support.permitUpdate(run);
 		listen.setProperty(propertyName, value);
 		return listen.getProperty(propertyName);
 	}
-}
 
-/**
- * Description of properties supported by {@link ListenerPropertyREST}.
- * 
- * @author Donal Fellows
- */
-interface ListenerPropertyBean extends SupportAware {
-	ListenerPropertyREST connect(Listener listen, TavernaRun run,
-			String propertyName);
+	@Override
+	@CallCounted
+	public Response options() {
+		return opt("PUT");
+	}
 }

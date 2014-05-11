@@ -1,11 +1,11 @@
 /*
  * Copyright (C) 2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.usage;
 
-import static org.taverna.server.master.TavernaServerImpl.log;
+import static org.taverna.server.master.TavernaServer.log;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -19,7 +19,7 @@ import javax.xml.bind.JAXBException;
 
 import org.ogf.usage.JobUsageRecord;
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.ManagementModel;
+import org.taverna.server.master.api.ManagementModel;
 import org.taverna.server.master.utils.Contextualizer;
 import org.taverna.server.master.utils.JDOSupport;
 
@@ -83,9 +83,8 @@ public class UsageRecordRecorder extends JDOSupport<UsageRecord> {
 	 */
 	public void storeUsageRecord(String usageRecord) {
 		String logfile = state.getUsageRecordLogFile();
-		if (logfile == null) {
-			logfile = logFile;
-		}
+		if (logfile == null)
+			logfile = this.logFile;
 		if (logfile != null) {
 			logfile = contextualizer.contextualize(logfile);
 			synchronized (lock) {
@@ -144,7 +143,7 @@ public class UsageRecordRecorder extends JDOSupport<UsageRecord> {
 		@SuppressWarnings("unchecked")
 		Collection<String> urs = (Collection<String>) namedQuery("allByDate")
 				.execute();
-		List<JobUsageRecord> result = new ArrayList<JobUsageRecord>();
+		List<JobUsageRecord> result = new ArrayList<>();
 		for (String ur : urs)
 			try {
 				result.add(JobUsageRecord.unmarshal(ur));

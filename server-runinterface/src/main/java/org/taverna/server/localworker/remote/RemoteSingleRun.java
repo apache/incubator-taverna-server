@@ -1,17 +1,18 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.localworker.remote;
 
+import java.net.URL;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.Date;
 import java.util.List;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public interface RemoteSingleRun extends Remote {
 	/**
@@ -34,7 +35,7 @@ public interface RemoteSingleRun extends Remote {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	public void setInputBaclavaFile(@NonNull String filename)
+	public void setInputBaclavaFile(@Nonnull String filename)
 			throws RemoteException;
 
 	/**
@@ -42,7 +43,7 @@ public interface RemoteSingleRun extends Remote {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	@NonNull
+	@Nonnull
 	public List<RemoteInput> getInputs() throws RemoteException;
 
 	/**
@@ -54,8 +55,8 @@ public interface RemoteSingleRun extends Remote {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	@NonNull
-	public RemoteInput makeInput(@NonNull String name) throws RemoteException;
+	@Nonnull
+	public RemoteInput makeInput(@Nonnull String name) throws RemoteException;
 
 	/**
 	 * @return The file (relative to the working directory) to write the outputs
@@ -89,7 +90,7 @@ public interface RemoteSingleRun extends Remote {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	@NonNull
+	@Nonnull
 	public RemoteStatus getStatus() throws RemoteException;
 
 	/**
@@ -109,7 +110,7 @@ public interface RemoteSingleRun extends Remote {
 	 *             If the startup time of the workflow implementation exceeds a
 	 *             built-in threshold.
 	 */
-	public void setStatus(@NonNull RemoteStatus s)
+	public void setStatus(@Nonnull RemoteStatus s)
 			throws IllegalStateTransitionException, RemoteException,
 			ImplementationException, StillWorkingOnItException;
 
@@ -137,7 +138,7 @@ public interface RemoteSingleRun extends Remote {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	@NonNull
+	@Nonnull
 	public RemoteDirectory getWorkingDirectory() throws RemoteException;
 
 	/**
@@ -145,7 +146,7 @@ public interface RemoteSingleRun extends Remote {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	@NonNull
+	@Nonnull
 	public List<RemoteListener> getListeners() throws RemoteException;
 
 	/**
@@ -158,7 +159,7 @@ public interface RemoteSingleRun extends Remote {
 	 * @throws ImplementationException
 	 *             If something goes wrong when adding the listener.
 	 */
-	public void addListener(@NonNull RemoteListener listener)
+	public void addListener(@Nonnull RemoteListener listener)
 			throws RemoteException, ImplementationException;
 
 	/**
@@ -168,7 +169,7 @@ public interface RemoteSingleRun extends Remote {
 	 * @throws ImplementationException
 	 *             If something goes wrong when getting the context.
 	 */
-	@NonNull
+	@Nonnull
 	public RemoteSecurityContext getSecurityContext() throws RemoteException,
 			ImplementationException;
 
@@ -189,7 +190,7 @@ public interface RemoteSingleRun extends Remote {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	@NonNull
+	@Nonnull
 	public List<String> getListenerTypes() throws RemoteException;
 
 	/**
@@ -205,7 +206,45 @@ public interface RemoteSingleRun extends Remote {
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
-	@NonNull
-	public RemoteListener makeListener(@NonNull String type,
-			@NonNull String configuration) throws RemoteException;
+	@Nonnull
+	public RemoteListener makeListener(@Nonnull String type,
+			@Nonnull String configuration) throws RemoteException;
+
+	/**
+	 * Configures the details to use when setting up the workflow run's
+	 * connnection to the interaction feed.
+	 * 
+	 * @param interactionFeed
+	 *            The location of the interaction feed. If <tt>null</tt>,
+	 *            defaults from the factory will be used instead.
+	 * @param webdavPath
+	 *            The location used for pushing web pages to support the feed.
+	 *            If <tt>null</tt>, a default from the factory will be used
+	 *            instead.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
+	 */
+	void setInteractionServiceDetails(@Nonnull URL interactionFeed,
+			@Nonnull URL webdavPath) throws RemoteException;
+
+	/**
+	 * A do-nothing method, used to check the general reachability of the
+	 * workflow run.
+	 * 
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
+	 */
+	void ping() throws RemoteException;
+
+	/**
+	 * Sets whether we should generate provenance information from a run.
+	 * 
+	 * @param generateProvenance
+	 *            Boolean flag, true for do the generation. Must be set before
+	 *            starting the run for this to have an effect.
+	 * @throws RemoteException
+	 *             If anything goes wrong with the communication.
+	 */
+	void setGenerateProvenance(boolean generateProvenance)
+			throws RemoteException;
 }

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2011-2012 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.common;
 
@@ -27,6 +27,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlType(name = "TrustDescriptor")
 @XmlRootElement(name = "trustedIdentity")
+@SuppressWarnings("serial")
 public final class Trust implements Serializable {
 	/** The location of this descriptor in the REST world. */
 	@XmlAttribute(namespace = XLINK)

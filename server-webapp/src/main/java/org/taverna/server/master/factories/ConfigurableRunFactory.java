@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2012 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.factories;
 
@@ -120,4 +120,14 @@ public interface ConfigurableRunFactory extends RunFactory {
 	 *             if anything goes wrong
 	 */
 	int getOperatingCount() throws Exception;
+
+	/** How do we start the RMI registry process? Getter */
+	String getRmiRegistryJar();
+
+	/** How do we start the RMI registry process? Setter */
+	void setRmiRegistryJar(String rmiRegistryJar);
+
+	boolean getGenerateProvenance();
+
+	void setGenerateProvenance(boolean generateProvenance);
 }

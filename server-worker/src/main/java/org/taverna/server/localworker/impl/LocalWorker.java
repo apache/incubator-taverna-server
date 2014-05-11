@@ -1,14 +1,14 @@
 /*
  * Copyright (C) 2010-2012 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.localworker.impl;
 
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;
 import static java.lang.System.out;
-import static java.nio.charset.Charset.defaultCharset;
+import static java.lang.management.ManagementFactory.getRuntimeMXBean;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -17,10 +17,14 @@ import static org.apache.commons.io.FileUtils.forceDelete;
 import static org.apache.commons.io.FileUtils.forceMkdir;
 import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
 import static org.apache.commons.io.FileUtils.writeLines;
-import static org.taverna.server.localworker.impl.SecurityConstants.HELIO_TOKEN_NAME;
-import static org.taverna.server.localworker.impl.SecurityConstants.KEYSTORE_FILE;
-import static org.taverna.server.localworker.impl.SecurityConstants.SECURITY_DIR_NAME;
-import static org.taverna.server.localworker.impl.SecurityConstants.TRUSTSTORE_FILE;
+import static org.taverna.server.localworker.api.Constants.HELIO_TOKEN_NAME;
+import static org.taverna.server.localworker.api.Constants.KEYSTORE_FILE;
+import static org.taverna.server.localworker.api.Constants.KEYSTORE_PASSWORD;
+import static org.taverna.server.localworker.api.Constants.SECURITY_DIR_NAME;
+import static org.taverna.server.localworker.api.Constants.SHARED_DIR_PROP;
+import static org.taverna.server.localworker.api.Constants.SUBDIR_LIST;
+import static org.taverna.server.localworker.api.Constants.SYSTEM_ENCODING;
+import static org.taverna.server.localworker.api.Constants.TRUSTSTORE_FILE;
 import static org.taverna.server.localworker.impl.utils.FilenameVerifier.getValidatedFile;
 import static org.taverna.server.localworker.remote.RemoteStatus.Finished;
 import static org.taverna.server.localworker.remote.RemoteStatus.Initialized;
@@ -29,8 +33,8 @@ import static org.taverna.server.localworker.remote.RemoteStatus.Stopped;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.net.URI;
+import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -42,6 +46,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
+import org.taverna.server.localworker.api.Worker;
+import org.taverna.server.localworker.api.WorkerFactory;
 import org.taverna.server.localworker.remote.IllegalStateTransitionException;
 import org.taverna.server.localworker.remote.ImplementationException;
 import org.taverna.server.localworker.remote.RemoteDirectory;
@@ -53,8 +59,6 @@ import org.taverna.server.localworker.remote.RemoteStatus;
 import org.taverna.server.localworker.remote.StillWorkingOnItException;
 import org.taverna.server.localworker.server.UsageRecordReceiver;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 /**
  * This class implements one side of the connection between the Taverna Server
  * master server and this process. It delegates to a {@link Worker} instance the
@@ -65,29 +69,20 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @see FileDelegate
  * @see WorkerCore
  */
-@SuppressWarnings({ "SE_BAD_FIELD", "SE_NO_SERIALVERSIONID" })
+@SuppressWarnings("serial")
 public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun {
 	// ----------------------- CONSTANTS -----------------------
 
-	/**
-	 * Subdirectories of the working directory to create by default.
-	 */
-	private static final String[] dirstomake = { "conf", "externaltool",
-			"feed", "lib", "logs", "plugins", "repository", "t2-database",
-			"var" };
-
-	/** The name of the default encoding for characters on this machine. */
-	public static final String SYSTEM_ENCODING = defaultCharset().name();
-
 	/** Handle to the directory containing the security info. */
 	static final File SECURITY_DIR;
+	static final String SLASHTEMP;
 	static {
+		SLASHTEMP = getProperty("java.io.tmpdir");
 		File home = new File(getProperty("user.home"));
 		// If we can't write to $HOME (i.e., we're in an odd deployment) use
 		// the official version of /tmp/$PID as a fallback.
 		if (!home.canWrite())
-			home = new File(getProperty("java.io.tmpdir"), ManagementFactory
-					.getRuntimeMXBean().getName());
+			home = new File(SLASHTEMP, getRuntimeMXBean().getName());
 		SECURITY_DIR = new File(home, SECURITY_DIR_NAME);
 	}
 
@@ -111,6 +106,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	final Map<String, File> inputRealFiles;
 	/** What inputs to pass as direct values. */
 	final Map<String, String> inputValues;
+	/** What delimiters to use. */
+	final Map<String, String> inputDelimiters;
 	/** The interface to the workflow engine subprocess. */
 	private final Worker core;
 	/** Our descriptor token (UUID). */
@@ -160,14 +157,16 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	/** Location for security information to be written to. */
 	File securityDirectory;
 	/**
-	 * Password to use to encrypt security information. This default is <7 chars
-	 * to work even without Unlimited Strength JCE.
+	 * Password to use to encrypt security information.
 	 */
-	char[] keystorePassword = new char[] { 'c', 'h', 'a', 'n', 'g', 'e' };
+	char[] keystorePassword = KEYSTORE_PASSWORD;
 	/** Additional server-specified environment settings. */
-	Map<String, String> environment = new HashMap<String, String>();
+	Map<String, String> environment = new HashMap<>();
 	/** Additional server-specified java runtime settings. */
-	List<String> runtimeSettings = new ArrayList<String>();
+	List<String> runtimeSettings = new ArrayList<>();
+	URL interactionFeedURL;
+	URL webdavURL;
+	private boolean doProvenance = true;
 
 	// ----------------------- METHODS -----------------------
 
@@ -207,11 +206,12 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		masterToken = id.toString();
 		this.workflow = workflow;
 		this.executeWorkflowCommand = executeWorkflowCommand;
-		base = new File(getProperty("java.io.tmpdir"), masterToken);
+		String sharedDir = getProperty(SHARED_DIR_PROP, SLASHTEMP);
+		base = new File(sharedDir, masterToken);
 		out.println("about to create " + base);
 		try {
 			forceMkdir(base);
-			for (String subdir : dirstomake) {
+			for (String subdir : SUBDIR_LIST) {
 				new File(base, subdir).mkdir();
 			}
 		} catch (IOException e) {
@@ -219,9 +219,10 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 					"problem creating run working directory", e);
 		}
 		baseDir = new DirectoryDelegate(base, null);
-		inputFiles = new HashMap<String, String>();
-		inputRealFiles = new HashMap<String, File>();
-		inputValues = new HashMap<String, String>();
+		inputFiles = new HashMap<>();
+		inputRealFiles = new HashMap<>();
+		inputValues = new HashMap<>();
+		inputDelimiters = new HashMap<>();
 		environment.putAll(seedEnvironment);
 		runtimeSettings.addAll(javaParams);
 		try {
@@ -328,7 +329,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 
 	@Override
 	public List<RemoteInput> getInputs() throws RemoteException {
-		ArrayList<RemoteInput> result = new ArrayList<RemoteInput>();
+		ArrayList<RemoteInput> result = new ArrayList<>();
 		for (String name : inputFiles.keySet())
 			result.add(new InputDelegate(name));
 		return result;
@@ -349,7 +350,6 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		return outputBaclava;
 	}
 
-	@SuppressWarnings("SE_INNER_CLASS")
 	class SecurityDelegate extends UnicastRemoteObject implements
 			RemoteSecurityContext {
 		private void setPrivatePerms(File dir) {
@@ -469,13 +469,13 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		}
 
 		@Override
-		public void setUriToAliasMap(HashMap<URI, String> uriToAliasMap)
+		public void setUriToAliasMap(Map<URI, String> uriToAliasMap)
 				throws RemoteException {
 			if (status != Initialized)
 				throw new RemoteException("not initializing");
 			if (uriToAliasMap == null)
 				return;
-			ArrayList<String> lines = new ArrayList<String>();
+			ArrayList<String> lines = new ArrayList<>();
 			for (Entry<URI, String> site : uriToAliasMap.entrySet())
 				lines.add(site.getKey().toASCIIString() + " " + site.getValue());
 			// write(URI_ALIAS_MAP, lines);
@@ -532,7 +532,6 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		}
 	}
 
-	@SuppressWarnings("SE_INNER_CLASS")
 	class InputDelegate extends UnicastRemoteObject implements RemoteInput {
 		private String name;
 
@@ -545,6 +544,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 				inputFiles.put(name, null);
 				inputRealFiles.put(name, null);
 				inputValues.put(name, null);
+				inputDelimiters.put(name, null);
 			}
 		}
 
@@ -561,6 +561,11 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		@Override
 		public String getValue() {
 			return inputValues.get(name);
+		}
+
+		@Override
+		public String getDelimiter() throws RemoteException {
+			return inputDelimiters.get(name);
 		}
 
 		@Override
@@ -581,6 +586,26 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			inputFiles.put(name, null);
 			inputRealFiles.put(name, null);
 			inputBaclava = null;
+		}
+
+		@Override
+		public void setDelimiter(String delimiter) throws RemoteException {
+			if (status != Initialized)
+				throw new IllegalStateException("not initializing");
+			if (inputBaclava != null)
+				throw new IllegalStateException("input baclava file set");
+			if (delimiter != null) {
+				if (delimiter.length() > 1)
+					throw new IllegalStateException(
+							"multi-character delimiter not permitted");
+				if (delimiter.charAt(0) == 0)
+					throw new IllegalStateException(
+							"may not use NUL for splitting");
+				if (delimiter.charAt(0) > 127)
+					throw new IllegalStateException(
+							"only ASCII characters supported for splitting");
+			}
+			inputDelimiters.put(name, delimiter);
 		}
 	}
 
@@ -620,6 +645,11 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	}
 
 	@Override
+	public void setGenerateProvenance(boolean prov) {
+		doProvenance = prov;
+	}
+
+	@Override
 	public void setStatus(RemoteStatus newStatus)
 			throws IllegalStateTransitionException, RemoteException,
 			ImplementationException, StillWorkingOnItException {
@@ -635,7 +665,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 			case Initialized:
 				boolean started;
 				try {
-					started = startWorker();
+					started = createWorker();
 				} catch (Exception e) {
 					throw new ImplementationException(
 							"problem creating executing workflow", e);
@@ -649,11 +679,13 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 					core.startWorker();
 				} catch (Exception e) {
 					throw new ImplementationException(
-							"problem starting workflow run", e);
+							"problem continuing workflow run", e);
 				}
 				break;
 			case Finished:
 				throw new IllegalStateTransitionException("already finished");
+			default:
+				break;
 			}
 			status = Operating;
 			break;
@@ -672,6 +704,8 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 				break;
 			case Finished:
 				throw new IllegalStateTransitionException("already finished");
+			default:
+				break;
 			}
 			status = Stopped;
 			break;
@@ -687,6 +721,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 					throw new ImplementationException(
 							"problem killing workflow run", e);
 				}
+			default:
 				break;
 			}
 			status = Finished;
@@ -694,7 +729,7 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		}
 	}
 
-	private boolean startWorker() throws Exception {
+	private boolean createWorker() throws Exception {
 		start = new Date();
 		char[] pw = keystorePassword;
 		keystorePassword = null;
@@ -703,10 +738,10 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 		 * *transferred* to the worker core which doesn't copy it but *does*
 		 * clear it after use.
 		 */
-		return core.initWorker(executeWorkflowCommand, workflow, base,
-				inputBaclavaFile, inputRealFiles, inputValues,
-				outputBaclavaFile, securityDirectory, pw, environment,
-				masterToken, runtimeSettings);
+		return core.initWorker(this, executeWorkflowCommand, workflow, base,
+				inputBaclavaFile, inputRealFiles, inputValues, inputDelimiters,
+				outputBaclavaFile, securityDirectory, pw, doProvenance,
+				environment, masterToken, runtimeSettings);
 	}
 
 	@Override
@@ -717,5 +752,16 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 	@Override
 	public Date getStartTimestamp() {
 		return start == null ? null : new Date(start.getTime());
+	}
+
+	@Override
+	public void setInteractionServiceDetails(URL feed, URL webdav) {
+		interactionFeedURL = feed;
+		webdavURL = webdav;
+	}
+
+	@Override
+	public void ping() {
+		// Do nothing here; this *should* be empty
 	}
 }

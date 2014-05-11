@@ -1,61 +1,62 @@
 /*
- * Copyright (C) 2010-2012 The University of Manchester
+ * Copyright (C) 2010-2013 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.localworker;
 
-//import static java.lang.System.getSecurityManager;
+import static java.lang.System.getSecurityManager;
 import static java.lang.System.setProperty;
-//import static java.lang.System.setSecurityManager;
-import static java.net.InetAddress.getLocalHost;
+import static java.lang.System.setSecurityManager;
 import static java.rmi.registry.LocateRegistry.createRegistry;
 import static java.rmi.registry.LocateRegistry.getRegistry;
 import static java.rmi.registry.Registry.REGISTRY_PORT;
-import static java.rmi.server.RMISocketFactory.getDefaultSocketFactory;
 import static java.util.UUID.randomUUID;
-import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
+import static org.taverna.server.master.TavernaServer.JMX_ROOT;
+import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.DIR;
 
 import java.io.IOException;
-import java.net.ServerSocket;
-//import java.rmi.RMISecurityManager;
+import java.io.ObjectInputStream;
+import java.net.URL;
+import java.rmi.MarshalledObject;
+import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.xml.bind.JAXBException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
 import org.taverna.server.localworker.server.UsageRecordReceiver;
-import org.taverna.server.master.ContentsDescriptorBuilder.UriBuilderFactory;
 import org.taverna.server.master.common.Workflow;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoListenerException;
-import org.taverna.server.master.factories.ConfigurableRunFactory;
 import org.taverna.server.master.factories.ListenerFactory;
 import org.taverna.server.master.factories.RunFactory;
+import org.taverna.server.master.interaction.InteractionFeedSupport;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.SecurityContextFactory;
 import org.taverna.server.master.interfaces.TavernaRun;
+import org.taverna.server.master.interfaces.UriBuilderFactory;
+import org.taverna.server.master.notification.atom.EventDAO;
 import org.taverna.server.master.usage.UsageRecordRecorder;
 import org.taverna.server.master.utils.UsernamePrincipal;
+import org.taverna.server.master.worker.FactoryBean;
+import org.taverna.server.master.worker.RemoteRunDelegate;
+import org.taverna.server.master.worker.RunFactoryConfiguration;
 
 import uk.org.taverna.scufl2.api.io.WriterException;
 
@@ -65,18 +66,8 @@ import uk.org.taverna.scufl2.api.io.WriterException;
  * @author Donal Fellows
  */
 @ManagedResource(objectName = JMX_ROOT + "Factory", description = "The factory for runs")
-public abstract class AbstractRemoteRunFactory implements ListenerFactory,
-		RunFactory, ConfigurableRunFactory {
-	/** The logger for writing messages out on. */
-	Log log = LogFactory.getLog("Taverna.Server.LocalWorker");
-
-	@SuppressWarnings("unused")
-	@PreDestroy
-	@edu.umd.cs.findbugs.annotations.SuppressWarnings("UPM_UNCALLED_PRIVATE_METHOD")
-	private void closeLog() {
-		log = null;
-	}
-
+public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
+		implements ListenerFactory, RunFactory, FactoryBean {
 	/**
 	 * Whether to apply stronger limitations than normal to RMI. It is
 	 * recommended that this be true!
@@ -87,6 +78,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	private String interhost;
 	/** The interaction port number. */
 	private String interport;
+	private Process registryProcess;
 	/**
 	 * The interaction WebDAV location. Will be resolved before being passed to
 	 * the back-end.
@@ -100,6 +92,8 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	/** Used for doing URI resolution. */
 	@Resource(name = "webapp")
 	private UriBuilderFactory baseurifactory;
+	@Autowired
+	private InteractionFeedSupport interactionFeedSupport;
 
 	@Value("${taverna.interaction.host}")
 	void setInteractionHost(String host) {
@@ -129,6 +123,15 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		interfeed = feed;
 	}
 
+	@Override
+	protected void reinitRegistry() {
+		registry = null;
+		if (registryProcess != null) {
+			registryProcess.destroy();
+			registryProcess = null;
+		}
+	}
+
 	protected void initInteractionDetails(RemoteRunFactory factory)
 			throws RemoteException {
 		if (interhost != null) {
@@ -140,18 +143,38 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	}
 
 	private Registry makeRegistry(int port) throws RemoteException {
-		if (rmiLocalhostOnly) {
-			setProperty("java.rmi.server.hostname", "127.0.0.1");
-			return createRegistry(port, getDefaultSocketFactory(),
-					new RMIServerSocketFactory() {
-						@Override
-						public ServerSocket createServerSocket(int port)
-								throws IOException {
-							return new ServerSocket(port, 0, getLocalHost());
-						}
-					});
-		} else {
-			return createRegistry(port);
+		ProcessBuilder p = new ProcessBuilder(getJavaBinary());
+		p.command().add("-jar");
+		p.command().add(getRmiRegistryJar());
+		p.command().add(Integer.toString(port));
+		p.command().add(Boolean.toString(rmiLocalhostOnly));
+		try {
+			Process proc = p.start();
+			Thread.sleep(getSleepTime());
+			try {
+				if (proc.exitValue() == 0)
+					return null;
+				String error = IOUtils.toString(proc.getErrorStream());
+				throw new RemoteException(error);
+			} catch (IllegalThreadStateException ise) {
+				// Still running!
+			}
+			try (ObjectInputStream ois = new ObjectInputStream(
+					proc.getInputStream())) {
+				@SuppressWarnings("unchecked")
+				Registry r = ((MarshalledObject<Registry>) ois.readObject())
+						.get();
+				registryProcess = proc;
+				return r;
+			}
+		} catch (RemoteException e) {
+			throw e;
+		} catch (ClassNotFoundException e) {
+			throw new RemoteException("unexpected registry type", e);
+		} catch (IOException e) {
+			throw new RemoteException("unexpected IO problem with registry", e);
+		} catch (InterruptedException e) {
+			throw new RemoteException("unexpected interrupt");
 		}
 	}
 
@@ -215,61 +238,19 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 * install.
 	 */
 	public static final String SECURITY_POLICY_FILE = "security.policy";
-	LocalWorkerState state;
-	RunDBSupport runDB;
 	private SecurityContextFactory securityFactory;
 	UsageRecordRecorder usageRecordSink;
 	TaskExecutor urProcessorPool;
-
-	@Autowired(required = true)
-	void setState(LocalWorkerState state) {
-		this.state = state;
-	}
-
-	@Autowired(required = true)
-	void setRunDB(RunDBSupport runDB) {
-		this.runDB = runDB;
-	}
+	private EventDAO masterEventFeed;
 
 	@Autowired(required = true)
 	void setSecurityContextFactory(SecurityContextFactory factory) {
 		this.securityFactory = factory;
 	}
 
-	@ManagedAttribute(description = "The host holding the RMI registry to communicate via.")
-	@Override
-	public String getRegistryHost() {
-		return state.getRegistryHost();
-	}
-
-	@ManagedAttribute(description = "The host holding the RMI registry to communicate via.")
-	@Override
-	public void setRegistryHost(String host) {
-		boolean rebuild = false;
-		if (host == null || host.isEmpty()) {
-			host = null;
-			rebuild = (state.getRegistryHost() != null);
-		} else {
-			rebuild = !host.equals(state.getRegistryHost());
-		}
-		state.setRegistryHost(host);
-		if (rebuild) {
-			registry = null;
-		}
-	}
-
-	@ManagedAttribute(description = "The port number of the RMI registry. Should not normally be set.")
-	@Override
-	public int getRegistryPort() {
-		return state.getRegistryPort();
-	}
-
-	@ManagedAttribute(description = "The port number of the RMI registry. Should not normally be set.")
-	@Override
-	public void setRegistryPort(int port) {
-		if (port != state.getRegistryPort())
-			registry = null;
-		state.setRegistryPort(port);
+	@Autowired(required = true)
+	void setMasterEventFeed(EventDAO masterEventFeed) {
+		this.masterEventFeed = masterEventFeed;
 	}
 
 	@Autowired(required = true)
@@ -283,13 +264,22 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		this.urProcessorPool = urProcessorPool;
 	}
 
+	/**
+	 * Configures the Java security model. Not currently used, as it is
+	 * viciously difficult to get right!
+	 */
+	@SuppressWarnings("unused")
+	private static void installSecurityManager() {
+		if (getSecurityManager() == null) {
+			setProperty("java.security.policy", AbstractRemoteRunFactory.class
+					.getClassLoader().getResource(SECURITY_POLICY_FILE)
+					.toExternalForm());
+			setSecurityManager(new RMISecurityManager());
+		}
+	}
+
 	// static {
-	// if (getSecurityManager() == null) {
-	// setProperty("java.security.policy", AbstractRemoteRunFactory.class
-	// .getClassLoader().getResource(SECURITY_POLICY_FILE)
-	// .toExternalForm());
-	// setSecurityManager(new RMISecurityManager());
-	// }
+	// installSecurityManager();
 	// }
 
 	/**
@@ -319,12 +309,12 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		try {
 			RemoteRunDelegate rrd = runDB.pickArbitraryRun();
 			if (rrd != null)
-				return rrd.run.getListenerTypes();
+				return rrd.getListenerTypes();
 			log.warn("no remote runs; no listener types");
 		} catch (Exception e) {
 			log.warn("failed to get list of listener types", e);
 		}
-		return new ArrayList<String>();
+		return new ArrayList<>();
 	}
 
 	@Override
@@ -344,8 +334,13 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 			UUID id = randomUUID();
 			RemoteSingleRun rsr = getRealRun(creator, workflow, id);
 			RemoteRunDelegate run = new RemoteRunDelegate(now, workflow, rsr,
-					state.getDefaultLifetime(), runDB, id, this);
+					state.getDefaultLifetime(), runDB, id,
+					state.getGenerateProvenance(), this);
 			run.setSecurityContext(securityFactory.create(run, creator));
+			URL feedUrl = interactionFeedSupport.getFeedURI(run).toURL();
+			URL webdavUrl = baseurifactory.getRunUriBuilder(run)
+					.path(DIR + "/interactions").build().toURL();
+			rsr.setInteractionServiceDetails(feedUrl, webdavUrl);
 			return run;
 		} catch (NoCreateException e) {
 			log.warn("failed to build run instance", e);
@@ -372,66 +367,6 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	protected abstract RemoteSingleRun getRealRun(UsernamePrincipal creator,
 			Workflow workflow, UUID id) throws Exception;
 
-	/** @return The names of the current runs. */
-	@ManagedAttribute(description = "The names of the current runs.", currencyTimeLimit = 5)
-	@Override
-	public String[] getCurrentRunNames() {
-		List<String> names = runDB.listRunNames();
-		return names.toArray(new String[names.size()]);
-	}
-
-	@ManagedAttribute(description = "The maximum number of simultaneous runs supported by the server.", currencyTimeLimit = 300)
-	@Override
-	public int getMaxRuns() {
-		return state.getMaxRuns();
-	}
-
-	@ManagedAttribute(description = "The maximum number of simultaneous runs supported by the server.")
-	@Override
-	public void setMaxRuns(int maxRuns) {
-		state.setMaxRuns(maxRuns);
-	}
-
-	@ManagedAttribute(description = "The maximum number of simultaneous operating runs supported by the server.", currencyTimeLimit = 300)
-	@Override
-	public int getOperatingLimit() {
-		return state.getOperatingLimit();
-	}
-
-	@ManagedAttribute(description = "The maximum number of simultaneous operating runs supported by the server.")
-	@Override
-	public void setOperatingLimit(int operatingLimit) {
-		state.setOperatingLimit(operatingLimit);
-	}
-
-	/**
-	 * @return A count of the number of runs believed to actually be in the
-	 *         {@linkplain uk.org.taverna.server.master.common.Status#Operating
-	 *         operating} state.
-	 * @throws Exception
-	 *             If anything goes wrong.
-	 */
-	public abstract int getOperatingCount() throws Exception;
-
-	/** @return How many minutes should a workflow live by default? */
-	@ManagedAttribute(description = "How many minutes should a workflow live by default?", currencyTimeLimit = 300)
-	@Override
-	public int getDefaultLifetime() {
-		return state.getDefaultLifetime();
-	}
-
-	/**
-	 * Set how long a workflow should live by default.
-	 * 
-	 * @param defaultLifetime
-	 *            Default lifetime, in minutes.
-	 */
-	@ManagedAttribute
-	@Override
-	public void setDefaultLifetime(int defaultLifetime) {
-		state.setDefaultLifetime(defaultLifetime);
-	}
-
 	/**
 	 * How to convert a wrapped workflow into XML.
 	 * 
@@ -451,16 +386,6 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 		}
 	}
 
-	@Override
-	public boolean isAllowingRunsToStart() {
-		try {
-			return state.getOperatingLimit() > getOperatingCount();
-		} catch (Exception e) {
-			log.info("failed to get operating run count", e);
-			return false;
-		}
-	}
-
 	/**
 	 * Make a Remote object that can act as a consumer for usage records.
 	 * 
@@ -470,8 +395,7 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 	 */
 	protected UsageRecordReceiver makeURReciver(UsernamePrincipal creator) {
 		try {
-			@edu.umd.cs.findbugs.annotations.SuppressWarnings({
-					"SE_BAD_FIELD_INNER_CLASS", "SE_NO_SERIALVERSIONID" })
+			@SuppressWarnings("serial")
 			class URReceiver extends UnicastRemoteObject implements
 					UsageRecordReceiver {
 				public URReceiver() throws RemoteException {
@@ -500,5 +424,10 @@ public abstract class AbstractRemoteRunFactory implements ListenerFactory,
 			log.warn("failed to build usage record receiver", e);
 			return null;
 		}
+	}
+
+	@Override
+	public EventDAO getMasterEventFeed() {
+		return masterEventFeed;
 	}
 }

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.localworker.remote;
 
@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Collection;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import javax.annotation.Nonnull;
 
 /**
  * Represents a directory that is the working directory of a workflow run, or a
@@ -26,7 +26,7 @@ public interface RemoteDirectory extends RemoteDirectoryEntry {
 	 * @throws IOException
 	 *             If anything goes wrong with listing the directory.
 	 */
-	@NonNull
+	@Nonnull
 	public Collection<RemoteDirectoryEntry> getContents()
 			throws RemoteException, IOException;
 
@@ -41,8 +41,8 @@ public interface RemoteDirectory extends RemoteDirectoryEntry {
 	 * @throws IOException
 	 *             If things go wrong with creating the subdirectory.
 	 */
-	@NonNull
-	public RemoteDirectory makeSubdirectory(@NonNull String name)
+	@Nonnull
+	public RemoteDirectory makeSubdirectory(@Nonnull String name)
 			throws RemoteException, IOException;
 
 	/**
@@ -56,7 +56,7 @@ public interface RemoteDirectory extends RemoteDirectoryEntry {
 	 * @throws IOException
 	 *             If anything goes wrong with creating the file.
 	 */
-	@NonNull
-	public RemoteFile makeEmptyFile(@NonNull String name)
+	@Nonnull
+	public RemoteFile makeEmptyFile(@Nonnull String name)
 			throws RemoteException, IOException;
 }

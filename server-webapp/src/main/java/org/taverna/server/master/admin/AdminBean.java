@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.admin;
 
@@ -12,9 +12,13 @@ import static javax.ws.rs.core.Response.noContent;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.taverna.server.master.common.Roles.ADMIN;
 import static org.taverna.server.master.common.Uri.secure;
+import static org.taverna.server.master.utils.RestUtils.opt;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.core.Response;
@@ -23,14 +27,15 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.ManagementModel;
+import org.taverna.server.master.api.ManagementModel;
 import org.taverna.server.master.exceptions.GeneralFailureException;
 import org.taverna.server.master.factories.ConfigurableRunFactory;
 import org.taverna.server.master.identity.User;
-import org.taverna.server.master.identity.UserStore;
-import org.taverna.server.master.localworker.RunDBSupport;
+import org.taverna.server.master.identity.UserStoreAPI;
 import org.taverna.server.master.usage.UsageRecordRecorder;
 import org.taverna.server.master.utils.InvocationCounter;
+import org.taverna.server.master.worker.RunDBSupport;
+import org.taverna.server.master.worker.WorkerModel;
 
 /**
  * The administration interface to Taverna Server.
@@ -64,8 +69,13 @@ public class AdminBean implements Admin {
 	}
 
 	@Required
-	public void setUserStore(UserStore userStore) {
+	public void setUserStore(UserStoreAPI userStore) {
 		this.userStore = userStore;
+	}
+
+	@Required
+	public void setLocalWorkerModel(WorkerModel worker) {
+		localWorker = worker;
 	}
 
 	public void setAdminHtmlFile(String filename) {
@@ -87,7 +97,8 @@ public class AdminBean implements Admin {
 	private RunDBSupport runDB;
 	private ConfigurableRunFactory factory;
 	private UsageRecordRecorder usageRecords;
-	private UserStore userStore;
+	private UserStoreAPI userStore;
+	private WorkerModel localWorker;
 	private String adminHtmlFile = "/admin.html";
 	private String resourceRoot = "/static/";
 
@@ -97,6 +108,7 @@ public class AdminBean implements Admin {
 		return Response.ok(getResource(adminHtmlFile), "text/html").build();
 	}
 
+	@Override
 	@RolesAllowed(ADMIN)
 	public Response getStaticResource(String file) throws IOException {
 		if (file.matches("^[-_.a-zA-Z0-9]+$")) {
@@ -133,6 +145,14 @@ public class AdminBean implements Admin {
 
 	@RolesAllowed(ADMIN)
 	@Override
+	public Response optionsRoot() {
+		return opt();
+	}
+
+	// /////////////////////////////////////////////////////
+
+	@RolesAllowed(ADMIN)
+	@Override
 	public boolean getAllowNew() {
 		return state.getAllowNewWorkflowRuns();
 	}
@@ -143,6 +163,14 @@ public class AdminBean implements Admin {
 		state.setAllowNewWorkflowRuns(newValue);
 		return state.getAllowNewWorkflowRuns();
 	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response optionsAllowNew() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -159,6 +187,14 @@ public class AdminBean implements Admin {
 
 	@RolesAllowed(ADMIN)
 	@Override
+	public Response optionsLogWorkflows() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
+
+	@RolesAllowed(ADMIN)
+	@Override
 	public boolean getLogFaults() {
 		return state.getLogOutgoingExceptions();
 	}
@@ -169,6 +205,14 @@ public class AdminBean implements Admin {
 		state.setLogOutgoingExceptions(newValue);
 		return state.getLogOutgoingExceptions();
 	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response optionsLogFaults() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -185,8 +229,24 @@ public class AdminBean implements Admin {
 
 	@RolesAllowed(ADMIN)
 	@Override
+	public Response optionsURFile() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
+
+	@RolesAllowed(ADMIN)
+	@Override
 	public int invokeCount() {
 		return counter.getCount();
+	}
+
+	// /////////////////////////////////////////////////////
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response optionsInvokationCount() {
+		return opt();
 	}
 
 	@RolesAllowed(ADMIN)
@@ -194,6 +254,14 @@ public class AdminBean implements Admin {
 	public int runCount() {
 		return runDB.countRuns();
 	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response optionsRunCount() {
+		return opt();
+	}
+
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -208,6 +276,13 @@ public class AdminBean implements Admin {
 		return factory.getRegistryHost();
 	}
 
+	@Override
+	public Response optionsRegistryHost() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
+
 	@RolesAllowed(ADMIN)
 	@Override
 	public int getRegistryPort() {
@@ -220,6 +295,34 @@ public class AdminBean implements Admin {
 		factory.setRegistryPort(newValue);
 		return factory.getRegistryPort();
 	}
+
+	@Override
+	public Response optionsRegistryPort() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public String getRegistryJar() {
+		return factory.getRmiRegistryJar();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public String setRegistryJar(String registryJar) {
+		factory.setRmiRegistryJar(registryJar);
+		return factory.getRmiRegistryJar();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response optionsRegistryJar() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -234,6 +337,13 @@ public class AdminBean implements Admin {
 		return factory.getMaxRuns();
 	}
 
+	@Override
+	public Response optionsRunLimit() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
+
 	@RolesAllowed(ADMIN)
 	@Override
 	public int getDefaultLifetime() {
@@ -247,6 +357,13 @@ public class AdminBean implements Admin {
 		return factory.getDefaultLifetime();
 	}
 
+	@Override
+	public Response optionsDefaultLifetime() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
+
 	@RolesAllowed(ADMIN)
 	@Override
 	public StringList currentRuns() {
@@ -254,6 +371,14 @@ public class AdminBean implements Admin {
 		result.string = runDB.listRunNames();
 		return result;
 	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response optionsCurrentRuns() {
+		return opt();
+	}
+
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -267,6 +392,13 @@ public class AdminBean implements Admin {
 		factory.setJavaBinary(newValue);
 		return factory.getJavaBinary();
 	}
+
+	@Override
+	public Response optionsJavaBinary() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -292,6 +424,14 @@ public class AdminBean implements Admin {
 
 	@RolesAllowed(ADMIN)
 	@Override
+	public Response optionsExtraArguments() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
+
+	@RolesAllowed(ADMIN)
+	@Override
 	public String getServerWorkerJar() {
 		return factory.getServerWorkerJar();
 	}
@@ -302,6 +442,14 @@ public class AdminBean implements Admin {
 		factory.setServerWorkerJar(newValue);
 		return factory.getServerWorkerJar();
 	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response optionsServerWorkerJar() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -318,6 +466,14 @@ public class AdminBean implements Admin {
 
 	@RolesAllowed(ADMIN)
 	@Override
+	public Response optionsExecuteWorkflowScript() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
+
+	@RolesAllowed(ADMIN)
+	@Override
 	public int getRegistrationWaitSeconds() {
 		return factory.getWaitSeconds();
 	}
@@ -328,6 +484,14 @@ public class AdminBean implements Admin {
 		factory.setWaitSeconds(newValue);
 		return factory.getWaitSeconds();
 	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response optionsRegistrationWaitSeconds() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -344,6 +508,14 @@ public class AdminBean implements Admin {
 
 	@RolesAllowed(ADMIN)
 	@Override
+	public Response optionsRegistrationPollMillis() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
+
+	@RolesAllowed(ADMIN)
+	@Override
 	public String getRunasPasswordFile() {
 		return factory.getPasswordFile();
 	}
@@ -354,6 +526,14 @@ public class AdminBean implements Admin {
 		factory.setPasswordFile(newValue);
 		return factory.getPasswordFile();
 	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response optionsRunasPasswordFile() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -370,15 +550,39 @@ public class AdminBean implements Admin {
 
 	@RolesAllowed(ADMIN)
 	@Override
+	public Response optionsServerForkerJar() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
+
+	@RolesAllowed(ADMIN)
+	@Override
 	public int startupTime() {
 		return factory.getLastStartupCheckCount();
 	}
 
 	@RolesAllowed(ADMIN)
 	@Override
+	public Response optionsStartupTime() {
+		return opt();
+	}
+
+	// /////////////////////////////////////////////////////
+
+	@RolesAllowed(ADMIN)
+	@Override
 	public Integer lastExitCode() {
 		return factory.getLastExitCode();
 	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response optionsLastExitCode() {
+		return opt();
+	}
+
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -390,11 +594,27 @@ public class AdminBean implements Admin {
 
 	@RolesAllowed(ADMIN)
 	@Override
+	public Response optionsFactoryProcessMapping() {
+		return opt();
+	}
+
+	// /////////////////////////////////////////////////////
+
+	@RolesAllowed(ADMIN)
+	@Override
 	public URList usageRecords() {
 		URList result = new URList();
 		result.usageRecord = usageRecords.getUsageRecords();
 		return result;
 	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response optionsUsageRecords() {
+		return opt();
+	}
+
+	// /////////////////////////////////////////////////////
 
 	@RolesAllowed(ADMIN)
 	@Override
@@ -408,6 +628,12 @@ public class AdminBean implements Admin {
 
 	@RolesAllowed(ADMIN)
 	@Override
+	public Response optionsUsers() {
+		return opt("POST");
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
 	public UserDesc user(String username) {
 		UserDesc desc = new UserDesc();
 		User u = userStore.getUser(username);
@@ -416,6 +642,12 @@ public class AdminBean implements Admin {
 		desc.admin = u.isAdmin();
 		desc.enabled = u.isEnabled();
 		return desc;
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response optionsUser(String username) {
+		return opt("PUT", "DELETE");
 	}
 
 	@RolesAllowed(ADMIN)
@@ -465,6 +697,9 @@ public class AdminBean implements Admin {
 		return noContent().build();
 	}
 
+	// /////////////////////////////////////////////////////
+
+	@RolesAllowed(ADMIN)
 	@Override
 	public int operatingCount() {
 		try {
@@ -474,14 +709,86 @@ public class AdminBean implements Admin {
 		}
 	}
 
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response optionsOperatingCount() {
+		return opt();
+	}
+
+	// /////////////////////////////////////////////////////
+
+	@RolesAllowed(ADMIN)
 	@Override
 	public int getOperatingLimit() {
 		return factory.getOperatingLimit();
 	}
 
+	@RolesAllowed(ADMIN)
 	@Override
 	public int setOperatingLimit(int operatingLimit) {
 		factory.setOperatingLimit(operatingLimit);
 		return factory.getOperatingLimit();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response optionsOperatingLimit() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
+	@RolesAllowed(ADMIN)
+	@Override
+	public StringList getPermittedWorkflowURIs() {
+		StringList sl = new StringList();
+		List<URI> uris = localWorker.getPermittedWorkflowURIs();
+		if (uris != null)
+			for (URI uri : uris)
+				sl.string.add(uri.toString());
+		return sl;
+	}
+
+	private static final URI myExp = URI.create("http://www.myexperment.org/");
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public StringList setPermittedWorkflowURIs(StringList permitted) {
+		List<URI> uris = new ArrayList<>();
+		for (String uri : permitted.string)
+			try {
+				uris.add(myExp.resolve(uri));
+			} catch (Exception e) {
+				// Ignore
+			}
+		localWorker.setPermittedWorkflowURIs(uris);
+		return getPermittedWorkflowURIs();
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response optionsPermittedWorkflowURIs() {
+		return opt("PUT");
+	}
+
+	// /////////////////////////////////////////////////////
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public String getGenerateProvenance() {
+		return Boolean.toString(localWorker.getGenerateProvenance());
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public String setGenerateProvenance(String newValue) {
+		boolean b = Boolean.parseBoolean(newValue);
+		localWorker.setGenerateProvenance(b);
+		return Boolean.toString(localWorker.getGenerateProvenance());
+	}
+
+	@RolesAllowed(ADMIN)
+	@Override
+	public Response optionsGenerateProvenance() {
+		return opt("PUT");
 	}
 }

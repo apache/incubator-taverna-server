@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.exceptions;
 
@@ -19,5 +19,9 @@ public class UnknownRunException extends Exception {
 
 	public UnknownRunException() {
 		super("unknown run UUID");
+	}
+
+	public UnknownRunException(Throwable t) {
+		super("implementation problems", t);
 	}
 }

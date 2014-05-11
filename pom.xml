@@ -14,6 +14,8 @@
 		<signing.keystore>${project.parent.basedir}/src/main/signing/signing.jks</signing.keystore>
 		<signing.user>taverna</signing.user>
 		<signing.password>taverna</signing.password>
+		<scmBrowseRoot>https://github.com/myGrid/taverna-server/tree/2.5-branch</scmBrowseRoot>
+		<jenkinsJob>taverna-server-2.5-auto</jenkinsJob>
 	</properties>
 
 	<!-- Having to edit anything below here is probably indicative of a bug. -->
@@ -44,9 +46,9 @@
 		</developer>
 	</developers>
 	<scm>
-		<connection>scm:svn:http://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/branches/2.4-release</connection>
-		<developerConnection>scm:svn:https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/branches/2.4-release</developerConnection>
-		<url>http://code.google.com/p/taverna/source/browse/taverna/products/uk.org.taverna.server/branches/2.4-release</url>
+		<connection>scm:git://github.com/myGrid/taverna-server.git</connection>
+		<developerConnection>scm:https://github.com/myGrid/taverna-server.git</developerConnection>
+		<url>${scmBrowseRoot}/</url>
 	</scm>
 	<organization>
 		<name>University of Manchester</name>
@@ -123,8 +125,8 @@
 		</contributor>
 	</contributors>
 	<ciManagement>
-		<system>Hudson</system>
-		<url>http://www.mygrid.org.uk/hudson/job/uk.org.taverna.server/</url>
+		<system>Jenkins</system>
+		<url>http://build.mygrid.org.uk/ci/job/${jenkinsJob}/</url>
 		<notifiers>
 			<notifier>
 				<type>mail</type>
@@ -155,6 +157,17 @@
 			<releases />
 		</repository>
 		<repository>
+			<id>mygrid-snapshots</id>
+			<name>myGrid Snapshot Respository</name>
+			<url>http://www.mygrid.org.uk/maven/snapshot-repository</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+		<repository>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
@@ -170,36 +183,25 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-release-plugin</artifactId>
-					<version>2.2.1</version>
+					<version>2.4.2</version>
 					<configuration>
 						<autoVersionSubmodules>true</autoVersionSubmodules>
-						<tagBase>https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/tags</tagBase>
-						<providerImplementations>
-							<svn>javasvn</svn>
-						</providerImplementations>
 					</configuration>
-					<dependencies>
-						<dependency>
-							<groupId>com.google.code.maven-scm-provider-svnjava</groupId>
-							<artifactId>maven-scm-provider-svnjava</artifactId>
-							<version>[1.13,)</version>
-						</dependency>
-					</dependencies>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>2.3.2</version>
+					<version>3.1</version>
 					<configuration>
 						<encoding>US-ASCII</encoding>
-						<source>1.6</source>
-						<target>1.6</target>
+						<source>1.7</source>
+						<target>1.7</target>
 					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-eclipse-plugin</artifactId>
-					<version>2.8</version>
+					<version>2.9</version>
 					<configuration>
 						<projectNameTemplate>[artifactId]-[version]</projectNameTemplate>
 						<wtpmanifest>true</wtpmanifest>
@@ -210,7 +212,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
-					<version>2.5</version>
+					<version>2.6</version>
 					<configuration>
 						<encoding>US-ASCII</encoding>
 					</configuration>
@@ -218,17 +220,17 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
-					<version>2.3.2</version>
+					<version>2.4</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>
-					<version>2.1.2</version>
+					<version>2.2.1</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>2.9</version>
+					<version>2.16</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -238,12 +240,19 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
-					<version>2.3</version>
+					<version>2.8</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
-					<version>2.2.1</version>
+					<version>2.4</version>
+					<dependencies>
+						<dependency>
+							<groupId>org.codehaus.plexus</groupId>
+							<artifactId>plexus-utils</artifactId>
+							<version>3.0.15</version>
+						</dependency>
+					</dependencies>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -253,42 +262,74 @@
 				<artifactId>maven-release-plugin</artifactId>
 				<configuration>
 					<autoVersionSubmodules>true</autoVersionSubmodules>
-					<tagBase>https://taverna.googlecode.com/svn/taverna/products/uk.org.taverna.server/tags</tagBase>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
 	<dependencies>
 		<dependency>
-			<groupId>findbugs</groupId>
-			<artifactId>annotations</artifactId>
-			<version>1.0.0</version>
-			<type>jar</type>
-			<scope>compile</scope>
+			<groupId>com.google.code.findbugs</groupId>
+			<artifactId>jsr305</artifactId>
+			<version>1.3.7</version>
 		</dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
+				<groupId>commons-codec</groupId>
+				<artifactId>commons-codec</artifactId>
+				<version>1.8</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-collections</groupId>
+				<artifactId>commons-collections</artifactId>
+				<version>3.2.1</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-dbcp</groupId>
+				<artifactId>commons-dbcp</artifactId>
+				<version>1.4</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>2.3</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-lang</groupId>
+				<artifactId>commons-lang</artifactId>
+				<version>2.6</version>
+			</dependency>
+			<dependency>
 				<groupId>commons-logging</groupId>
 				<artifactId>commons-logging</artifactId>
-				<version>1.1.1</version>
-				<type>jar</type>
-				<scope>compile</scope>
+				<version>1.1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>jaxen</groupId>
 				<artifactId>jaxen</artifactId>
-				<version>1.1.1</version>
-				<type>jar</type>
-				<scope>compile</scope>
+				<version>1.1.4</version>
 			</dependency>
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
-				<version>4.9</version>
-				<type>jar</type>
+				<version>4.11</version>
 				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>net.sf.mime-util</groupId>
+				<artifactId>mime-util</artifactId>
+				<version>1.2</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpclient</artifactId>
+				<version>4.3.1</version>
+			</dependency>
+			<dependency>
+				<groupId>joda-time</groupId>
+				<artifactId>joda-time</artifactId>
+				<version>2.3</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -304,10 +345,16 @@
 					<nohelp>true</nohelp>
 					<detectLinks>true</detectLinks>
 					<stylesheet>maven</stylesheet>
+					<!-- The version package is purely implementation convenience. -->
+					<excludePackageNames>*.version:*.mocks</excludePackageNames>
 					<groups>
 						<group>
 							<title>Server Core WebService</title>
-							<packages>org.taverna.server.master:org.taverna.server.master.admin:org.taverna.server.master.common:org.taverna.server.master.facade:org.taverna.server.master.rest:org.taverna.server.master.rest.handler:org.taverna.server.master.soap</packages>
+							<packages>org.taverna.server.master:org.taverna.server.master.common:org.taverna.server.master.facade:org.taverna.server.master.rest:org.taverna.server.master.rest.handler:org.taverna.server.master.soap</packages>
+						</group>
+						<group>
+							<title>Default Values and Administration</title>
+							<packages>org.taverna.server.master.admin:org.taverna.server.master.defaults</packages>
 						</group>
 						<group>
 							<title>Server SPI</title>
@@ -315,15 +362,11 @@
 						</group>
 						<group>
 							<title>Notification and Accounting</title>
-							<packages>org.taverna.server.master.notification:org.taverna.server.master.notification.atom:org.taverna.server.master.usage</packages>
+							<packages>org.taverna.server.master.interaction:org.taverna.server.master.notification:org.taverna.server.master.notification.atom:org.taverna.server.master.usage</packages>
 						</group>
 						<group>
 							<title>Server Coupling to RMI Back End</title>
-							<packages>org.taverna.server.master.identity:org.taverna.server.master.localworker</packages>
-						</group>
-						<group>
-							<title>Mocked Implementations for Testing</title>
-							<packages>org.taverna.server.master.mocks</packages>
+							<packages>org.taverna.server.master.identity:org.taverna.server.master.localworker:org.taverna.server.master.worker</packages>
 						</group>
 						<group>
 							<title>Server RMI Interface to Back End</title>
@@ -343,6 +386,7 @@
 						</group>
 					</groups>
 					<detectJavaApiLink>true</detectJavaApiLink>
+					<aggregate>true</aggregate>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -395,10 +439,15 @@
 							<detectLinks>true</detectLinks>
 							<linksource>true</linksource>
 							<stylesheet>maven</stylesheet>
+							<!-- The version package is purely implementation convenience. -->
 							<groups>
 								<group>
 									<title>Server Core WebService</title>
-									<packages>org.taverna.server.master:org.taverna.server.master.admin:org.taverna.server.master.common:org.taverna.server.master.facade:org.taverna.server.master.rest:org.taverna.server.master.rest.handler:org.taverna.server.master.soap</packages>
+									<packages>org.taverna.server.master:org.taverna.server.master.common:org.taverna.server.master.facade:org.taverna.server.master.rest:org.taverna.server.master.rest.handler:org.taverna.server.master.soap</packages>
+								</group>
+								<group>
+									<title>Default Values and Administration</title>
+									<packages>org.taverna.server.master.admin:org.taverna.server.master.defaults</packages>
 								</group>
 								<group>
 									<title>Server SPI</title>
@@ -406,15 +455,11 @@
 								</group>
 								<group>
 									<title>Notification and Accounting</title>
-									<packages>org.taverna.server.master.notification:org.taverna.server.master.notification.atom:org.taverna.server.master.usage</packages>
+									<packages>org.taverna.server.master.interaction:org.taverna.server.master.notification:org.taverna.server.master.notification.atom:org.taverna.server.master.usage</packages>
 								</group>
 								<group>
 									<title>Server Coupling to RMI Back End</title>
-									<packages>org.taverna.server.master.identity:org.taverna.server.master.localworker</packages>
-								</group>
-								<group>
-									<title>Mocked Implementations for Testing</title>
-									<packages>org.taverna.server.master.mocks</packages>
+									<packages>org.taverna.server.master.identity:org.taverna.server.master.localworker:org.taverna.server.master.worker</packages>
 								</group>
 								<group>
 									<title>Server RMI Interface to Back End</title>
@@ -434,6 +479,7 @@
 								</group>
 							</groups>
 							<detectJavaApiLink>true</detectJavaApiLink>
+							<aggregate>true</aggregate>
 						</configuration>
 					</plugin>
 					<plugin>
@@ -508,5 +554,6 @@
 		<module>server-usagerecord</module>
 		<module>server-port-description</module>
 		<module>server-execution-delegate</module>
+		<module>server-rmidaemon</module>
 	</modules>
 </project>

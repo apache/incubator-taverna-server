@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.exceptions;
 
@@ -16,6 +16,7 @@ import javax.xml.ws.WebFault;
  * @author Donal Fellows
  */
 @WebFault(name = "GeneralFailureFault", targetNamespace = SERVER_SOAP)
+@SuppressWarnings("serial")
 public class GeneralFailureException extends RuntimeException {
 	public GeneralFailureException(Throwable cause) {
 		super(cause.getMessage(), cause);

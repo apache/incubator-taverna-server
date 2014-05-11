@@ -1,23 +1,27 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master;
 
 import static java.util.Arrays.asList;
 import static org.taverna.server.master.common.Uri.secure;
+import static org.taverna.server.master.utils.RestUtils.opt;
 
 import java.util.List;
 
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.taverna.server.master.api.OneListenerBean;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.interfaces.Listener;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.rest.TavernaServerListenersREST;
 import org.taverna.server.master.rest.TavernaServerListenersREST.ListenerDescription;
 import org.taverna.server.master.rest.TavernaServerListenersREST.TavernaServerListenerREST;
+import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
 import org.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 /**
@@ -39,18 +43,21 @@ abstract class SingleListenerREST implements TavernaServerListenerREST,
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	public String getConfiguration() {
 		return listen.getConfiguration();
 	}
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	public ListenerDescription getDescription(UriInfo ui) {
 		return new ListenerDescription(listen, secure(ui));
 	}
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	public TavernaServerListenersREST.Properties getProperties(UriInfo ui) {
 		return new TavernaServerListenersREST.Properties(secure(ui).path(
 				"{prop}"), listen.listProperties());
@@ -58,6 +65,7 @@ abstract class SingleListenerREST implements TavernaServerListenerREST,
 
 	@Override
 	@CallCounted
+	@PerfLogged
 	public TavernaServerListenersREST.Property getProperty(
 			final String propertyName) throws NoListenerException {
 		List<String> p = asList(listen.listProperties());
@@ -68,13 +76,22 @@ abstract class SingleListenerREST implements TavernaServerListenerREST,
 	}
 
 	protected abstract ListenerPropertyREST makePropertyInterface();
-}
 
-/**
- * Description of properties supported by {@link InputREST}.
- * 
- * @author Donal Fellows
- */
-interface OneListenerBean {
-	SingleListenerREST connect(Listener listen, TavernaRun run);
+	@Override
+	@CallCounted
+	public Response listenerOptions() {
+		return opt();
+	}
+
+	@Override
+	@CallCounted
+	public Response configurationOptions() {
+		return opt();
+	}
+
+	@Override
+	@CallCounted
+	public Response propertiesOptions() {
+		return opt();
+	}
 }

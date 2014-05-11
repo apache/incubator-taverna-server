@@ -1,52 +1,71 @@
 /*
  * Copyright (C) 2010-2011 The University of Manchester
  * 
- * See the file "LICENSE.txt" for license terms.
+ * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master;
 
+import static eu.medsea.util.MimeUtil.UNKNOWN_MIME_TYPE;
+import static eu.medsea.util.MimeUtil.getExtensionMimeTypes;
 import static eu.medsea.util.MimeUtil.getMimeType;
 import static java.lang.Math.min;
-import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
 import static org.apache.commons.logging.LogFactory.getLog;
 import static org.springframework.jmx.support.MetricType.COUNTER;
 import static org.springframework.jmx.support.MetricType.GAUGE;
-import static org.taverna.server.master.TavernaServerImpl.JMX_ROOT;
+import static org.taverna.server.master.TavernaServer.JMX_ROOT;
 import static org.taverna.server.master.common.Roles.ADMIN;
+import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.activation.DataHandler;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.PreDestroy;
+import javax.ws.rs.WebApplicationException;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedMetric;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.taverna.server.master.api.ManagementModel;
+import org.taverna.server.master.api.TavernaServerBean;
+import org.taverna.server.master.common.Capability;
 import org.taverna.server.master.common.Permission;
 import org.taverna.server.master.common.ProfileList;
+import org.taverna.server.master.common.VersionedElement;
 import org.taverna.server.master.common.Workflow;
+import org.taverna.server.master.common.version.Version;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoCreateException;
 import org.taverna.server.master.exceptions.NoDestroyException;
+import org.taverna.server.master.exceptions.NoDirectoryEntryException;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
 import org.taverna.server.master.exceptions.UnknownRunException;
 import org.taverna.server.master.factories.ListenerFactory;
 import org.taverna.server.master.factories.RunFactory;
+import org.taverna.server.master.identity.WorkflowInternalAuthProvider.WorkflowSelfAuthority;
 import org.taverna.server.master.interfaces.File;
 import org.taverna.server.master.interfaces.Input;
 import org.taverna.server.master.interfaces.Listener;
@@ -55,24 +74,24 @@ import org.taverna.server.master.interfaces.Policy;
 import org.taverna.server.master.interfaces.RunStore;
 import org.taverna.server.master.interfaces.TavernaRun;
 import org.taverna.server.master.interfaces.TavernaSecurityContext;
+import org.taverna.server.master.rest.handler.T2FlowDocumentHandler;
+import org.taverna.server.master.utils.CapabilityLister;
+import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.InvocationCounter;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
 import uk.org.taverna.scufl2.api.profiles.Profile;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
  * Web application support utilities.
  * 
  * @author Donal Fellows
  */
-@ManagedResource(objectName = JMX_ROOT + "Webapp", description = "The main web-application interface to Taverna Server.")
+@ManagedResource(objectName = JMX_ROOT + "Webapp", description = "The main Taverna Server "
+		+ Version.JAVA + " web-application interface.")
 public class TavernaServerSupport {
 	/** The main webapp log. */
-	public static final Log log = getLog("Taverna.Server.Webapp");
+	public static Log log = getLog("Taverna.Server.Webapp");
 	private Log accessLog = getLog("Taverna.Server.Webapp.Access");;
 	/** Bean used to log counts of external calls. */
 	private InvocationCounter counter;
@@ -89,7 +108,11 @@ public class TavernaServerSupport {
 	/** How to map the user ID to who to run as. */
 	private LocalIdentityMapper idMapper;
 	/** The code that is coupled to CXF. */
-	private TavernaServer webapp;
+	private TavernaServerBean webapp;
+	/** How to handle files. */
+	private FilenameUtils fileUtils;
+	/** How to get the server capabilities. */
+	private CapabilityLister capabilitySource;
 	/**
 	 * Whether to log failures during principal retrieval. Should be normally on
 	 * as it indicates a serious problem, but can be switched off for testing.
@@ -100,6 +123,11 @@ public class TavernaServerSupport {
 	private static final int SAMPLE_SIZE = 1024;
 	/** Number of bytes to ask for when copying a stream to a file. */
 	private static final int TRANSFER_SIZE = 32768;
+
+	@PreDestroy
+	void closeLog() {
+		log = null;
+	}
 
 	/**
 	 * @return Count of the number of external calls into this webapp.
@@ -170,6 +198,31 @@ public class TavernaServerSupport {
 		stateModel.setAllowNewWorkflowRuns(allowNewWorkflowRuns);
 	}
 
+	/**
+	 * @return The server's version identifier.
+	 */
+	@ManagedAttribute(description = "The installed version of the server.")
+	public String getServerVersion() {
+		return VersionedElement.VERSION + " " + VersionedElement.REVISION + " "
+				+ VersionedElement.TIMESTAMP;
+	}
+
+	@ManagedAttribute(description = "The URIs of the workfows that this server will allow to be instantiated.")
+	public URI[] getPermittedWorkflowURIs() {
+		List<URI> pw = policy.listPermittedWorkflowURIs(null);
+		if (pw == null)
+			return new URI[0];
+		return pw.toArray(new URI[pw.size()]);
+	}
+
+	@ManagedAttribute(description = "The URIs of the workfows that this server will allow to be instantiated.")
+	public void setPermittedWorkflowURIs(URI[] pw) {
+		if (pw == null)
+			policy.setPermittedWorkflowURIs(null, new ArrayList<URI>());
+		else
+			policy.setPermittedWorkflowURIs(null, Arrays.asList(pw));
+	}
+
 	public int getMaxSimultaneousRuns() {
 		Integer limit = policy.getMaxRuns(getPrincipal());
 		if (limit == null)
@@ -177,8 +230,18 @@ public class TavernaServerSupport {
 		return min(limit.intValue(), policy.getMaxRuns());
 	}
 
-	public List<Workflow> getPermittedWorkflows() {
-		return policy.listPermittedWorkflows(getPrincipal());
+	@Autowired
+	private T2FlowDocumentHandler t2flowHandler;
+
+	public Workflow getWorkflowDocumentFromURI(URI uri)
+			throws WebApplicationException, IOException {
+		URLConnection conn = uri.toURL().openConnection();
+		conn.setRequestProperty("Accept", T2FLOW);
+		conn.connect();
+		// Tricky point: we know the reader part of the handler only cares
+		// about the stream argument.
+		return t2flowHandler.readFrom(null, null, null, null, null,
+				conn.getInputStream());
 	}
 
 	public List<String> getListenerTypes() {
@@ -254,8 +317,17 @@ public class TavernaServerSupport {
 	 *            The web-app being installed by Spring.
 	 */
 	@Required
-	public void setWebapp(TavernaServer webapp) {
+	public void setWebapp(TavernaServerBean webapp) {
 		this.webapp = webapp;
+	}
+
+	/**
+	 * @param fileUtils
+	 *            The file handling utilities.
+	 */
+	@Required
+	public void setFileUtils(FilenameUtils fileUtils) {
+		this.fileUtils = fileUtils;
 	}
 
 	/**
@@ -281,6 +353,11 @@ public class TavernaServerSupport {
 		this.contentTypeMap = contentTypeMap;
 	}
 
+	@Required
+	public void setCapabilitySource(CapabilityLister capabilitySource) {
+		this.capabilitySource = capabilitySource;
+	}
+
 	/**
 	 * Test whether the current user can do updates to the given run.
 	 * 
@@ -289,11 +366,16 @@ public class TavernaServerSupport {
 	 * @throws NoUpdateException
 	 *             If the current user is not permitted to update the run.
 	 */
-	public void permitUpdate(@NonNull TavernaRun run) throws NoUpdateException {
+	public void permitUpdate(@Nonnull TavernaRun run) throws NoUpdateException {
 		if (isSuperUser()) {
 			accessLog
 					.warn("check for admin powers passed; elevated access rights granted for update");
 			return; // Superusers are fully authorized to access others things
+		}
+		if (getSelfAuthority() != null) {
+			// At this point, must already be accessing self as that is checked
+			// in getRun().
+			return;
 		}
 		policy.permitUpdate(getPrincipal(), run);
 	}
@@ -313,6 +395,8 @@ public class TavernaServerSupport {
 					.warn("check for admin powers passed; elevated access rights granted for destroy");
 			return; // Superusers are fully authorized to access others things
 		}
+		if (getSelfAuthority() != null)
+			throw new NoDestroyException();
 		policy.permitDestroy(getPrincipal(), run);
 	}
 
@@ -322,7 +406,7 @@ public class TavernaServerSupport {
 	 * 
 	 * @return The identity of the user accessing the webapp.
 	 */
-	@NonNull
+	@Nonnull
 	public UsernamePrincipal getPrincipal() {
 		try {
 			Authentication auth = SecurityContextHolder.getContext()
@@ -340,6 +424,18 @@ public class TavernaServerSupport {
 		}
 	}
 
+	private WorkflowSelfAuthority getSelfAuthority() {
+		try {
+			Authentication a = SecurityContextHolder.getContext()
+					.getAuthentication();
+			for (GrantedAuthority ga : a.getAuthorities())
+				if (ga instanceof WorkflowSelfAuthority)
+					return (WorkflowSelfAuthority) ga;
+		} catch (RuntimeException e) {
+		}
+		return null;
+	}
+
 	/**
 	 * Obtain the workflow run with a particular name.
 	 * 
@@ -351,12 +447,18 @@ public class TavernaServerSupport {
 	 *             If the workflow run doesn't exist or the current user doesn't
 	 *             have permission to see it.
 	 */
-	@NonNull
-	public TavernaRun getRun(@NonNull String name) throws UnknownRunException {
+	@Nonnull
+	public TavernaRun getRun(@Nonnull String name) throws UnknownRunException {
 		if (isSuperUser()) {
 			accessLog
 					.info("check for admin powers passed; elevated access rights granted for read");
 			return runStore.getRun(name);
+		}
+		WorkflowSelfAuthority wsa = getSelfAuthority();
+		if (wsa != null) {
+			if (wsa.getWorkflowID().equals(name))
+				return runStore.getRun(name);
+			throw new UnknownRunException();
 		}
 		return runStore.getRun(getPrincipal(), policy, name);
 	}
@@ -380,9 +482,9 @@ public class TavernaServerSupport {
 	 *             If the run does not permit the current user to add listeners
 	 *             (or perform other types of update).
 	 */
-	@NonNull
-	public Listener makeListener(@NonNull TavernaRun run, @NonNull String type,
-			@NonNull String configuration) throws NoListenerException,
+	@Nonnull
+	public Listener makeListener(@Nonnull TavernaRun run, @Nonnull String type,
+			@Nonnull String configuration) throws NoListenerException,
 			NoUpdateException {
 		permitUpdate(run);
 		return listenerFactory.makeListener(run, type, configuration);
@@ -399,13 +501,58 @@ public class TavernaServerSupport {
 	 * @throws NoListenerException
 	 *             If no listener with that name exists.
 	 */
-	@NonNull
+	@Nonnull
 	public Listener getListener(TavernaRun run, String listenerName)
 			throws NoListenerException {
 		for (Listener l : run.getListeners())
 			if (l.getName().equals(listenerName))
 				return l;
 		throw new NoListenerException();
+	}
+
+	/**
+	 * Obtain a property from a listener that is already attached to a workflow
+	 * run.
+	 * 
+	 * @param runName
+	 *            The ID of the workflow run to search.
+	 * @param listenerName
+	 *            The name of the listener to look up in.
+	 * @param propertyName
+	 *            The name of the property to fetch.
+	 * @return The property value.
+	 * @throws NoListenerException
+	 *             If no listener with that name exists, or no property with
+	 *             that name exists.
+	 * @throws UnknownRunException
+	 *             If no run with that name exists.
+	 */
+	@Nonnull
+	public String getProperty(String runName, String listenerName,
+			String propertyName) throws NoListenerException,
+			UnknownRunException {
+		return getListener(runName, listenerName).getProperty(propertyName);
+	}
+
+	/**
+	 * Obtain a property from a listener that is already attached to a workflow
+	 * run.
+	 * 
+	 * @param run
+	 *            The workflow run to search.
+	 * @param listenerName
+	 *            The name of the listener to look up in.
+	 * @param propertyName
+	 *            The name of the property to fetch.
+	 * @return The property value.
+	 * @throws NoListenerException
+	 *             If no listener with that name exists, or no property with
+	 *             that name exists.
+	 */
+	@Nonnull
+	public String getProperty(TavernaRun run, String listenerName,
+			String propertyName) throws NoListenerException {
+		return getListener(run, listenerName).getProperty(propertyName);
 	}
 
 	/**
@@ -419,9 +566,9 @@ public class TavernaServerSupport {
 	 *            The name of the user to look up the permission for.
 	 * @return A permission description.
 	 */
-	@NonNull
-	public Permission getPermission(@NonNull TavernaSecurityContext context,
-			@NonNull String userName) {
+	@Nonnull
+	public Permission getPermission(@Nonnull TavernaSecurityContext context,
+			@Nonnull String userName) {
 		if (context.getPermittedDestroyers().contains(userName))
 			return Permission.Destroy;
 		if (context.getPermittedUpdaters().contains(userName))
@@ -446,7 +593,6 @@ public class TavernaServerSupport {
 	 *            {@link Permission#Destroy}; this is always enforced before
 	 *            checking for other permissions.
 	 */
-	@SuppressWarnings("SF_SWITCH_FALLTHROUGH")
 	public void setPermission(TavernaSecurityContext context, String userName,
 			Permission permission) {
 		Set<String> permSet;
@@ -459,17 +605,19 @@ public class TavernaServerSupport {
 			doWrite = true;
 		case Read:
 			doRead = true;
+		default:
+			break;
 		}
 
 		permSet = context.getPermittedReaders();
 		if (doRead) {
 			if (!permSet.contains(userName)) {
-				permSet = new HashSet<String>(permSet);
+				permSet = new HashSet<>(permSet);
 				permSet.add(userName);
 				context.setPermittedReaders(permSet);
 			}
 		} else if (permSet.contains(userName)) {
-			permSet = new HashSet<String>(permSet);
+			permSet = new HashSet<>(permSet);
 			permSet.remove(userName);
 			context.setPermittedReaders(permSet);
 		}
@@ -477,12 +625,12 @@ public class TavernaServerSupport {
 		permSet = context.getPermittedUpdaters();
 		if (doWrite) {
 			if (!permSet.contains(userName)) {
-				permSet = new HashSet<String>(permSet);
+				permSet = new HashSet<>(permSet);
 				permSet.add(userName);
 				context.setPermittedUpdaters(permSet);
 			}
 		} else if (permSet.contains(userName)) {
-			permSet = new HashSet<String>(permSet);
+			permSet = new HashSet<>(permSet);
 			permSet.remove(userName);
 			context.setPermittedUpdaters(permSet);
 		}
@@ -490,15 +638,27 @@ public class TavernaServerSupport {
 		permSet = context.getPermittedDestroyers();
 		if (doKill) {
 			if (!permSet.contains(userName)) {
-				permSet = new HashSet<String>(permSet);
+				permSet = new HashSet<>(permSet);
 				permSet.add(userName);
 				context.setPermittedDestroyers(permSet);
 			}
 		} else if (permSet.contains(userName)) {
-			permSet = new HashSet<String>(permSet);
+			permSet = new HashSet<>(permSet);
 			permSet.remove(userName);
 			context.setPermittedDestroyers(permSet);
 		}
+	}
+
+	public Map<String, Permission> getPermissionMap(
+			TavernaSecurityContext context) {
+		Map<String, Permission> perm = new HashMap<>();
+		for (String u : context.getPermittedReaders())
+			perm.put(u, Permission.Read);
+		for (String u : context.getPermittedUpdaters())
+			perm.put(u, Permission.Update);
+		for (String u : context.getPermittedDestroyers())
+			perm.put(u, Permission.Destroy);
+		return perm;
 	}
 
 	/**
@@ -514,11 +674,11 @@ public class TavernaServerSupport {
 	 *             If the run is unknown (e.g., because it is already
 	 *             destroyed).
 	 */
-	public void unregisterRun(@NonNull String runName, @NonNull TavernaRun run)
+	public void unregisterRun(@Nonnull String runName, @Nonnull TavernaRun run)
 			throws NoDestroyException, UnknownRunException {
 		if (run == null)
 			run = getRun(runName);
-		policy.permitDestroy(getPrincipal(), run);
+		permitDestroy(run);
 		runStore.unregisterRun(runName);
 		run.destroy();
 	}
@@ -537,10 +697,10 @@ public class TavernaServerSupport {
 	 *             (Note that lifespan management requires the ability to
 	 *             destroy.)
 	 */
-	@NonNull
-	public Date updateExpiry(@NonNull TavernaRun run, @NonNull Date date)
+	@Nonnull
+	public Date updateExpiry(@Nonnull TavernaRun run, @Nonnull Date date)
 			throws NoDestroyException {
-		policy.permitDestroy(getPrincipal(), run);
+		permitDestroy(run);
 		run.setExpiry(date);
 		return run.getExpiry();
 	}
@@ -556,6 +716,9 @@ public class TavernaServerSupport {
 	 */
 	public String buildWorkflow(Workflow workflow) throws NoCreateException {
 		UsernamePrincipal p = getPrincipal();
+		if (getSelfAuthority() != null)
+			throw new NoCreateException(
+					"runs may not create workflows on their host server");
 		if (!stateModel.getAllowNewWorkflowRuns())
 			throw new NoCreateException("run creation not currently enabled");
 		try {
@@ -579,7 +742,14 @@ public class TavernaServerSupport {
 			run = runFactory.create(p, workflow);
 			TavernaSecurityContext c = run.getSecurityContext();
 			c.initializeSecurityFromContext(SecurityContextHolder.getContext());
-			webapp.initObsoleteSecurity(c);
+			/*
+			 * These next pieces of security initialisation are (hopefully)
+			 * obsolete now that we use Spring Security, but we keep them Just
+			 * In Case.
+			 */
+			boolean doRESTinit = webapp.initObsoleteSOAPSecurity(c);
+			if (doRESTinit)
+				webapp.initObsoleteRESTSecurity(c);
 		} catch (Exception e) {
 			log.error("failed to build workflow run worker", e);
 			throw new NoCreateException("failed to build workflow run worker");
@@ -651,8 +821,8 @@ public class TavernaServerSupport {
 	 * @return The content type. If all else fails, produces good old
 	 *         "application/octet-stream".
 	 */
-	@NonNull
-	public String getEstimatedContentType(@NonNull File f) {
+	@Nonnull
+	public String getEstimatedContentType(@Nonnull File f) {
 		String name = f.getName();
 		for (int idx = name.indexOf('.'); idx != -1; idx = name.indexOf('.',
 				idx + 1)) {
@@ -660,12 +830,15 @@ public class TavernaServerSupport {
 			if (mt != null)
 				return mt;
 		}
+		@Nonnull
+		String type = getExtensionMimeTypes(name);
+		if (!type.equals(UNKNOWN_MIME_TYPE))
+			return type;
 		try {
 			return getMimeType(new ByteArrayInputStream(f.getContents(0,
 					SAMPLE_SIZE)));
 		} catch (FilesystemAccessException e) {
-			// Ignore; fall back to just serving as bytes
-			return APPLICATION_OCTET_STREAM;
+			return type;
 		}
 	}
 
@@ -697,8 +870,10 @@ public class TavernaServerSupport {
 				if (len < 0)
 					break;
 				total += len;
-				log.debug("read " + len + " bytes from source stream (total: "
-						+ total + ") bound for " + name);
+				if (log.isDebugEnabled())
+					log.debug("read " + len
+							+ " bytes from source stream (total: " + total
+							+ ") bound for " + name);
 				if (len == buffer.length) {
 					if (first)
 						file.setContents(buffer);
@@ -742,5 +917,41 @@ public class TavernaServerSupport {
 
 	public boolean getAllowStartWorkflowRuns() {
 		return runFactory.isAllowingRunsToStart();
+	}
+
+	/**
+	 * The list of filenames that logs may occupy.
+	 */
+	private static final String[] LOGS = { "logs/detail.log.4",
+			"logs/detail.log.3", "logs/detail.log.2", "logs/detail.log.1",
+			"logs/detail.log" };
+
+	public FileConcatenation getLogs(TavernaRun run) {
+		FileConcatenation fc = new FileConcatenation();
+		for (String name : LOGS) {
+			try {
+				fc.add(fileUtils.getFile(run, name));
+			} catch (FilesystemAccessException | NoDirectoryEntryException e) {
+				// Ignore
+			}
+		}
+		return fc;
+	}
+
+	@Nonnull
+	public List<Capability> getCapabilities() {
+		return capabilitySource.getCapabilities();
+	}
+
+	static final String PROV_BUNDLE = "out.bundle.zip";
+
+	public FileConcatenation getProv(TavernaRun run) {
+		FileConcatenation fc = new FileConcatenation();
+		try {
+			fc.add(fileUtils.getFile(run, PROV_BUNDLE));
+		} catch (FilesystemAccessException | NoDirectoryEntryException e) {
+			// Ignore
+		}
+		return fc;
 	}
 }
