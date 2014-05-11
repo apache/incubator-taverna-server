@@ -341,6 +341,7 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 			List<URI> referenceList, UriInfo ui)
 			throws NoDirectoryEntryException, NoUpdateException,
 			FilesystemAccessException {
+		support.permitUpdate(run);
 		if (referenceList.isEmpty() || referenceList.size() > 1)
 			return status(422).entity("URI list must have single URI in it")
 					.build();
@@ -365,64 +366,6 @@ class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
 		}
 
 		if (isNew.value)
-			return created(ui.getAbsolutePath()).build();
-		else
-			return noContent().build();
-	}
-
-	@Override
-	@CallCounted
-	public Response setFileContentsFromURL(List<PathSegment> filePath,
-			List<URI> referenceList, UriInfo ui)
-			throws NoDirectoryEntryException, NoUpdateException,
-			FilesystemAccessException {
-		support.permitUpdate(run);
-		Directory d;
-		String name;
-		if (filePath == null || filePath.size() == 0)
-			throw new FilesystemAccessException(
-					"Cannot create a file that is not in a directory.");
-
-		List<PathSegment> dirPath = new ArrayList<PathSegment>(filePath);
-		name = dirPath.remove(dirPath.size() - 1).getPath();
-		DirectoryEntry de = fileUtils.getDirEntry(run, dirPath);
-		if (!(de instanceof Directory)) {
-			throw new FilesystemAccessException(
-					"Cannot create a file that is not in a directory.");
-		}
-		d = (Directory) de;
-
-		File f = null;
-		boolean isNew = false;
-		for (DirectoryEntry e : d.getContents()) {
-			if (e.getName().equals(name)) {
-				if (e instanceof File) {
-					f = (File) e;
-					break;
-				}
-				throw new FilesystemAccessException(
-						"Cannot create a file that is not in a directory.");
-			}
-		}
-
-		if (referenceList.isEmpty() || referenceList.size() > 1)
-			return status(422).entity("URI list must have single URI in it")
-					.build();
-		;
-
-		if (f == null) {
-			f = d.makeEmptyFile(support.getPrincipal(), name);
-			isNew = true;
-		}
-		try {
-			support.copyDataToFile(referenceList.get(0), f);
-		} catch (MalformedURLException ex) {
-			throw new NoUpdateException("failed to parse URI", ex);
-		} catch (IOException ex) {
-			throw new FilesystemAccessException("failed to transfer data from URI", ex);
-		}
-
-		if (isNew)
 			return created(ui.getAbsolutePath()).build();
 		else
 			return noContent().build();

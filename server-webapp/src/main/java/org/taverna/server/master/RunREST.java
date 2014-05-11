@@ -413,6 +413,12 @@ abstract class RunREST implements TavernaServerRunREST, RunBean {
 
 	@Override
 	@CallCounted
+	public Response profileOptions() {
+		return opt();
+	}
+
+	@Override
+	@CallCounted
 	public Response expiryOptions() {
 		return opt("PUT");
 	}

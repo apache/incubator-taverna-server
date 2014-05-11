@@ -9,7 +9,6 @@ import static org.taverna.server.master.common.Namespaces.SERVER_SOAP;
 import static org.taverna.server.master.common.Roles.USER;
 
 import java.net.URI;
-import java.net.URL;
 import java.util.Date;
 import java.util.List;
 
@@ -89,21 +88,6 @@ public interface TavernaServerSOAP {
 			throws NoUpdateException;
 
 	/**
-	 * Make a run for a workflow at a particular URL.
-	 * 
-	 * @param workflowURL
-	 *            The public URL of the workflow to instantiate.
-	 * @return Annotated handle for created run.
-	 * @throws NoUpdateException
-	 * @throws NoCreateException
-	 */
-	@WebResult(name = "Run")
-	@WSDLDocumentation("Make a run for a workflow at a particular public URL.")
-	RunReference submitWorkflowReference(
-			@WebParam(name = "reference") @XmlElement(required = true) URL workflowURL)
-			throws NoUpdateException, NoCreateException;
-
-	/**
 	 * Make a run for a particular workflow, where that workflow will be
 	 * downloaded from elsewhere. The URI <i>must</i> be publicly readable.
 	 * 
@@ -114,7 +98,8 @@ public interface TavernaServerSOAP {
 	 * @throws NoCreateException
 	 */
 	@WebResult(name = "Run")
-	@WSDLDocumentation("Make a run for a particular workflow where that workflow is given by publicly readable URI.")
+	@WSDLDocumentation("Make a run for a particular workflow where that "
+			+ "workflow is given by publicly readable URI.")
 	RunReference submitWorkflowByURI(
 			@WebParam(name = "workflowURI") @XmlElement(required = true) URI workflowURI)
 			throws NoCreateException, NoUpdateException;

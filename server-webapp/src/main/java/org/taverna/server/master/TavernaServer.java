@@ -60,8 +60,10 @@ import org.taverna.server.master.api.SupportAware;
 import org.taverna.server.master.api.TavernaServerBean;
 import org.taverna.server.master.common.Capability;
 import org.taverna.server.master.common.Credential;
+import org.taverna.server.master.common.DirEntryReference;
 import org.taverna.server.master.common.InputDescription;
 import org.taverna.server.master.common.Permission;
+import org.taverna.server.master.common.ProfileList;
 import org.taverna.server.master.common.RunReference;
 import org.taverna.server.master.common.Status;
 import org.taverna.server.master.common.Trust;
@@ -101,6 +103,7 @@ import org.taverna.server.master.soap.DirEntry;
 import org.taverna.server.master.soap.FileContents;
 import org.taverna.server.master.soap.PermissionList;
 import org.taverna.server.master.soap.TavernaServerSOAP;
+import org.taverna.server.master.soap.WrappedWorkflow;
 import org.taverna.server.master.soap.ZippedDirectory;
 import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
 import org.taverna.server.master.utils.FilenameUtils;
@@ -380,6 +383,23 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 	@CallCounted
 	@PerfLogged
 	@RolesAllowed(USER)
+	public RunReference submitWorkflowMTOM(WrappedWorkflow workflow)
+			throws NoUpdateException {
+		Workflow wf;
+		try {
+			wf = workflow.getWorkflow();
+		} catch (IOException e) {
+			throw new NoCreateException(e.getMessage(), e);
+		}
+		checkCreatePolicy(wf);
+		String name = support.buildWorkflow(wf);
+		return new RunReference(name, getRunUriBuilder());
+	}
+
+	@Override
+	@CallCounted
+	@PerfLogged
+	@RolesAllowed(USER)
 	public RunReference submitWorkflowByURI(URI workflowURI)
 			throws NoCreateException {
 		checkCreatePolicy(workflowURI);
@@ -459,6 +479,27 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 	@RolesAllowed(USER)
 	public Workflow getRunWorkflow(String runName) throws UnknownRunException {
 		return support.getRun(runName).getWorkflow();
+	}
+
+	@Override
+	@CallCounted
+	@PerfLogged
+	@RolesAllowed(USER)
+	public WrappedWorkflow getRunWorkflowMTOM(String runName)
+			throws UnknownRunException {
+		WrappedWorkflow ww = new WrappedWorkflow();
+		ww.setWorkflow(support.getRun(runName).getWorkflow());
+		return ww;
+	}
+
+	@Override
+	@CallCounted
+	@PerfLogged
+	@RolesAllowed(USER)
+	public ProfileList getRunWorkflowProfiles(String runName)
+			throws UnknownRunException {
+		return support.getProfileDescriptor(support.getRun(runName)
+				.getWorkflow());
 	}
 
 	@Override
@@ -950,6 +991,25 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 		FileContents fc = new FileContents();
 		fc.setFile(f, support.getEstimatedContentType(f));
 		return fc;
+	}
+
+	@Override
+	@CallCounted
+	@PerfLogged
+	@RolesAllowed(USER)
+	public void setRunFileContentsFromURI(String runName,
+			DirEntryReference file, URI reference)
+			throws UnknownRunException, NoUpdateException,
+			FilesystemAccessException, NoDirectoryEntryException {
+		TavernaRun run = support.getRun(runName);
+		support.permitUpdate(run);
+		File f = fileUtils.getFile(run, file);
+		try {
+			support.copyDataToFile(reference, f);
+		} catch (IOException e) {
+			throw new FilesystemAccessException(
+					"problem transferring data from URI", e);
+		}
 	}
 
 	@Override

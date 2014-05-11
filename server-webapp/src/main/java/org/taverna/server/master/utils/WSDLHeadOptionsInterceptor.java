@@ -1,11 +1,11 @@
 package org.taverna.server.master.utils;
 
 import static org.apache.commons.logging.LogFactory.getLog;
+import static org.apache.cxf.common.util.UrlUtils.parseQueryString;
 import static org.apache.cxf.message.Message.HTTP_REQUEST_METHOD;
 import static org.apache.cxf.message.Message.QUERY_STRING;
 import static org.apache.cxf.message.Message.REQUEST_URL;
 import static org.apache.cxf.phase.Phase.READ;
-import static org.apache.cxf.transport.http.UrlUtilities.parseQueryString;
 
 import java.util.Map;
 
@@ -14,6 +14,7 @@ import org.apache.cxf.binding.soap.interceptor.EndpointSelectionInterceptor;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
+
 
 /**
  * Thunk for TAVSERV-293.
