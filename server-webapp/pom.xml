@@ -20,7 +20,7 @@
 		<version.spring-security>3.1.4.RELEASE</version.spring-security>
 		<version.asm>3.3.1</version.asm>
 		<version.smack>3.2.1</version.smack>
-		<version.commandline>2.5.0</version.commandline>
+		<version.commandline>2.5.1-SNAPSHOT</version.commandline>
 		<edition.commandline>enterprise</edition.commandline>
 		<version.jdoapi>3.0.1</version.jdoapi>
 		<forker.module>server-unix-forker</forker.module>
