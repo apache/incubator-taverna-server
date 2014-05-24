@@ -60,6 +60,8 @@ MainClass=net.sf.taverna.t2.commandline.CommandLineLauncher
 
 echo "pid:$$"
 exec "$javabin" $memlimit $permsize \
+  "-Dcom.sun.net.ssl.enableECC=false" \
+  "-Djsse.enableSNIExtension=false" \
   "-Draven.profile=file://$taverna_home/conf/current-profile.xml" \
   "-Dtaverna.startup=$taverna_home" $RAVEN_APPHOME_PROP $RUNID_PROP \
   $INTERACTION_PROPS $pre \
