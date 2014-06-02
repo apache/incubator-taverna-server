@@ -639,6 +639,14 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<webXml>src/main/webapp/WEB-INF/web-sec.xml</webXml>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-eclipse-plugin</artifactId>
 				<configuration>
 					<additionalProjectnatures>
@@ -784,6 +792,34 @@
 				<!-- This doesn't exist yet. -->
 				<forker.module>server-win-forker</forker.module>
 			</properties>
+		</profile>
+		<profile>
+			<id>nosec</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-war-plugin</artifactId>
+						<configuration>
+							<webXml>src/main/webapp/WEB-INF/web-nosec.xml</webXml>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>partsec</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-war-plugin</artifactId>
+						<configuration>
+							<webXml>src/main/webapp/WEB-INF/web-partsec.xml</webXml>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 	</profiles>
 </project>
