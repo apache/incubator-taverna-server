@@ -194,8 +194,9 @@ function userRowHTML(idx) {
 
 /** How to get the list of permitted workflows; called on demand */
 function refreshWorkflows() {
-	var wftable = $("#workflows"), wfbut = $("#saveWorkflows"), wfref = $("#refreshWorkflows");
+	var wftable = $("#workflows"), wfbut = $("#saveWorkflows"), wfbut1 = $("#emptyWorkflows"), wfref = $("#refreshWorkflows");
 	wfbut.button("disable");
+	wfbut1.button("disable");
 	wfref.button("disable");
 	getJSON(where("permittedWorkflowURIs"), function(data) {
 		var s = "";
@@ -204,17 +205,30 @@ function refreshWorkflows() {
 		});
 		wftable.val($.trim(s));
 		wfbut.button("enable");
+		wfbut1.button("enable");
 		wfref.button("enable");
 	});
 }
 /** How to set the list of permitted workflows; called when the user clicks */
 function saveWorkflows() {
-	var wftable = $("#workflows"), wfbut = $("#saveWorkflows");
+	var wftable = $("#workflows"), wfbut = $("#saveWorkflows"), wfbut1 = $("#emptyWorkflows");
 	var xml = NodeAll("stringList", "string", wftable.val().split("\n"));
 	wfbut.button("disable");
+	wfbut1.button("disable");
 	putXML(where("permittedWorkflowURIs"), xml, function() {
 		refreshWorkflows();
 	});
+}
+
+/** How to empty the list of permitted workflows; called when the user clicks */
+function emptyWorkflows() {
+        var wftable = $("#workflows"), wfbut = $("#saveWorkflows"), wfbut1 = $("#emptyWorkflows");
+        var xml = NodeAll("stringList", "string", "");
+        wfbut.button("disable");
+        wfbut1.button("disable");
+        putXML(where("permittedWorkflowURIs"), xml, function() {
+                refreshWorkflows();
+        });
 }
 
 /** How to update the table of users; called on demand */
@@ -497,6 +511,12 @@ $(function() {
 		refreshWorkflows();
 		event.preventDefault();
 	});
+	$("#emptyWorkflows").button({
+                disabled : true
+        }).click(function(event) {
+                emptyWorkflows();
+                event.preventDefault();
+        });
 
 	// Make the link to the list of usage records point correctly
 	// Original plan called for browsable table, but that's too slow
