@@ -1,4 +1,18 @@
-<application xmlns="http://wadl.dev.java.net/2009/02" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:prefix1="http://ns.taverna.org.uk/2010/xml/server/rest/" xmlns:prefix3="http://ns.taverna.org.uk/2010/xml/server/" xmlns:prefix10="http://ns.taverna.org.uk/2010/port/"><grammars><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:admin="http://ns.taverna.org.uk/2010/xml/server/admin/" xmlns:feed="http://ns.taverna.org.uk/2010/xml/server/feed/" xmlns:port="http://ns.taverna.org.uk/2010/port/" xmlns:tns="http://ns.taverna.org.uk/2010/xml/server/rest/" xmlns:ts="http://ns.taverna.org.uk/2010/xml/server/" xmlns:ts-rest="http://ns.taverna.org.uk/2010/xml/server/rest/" xmlns:ts-soap="http://ns.taverna.org.uk/2010/xml/server/soap/" xmlns:xlink="http://www.w3.org/1999/xlink" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://ns.taverna.org.uk/2010/xml/server/rest/">
+<application xmlns="http://wadl.dev.java.net/2009/02"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:prefix1="http://ns.taverna.org.uk/2010/xml/server/rest/"
+	xmlns:prefix3="http://ns.taverna.org.uk/2010/xml/server/"
+	xmlns:prefix10="http://ns.taverna.org.uk/2010/port/" xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/jaxb http://java.sun.com/xml/ns/jaxb/bindingschema_2_0.xsd"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" jxb:version="2.1">
+<grammars>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:admin="http://ns.taverna.org.uk/2010/xml/server/admin/" xmlns:feed="http://ns.taverna.org.uk/2010/xml/server/feed/" xmlns:port="http://ns.taverna.org.uk/2010/port/" xmlns:tns="http://ns.taverna.org.uk/2010/xml/server/rest/" xmlns:ts="http://ns.taverna.org.uk/2010/xml/server/" xmlns:ts-rest="http://ns.taverna.org.uk/2010/xml/server/rest/" xmlns:ts-soap="http://ns.taverna.org.uk/2010/xml/server/soap/" xmlns:xlink="http://www.w3.org/1999/xlink" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://ns.taverna.org.uk/2010/xml/server/rest/" jxb:version="2.1">
+    <xs:annotation>
+    	<xs:appinfo>
+			<jxb:schemaBindings>
+				<jxb:package name="uk.org.taverna.server.client.rest" />
+			</jxb:schemaBindings>
+    	</xs:appinfo>
+    </xs:annotation>
     <xs:import namespace="http://ns.taverna.org.uk/2010/xml/server/"/>
     <xs:import namespace="http://www.w3.org/1999/xlink"/>
     <xs:element name="capabilities">
@@ -337,10 +351,17 @@
     <xs:attribute name="owner" type="xs:string"/>
     <xs:attribute name="type" type="xs:string"/>
 </xs:schema>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.w3.org/1999/xlink" attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="http://www.w3.org/1999/xlink">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.w3.org/1999/xlink" attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="http://www.w3.org/1999/xlink" jxb:version="2.1">
     <xs:attribute name="href" type="xs:string"/>
 </xs:schema>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:port="http://ns.taverna.org.uk/2010/port/" xmlns:run="http://ns.taverna.org.uk/2010/run/" xmlns:tns="http://ns.taverna.org.uk/2010/port/" xmlns:xlink="http://www.w3.org/1999/xlink" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://ns.taverna.org.uk/2010/port/">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:port="http://ns.taverna.org.uk/2010/port/" xmlns:run="http://ns.taverna.org.uk/2010/run/" xmlns:tns="http://ns.taverna.org.uk/2010/port/" xmlns:xlink="http://www.w3.org/1999/xlink" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://ns.taverna.org.uk/2010/port/" jxb:version="2.1">
+    <xs:annotation>
+    	<xs:appinfo>
+			<jxb:schemaBindings>
+				<jxb:package name="uk.org.taverna.server.client.generic.port" />
+			</jxb:schemaBindings>
+    	</xs:appinfo>
+    </xs:annotation>
     <xs:import namespace="http://www.w3.org/1999/xlink"/>
     <xs:element name="inputDescription" type="port:inputDescription"/>
     <xs:element name="workflowOutputs" type="port:outputDescription"/>
@@ -451,7 +472,14 @@
     <xs:attribute name="workflowRun" type="xs:anyURI"/>
     <xs:attribute name="workflowRunId" type="xs:string"/>
 </xs:schema>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:admin="http://ns.taverna.org.uk/2010/xml/server/admin/" xmlns:feed="http://ns.taverna.org.uk/2010/xml/server/feed/" xmlns:tns="http://ns.taverna.org.uk/2010/xml/server/" xmlns:ts="http://ns.taverna.org.uk/2010/xml/server/" xmlns:ts-rest="http://ns.taverna.org.uk/2010/xml/server/rest/" xmlns:ts-soap="http://ns.taverna.org.uk/2010/xml/server/soap/" xmlns:xlink="http://www.w3.org/1999/xlink" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://ns.taverna.org.uk/2010/xml/server/">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:admin="http://ns.taverna.org.uk/2010/xml/server/admin/" xmlns:feed="http://ns.taverna.org.uk/2010/xml/server/feed/" xmlns:tns="http://ns.taverna.org.uk/2010/xml/server/" xmlns:ts="http://ns.taverna.org.uk/2010/xml/server/" xmlns:ts-rest="http://ns.taverna.org.uk/2010/xml/server/rest/" xmlns:ts-soap="http://ns.taverna.org.uk/2010/xml/server/soap/" xmlns:xlink="http://www.w3.org/1999/xlink" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://ns.taverna.org.uk/2010/xml/server/" jxb:version="2.1">
+    <xs:annotation>
+    	<xs:appinfo>
+			<jxb:schemaBindings>
+				<jxb:package name="uk.org.taverna.server.client.generic" />
+			</jxb:schemaBindings>
+    	</xs:appinfo>
+    </xs:annotation>
     <xs:import namespace="http://www.w3.org/1999/xlink"/>
     <xs:element name="capability" type="ts:Capability"/>
     <xs:element name="dir" type="ts:DirectoryReference"/>
