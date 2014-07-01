@@ -19,6 +19,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
+import javax.xml.transform.dom.DOMSource;
 
 import org.ogf.usage.v1_0.Charge;
 import org.ogf.usage.v1_0.ConsumableResourceType;
@@ -45,6 +46,7 @@ import org.ogf.usage.v1_0.TimeDuration;
 import org.ogf.usage.v1_0.TimeInstant;
 import org.ogf.usage.v1_0.UserIdentity;
 import org.ogf.usage.v1_0.WallDuration;
+import org.w3c.dom.Element;
 
 @XmlRootElement(name = "UsageRecord", namespace = "http://schema.ogf.org/urf/2003/09/urf")
 public class JobUsageRecord extends org.ogf.usage.v1_0.UsageRecordType {
@@ -277,10 +279,25 @@ public class JobUsageRecord extends org.ogf.usage.v1_0.UsageRecordType {
 		return writer.toString();
 	}
 
+	private static JAXBContext context;
+	static {
+		try {
+			context = JAXBContext.newInstance(JobUsageRecord.class);
+		} catch (JAXBException e) {
+			throw new RuntimeException("failed to handle JAXB annotated class",
+					e);
+		}
+	}
+
 	public static JobUsageRecord unmarshal(String s) throws JAXBException {
-		StringReader reader = new StringReader(s);
-		return (JobUsageRecord) JAXBContext.newInstance(JobUsageRecord.class)
-				.createUnmarshaller().unmarshal(reader);
+		return (JobUsageRecord) context.createUnmarshaller().unmarshal(
+				new StringReader(s));
+	}
+
+	public static JobUsageRecord unmarshal(Element elem) throws JAXBException {
+		return context.createUnmarshaller()
+				.unmarshal(new DOMSource(elem), JobUsageRecord.class)
+				.getValue();
 	}
 
 	// TODO: Add signing support
