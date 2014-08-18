@@ -5,17 +5,30 @@
  */
 package org.taverna.server.master.interaction;
 
+import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 import static java.util.Collections.reverse;
+import static javax.management.Query.attr;
+import static javax.management.Query.match;
+import static javax.management.Query.value;
+import static org.apache.commons.logging.LogFactory.getLog;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import org.apache.abdera.Abdera;
 import org.apache.abdera.factory.Factory;
@@ -97,6 +110,28 @@ public class InteractionFeedSupport {
 		this.uriBuilder = uriBuilder;
 	}
 
+	private final Map<String, URL> endPoints = new HashMap<>();
+
+	@PostConstruct
+	void determinePorts() {
+		try {
+			MBeanServer mbs = getPlatformMBeanServer();
+			for (ObjectName obj : mbs.queryNames(new ObjectName(
+					"*:type=Connector,*"),
+					match(attr("protocol"), value("HTTP/1.1")))) {
+				String scheme = mbs.getAttribute(obj, "scheme").toString();
+				String port = obj.getKeyProperty("port");
+				endPoints.put(scheme, new URL(scheme + "://localhost:" + port));
+			}
+			getLog(getClass()).info(
+					"installed feed port publication mapping for "
+							+ endPoints.keySet());
+		} catch (Exception e) {
+			getLog(getClass()).error(
+					"failure in determining local port mapping", e);
+		}
+	}
+	
 	/**
 	 * @param run
 	 *            The workflow run that defines which feed we are operating on.
@@ -104,6 +139,13 @@ public class InteractionFeedSupport {
 	 */
 	public URI getFeedURI(TavernaRun run) {
 		return uriBuilder.getRunUriBuilder(run).path(FEED_URL_DIR).build();
+	}
+
+	@Nullable
+	public URL getLocalFeedBase(URI feedURI) {
+		if (feedURI == null)
+			return null;
+		return endPoints.get(feedURI.getScheme());
 	}
 
 	/**

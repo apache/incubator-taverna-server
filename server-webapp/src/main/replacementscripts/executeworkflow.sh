@@ -54,6 +54,9 @@ if test x != "x$INTERACTION_HOST"; then
     INTERACTION_PROPS="$INTERACTION_PROPS -Dtaverna.interaction.port=$INTERACTION_PORT"
     INTERACTION_PROPS="$INTERACTION_PROPS -Dtaverna.interaction.webdav_path=$INTERACTION_WEBDAV"
     INTERACTION_PROPS="$INTERACTION_PROPS -Dtaverna.interaction.feed_path=$INTERACTION_FEED"
+    if test x != "x$INTERACTION_PUBLISH"; then
+    	INTERACTION_PROPS="$INTERACTION_PROPS -Dtaverna.interaction.publishAddressOverride=$INTERACTION_PUBLISH"
+    fi
 fi
 
 MainClass=net.sf.taverna.t2.commandline.CommandLineLauncher
