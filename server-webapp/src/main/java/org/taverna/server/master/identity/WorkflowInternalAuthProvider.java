@@ -54,7 +54,7 @@ import org.taverna.server.master.worker.RunDatabaseDAO;
  */
 public class WorkflowInternalAuthProvider extends
 		AbstractUserDetailsAuthenticationProvider {
-	private static Log log = LogFactory.getLog("Taverna.Server.UserDB");
+	private Log log = LogFactory.getLog("Taverna.Server.UserDB");
 	private static final boolean logDecisions = true;
 	public static final String PREFIX = "wfrun_";
 	private RunDatabaseDAO dao;
@@ -265,7 +265,7 @@ public class WorkflowInternalAuthProvider extends
 	}
 
 	public static class WorkflowSelfIDMapper implements LocalIdentityMapper {
-		private static Log log = LogFactory.getLog("Taverna.Server.UserDB");
+		private Log log = LogFactory.getLog("Taverna.Server.UserDB");
 		private RunStore runStore;
 
 		@PreDestroy

@@ -5,7 +5,7 @@
  */
 package org.taverna.server.master.usage;
 
-import static org.taverna.server.master.TavernaServer.log;
+import static org.apache.commons.logging.LogFactory.getLog;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,6 +17,7 @@ import java.util.List;
 import javax.annotation.PreDestroy;
 import javax.xml.bind.JAXBException;
 
+import org.apache.commons.logging.Log;
 import org.ogf.usage.JobUsageRecord;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.api.ManagementModel;
@@ -30,6 +31,7 @@ import org.taverna.server.master.utils.JDOSupport;
  * @author Donal Fellows
  */
 public class UsageRecordRecorder extends JDOSupport<UsageRecord> {
+	private Log log = getLog("Taverna.Server.Webapp");
 	public UsageRecordRecorder() {
 		super(UsageRecord.class);
 	}

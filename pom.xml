@@ -540,10 +540,11 @@
 		<module>server-webapp</module>
 		<module>server-runinterface</module>
 		<module>server-worker</module>
-		<module>server-distribution</module>
 		<module>server-unix-forker</module>
 		<module>server-usagerecord</module>
 		<module>server-port-description</module>
 		<module>server-rmidaemon</module>
+		<module>server-client</module>
+		<module>server-distribution</module>
 	</modules>
 </project>

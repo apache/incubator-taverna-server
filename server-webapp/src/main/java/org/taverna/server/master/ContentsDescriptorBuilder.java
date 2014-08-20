@@ -10,7 +10,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static javax.xml.xpath.XPathConstants.NODE;
 import static javax.xml.xpath.XPathConstants.NODESET;
-import static org.taverna.server.master.TavernaServerSupport.log;
+import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.common.Uri.secure;
 
 import java.io.ByteArrayInputStream;
@@ -28,6 +28,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.util.xml.SimpleNamespaceContext;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
@@ -58,6 +59,7 @@ import org.w3c.dom.NodeList;
  * @author Donal Fellows
  */
 public class ContentsDescriptorBuilder {
+	private Log log = getLog("Taverna.Server.Webapp");
 	/** Namespace for use when pulling apart a .t2flow document. */
 	private static final String T2FLOW_NS = "http://taverna.sf.net/2008/xml/t2flow";
 	/** Prefix for t2flow namespace. */

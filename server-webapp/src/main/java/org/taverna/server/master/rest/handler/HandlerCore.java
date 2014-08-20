@@ -7,10 +7,11 @@ package org.taverna.server.master.rest.handler;
 
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.status;
-import static org.taverna.server.master.TavernaServer.log;
+import static org.apache.commons.logging.LogFactory.getLog;
 
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.logging.Log;
 import org.taverna.server.master.api.ManagementModel;
 
 /**
@@ -20,6 +21,7 @@ import org.taverna.server.master.api.ManagementModel;
  * @author Donal Fellows
  */
 public class HandlerCore {
+	private Log log = getLog("Taverna.Server.Webapp");
 	private ManagementModel managementModel;
 
 	/**

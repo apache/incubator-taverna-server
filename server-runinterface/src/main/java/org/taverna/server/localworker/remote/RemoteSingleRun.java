@@ -221,11 +221,15 @@ public interface RemoteSingleRun extends Remote {
 	 *            The location used for pushing web pages to support the feed.
 	 *            If <tt>null</tt>, a default from the factory will be used
 	 *            instead.
+	 * @param publishUrlBase
+	 *            Where to <i>actually</i> publish to, if this needs to be
+	 *            different from the location presented in the published HTML
+	 *            and Feed entries. Necessary in complex network scenarios.
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.
 	 */
 	void setInteractionServiceDetails(@Nonnull URL interactionFeed,
-			@Nonnull URL webdavPath) throws RemoteException;
+			@Nonnull URL webdavPath, @Nullable URL publishUrlBase) throws RemoteException;
 
 	/**
 	 * A do-nothing method, used to check the general reachability of the

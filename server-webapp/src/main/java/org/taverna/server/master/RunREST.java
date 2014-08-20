@@ -10,9 +10,9 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.noContent;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.status;
+import static org.apache.commons.logging.LogFactory.getLog;
 import static org.joda.time.format.ISODateTimeFormat.dateTime;
 import static org.joda.time.format.ISODateTimeFormat.dateTimeParser;
-import static org.taverna.server.master.TavernaServer.log;
 import static org.taverna.server.master.common.Roles.SELF;
 import static org.taverna.server.master.common.Roles.USER;
 import static org.taverna.server.master.common.Status.Initialized;
@@ -26,6 +26,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBException;
 
+import org.apache.commons.logging.Log;
 import org.joda.time.DateTime;
 import org.ogf.usage.JobUsageRecord;
 import org.springframework.beans.factory.annotation.Required;
@@ -57,6 +58,7 @@ import org.taverna.server.port_description.OutputDescription;
  * @author Donal Fellows
  */
 abstract class RunREST implements TavernaServerRunREST, RunBean {
+	private Log log = getLog("Taverna.Server.Webapp");
 	private String runName;
 	private TavernaRun run;
 	private TavernaServerSupport support;

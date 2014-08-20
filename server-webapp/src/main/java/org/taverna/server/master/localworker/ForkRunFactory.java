@@ -13,10 +13,7 @@ import static java.util.UUID.randomUUID;
 import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.TavernaServer.JMX_ROOT;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.rmi.ConnectException;
 import java.rmi.ConnectIOException;
 import java.rmi.NotBoundException;
@@ -26,6 +23,7 @@ import java.util.UUID;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
@@ -146,14 +144,8 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		// Spawn the subprocess
 		log.info("about to create subprocess: " + p.command());
 		factoryProcess = p.start();
-		Thread logger = new Thread(new OutputLogger(factoryProcessName,
-				factoryProcess), factoryProcessName + ".Logger");
-		logger.setDaemon(true);
-		logger.start();
-		Thread logger2 = new Thread(new ErrorLogger(factoryProcessName,
-				factoryProcess), factoryProcessName + ".Logger");
-		logger2.setDaemon(true);
-		logger2.start();
+		outlog = new OutputLogger(factoryProcessName, factoryProcess);
+		errlog = new ErrorLogger(factoryProcessName, factoryProcess);
 
 		// Wait for the subprocess to register itself in the RMI registry
 		Calendar deadline = Calendar.getInstance();
@@ -192,6 +184,18 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		throw lastException;
 	}
 
+	private OutputLogger outlog;
+	private ErrorLogger errlog;
+
+	private void stopLoggers() {
+		if (outlog != null)
+			outlog.stop();
+		outlog = null;
+		if (errlog != null)
+			errlog.stop();
+		errlog = null;
+	}
+
 	private RemoteRunFactory getRemoteFactoryHandle(String name)
 			throws RemoteException, NotBoundException {
 		log.info("about to look up resource called " + name);
@@ -207,81 +211,38 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		return rrf;
 	}
 
-	private static class OutputLogger implements Runnable {
+	private static class OutputLogger extends StreamLogger {
 		private final Log log;
 
 		OutputLogger(String name, Process process) {
+			super(name, process.getInputStream());
 			log = getLog("Taverna.Server.LocalWorker." + name);
-			this.uniqueName = name;
-			this.br = new BufferedReader(new InputStreamReader(
-					process.getInputStream()));
 		}
 
-		private String uniqueName;
-		private BufferedReader br;
-
 		@Override
-		public void run() {
-			try {
-				String line;
-				while (true) {
-					line = br.readLine();
-					if (line == null)
-						break;
-					log.info(uniqueName + " subprocess output: " + line);
-				}
-			} catch (IOException e) {
-				// Do nothing...
-			} catch (Exception e) {
-				log.warn("failure in reading from " + uniqueName, e);
-			} finally {
-				try {
-					br.close();
-				} catch (Throwable e) {
-				}
-			}
+		protected void write(String msg) {
+			log.info("stdout: " + msg);
 		}
 	}
 
-	private static class ErrorLogger implements Runnable {
+	private static class ErrorLogger extends StreamLogger {
 		private final Log log;
 
 		ErrorLogger(String name, Process process) {
+			super(name, process.getInputStream());
 			log = getLog("Taverna.Server.LocalWorker." + name);
-			this.uniqueName = name;
-			this.br = new BufferedReader(new InputStreamReader(
-					process.getErrorStream()));
 		}
 
-		private String uniqueName;
-		private BufferedReader br;
-
 		@Override
-		public void run() {
-			try {
-				String line;
-				while (true) {
-					line = br.readLine();
-					if (line == null)
-						break;
-					log.info(uniqueName + " subprocess error: " + line);
-				}
-			} catch (IOException e) {
-				// Do nothing...
-			} catch (Exception e) {
-				log.warn("failure in reading from " + uniqueName, e);
-			} finally {
-				try {
-					br.close();
-				} catch (Throwable e) {
-				}
-			}
+		protected void write(String msg) {
+			log.info("stderr: " + msg);
 		}
 	}
 
 	/**
 	 * Destroys the subprocess that manufactures runs.
 	 */
+	@PreDestroy
 	public void killFactory() {
 		if (factory != null) {
 			log.info("requesting shutdown of " + factoryProcessName);
@@ -315,6 +276,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 				}
 			} finally {
 				factoryProcess = null;
+				stopLoggers();
 			}
 			if (code > 128) {
 				log.info(factoryProcessName + " died with signal="
@@ -325,12 +287,6 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 				log.warn(factoryProcessName + " not yet dead");
 			}
 		}
-	}
-
-	@Override
-	protected void finalize() throws Throwable {
-		killFactory();
-		super.finalize();
 	}
 
 	/**
@@ -347,6 +303,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	 */
 	private RemoteSingleRun getRealRun(@Nonnull UsernamePrincipal creator,
 			@Nonnull String wf, UUID id) throws RemoteException {
+		@Nonnull
 		String globaluser = "Unknown Person";
 		if (creator != null)
 			globaluser = creator.getName();
@@ -359,6 +316,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 	@Override
 	protected RemoteSingleRun getRealRun(UsernamePrincipal creator,
 			Workflow workflow, UUID id) throws Exception {
+		@Nonnull
 		String wf = serializeWorkflow(workflow);
 		for (int i = 0; i < 3; i++) {
 			initFactory();
