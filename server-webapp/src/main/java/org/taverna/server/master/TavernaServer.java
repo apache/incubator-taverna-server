@@ -125,7 +125,7 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 			+ Version.JAVA + ",name=";
 
 	/** The logger for the server framework. */
-	public static Log log = getLog("Taverna.Server.Webapp");
+	public Log log = getLog("Taverna.Server.Webapp");
 
 	@PreDestroy
 	void closeLog() {

@@ -143,6 +143,7 @@ public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
 		}
 	}
 
+	/** Get a handle to a new instance of the RMI registry. */
 	private Registry makeRegistry(int port) throws RemoteException {
 		ProcessBuilder p = new ProcessBuilder(getJavaBinary());
 		p.command().add("-jar");

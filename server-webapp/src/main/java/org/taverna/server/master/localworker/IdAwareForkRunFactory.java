@@ -10,15 +10,11 @@ import static java.lang.Thread.sleep;
 import static java.util.Arrays.asList;
 import static java.util.Calendar.SECOND;
 import static java.util.UUID.randomUUID;
-import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.TavernaServer.JMX_ROOT;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.rmi.ConnectException;
@@ -335,50 +331,6 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	}
 }
 
-abstract class StreamLogger {
-	protected final Log log;
-
-	protected StreamLogger(String name, InputStream is) {
-		log = getLog("Taverna.Server.LocalWorker." + name);
-		final String uniqueName = name;
-		final BufferedReader br = new BufferedReader(new InputStreamReader(is));
-		Thread t = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				String line;
-				try {
-					while ((line = br.readLine()) != null)
-						if (!line.isEmpty())
-							write(line);
-				} catch (IOException e) {
-					// Do nothing...
-				} catch (Exception e) {
-					log.warn("failure in reading from " + uniqueName, e);
-				} finally {
-					try {
-						br.close();
-					} catch (Throwable e) {
-					}
-				}
-			}
-		}, name + ".StreamLogger");
-		t.setDaemon(true);
-		t.start();
-	}
-
-	/**
-	 * Write a line read from the subproces to the log.
-	 * <p>
-	 * This needs to be implemented by subclasses in order for the log to be
-	 * correctly written with the class name.
-	 * 
-	 * @param msg
-	 *            The message to write. Guaranteed to have no newline characters
-	 *            in it and to be non-empty.
-	 */
-	protected abstract void write(String msg);
-}
-
 class StdOut extends StreamLogger {
 	StdOut(Process process) {
 		super("forker", process.getInputStream());
@@ -414,6 +366,8 @@ class SecureFork implements IdAwareForkRunFactory.MetaFactory {
 	private Integer lastExitCode;
 	private Log log;
 	private LocalWorkerState state;
+	private StdOut out;
+	private StdErr err;
 
 	/**
 	 * Construct the command to run the meta-factory process.
@@ -456,8 +410,8 @@ class SecureFork implements IdAwareForkRunFactory.MetaFactory {
 		channel = new PrintWriter(new BufferedWriter(new OutputStreamWriter(
 				process.getOutputStream())), true);
 		// Log the responses
-		new StdOut(process);
-		new StdErr(process);
+		out=new StdOut(process);
+		err=new StdErr(process);
 	}
 
 	@Override
@@ -495,6 +449,8 @@ class SecureFork implements IdAwareForkRunFactory.MetaFactory {
 		} finally {
 			process = null;
 			channel = null;
+			out.stop();
+			err.stop();
 		}
 	}
 

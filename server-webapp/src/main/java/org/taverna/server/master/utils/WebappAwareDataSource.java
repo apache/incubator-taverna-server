@@ -5,12 +5,17 @@
  */
 package org.taverna.server.master.utils;
 
+import static java.lang.Thread.currentThread;
+import static java.sql.DriverManager.deregisterDriver;
+import static java.sql.DriverManager.getDrivers;
 import static org.taverna.server.master.utils.Contextualizer.ROOT_PLACEHOLDER;
 
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Enumeration;
 
 import javax.annotation.PreDestroy;
 
@@ -49,6 +54,7 @@ public class WebappAwareDataSource extends BasicDataSource {
 	private void doInit() {
 		synchronized (this) {
 			if (!init) {
+				setDriverClassLoader(currentThread().getContextClassLoader());
 				String url = getUrl();
 				if (url.contains(ROOT_PLACEHOLDER)) {
 					String newurl = ctxt.contextualize(url);
@@ -108,5 +114,21 @@ public class WebappAwareDataSource extends BasicDataSource {
 			// Expected; ignore it
 		}
 		log = null;
+		dropDriver();
+	}
+
+	private void dropDriver() {
+		Enumeration<Driver> drivers = getDrivers();
+		while (drivers.hasMoreElements()) {
+			Driver d = drivers.nextElement();
+			if (d.getClass().getClassLoader() == getDriverClassLoader()
+					&& d.getClass().getName().equals(getDriverClassName())) {
+				try {
+					deregisterDriver(d);
+				} catch (SQLException e) {
+				}
+				break;
+			}
+		}
 	}
 }

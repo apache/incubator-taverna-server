@@ -5,6 +5,10 @@
  */
 package org.taverna.server.master.notification.atom;
 
+import static java.lang.Thread.interrupted;
+import static java.lang.Thread.sleep;
+import static java.util.Arrays.asList;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -13,6 +17,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import javax.annotation.Nonnull;
+import javax.annotation.PreDestroy;
 import javax.jdo.annotations.PersistenceAware;
 
 import org.apache.commons.logging.Log;
@@ -155,25 +160,38 @@ public class EventDAO extends JDOSupport<Event> implements MessageDispatcher {
 				messageSubject, messageContent));
 	}
 
+	private Thread eventDaemon;
+
 	@Required
 	public void setSelf(final EventDAO dao) {
-		Thread t = new Thread(new Runnable() {
+		eventDaemon = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					while (true) {
-						ArrayList<Event> e = new ArrayList<>();
-						e.add(insertQueue.take());
-						insertQueue.drainTo(e);
-						dao.storeEvents(e);
-						Thread.sleep(5000);
+					while (!interrupted()) {
+						transferEvents(dao, new ArrayList<Event>(
+								asList(insertQueue.take())));
+						sleep(5000);
 					}
 				} catch (InterruptedException e) {
+				} finally {
+					transferEvents(dao, new ArrayList<Event>());
 				}
 			}
-		});
-		t.setDaemon(true);
-		t.start();
+		}, "ATOM event daemon");
+		eventDaemon.setDaemon(true);
+		eventDaemon.start();
+	}
+
+	private void transferEvents(EventDAO dao, List<Event> e) {
+		insertQueue.drainTo(e);
+		dao.storeEvents(e);
+	}
+
+	@PreDestroy
+	void stopDaemon() {
+		if (eventDaemon != null)
+			eventDaemon.interrupt();
 	}
 
 	@WithinSingleTransaction

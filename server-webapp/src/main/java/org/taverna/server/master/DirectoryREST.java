@@ -11,7 +11,7 @@ import static javax.ws.rs.core.Response.noContent;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.seeOther;
 import static javax.ws.rs.core.Response.status;
-import static org.taverna.server.master.TavernaServer.log;
+import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.api.ContentTypes.APPLICATION_ZIP_TYPE;
 import static org.taverna.server.master.api.ContentTypes.DIRECTORY_VARIANTS;
 import static org.taverna.server.master.api.ContentTypes.INITIAL_FILE_VARIANTS;
@@ -37,6 +37,7 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
 import javax.xml.ws.Holder;
 
+import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.api.DirectoryBean;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
@@ -61,6 +62,7 @@ import org.taverna.server.master.utils.InvocationCounter.CallCounted;
  * @author Donal Fellows
  */
 class DirectoryREST implements TavernaServerDirectoryREST, DirectoryBean {
+	private Log log = getLog("Taverna.Server.Webapp");
 	private TavernaServerSupport support;
 	private TavernaRun run;
 	private FilenameUtils fileUtils;

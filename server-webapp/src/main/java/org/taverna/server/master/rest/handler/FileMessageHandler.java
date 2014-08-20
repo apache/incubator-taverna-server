@@ -5,7 +5,7 @@
  */
 package org.taverna.server.master.rest.handler;
 
-import static org.taverna.server.master.TavernaServer.log;
+import static org.apache.commons.logging.LogFactory.getLog;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -18,6 +18,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
+import org.apache.commons.logging.Log;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.interfaces.File;
 
@@ -28,6 +29,7 @@ import org.taverna.server.master.interfaces.File;
  */
 @Provider
 public class FileMessageHandler implements MessageBodyWriter<File> {
+	private Log log = getLog("Taverna.Server.Webapp");
 	/** How much to pull from the worker in one read. */
 	private int maxChunkSize;
 
