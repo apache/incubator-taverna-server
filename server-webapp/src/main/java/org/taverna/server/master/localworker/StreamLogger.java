@@ -15,14 +15,14 @@ abstract class StreamLogger {
 	private Thread t;
 	private InputStream in;
 
-	protected StreamLogger(final String name, final InputStream is) {
+	protected StreamLogger(final String name, InputStream is) {
 		log = getLog("Taverna.Server.LocalWorker." + name);
 		in = is;
 		t = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try (BufferedReader br = new BufferedReader(
-						new InputStreamReader(is))) {
+						new InputStreamReader(in))) {
 					String line;
 					while (!interrupted() && (line = br.readLine()) != null)
 						if (!line.isEmpty())
@@ -51,6 +51,7 @@ abstract class StreamLogger {
 	protected abstract void write(String msg);
 
 	public void stop() {
+		log.info("trying to close down " + t.getName());
 		t.interrupt();
 		try {
 			in.close();

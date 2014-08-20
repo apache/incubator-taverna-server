@@ -331,28 +331,6 @@ public class IdAwareForkRunFactory extends AbstractRemoteRunFactory implements
 	}
 }
 
-class StdOut extends StreamLogger {
-	StdOut(Process process) {
-		super("forker", process.getInputStream());
-	}
-
-	@Override
-	protected void write(String msg) {
-		log.info(msg);
-	}
-}
-
-class StdErr extends StreamLogger {
-	StdErr(Process process) {
-		super("forker", process.getErrorStream());
-	}
-
-	@Override
-	protected void write(String msg) {
-		log.info(msg);
-	}
-}
-
 /**
  * The connector that handles the secure fork process itself.
  * 
@@ -366,8 +344,7 @@ class SecureFork implements IdAwareForkRunFactory.MetaFactory {
 	private Integer lastExitCode;
 	private Log log;
 	private LocalWorkerState state;
-	private StdOut out;
-	private StdErr err;
+	private StreamLogger out, err;
 
 	/**
 	 * Construct the command to run the meta-factory process.
@@ -410,8 +387,18 @@ class SecureFork implements IdAwareForkRunFactory.MetaFactory {
 		channel = new PrintWriter(new BufferedWriter(new OutputStreamWriter(
 				process.getOutputStream())), true);
 		// Log the responses
-		out=new StdOut(process);
-		err=new StdErr(process);
+		out = new StreamLogger("ForkedStdout", process.getInputStream()) {
+			@Override
+			protected void write(String msg) {
+				log.info(msg);
+			}
+		};
+		err = new StreamLogger("ForkedStderr", process.getErrorStream()) {
+			@Override
+			protected void write(String msg) {
+				log.info(msg);
+			}
+		};
 	}
 
 	@Override

@@ -10,7 +10,6 @@ import static java.lang.Thread.sleep;
 import static java.util.Arrays.asList;
 import static java.util.Calendar.SECOND;
 import static java.util.UUID.randomUUID;
-import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.TavernaServer.JMX_ROOT;
 
 import java.io.File;
@@ -26,7 +25,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.xml.bind.JAXBException;
 
-import org.apache.commons.logging.Log;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
@@ -144,8 +142,18 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		// Spawn the subprocess
 		log.info("about to create subprocess: " + p.command());
 		factoryProcess = p.start();
-		outlog = new OutputLogger(factoryProcessName, factoryProcess);
-		errlog = new ErrorLogger(factoryProcessName, factoryProcess);
+		outlog = new StreamLogger("FactoryStdout", factoryProcess.getInputStream()) {
+			@Override
+			protected void write(String msg) {
+				log.info(msg);
+			}
+		};
+		errlog = new StreamLogger("FactoryStderr", factoryProcess.getErrorStream()) {
+			@Override
+			protected void write(String msg) {
+				log.info(msg);
+			}
+		};
 
 		// Wait for the subprocess to register itself in the RMI registry
 		Calendar deadline = Calendar.getInstance();
@@ -184,8 +192,7 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		throw lastException;
 	}
 
-	private OutputLogger outlog;
-	private ErrorLogger errlog;
+	private StreamLogger outlog, errlog;
 
 	private void stopLoggers() {
 		if (outlog != null)
@@ -209,34 +216,6 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 		log.info("successfully connected to factory subprocess "
 				+ factoryProcessName);
 		return rrf;
-	}
-
-	private static class OutputLogger extends StreamLogger {
-		private final Log log;
-
-		OutputLogger(String name, Process process) {
-			super(name, process.getInputStream());
-			log = getLog("Taverna.Server.LocalWorker." + name);
-		}
-
-		@Override
-		protected void write(String msg) {
-			log.info("stdout: " + msg);
-		}
-	}
-
-	private static class ErrorLogger extends StreamLogger {
-		private final Log log;
-
-		ErrorLogger(String name, Process process) {
-			super(name, process.getInputStream());
-			log = getLog("Taverna.Server.LocalWorker." + name);
-		}
-
-		@Override
-		protected void write(String msg) {
-			log.info("stderr: " + msg);
-		}
 	}
 
 	/**
