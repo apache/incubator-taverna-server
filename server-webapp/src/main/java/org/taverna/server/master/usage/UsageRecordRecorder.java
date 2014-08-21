@@ -155,10 +155,8 @@ public class UsageRecordRecorder extends JDOSupport<UsageRecord> {
 		return result;
 	}
 
-	@Override
 	@PreDestroy
 	public void close() {
-		super.close();
 		if (writer != null)
 			writer.close();
 	}

@@ -62,7 +62,7 @@
 		<property name="logIncomingWorkflows" value="${default.logworkflows}" />
 		<property name="allowNewWorkflowRuns" value="${default.permitsubmit}" />
 		<property name="logOutgoingExceptions" value="${default.logexceptions}" />
-		<property name="persistenceManagerFactory" ref="pmf" />
+		<property name="persistenceManagerBuilder" ref="pmb" />
 		<property name="self" ref="webapp.state" />
 	</bean>
 
@@ -179,7 +179,7 @@
 	<bean id="passwordEncoder"
 		class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
 	<bean class="org.taverna.server.master.identity.UserStore" id="userStore">
-		<property name="persistenceManagerFactory" ref="pmf" />
+		<property name="persistenceManagerBuilder" ref="pmb" />
 		<property name="baselineUserProperties">
 			<util:properties location="/WEB-INF/security/users.properties" />
 		</property>
@@ -211,6 +211,9 @@
 					>org.taverna.server.master.utils.LoggingDerbyAdapter</prop>
 			</props>
 		</property>
+	</bean>
+	<bean id="pmb" class="org.taverna.server.master.utils.JDOSupport.PersistenceManagerBuilder">
+		<property name="persistenceManagerFactory" ref="pmf" />
 	</bean>
 	<bean id="transactionAspect"
 		class="org.taverna.server.master.utils.JDOSupport.TransactionAspect" />
@@ -245,7 +248,7 @@
 	<bean id="usageRecordSink" class="org.taverna.server.master.usage.UsageRecordRecorder">
 		<property name="state" ref="webapp.state" />
 		<property name="contextualizer" ref="contextualizer" />
-		<property name="persistenceManagerFactory" ref="pmf" />
+		<property name="persistenceManagerBuilder" ref="pmb" />
 		<property name="self" ref="usageRecordSink" />
 		<property name="disableDB" value="${usage.disableDB}" />
 		<property name="logFile" value="${usage.logFile}" />
@@ -326,7 +329,7 @@
 				the subprocess to complete its registration.
 			</description>
 		</property>
-		<property name="persistenceManagerFactory" ref="pmf" />
+		<property name="persistenceManagerBuilder" ref="pmb" />
 		<!-- <property name="javaBinary"> <description>The name of the java executable 
 			used to run the server worker. Defaults to the executable used to run the 
 			hosting environment.</description> </property> -->
@@ -388,7 +391,7 @@
 			The implementation of the catalog of workflow runs
 			supported by the localworker run engine.
 		</description>
-		<property name="persistenceManagerFactory" ref="pmf" />
+		<property name="persistenceManagerBuilder" ref="pmb" />
 		<property name="facade" ref="worker.rundb" />
 	</bean>
 	<task:scheduled-tasks scheduler="taskScheduler">
@@ -451,7 +454,7 @@
 
 	<bean id="dispatch.atom" class="org.taverna.server.master.notification.atom.EventDAO">
 		<property name="expiryAgeDays" value="${atom.lifespan}" />
-		<property name="persistenceManagerFactory" ref="pmf" />
+		<property name="persistenceManagerBuilder" ref="pmb" />
 		<property name="uriBuilderFactory" ref="feed" />
 		<property name="self" ref="dispatch.atom" />
 	</bean>

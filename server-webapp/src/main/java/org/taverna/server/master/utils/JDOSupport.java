@@ -9,8 +9,10 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.apache.commons.logging.LogFactory.getLog;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.util.WeakHashMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -37,7 +39,7 @@ import org.springframework.beans.factory.annotation.Required;
  */
 public abstract class JDOSupport<T> {
 	private Class<T> contextClass;
-	PersistenceManager pm;
+	private PersistenceManagerBuilder pmb;
 
 	/**
 	 * Instantiate this class, supplying it a handle to the class that will be
@@ -51,18 +53,19 @@ public abstract class JDOSupport<T> {
 	}
 
 	/**
-	 * @param persistenceManagerFactory
+	 * @param persistenceManagerBuilder
 	 *            The JDO engine to use for managing persistence.
 	 */
 	@Required
-	public void setPersistenceManagerFactory(
-			PersistenceManagerFactory persistenceManagerFactory) {
-		pm = persistenceManagerFactory.getPersistenceManagerProxy();
+	public void setPersistenceManagerBuilder(
+			PersistenceManagerBuilder persistenceManagerBuilder) {
+		pmb = persistenceManagerBuilder;
 	}
 
-	@PreDestroy
-	public void close() {
-		pm.close();
+	private PersistenceManager pm() {
+		if (isPersistent())
+			return pmb.getPersistenceManager();
+		return null;
 	}
 
 	/**
@@ -72,7 +75,7 @@ public abstract class JDOSupport<T> {
 	 * @return Whether there is a persistence manager installed.
 	 */
 	protected boolean isPersistent() {
-		return pm != null;
+		return pmb != null;
 	}
 
 	/**
@@ -84,7 +87,7 @@ public abstract class JDOSupport<T> {
 	 */
 	@Nonnull
 	protected Query query(@Nonnull String filter) {
-		return pm.newQuery(contextClass, filter);
+		return pm().newQuery(contextClass, filter);
 	}
 
 	/**
@@ -98,7 +101,7 @@ public abstract class JDOSupport<T> {
 	 */
 	@Nonnull
 	protected Query namedQuery(@Nonnull String name) {
-		return pm.newNamedQuery(contextClass, name);
+		return pm().newNamedQuery(contextClass, name);
 	}
 
 	/**
@@ -113,7 +116,7 @@ public abstract class JDOSupport<T> {
 	protected T persist(@Nullable T value) {
 		if (value == null)
 			return null;
-		return pm.makePersistent(value);
+		return pm().makePersistent(value);
 	}
 
 	/**
@@ -128,7 +131,7 @@ public abstract class JDOSupport<T> {
 	protected T detach(@Nullable T value) {
 		if (value == null)
 			return null;
-		return pm.detachCopy(value);
+		return pm().detachCopy(value);
 	}
 
 	/**
@@ -141,7 +144,7 @@ public abstract class JDOSupport<T> {
 	@Nullable
 	protected T getById(Object id) {
 		try {
-			return pm.getObjectById(contextClass, id);
+			return pm().getObjectById(contextClass, id);
 		} catch (Exception e) {
 			return null;
 		}
@@ -155,7 +158,7 @@ public abstract class JDOSupport<T> {
 	 */
 	protected void delete(@Nullable T value) {
 		if (value != null)
-			pm.deletePersistent(value);
+			pm().deletePersistent(value);
 	}
 
 	/**
@@ -173,9 +176,9 @@ public abstract class JDOSupport<T> {
 		Object applyTransaction(ProceedingJoinPoint pjp, JDOSupport<?> support)
 				throws Throwable {
 			synchronized (lock) {
+				PersistenceManager pm = support.pm();
 				int id = ++txid;
-				Transaction tx = support.pm == null ? null : support.pm
-						.currentTransaction();
+				Transaction tx = (pm == null) ? null : pm.currentTransaction();
 				if (tx != null && tx.isActive())
 					tx = null;
 				if (tx != null) {
@@ -217,6 +220,45 @@ public abstract class JDOSupport<T> {
 	 */
 	@Target(METHOD)
 	@Retention(RUNTIME)
+	@Documented
 	public @interface WithinSingleTransaction {
+	}
+
+	public static class PersistenceManagerBuilder {
+		private PersistenceManagerFactory pmf;
+		private WeakHashMap<Thread, PersistenceManager> cache = new WeakHashMap<>();
+
+		/**
+		 * @param persistenceManagerFactory
+		 *            The JDO engine to use for managing persistence.
+		 */
+		@Required
+		public void setPersistenceManagerFactory(
+				PersistenceManagerFactory persistenceManagerFactory) {
+			pmf = persistenceManagerFactory;
+		}
+
+		@Nonnull
+		public PersistenceManager getPersistenceManager() {
+			if (cache == null)
+				return pmf.getPersistenceManager();
+			Thread t = Thread.currentThread();
+			PersistenceManager pm = cache.get(t);
+			if (pm == null && pmf != null) {
+				pm = pmf.getPersistenceManager();
+				cache.put(t, pm);
+			}
+			return pm;
+		}
+
+		@PreDestroy
+		void clearThreadCache() {
+			WeakHashMap<Thread, PersistenceManager> cache = this.cache;
+			this.cache = null;
+			for (PersistenceManager pm : cache.values())
+				if (pm != null)
+					pm.close();
+			cache.clear();
+		}
 	}
 }
