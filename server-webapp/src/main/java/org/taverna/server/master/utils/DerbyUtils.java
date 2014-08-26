@@ -1,5 +1,6 @@
 package org.taverna.server.master.utils;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.Writer;
 
@@ -26,30 +27,42 @@ public class DerbyUtils {
 }
 
 class DBLog extends Writer {
-	Log log = LogFactory.getLog("Taverna.Server.Database");
-	StringBuilder sb = new StringBuilder();
+	private Log log = LogFactory.getLog("Taverna.Server.Database");
+	private StringBuilder sb = new StringBuilder();
+	private boolean closed = false;
 
 	@Override
 	public void write(char[] cbuf, int off, int len) throws IOException {
+		if (closed)
+			throw new EOFException();
 		if (!log.isInfoEnabled())
 			return;
 		sb.append(cbuf, off, len);
-		while (true) {
-			int idx = sb.indexOf("\n");
+		while (!closed) {
+			int idx = sb.indexOf("\n"), realIdx = idx;
 			if (idx < 0)
 				break;
-			if (idx > 0 && sb.charAt(idx - 1) == '\r')
+			char ch;
+			while (idx > 0 && ((ch = sb.charAt(idx - 1)) == '\r' || ch == ' ' || ch == '\t'))
 				idx--;
-			log.info(sb.substring(0, idx));
-			sb.delete(0, idx + 1);
+			if (idx > 0)
+				log.info(sb.substring(0, idx));
+			sb.delete(0, realIdx + 1);
 		}
 	}
 
 	@Override
 	public void flush() throws IOException {
+		if (sb.length() > 0) {
+			log.info(sb.toString());
+			sb = new StringBuilder();
+		}
 	}
 
 	@Override
 	public void close() throws IOException {
+		flush();
+		closed = true;
+		sb = null;
 	}
 }

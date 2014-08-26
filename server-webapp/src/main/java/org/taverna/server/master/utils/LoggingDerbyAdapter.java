@@ -44,9 +44,9 @@ public class LoggingDerbyAdapter extends DerbyAdapter {
 		ddl.append(item);
 		if (!item.endsWith("\n"))
 			ddl.append('\n');
-		timeout = currentTimeMillis() + 15000;
+		timeout = currentTimeMillis() + 5000;
 		if (timer == null)
-			(timer = new Thread(new Runnable() {
+			timer = new OneShotThread("DDL logger timeout", new Runnable() {
 				@Override
 				public void run() {
 					try {
@@ -57,7 +57,7 @@ public class LoggingDerbyAdapter extends DerbyAdapter {
 					}
 					logDDL();
 				}
-			})).start();
+			});
 	}
 
 	/**

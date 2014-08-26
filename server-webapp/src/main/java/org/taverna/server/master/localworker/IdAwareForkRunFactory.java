@@ -11,6 +11,7 @@ import static java.util.Arrays.asList;
 import static java.util.Calendar.SECOND;
 import static java.util.UUID.randomUUID;
 import static org.taverna.server.master.TavernaServer.JMX_ROOT;
+import static org.taverna.server.master.localworker.AbstractRemoteRunFactory.launchSubprocess;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -383,7 +384,7 @@ class SecureFork implements IdAwareForkRunFactory.MetaFactory {
 		// Spawn the subprocess
 		log.info("about to create subprocess: " + p.command());
 		log.info("subprocess directory: " + p.directory());
-		process = p.start();
+		process = launchSubprocess(p);
 		channel = new PrintWriter(new BufferedWriter(new OutputStreamWriter(
 				process.getOutputStream())), true);
 		// Log the responses

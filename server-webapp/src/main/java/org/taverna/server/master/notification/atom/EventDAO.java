@@ -161,6 +161,7 @@ public class EventDAO extends JDOSupport<Event> implements MessageDispatcher {
 	}
 
 	private Thread eventDaemon;
+	private boolean shuttingDown = false;
 
 	@Required
 	public void setSelf(final EventDAO dao) {
@@ -168,7 +169,7 @@ public class EventDAO extends JDOSupport<Event> implements MessageDispatcher {
 			@Override
 			public void run() {
 				try {
-					while (!interrupted()) {
+					while (!shuttingDown && !interrupted()) {
 						transferEvents(dao, new ArrayList<Event>(
 								asList(insertQueue.take())));
 						sleep(5000);
@@ -179,6 +180,7 @@ public class EventDAO extends JDOSupport<Event> implements MessageDispatcher {
 				}
 			}
 		}, "ATOM event daemon");
+		eventDaemon.setContextClassLoader(null);
 		eventDaemon.setDaemon(true);
 		eventDaemon.start();
 	}
@@ -190,6 +192,7 @@ public class EventDAO extends JDOSupport<Event> implements MessageDispatcher {
 
 	@PreDestroy
 	void stopDaemon() {
+		shuttingDown = true;
 		if (eventDaemon != null)
 			eventDaemon.interrupt();
 	}

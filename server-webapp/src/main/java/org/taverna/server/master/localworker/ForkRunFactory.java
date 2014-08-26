@@ -141,7 +141,8 @@ public class ForkRunFactory extends AbstractRemoteRunFactory implements
 
 		// Spawn the subprocess
 		log.info("about to create subprocess: " + p.command());
-		factoryProcess = p.start();
+		
+		factoryProcess = launchSubprocess(p);
 		outlog = new StreamLogger("FactoryStdout", factoryProcess.getInputStream()) {
 			@Override
 			protected void write(String msg) {

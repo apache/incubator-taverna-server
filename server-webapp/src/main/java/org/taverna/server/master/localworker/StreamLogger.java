@@ -34,6 +34,7 @@ abstract class StreamLogger {
 				}
 			}
 		}, name + ".StreamLogger");
+		t.setContextClassLoader(null);
 		t.setDaemon(true);
 		t.start();
 	}

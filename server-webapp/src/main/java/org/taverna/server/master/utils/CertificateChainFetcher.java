@@ -165,8 +165,20 @@ public class CertificateChainFetcher {
 			return null;
 		synchronized (this) {
 			if (!cache.containsKey(uri)) {
+				int port = uri.getPort();
+				if (port == -1)
+					switch (uri.getScheme()) {
+					case "http":
+						port = 80;
+						break;
+					case "https":
+						port = 443;
+						break;
+					default:
+						return null;
+					}
 				X509Certificate[] chain = getCertificateChainForService(
-						uri.getHost(), uri.getPort());
+						uri.getHost(), port);
 				if (chain != null)
 					cache.put(uri, unmodifiableList(asList(chain)));
 				else

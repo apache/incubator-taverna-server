@@ -224,6 +224,12 @@ public abstract class JDOSupport<T> {
 	public @interface WithinSingleTransaction {
 	}
 
+	/**
+	 * Manages {@linkplain PersistenceManager persistence managers} in a way
+	 * that doesn't cause problems when the web application is unloaded.
+	 * 
+	 * @author Donal Fellows
+	 */
 	public static class PersistenceManagerBuilder {
 		private PersistenceManagerFactory pmf;
 		private WeakHashMap<Thread, PersistenceManager> cache = new WeakHashMap<>();

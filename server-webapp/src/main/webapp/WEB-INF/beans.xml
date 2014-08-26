@@ -192,28 +192,29 @@
 		<props> <prop key="hibernate.dialect">org.hibernate.dialect.DerbyDialect</prop> 
 		<prop key="hibernate.hbm2ddl.auto">create</prop> </props> </property> <property 
 		name="annotatedClasses"> <list> </list> </property> </bean> -->
-	<bean id="pmf" class="org.datanucleus.api.jdo.JDOPersistenceManagerFactory"
-		destroy-method="close">
-		<property name="connectionFactory" ref="dataSource" />
-		<property name="nontransactionalRead" value="true" />
-		<property name="persistenceProperties">
-			<props>
-				<prop key="datanucleus.storeManagerType">rdbms</prop>
-				<prop key="datanucleus.autoCreateTables">true</prop>
-				<prop key="datanucleus.autoCreateTables">true</prop>
-				<prop key="datanucleus.validateTables">true</prop>
-				<prop key="datanucleus.autoCreateColumns">true</prop>
-				<prop key="datanucleus.autoCreateConstraints">true</prop>
-				<prop key="datanucleus.validateConstraints">true</prop>
-				<prop key="datanucleus.autoCreateSchema">true</prop>
-				<prop key="datanucleus.PersistenceUnitName">TavernaServer</prop>
-				<prop key="datanucleus.rdbms.datastoreAdapterClassName"
-					>org.taverna.server.master.utils.LoggingDerbyAdapter</prop>
-			</props>
-		</property>
-	</bean>
 	<bean id="pmb" class="org.taverna.server.master.utils.JDOSupport.PersistenceManagerBuilder">
-		<property name="persistenceManagerFactory" ref="pmf" />
+		<property name="persistenceManagerFactory">
+			<bean id="pmf" class="org.datanucleus.api.jdo.JDOPersistenceManagerFactory"
+				destroy-method="close">
+				<property name="connectionFactory" ref="dataSource" />
+				<property name="nontransactionalRead" value="true" />
+				<property name="persistenceProperties">
+					<props>
+						<prop key="datanucleus.storeManagerType">rdbms</prop>
+						<prop key="datanucleus.autoCreateTables">true</prop>
+						<prop key="datanucleus.autoCreateTables">true</prop>
+						<prop key="datanucleus.validateTables">true</prop>
+						<prop key="datanucleus.autoCreateColumns">true</prop>
+						<prop key="datanucleus.autoCreateConstraints">true</prop>
+						<prop key="datanucleus.validateConstraints">true</prop>
+						<prop key="datanucleus.autoCreateSchema">true</prop>
+						<prop key="datanucleus.PersistenceUnitName">TavernaServer</prop>
+						<prop key="datanucleus.rdbms.datastoreAdapterClassName"
+							>org.taverna.server.master.utils.LoggingDerbyAdapter</prop>
+					</props>
+				</property>
+			</bean>
+		</property>
 	</bean>
 	<bean id="transactionAspect"
 		class="org.taverna.server.master.utils.JDOSupport.TransactionAspect" />
@@ -272,7 +273,7 @@
 		/> <property name="usageRecordSink" ref="usageRecordSink" /> <property name="URProcessorPool" 
 		ref="URThreads" /> </bean> -->
 
-	<task:executor id="URThreads" pool-size="${pool.size}" />
+	<!-- <task:executor id="URThreads" pool-size="${pool.size}" /> -->
 
 	<bean id="worker.securityContext"
 		class="org.taverna.server.master.worker.SecurityContextFactory">
