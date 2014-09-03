@@ -118,4 +118,6 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+	<inceptionYear>2014</inceptionYear>
+	<name>Server Client OSGi Module</name>
 </project>
