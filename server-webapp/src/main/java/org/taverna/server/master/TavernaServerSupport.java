@@ -91,7 +91,7 @@ import uk.org.taverna.scufl2.api.profiles.Profile;
 		+ Version.JAVA + " web-application interface.")
 public class TavernaServerSupport {
 	/** The main webapp log. */
-	public static Log log = getLog("Taverna.Server.Webapp");
+	private Log log = getLog("Taverna.Server.Webapp");
 	private Log accessLog = getLog("Taverna.Server.Webapp.Access");;
 	/** Bean used to log counts of external calls. */
 	private InvocationCounter counter;

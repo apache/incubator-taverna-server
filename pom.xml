@@ -97,7 +97,7 @@
 			</roles>
 		</contributor>
 		<contributor>
-			<name>Stian Soiland</name>
+			<name>Stian Soiland-Reyes</name>
 			<organization>The University of Manchester</organization>
 			<organizationUrl>http://www.manchester.ac.uk/</organizationUrl>
 			<timezone>0</timezone>
@@ -549,11 +549,12 @@
 		<module>server-webapp</module>
 		<module>server-runinterface</module>
 		<module>server-worker</module>
-		<module>server-distribution</module>
 		<module>server-unix-forker</module>
 		<module>server-usagerecord</module>
 		<module>server-port-description</module>
 		<module>server-execution-delegate</module>
 		<module>server-rmidaemon</module>
+		<module>server-client</module>
+		<module>server-distribution</module>
 	</modules>
 </project>

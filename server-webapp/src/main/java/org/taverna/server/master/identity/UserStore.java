@@ -50,7 +50,7 @@ import org.taverna.server.master.utils.JDOSupport;
 public class UserStore extends JDOSupport<User> implements UserDetailsService,
 		UserStoreAPI {
 	/** The logger for the user store. */
-	private static Log log = getLog("Taverna.Server.UserDB");
+	private transient Log log = getLog("Taverna.Server.UserDB");
 
 	public UserStore() {
 		super(User.class);

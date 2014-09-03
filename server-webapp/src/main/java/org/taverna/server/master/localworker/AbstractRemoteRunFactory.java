@@ -17,6 +17,7 @@ import static org.taverna.server.master.rest.TavernaServerRunREST.PathNames.DIR;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.net.URI;
 import java.net.URL;
 import java.rmi.MarshalledObject;
 import java.rmi.RMISecurityManager;
@@ -29,14 +30,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.Resource;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.taverna.server.localworker.remote.RemoteRunFactory;
 import org.taverna.server.localworker.remote.RemoteSingleRun;
@@ -142,6 +143,19 @@ public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
 		}
 	}
 
+	protected static final Process launchSubprocess(ProcessBuilder b)
+			throws IOException {
+		Thread t = Thread.currentThread();
+		ClassLoader ccl = t.getContextClassLoader();
+		try {
+			t.setContextClassLoader(null);
+			return b.start();
+		} finally {
+			t.setContextClassLoader(ccl);
+		}
+	}
+
+	/** Get a handle to a new instance of the RMI registry. */
 	private Registry makeRegistry(int port) throws RemoteException {
 		ProcessBuilder p = new ProcessBuilder(getJavaBinary());
 		p.command().add("-jar");
@@ -149,7 +163,7 @@ public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
 		p.command().add(Integer.toString(port));
 		p.command().add(Boolean.toString(rmiLocalhostOnly));
 		try {
-			Process proc = p.start();
+			Process proc = launchSubprocess(p);
 			Thread.sleep(getSleepTime());
 			try {
 				if (proc.exitValue() == 0)
@@ -240,7 +254,6 @@ public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
 	public static final String SECURITY_POLICY_FILE = "security.policy";
 	private SecurityContextFactory securityFactory;
 	UsageRecordRecorder usageRecordSink;
-	TaskExecutor urProcessorPool;
 	private EventDAO masterEventFeed;
 
 	@Autowired(required = true)
@@ -256,12 +269,6 @@ public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
 	@Autowired(required = true)
 	void setUsageRecordSink(UsageRecordRecorder usageRecordSink) {
 		this.usageRecordSink = usageRecordSink;
-	}
-
-	@Resource(name = "URThreads")
-	@Required
-	void setURProcessorPool(TaskExecutor urProcessorPool) {
-		this.urProcessorPool = urProcessorPool;
 	}
 
 	/**
@@ -337,10 +344,16 @@ public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
 					state.getDefaultLifetime(), runDB, id,
 					state.getGenerateProvenance(), this);
 			run.setSecurityContext(securityFactory.create(run, creator));
-			URL feedUrl = interactionFeedSupport.getFeedURI(run).toURL();
+			@Nonnull
+			URI feed = interactionFeedSupport.getFeedURI(run);
+			@Nonnull
+			URL feedUrl = feed.toURL();
+			@Nonnull
 			URL webdavUrl = baseurifactory.getRunUriBuilder(run)
 					.path(DIR + "/interactions").build().toURL();
-			rsr.setInteractionServiceDetails(feedUrl, webdavUrl);
+			@Nullable
+			URL pub = interactionFeedSupport.getLocalFeedBase(feed);
+			rsr.setInteractionServiceDetails(feedUrl, webdavUrl, pub);
 			return run;
 		} catch (NoCreateException e) {
 			log.warn("failed to build run instance", e);
@@ -386,6 +399,12 @@ public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
 		}
 	}
 
+	private void acceptUsageRecord(String usageRecord) {
+		if (usageRecordSink != null)
+			usageRecordSink.storeUsageRecord(usageRecord);
+		runDB.checkForFinishNow();
+	}
+
 	/**
 	 * Make a Remote object that can act as a consumer for usage records.
 	 * 
@@ -403,20 +422,8 @@ public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
 				}
 
 				@Override
-				public void acceptUsageRecord(final String usageRecord) {
-					if (usageRecordSink != null && urProcessorPool != null)
-						urProcessorPool.execute(new Runnable() {
-							@Override
-							public void run() {
-								usageRecordSink.storeUsageRecord(usageRecord);
-							}
-						});
-					urProcessorPool.execute(new Runnable() {
-						@Override
-						public void run() {
-							runDB.checkForFinishNow();
-						}
-					});
+				public void acceptUsageRecord(String usageRecord) {
+					AbstractRemoteRunFactory.this.acceptUsageRecord(usageRecord);
 				}
 			}
 			return new URReceiver();

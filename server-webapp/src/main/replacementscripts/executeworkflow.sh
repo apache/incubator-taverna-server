@@ -54,6 +54,9 @@ if test x != "x$INTERACTION_HOST"; then
     INTERACTION_PROPS="$INTERACTION_PROPS -Dtaverna.interaction.port=$INTERACTION_PORT"
     INTERACTION_PROPS="$INTERACTION_PROPS -Dtaverna.interaction.webdav_path=$INTERACTION_WEBDAV"
     INTERACTION_PROPS="$INTERACTION_PROPS -Dtaverna.interaction.feed_path=$INTERACTION_FEED"
+    if test x != "x$INTERACTION_PUBLISH"; then
+    	INTERACTION_PROPS="$INTERACTION_PROPS -Dtaverna.interaction.publishAddressOverride=$INTERACTION_PUBLISH"
+    fi
 fi
 
 MainClass=net.sf.taverna.t2.commandline.CommandLineLauncher
@@ -62,7 +65,7 @@ echo "pid:$$"
 exec "$javabin" $memlimit $permsize \
   "-Dlog4j.configuration=file://$taverna_home/conf/log4j.properties " \
   "-Djava.util.logging.config.file=$taverna_home/conf/logging.properties " \
-  "-Dtaverna.app.startup=$taverna_home" \
-  $APPHOME_PROP $RUNID_PROP $INTERACTION_PROPS $pre \
+  "-Dtaverna.app.startup=$taverna_home" -Dtaverna.interaction.ignore_requests=true \
+  $APPHOME_PROP $RUNID_PROP $INTERACTION_PROPS -Djava.awt.headless=true $pre \
   -jar "$taverna_home/lib/taverna-command-line-0.1.1.jar" \
   ${1+"$@"}

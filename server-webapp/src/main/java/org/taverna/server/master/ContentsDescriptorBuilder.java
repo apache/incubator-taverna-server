@@ -8,7 +8,7 @@ package org.taverna.server.master;
 import static eu.medsea.util.MimeUtil.getMimeType;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static javax.ws.rs.core.UriBuilder.fromUri;
-import static org.taverna.server.master.TavernaServerSupport.log;
+import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.common.Uri.secure;
 
 import java.io.ByteArrayInputStream;
@@ -21,6 +21,7 @@ import java.util.Set;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.exceptions.FilesystemAccessException;
 import org.taverna.server.master.exceptions.NoDirectoryEntryException;
@@ -53,6 +54,7 @@ import uk.org.taverna.scufl2.api.port.OutputWorkflowPort;
  * @author Donal Fellows
  */
 public class ContentsDescriptorBuilder {
+	private Log log = getLog("Taverna.Server.Webapp");
 	private FilenameUtils fileUtils;
 	private UriBuilderFactory uriBuilderFactory;
 

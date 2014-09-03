@@ -54,6 +54,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -442,6 +444,9 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 			env.put("INTERACTION_WEBDAV",
 					local.webdavURL != null ? local.webdavURL.getPath()
 							: interactionWebdavPath);
+			String pub = makeInterPublish(local.publishURL);
+			if (pub != null && !pub.isEmpty())
+				env.put("INTERACTION_PUBLISH", pub);
 		}
 		return pb;
 	}
@@ -461,6 +466,23 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 		if (port == -1)
 			port = url.getDefaultPort();
 		return Integer.toString(port);
+	}
+
+	@Nullable
+	private static String makeInterPublish(@Nullable URL url)
+			throws IOException {
+		if (url == null)
+			return null;
+		try {
+			URI uri = url.toURI();
+			int port = uri.getPort();
+			if (port == -1)
+				return uri.getScheme() + "://" + uri.getHost();
+			else
+				return uri.getScheme() + "://" + uri.getHost() + ":" + port;
+		} catch (URISyntaxException e) {
+			throw new IOException("problem constructing publication url", e);
+		}
 	}
 
 	@Nullable

@@ -5,11 +5,12 @@
  */
 package org.taverna.server.master;
 
-import static org.taverna.server.master.TavernaServer.log;
+import static org.apache.commons.logging.LogFactory.getLog;
 import static org.taverna.server.master.utils.RestUtils.opt;
 
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.logging.Log;
 import org.taverna.server.master.api.ListenerPropertyBean;
 import org.taverna.server.master.exceptions.NoListenerException;
 import org.taverna.server.master.exceptions.NoUpdateException;
@@ -26,6 +27,7 @@ import org.taverna.server.master.utils.InvocationCounter.CallCounted;
  */
 class ListenerPropertyREST implements TavernaServerListenersREST.Property,
 		ListenerPropertyBean {
+	private Log log = getLog("Taverna.Server.Webapp");
 	private TavernaServerSupport support;
 	private Listener listen;
 	private String propertyName;
