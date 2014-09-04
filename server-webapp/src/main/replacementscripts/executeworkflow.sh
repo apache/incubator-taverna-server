@@ -66,6 +66,7 @@ exec "$javabin" $memlimit $permsize \
   "-Dlog4j.configuration=file://$taverna_home/conf/log4j.properties " \
   "-Djava.util.logging.config.file=$taverna_home/conf/logging.properties " \
   "-Dtaverna.app.startup=$taverna_home" -Dtaverna.interaction.ignore_requests=true \
-  $APPHOME_PROP $RUNID_PROP $INTERACTION_PROPS -Djava.awt.headless=true $pre \
+  $APPHOME_PROP $RUNID_PROP $INTERACTION_PROPS -Djava.awt.headless=true \
+  -Dcom.sun.net.ssl.enableECC=false -Djsse.enableSNIExtension=false $pre \
   -jar "$taverna_home/lib/taverna-command-line-0.1.1.jar" \
   ${1+"$@"}
