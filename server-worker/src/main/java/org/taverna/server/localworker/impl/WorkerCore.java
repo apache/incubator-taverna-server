@@ -370,12 +370,19 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 				pb.command().add(f.getAbsolutePath());
 				write(f, port.getValue(), "UTF-8");
 			}
+			Map<String,File>delimFiles = new HashMap<>();
 			for (Entry<String, String> delim : inputDelimiters.entrySet()) {
 				if (delim.getValue() == null)
 					continue;
-				pb.command().add("-inputdelimiter");
+				pb.command().add("-inputdelimfile");
 				pb.command().add(delim.getKey());
-				pb.command().add(delim.getValue());
+				File f = delimFiles.get(delim.getValue());
+				if (f == null) {
+					f = createTempFile(".tav_delim_", null, workingDir);
+					write(f, delim.getValue(), "UTF-8");
+					delimFiles.put(delim.getValue(), f);
+				}
+				pb.command().add(f.getAbsolutePath());
 			}
 		}
 
