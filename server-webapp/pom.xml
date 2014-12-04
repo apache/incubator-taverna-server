@@ -574,7 +574,7 @@
 									<artifactId>taverna-commandline-${edition.commandline}</artifactId>
 									<version>${version.commandline}</version>
 									<type>zip</type>
-									<classifier>bin</classifier>
+									<classifier>standalone</classifier>
 									<outputDirectory>${util.dir}</outputDirectory>
 								</artifactItem>
 							</artifactItems>
