@@ -31,7 +31,7 @@ shift
 prog="$0"
 
 real_path() {
-    readlink -m "$1" 2>/dev/null || python -c 'import os,sys;print os.path.realpath(sys.argv[1])' "$1"
+    readlink -m "$1" 2>/dev/null || echo $(cd $(dirname "$1") && pwd -P)/$(basename "$1")
 }
 
 realprog=`real_path "$prog"`
