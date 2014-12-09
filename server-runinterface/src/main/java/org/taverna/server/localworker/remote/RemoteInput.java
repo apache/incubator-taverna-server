@@ -83,7 +83,7 @@ public interface RemoteInput extends Remote {
 	 * Sets the delimiter used to split this input port's value into a list.
 	 * 
 	 * @param delimiter
-	 *            The delimiter character, or <tt>null</tt> if no delimiter is
+	 *            The delimiter string, or <tt>null</tt> if no delimiter is
 	 *            to be used (i.e., the value is a singleton).
 	 * @throws RemoteException
 	 *             If anything goes wrong with the communication.

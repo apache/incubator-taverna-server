@@ -595,17 +595,6 @@ public class LocalWorker extends UnicastRemoteObject implements RemoteSingleRun 
 				throw new IllegalStateException("not initializing");
 			if (inputBaclava != null)
 				throw new IllegalStateException("input baclava file set");
-			if (delimiter != null) {
-				if (delimiter.length() > 1)
-					throw new IllegalStateException(
-							"multi-character delimiter not permitted");
-				if (delimiter.charAt(0) == 0)
-					throw new IllegalStateException(
-							"may not use NUL for splitting");
-				if (delimiter.charAt(0) > 127)
-					throw new IllegalStateException(
-							"only ASCII characters supported for splitting");
-			}
 			inputDelimiters.put(name, delimiter);
 		}
 	}

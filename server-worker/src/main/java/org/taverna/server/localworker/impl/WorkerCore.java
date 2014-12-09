@@ -93,6 +93,8 @@ import org.taverna.server.localworker.server.UsageRecordReceiver;
 @SuppressWarnings("serial")
 public class WorkerCore extends UnicastRemoteObject implements Worker,
 		RemoteListener {
+	/** Encoding used when writing values to temporary files. */
+	private static final String FILE_ENCODING = "UTF-8";
 	@Nonnull
 	static final Map<String, Property> pmap = new HashMap<>();
 	/**
@@ -368,18 +370,21 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 				pb.command().add(port.getKey());
 				File f = createTempFile(".tav_in_", null, workingDir);
 				pb.command().add(f.getAbsolutePath());
-				write(f, port.getValue(), "UTF-8");
+				write(f, port.getValue(), FILE_ENCODING);
 			}
 			Map<String,File>delimFiles = new HashMap<>();
 			for (Entry<String, String> delim : inputDelimiters.entrySet()) {
 				if (delim.getValue() == null)
+					continue;
+				if (!inputValues.containsKey(delim.getKey())
+						&& !inputFiles.containsKey(delim.getKey()))
 					continue;
 				pb.command().add("-inputdelimfile");
 				pb.command().add(delim.getKey());
 				File f = delimFiles.get(delim.getValue());
 				if (f == null) {
 					f = createTempFile(".tav_delim_", null, workingDir);
-					write(f, delim.getValue(), "UTF-8");
+					write(f, delim.getValue(), FILE_ENCODING);
 					delimFiles.put(delim.getValue(), f);
 				}
 				pb.command().add(f.getAbsolutePath());
@@ -415,7 +420,7 @@ public class WorkerCore extends UnicastRemoteObject implements Worker,
 
 		// Add an argument holding the workflow
 		workflowFile = createTempFile(".wf_", ".t2flow", workingDir);
-		write(workflowFile, workflow, "UTF-8");
+		write(workflowFile, workflow, FILE_ENCODING);
 		if (!workflowFile.exists())
 			throw new IOException("failed to instantiate workflow file at "
 					+ workflowFile);

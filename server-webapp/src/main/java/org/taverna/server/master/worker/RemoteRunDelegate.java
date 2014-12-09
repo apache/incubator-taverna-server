@@ -950,8 +950,6 @@ class RunInput implements Input {
 	@Override
 	public void setDelimiter(String delimiter) throws BadStateChangeException {
 		try {
-			if (delimiter != null)
-				delimiter = delimiter.substring(0, 1);
 			i.setDelimiter(delimiter);
 		} catch (RemoteException e) {
 			throw new BadStateChangeException(e);
