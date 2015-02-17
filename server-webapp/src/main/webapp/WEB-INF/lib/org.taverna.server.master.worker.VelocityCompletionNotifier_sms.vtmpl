@@ -1,1 +1,0 @@
-Taverna Server ${serverVersion}: Workflow "$name" from ${startTime} has #if( $prop_exitcode == 0)finished#{else}failed#{end}.

@@ -1,1 +1,0 @@
-Your workflow, $name, has #if( $prop_exitcode == 0)finished#{else}failed#{end}. $uriBuilder.build() #TavernaServer ${serverVersion}
