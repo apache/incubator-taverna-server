@@ -1,182 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>uk.org.taverna.server</groupId>
-	<artifactId>server</artifactId>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.taverna</groupId>
+    <artifactId>taverna-parent</artifactId>
+    <version>1-incubating-SNAPSHOT</version>
+  </parent>
+	<groupId>org.apache.taverna.server</groupId>
+	<artifactId>taverna-server</artifactId>
 	<packaging>pom</packaging>
-	<version>3.0-SNAPSHOT</version>
-	<name>Taverna Server</name>
-	<description>Taverna Server is a service that provides execution of Taverna Workflows, provided they do not access the user interface while executing.</description>
-	<url>http://www.taverna.org.uk/</url>
+	<version>3.1-incubating-SNAPSHOT</version>
+	<name>Apache Taverna Server</name>
+  <description>Apache Taverna Server is a service that provides execution of
+Taverna Workflows, provided they do not access the user interface while
+executing.</description>
 
 	<properties>
 		<!-- Set these to control what is used for signing code. -->
 		<signing.keystore>${project.parent.basedir}/src/main/signing/signing.jks</signing.keystore>
 		<signing.user>taverna</signing.user>
 		<signing.password>taverna</signing.password>
-		<scmBrowseRoot>https://github.com/myGrid/taverna-server/tree/2.5-branch</scmBrowseRoot>
+		<scmBrowseRoot>https://github.com/apache/incubator-taverna-server/tree/master</scmBrowseRoot>
 		<jenkinsJob>taverna-server-2.5-auto</jenkinsJob>
 	</properties>
 
 	<!-- Having to edit anything below here is probably indicative of a bug. -->
-	<parent>
-		<groupId>net.sf.taverna</groupId>
-		<artifactId>taverna-parent</artifactId>
-		<version>3.0.1-SNAPSHOT</version>
-	</parent>
 	<prerequisites>
 		<maven>2.2</maven>
 	</prerequisites>
-	<issueManagement>
-		<system>JIRA</system>
-		<url>http://dev.mygrid.org.uk/issues/browse/TAVSERV</url>
-	</issueManagement>
-	<developers>
-		<developer>
-			<id>donal.k.fellows@man.ac.uk</id>
-			<name>Donal Fellows</name>
-			<email>donal.k.fellows@manchester.ac.uk</email>
-			<organization>The University of Manchester</organization>
-			<organizationUrl>http://www.manchester.ac.uk/</organizationUrl>
-			<timezone>0</timezone>
-			<roles>
-				<role>architect</role>
-				<role>developer</role>
-			</roles>
-		</developer>
-	</developers>
-	<scm>
-		<connection>scm:git://github.com/myGrid/taverna-server.git</connection>
-		<developerConnection>scm:https://github.com/myGrid/taverna-server.git</developerConnection>
-		<url>${scmBrowseRoot}/</url>
-	</scm>
-	<organization>
-		<name>University of Manchester</name>
-		<url>http://www.manchester.ac.uk/</url>
-	</organization>
-	<inceptionYear>2010</inceptionYear>
-	<licenses>
-		<license>
-			<name>LGPL 2.1</name>
-			<url>http://www.opensource.org/licenses/lgpl-2.1.php</url>
-			<comments>This software is made available under the LGPL v2.1. There is no requirement for you to contact us in order to use it, modify it, etc., but please let us know if you are using this software, especially scientifically. We love citations!</comments>
-		</license>
-	</licenses>
-	<mailingLists>
-		<mailingList>
-			<name>Taverna Users</name>
-			<post>taverna-users@lists.sourceforge.net</post>
-			<subscribe>https://lists.sourceforge.net/lists/listinfo/taverna-users</subscribe>
-			<archive>http://sourceforge.net/mailarchive/forum.php?forum_name=taverna-users</archive>
-		</mailingList>
-		<mailingList>
-			<name>Taverna Developers</name>
-			<post>taverna-hackers@lists.sourceforge.net</post>
-			<subscribe>https://lists.sourceforge.net/lists/listinfo/taverna-hackers</subscribe>
-			<archive>http://sourceforge.net/mailarchive/forum.php?forum_name=taverna-hackers</archive>
-		</mailingList>
-	</mailingLists>
-	<contributors>
-		<contributor>
-			<name>Rob Haines</name>
-			<organization>The University of Manchester</organization>
-			<organizationUrl>http://www.manchester.ac.uk/</organizationUrl>
-			<timezone>0</timezone>
-			<roles>
-				<role>code review</role>
-				<role>ruby client</role>
-			</roles>
-		</contributor>
-		<contributor>
-			<name>Alexandra Nenadic</name>
-			<organization>The University of Manchester</organization>
-			<organizationUrl>http://www.manchester.ac.uk/</organizationUrl>
-			<timezone>0</timezone>
-			<roles>
-				<role>website</role>
-			</roles>
-		</contributor>
-		<contributor>
-			<name>Stian Soiland-Reyes</name>
-			<organization>The University of Manchester</organization>
-			<organizationUrl>http://www.manchester.ac.uk/</organizationUrl>
-			<timezone>0</timezone>
-			<roles>
-				<role>code review</role>
-			</roles>
-		</contributor>
-		<contributor>
-			<name>Alan Williams</name>
-			<organization>The University of Manchester</organization>
-			<organizationUrl>http://www.manchester.ac.uk/</organizationUrl>
-			<timezone>0</timezone>
-			<roles>
-				<role>code review</role>
-			</roles>
-		</contributor>
-		<contributor>
-			<name>David Withers</name>
-			<organization>The University of Manchester</organization>
-			<organizationUrl>http://www.manchester.ac.uk/</organizationUrl>
-			<timezone>0</timezone>
-			<roles>
-				<role>platform</role>
-			</roles>
-		</contributor>
-	</contributors>
-	<ciManagement>
-		<system>Jenkins</system>
-		<url>http://build.mygrid.org.uk/ci/job/${jenkinsJob}/</url>
-		<notifiers>
-			<notifier>
-				<type>mail</type>
-				<sendOnSuccess>false</sendOnSuccess>
-				<configuration>
-					<recipients>donal.k.fellows@manchester.ac.uk</recipients>
-				</configuration>
-			</notifier>
-		</notifiers>
-	</ciManagement>
-	<repositories>
-		<repository>
-			<id>mygrid-repository</id>
-			<name>myGrid Respository</name>
-			<url>http://build.mygrid.org.uk/maven/repository</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<releases />
-		</repository>
-		<repository>
-			<id>mygrid-snapshot-repository</id>
-			<name>myGrid Snapshot Repository</name>
-			<url>http://build.mygrid.org.uk/maven/snapshot-repository</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases />
-		</repository>
-		<repository>
-			<id>mygrid-snapshots</id>
-			<name>myGrid Snapshot Respository</name>
-			<url>http://www.mygrid.org.uk/maven/snapshot-repository</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-		</repository>
-		<repository>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<id>central2</id>
-			<name>New Central Maven Repository</name>
-			<url>http://repo2.maven.org/maven2</url>
-		</repository>
-	</repositories>
-
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -557,4 +424,23 @@
 		<module>server-client</module>
 		<module>server-distribution</module>
 	</modules>
+
+  <scm>
+    <connection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-taverna-server.git</connection>
+    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-taverna-server.git</developerConnection>
+    <url>https://github.com/apache/incubator-taverna-server</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <repositories>
+    <repository>
+      <id>apache.snapshots</id>
+      <name>Apache Snapshot Repository</name>
+      <url>http://repository.apache.org/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </repository>
+  </repositories>
+
 </project>
