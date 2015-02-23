@@ -22,22 +22,14 @@ limitations under the License.
 		<artifactId>taverna-server</artifactId>
 		<version>3.1.0-incubating-SNAPSHOT</version>
 	</parent>
-	<artifactId>server-unix-forker</artifactId>
-	<name>Impersonation Module (Unix)</name>
+	<artifactId>taverna-server-unix-forker</artifactId>
+	<name>Apache Taverna Server Impersonation Module (Unix)</name>
 	<description>Manages the starting of the worker processes as different users. Unix-specific.</description>
 
 	<properties>
 		<project.build.sourceEncoding>US-ASCII</project.build.sourceEncoding>
 		<forkerMainClass>org.taverna.server.unixforker.Forker</forkerMainClass>
 	</properties>
-
-	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
 
 	<build>
 		<plugins>

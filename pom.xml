@@ -36,8 +36,17 @@ executing.</description>
 		<signing.keystore>${project.parent.basedir}/src/main/signing/signing.jks</signing.keystore>
 		<signing.user>taverna</signing.user>
 		<signing.password>taverna</signing.password>
-		<scmBrowseRoot>https://github.com/apache/incubator-taverna-server/tree/master</scmBrowseRoot>
+
+    <scmBrowseRoot>https://github.com/apache/incubator-taverna-server/tree/master</scmBrowseRoot>
 		<jenkinsJob>taverna-server-2.5-auto</jenkinsJob>
+
+    <!-- versions of Taverna dependencies -->
+    <taverna.language.version>0.15.0-incubating-SNAPSHOT</taverna.language.version>
+    <taverna.osgi.version>0.2.0-incubating-SNAPSHOT</taverna.osgi.version>
+    <taverna.engine.version>3.1.0-incubating-SNAPSHOT</taverna.engine.version>
+    <taverna.commandline.version>3.1.0-incubating-SNAPSHOT</taverna.commandline.version>
+
+
 	</properties>
 
 	<!-- Having to edit anything below here is probably indicative of a bug. -->
@@ -53,16 +62,6 @@ executing.</description>
 					<version>2.4.2</version>
 					<configuration>
 						<autoVersionSubmodules>true</autoVersionSubmodules>
-					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.1</version>
-					<configuration>
-						<encoding>US-ASCII</encoding>
-						<source>1.7</source>
-						<target>1.7</target>
 					</configuration>
 				</plugin>
 				<plugin>

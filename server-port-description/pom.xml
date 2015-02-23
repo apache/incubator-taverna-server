@@ -22,33 +22,14 @@ limitations under the License.
 		<artifactId>taverna-server</artifactId>
 		<version>3.1.0-incubating-SNAPSHOT</version>
 	</parent>
-	<artifactId>server-port-description</artifactId>
-	<name>Workflow Port Descriptor Types</name>
+	<artifactId>taverna-server-port-description</artifactId>
+	<name>Apache Taverna Server Workflow Port Descriptor Types</name>
 	<description>The structural types used to describe ports on workflows, as exported by Taverna Server.</description>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-
 	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<encoding>US-ASCII</encoding>
-					<source>1.7</source>
-					<target>1.7</target>
-				</configuration>
-			</plugin>
-		</plugins>
 		<pluginManagement>
 			<plugins>
 				<plugin>

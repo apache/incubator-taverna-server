@@ -22,16 +22,8 @@ limitations under the License.
 		<artifactId>taverna-server</artifactId>
 		<version>3.1.0-incubating-SNAPSHOT</version>
 	</parent>
-	<artifactId>server-usagerecord</artifactId>
-	<name>Usage Record Support</name>
-	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<type>jar</type>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+	<artifactId>taverna-server-usagerecord</artifactId>
+	<name>Apache Taverna Server Usage Record Support</name>
 	<description>Basic Java bindings for the OGF Usage Record Format, version 1.0, plus a simple wrapper to make working with it easier.</description>
 	<build>
 		<plugins>
@@ -52,14 +44,7 @@ limitations under the License.
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
-				</configuration>
-			</plugin>
+
 		</plugins>
 		<pluginManagement>
 			<plugins>
