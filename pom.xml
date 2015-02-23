@@ -412,16 +412,16 @@ executing.</description>
 	</profiles>
 
 	<modules>
-		<module>server-webapp</module>
-		<module>server-runinterface</module>
-		<module>server-worker</module>
-		<module>server-unix-forker</module>
-		<module>server-usagerecord</module>
-		<module>server-port-description</module>
-		<module>server-execution-delegate</module>
-		<module>server-rmidaemon</module>
-		<module>server-client</module>
-		<module>server-distribution</module>
+		<module>taverna-server-webapp</module>
+		<module>taverna-server-runinterface</module>
+		<module>taverna-server-worker</module>
+		<module>taverna-server-unix-forker</module>
+		<module>taverna-server-usagerecord</module>
+		<module>taverna-server-port-description</module>
+		<module>taverna-server-execution-delegate</module>
+		<module>taverna-server-rmidaemon</module>
+		<module>taverna-server-client</module>
+		<module>taverna-server-distribution</module>
 	</modules>
 
   <scm>
