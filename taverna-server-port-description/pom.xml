@@ -23,7 +23,7 @@ limitations under the License.
 		<version>3.1.0-incubating-SNAPSHOT</version>
 	</parent>
 	<artifactId>taverna-server-port-description</artifactId>
-	<name>Apache Taverna Server Workflow Port Descriptor Types</name>
+	<name>Apache Taverna Server Workflow Port Descriptors</name>
 	<description>The structural types used to describe ports on workflows, as exported by Taverna Server.</description>
 
 	<properties>

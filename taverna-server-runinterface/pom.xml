@@ -24,7 +24,8 @@ limitations under the License.
 	</parent>
 
 	<artifactId>taverna-server-runinterface</artifactId>
-	<name>Apache Taverna Server RMI Interface: Webapp &lt;-&gt; Worker</name>
-	<description>This is the implementation of the RMI interface between the workflow run factory and the web-app service front-end.</description>
+  <name>Apache Taverna Server Run interface (RMI)</name>
+  <description>RMI Interface: Webapp &lt;-&gt; Worker.
+    This is the implementation of the RMI interface between the workflow run factory and the web-app service front-end.</description>
 
 </project>
