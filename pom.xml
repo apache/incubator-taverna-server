@@ -24,8 +24,8 @@
   </parent>
 	<groupId>org.apache.taverna.server</groupId>
 	<artifactId>taverna-server</artifactId>
+	<version>3.1.0-incubating-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	<version>3.1-incubating-SNAPSHOT</version>
 	<name>Apache Taverna Server</name>
   <description>Apache Taverna Server is a service that provides execution of
 Taverna Workflows, provided they do not access the user interface while
