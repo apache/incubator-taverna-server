@@ -41,7 +41,7 @@ executing.</description>
 		<jenkinsJob>taverna-server-2.5-auto</jenkinsJob>
 
     <!-- versions of Taverna dependencies -->
-    <taverna.language.version>0.15.0-incubating-SNAPSHOT</taverna.language.version>
+    <taverna.language.version>0.15.0-incubating</taverna.language.version>
     <taverna.osgi.version>0.2.0-incubating-SNAPSHOT</taverna.osgi.version>
     <taverna.engine.version>3.1.0-incubating-SNAPSHOT</taverna.engine.version>
     <taverna.commandline.version>3.1.0-incubating-SNAPSHOT</taverna.commandline.version>
