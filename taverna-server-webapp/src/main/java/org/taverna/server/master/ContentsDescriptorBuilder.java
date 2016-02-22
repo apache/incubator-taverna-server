@@ -42,10 +42,10 @@ import org.taverna.server.port_description.ListValue;
 import org.taverna.server.port_description.OutputDescription;
 import org.taverna.server.port_description.OutputDescription.OutputPort;
 
-import uk.org.taverna.scufl2.api.container.WorkflowBundle;
-import uk.org.taverna.scufl2.api.core.Workflow;
-import uk.org.taverna.scufl2.api.port.InputWorkflowPort;
-import uk.org.taverna.scufl2.api.port.OutputWorkflowPort;
+import org.apache.taverna.scufl2.api.container.WorkflowBundle;
+import org.apache.taverna.scufl2.api.core.Workflow;
+import org.apache.taverna.scufl2.api.port.InputWorkflowPort;
+import org.apache.taverna.scufl2.api.port.OutputWorkflowPort;
 
 /**
  * A class that is used to build descriptions of the contents of a workflow

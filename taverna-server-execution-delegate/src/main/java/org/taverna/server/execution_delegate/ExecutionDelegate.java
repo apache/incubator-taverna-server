@@ -21,7 +21,7 @@ import uk.org.taverna.platform.report.ActivityReport;
 import uk.org.taverna.platform.report.ProcessorReport;
 import uk.org.taverna.platform.report.StatusReport;
 import uk.org.taverna.platform.report.WorkflowReport;
-import uk.org.taverna.scufl2.api.common.AbstractNamed;
+import org.apache.taverna.scufl2.api.common.AbstractNamed;
 
 public class ExecutionDelegate extends UnicastRemoteObject implements
 		RemoteExecution {

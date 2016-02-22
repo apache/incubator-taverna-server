@@ -20,9 +20,9 @@ import javax.ws.rs.ext.Provider;
 
 import org.taverna.server.master.common.Workflow;
 
-import uk.org.taverna.scufl2.api.io.ReaderException;
-import uk.org.taverna.scufl2.api.io.WorkflowBundleIO;
-import uk.org.taverna.scufl2.api.io.WriterException;
+import org.apache.taverna.scufl2.api.io.ReaderException;
+import org.apache.taverna.scufl2.api.io.WorkflowBundleIO;
+import org.apache.taverna.scufl2.api.io.WriterException;
 
 /**
  * Handler that allows a .scufl2 document to be read from and written to a REST

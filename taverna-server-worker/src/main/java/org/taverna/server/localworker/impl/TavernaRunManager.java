@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.taverna.scufl2.api.io.WorkflowBundleIO;
 import org.taverna.server.localworker.api.RunAccounting;
 import org.taverna.server.localworker.api.Worker;
 import org.taverna.server.localworker.api.WorkerFactory;
@@ -40,7 +41,6 @@ import org.taverna.server.localworker.server.UsageRecordReceiver;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import uk.org.taverna.scufl2.api.io.WorkflowBundleIO;
 
 /**
  * The registered factory for runs, this class is responsible for constructing
@@ -99,7 +99,7 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 			throw new RemoteException("no creator");
 		try {
 			URI wfid = io.readBundle(new ByteArrayInputStream(workflow), null)
-					.getMainWorkflow().getWorkflowIdentifier();
+					.getMainWorkflow().getIdentifier();
 			out.println("Creating run from workflow <" + wfid + "> for <"
 					+ creator + ">");
 			return new LocalWorker(command, workflow, urReceiver, id,
@@ -176,6 +176,7 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	 *             the workflow, or if we can't build the worker instance, or
 	 *             register it. Also if the arguments are wrong.
 	 */
+	@SuppressWarnings("deprecation")
 	public static void main(String[] args) throws Exception {
 		if (args.length < 2)
 			throw new Exception("wrong # args: must be \"" + usage + "\"");

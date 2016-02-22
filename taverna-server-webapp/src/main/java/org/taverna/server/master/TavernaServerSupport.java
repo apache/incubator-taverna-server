@@ -80,7 +80,7 @@ import org.taverna.server.master.utils.FilenameUtils;
 import org.taverna.server.master.utils.InvocationCounter;
 import org.taverna.server.master.utils.UsernamePrincipal;
 
-import uk.org.taverna.scufl2.api.profiles.Profile;
+import org.apache.taverna.scufl2.api.profiles.Profile;
 
 /**
  * Web application support utilities.

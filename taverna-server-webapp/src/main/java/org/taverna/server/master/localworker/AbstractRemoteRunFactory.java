@@ -59,7 +59,7 @@ import org.taverna.server.master.worker.FactoryBean;
 import org.taverna.server.master.worker.RemoteRunDelegate;
 import org.taverna.server.master.worker.RunFactoryConfiguration;
 
-import uk.org.taverna.scufl2.api.io.WriterException;
+import org.apache.taverna.scufl2.api.io.WriterException;
 
 /**
  * Bridge to remote runs via RMI.
