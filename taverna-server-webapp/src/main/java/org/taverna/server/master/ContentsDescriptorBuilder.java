@@ -75,7 +75,7 @@ public class ContentsDescriptorBuilder {
 		WorkflowBundle bundle = run.getWorkflow().getScufl2Workflow();
 		bundle.getMainWorkflow().getInputPorts();
 		portDesc.fillInBaseData(bundle.getMainWorkflow()
-				.getWorkflowIdentifier().toString(), run.getId(), ub.build());
+				.getIdentifier().toString(), run.getId(), ub.build());
 		return bundle.getMainWorkflow();
 	}
 
