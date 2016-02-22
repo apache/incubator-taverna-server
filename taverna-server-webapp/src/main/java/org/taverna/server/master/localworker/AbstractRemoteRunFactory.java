@@ -275,7 +275,7 @@ public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
 	 * Configures the Java security model. Not currently used, as it is
 	 * viciously difficult to get right!
 	 */
-	@SuppressWarnings("unused")
+	@SuppressWarnings({ "unused", "deprecation" })
 	private static void installSecurityManager() {
 		if (getSecurityManager() == null) {
 			setProperty("java.security.policy", AbstractRemoteRunFactory.class
