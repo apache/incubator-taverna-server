@@ -36,8 +36,7 @@ limitations under the License.
 		<version.jdoapi>3.0.1</version.jdoapi>
 		<forker.module>taverna-server-unix-forker</forker.module>
 		<util.dir>${project.build.directory}/${project.build.finalName}/WEB-INF/classes/util</util.dir>
-		<!-- FIXME: This should not hardcode versions -->
-		<cmdline.dir>${util.dir}/taverna-command-line-3.1.0-incubating-SNAPSHOT-20160222T1521-nightly</cmdline.dir>
+		<cmdline.dir>${util.dir}/taverna-command-line-${taverna.commandline.version}</cmdline.dir>
 	</properties>
 
 	<dependencies>
