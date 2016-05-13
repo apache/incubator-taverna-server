@@ -603,7 +603,7 @@ limitations under the License.
 							<artifactItems>
 								<artifactItem>
 									<groupId>org.apache.taverna.commandline</groupId>
-									<artifactId>taverna-command-line-product</artifactId>
+									<artifactId>taverna-commandline-product</artifactId>
 									<version>${taverna.commandline.version}</version>
 									<classifier>nightly</classifier>
 									<type>zip</type>
@@ -780,6 +780,7 @@ limitations under the License.
 					<nosuffix>true</nosuffix>
 				</configuration>
 			</plugin>
+<!-- No longer needed (TAVERNA-968)
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
@@ -803,6 +804,7 @@ limitations under the License.
 					</execution>
 				</executions>
 			</plugin>
+-->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
