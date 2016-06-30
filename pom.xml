@@ -43,8 +43,8 @@ executing.</description>
     <!-- versions of Taverna dependencies -->
     <taverna.language.version>0.15.1-incubating</taverna.language.version>
     <taverna.osgi.version>0.2.1-incubating</taverna.osgi.version>
-    <taverna.engine.version>3.1.0-incubating-SNAPSHOT</taverna.engine.version>
-    <taverna.commandline.version>3.1.0-incubating-SNAPSHOT</taverna.commandline.version>
+    <taverna.engine.version>3.1.0-incubating</taverna.engine.version>
+    <taverna.commandline.version>3.1.0-incubating</taverna.commandline.version>
 
 
 	</properties>
