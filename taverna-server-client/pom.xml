@@ -68,6 +68,28 @@ limitations under the License.
 				</configuration>
 			</plugin>
 			<plugin>
+				<!-- Workaround for wadl-client-plugin and Java 8 -->
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>properties-maven-plugin</artifactId>
+				<version>1.0.0</version>
+				<executions>
+					<execution>
+						<id>set-accessExternalSchema-to-file</id>
+						<goals>
+							<goal>set-system-properties</goal>
+						</goals>
+						<configuration>
+							<properties>
+								<property>
+									<name>javax.xml.accessExternalSchema</name>
+									<value>file</value>
+								</property>
+							</properties>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.jvnet.ws.wadl</groupId>
 				<artifactId>wadl-client-plugin</artifactId>
 				<version>1.1.6</version>
@@ -114,6 +136,25 @@ limitations under the License.
 										</versionRange>
 										<goals>
 											<goal>generate</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<execute />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.codehaus.mojo
+										</groupId>
+										<artifactId>
+											properties-maven-plugin
+										</artifactId>
+										<versionRange>
+											[1.0-alpha-2,)
+										</versionRange>
+										<goals>
+											<goal>set-system-properties</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>

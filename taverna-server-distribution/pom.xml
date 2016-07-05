@@ -28,7 +28,7 @@ limitations under the License.
 
 	<dependencies>
 		<dependency>
-			<groupId>${project.parent.version}</groupId>
+			<groupId>${project.parent.groupId}</groupId>
 			<artifactId>taverna-server-webapp</artifactId>
 			<version>${project.parent.version}</version>
 			<type>war</type>
@@ -47,7 +47,7 @@ limitations under the License.
 				</configuration>
 				<executions>
 					<execution>
-						<id>make-t2server-distribution</id>
+						<id>make-server-distribution</id>
 						<phase>package</phase>
 						<goals>
 							<goal>single</goal>

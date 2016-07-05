@@ -20,7 +20,6 @@ import java.io.ObjectInputStream;
 import java.net.URI;
 import java.net.URL;
 import java.rmi.MarshalledObject;
-import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -275,13 +274,13 @@ public abstract class AbstractRemoteRunFactory extends RunFactoryConfiguration
 	 * Configures the Java security model. Not currently used, as it is
 	 * viciously difficult to get right!
 	 */
-	@SuppressWarnings({ "unused", "deprecation" })
+	@SuppressWarnings("unused")
 	private static void installSecurityManager() {
 		if (getSecurityManager() == null) {
 			setProperty("java.security.policy", AbstractRemoteRunFactory.class
 					.getClassLoader().getResource(SECURITY_POLICY_FILE)
 					.toExternalForm());
-			setSecurityManager(new RMISecurityManager());
+			setSecurityManager(new SecurityManager());
 		}
 	}
 

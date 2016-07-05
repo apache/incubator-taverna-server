@@ -16,18 +16,18 @@
    limitations under the License.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.apache.taverna</groupId>
-    <artifactId>apache-taverna-parent</artifactId>
-    <version>2-incubating</version>
-  </parent>
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.apache.taverna</groupId>
+		<artifactId>apache-taverna-parent</artifactId>
+		<version>2-incubating</version>
+	</parent>
 	<groupId>org.apache.taverna.server</groupId>
 	<artifactId>apache-taverna-server</artifactId>
 	<version>3.1.0-incubating-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Apache Taverna Server</name>
-  <description>Apache Taverna Server is a service that provides execution of
+	<description>Apache Taverna Server is a service that provides execution of
 Taverna Workflows, provided they do not access the user interface while
 executing.</description>
 
@@ -37,19 +37,15 @@ executing.</description>
 		<signing.user>taverna</signing.user>
 		<signing.password>taverna</signing.password>
 
-    <scmBrowseRoot>https://github.com/apache/incubator-taverna-server/tree/master</scmBrowseRoot>
-		<jenkinsJob>taverna-server-2.5-auto</jenkinsJob>
+		<scmBrowseRoot>https://github.com/apache/incubator-taverna-server/tree/master</scmBrowseRoot>
 
-    <!-- versions of Taverna dependencies -->
-    <taverna.language.version>0.15.1-incubating</taverna.language.version>
-    <taverna.osgi.version>0.2.1-incubating</taverna.osgi.version>
-    <taverna.engine.version>3.1.0-incubating</taverna.engine.version>
-    <taverna.commandline.version>3.1.0-incubating</taverna.commandline.version>
-
-
+		<!-- versions of Taverna dependencies -->
+		<taverna.language.version>0.15.1-incubating</taverna.language.version>
+		<taverna.osgi.version>0.2.1-incubating</taverna.osgi.version>
+		<taverna.engine.version>3.1.0-incubating</taverna.engine.version>
+		<taverna.commandline.version>3.1.0-incubating</taverna.commandline.version>
 	</properties>
 
-	<!-- Having to edit anything below here is probably indicative of a bug. -->
 	<prerequisites>
 		<maven>2.2</maven>
 	</prerequisites>
@@ -418,28 +414,27 @@ executing.</description>
 		<module>taverna-server-unix-forker</module>
 		<module>taverna-server-usagerecord</module>
 		<module>taverna-server-port-description</module>
-		<module>taverna-server-execution-delegate</module>
+		<!-- <module>taverna-server-execution-delegate</module> -->
 		<module>taverna-server-rmidaemon</module>
 		<module>taverna-server-client</module>
 		<module>taverna-server-distribution</module>
 	</modules>
 
-  <scm>
-    <connection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-taverna-server.git</connection>
-    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-taverna-server.git</developerConnection>
-    <url>https://github.com/apache/incubator-taverna-server</url>
-    <tag>HEAD</tag>
-  </scm>
+	<scm>
+		<connection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-taverna-server.git</connection>
+		<developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-taverna-server.git</developerConnection>
+		<url>https://github.com/apache/incubator-taverna-server</url>
+		<tag>trunk</tag>
+	</scm>
 
-  <repositories>
-    <repository>
-      <id>apache.snapshots</id>
-      <name>Apache Snapshot Repository</name>
-      <url>http://repository.apache.org/snapshots</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </repository>
-  </repositories>
-
+	<repositories>
+		<repository>
+			<id>apache.snapshots</id>
+			<name>Apache Snapshot Repository</name>
+			<url>http://repository.apache.org/snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+	</repositories>
 </project>
