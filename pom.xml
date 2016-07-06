@@ -43,7 +43,10 @@ executing.</description>
 		<taverna.language.version>0.15.1-incubating</taverna.language.version>
 		<taverna.osgi.version>0.2.1-incubating</taverna.osgi.version>
 		<taverna.engine.version>3.1.0-incubating</taverna.engine.version>
+		<taverna.commandline.group>org.apache.taverna.commandline</taverna.commandline.group>
+		<taverna.commandline.artifact>taverna-commandline-product</taverna.commandline.artifact>
 		<taverna.commandline.version>3.1.0-incubating</taverna.commandline.version>
+		<taverna.commandline.classifier>release</taverna.commandline.classifier>
 	</properties>
 
 	<prerequisites>
@@ -249,6 +252,7 @@ executing.</description>
 					</groups>
 					<detectJavaApiLink>true</detectJavaApiLink>
 					<aggregate>true</aggregate>
+					<quiet>true</quiet>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -301,7 +305,6 @@ executing.</description>
 							<detectLinks>true</detectLinks>
 							<linksource>true</linksource>
 							<stylesheet>maven</stylesheet>
-							<!-- The version package is purely implementation convenience. -->
 							<groups>
 								<group>
 									<title>Server Core WebService</title>
@@ -435,6 +438,12 @@ executing.</description>
 			<releases>
 				<enabled>false</enabled>
 			</releases>
+		</repository>
+		<repository>
+			<!-- This repository is critical for the build -->
+			<id>apache.releases</id>
+			<name>Apache Release Repository</name>
+			<url>https://repository.apache.org/content/repositories/releases</url>
 		</repository>
 	</repositories>
 </project>

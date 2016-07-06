@@ -36,8 +36,6 @@ limitations under the License.
 		<version.jdoapi>3.2.0-m5</version.jdoapi>
 		<version.datanucleus>5.0.0-release</version.datanucleus>
 		<forker.module>taverna-server-unix-forker</forker.module>
-		<!-- FIXME: Temporary override; need the snapshot version because we need a binary build -->
-		<taverna.commandline.version>3.1.0-incubating-SNAPSHOT</taverna.commandline.version>
 		<util.dir>${project.build.directory}/${project.build.finalName}/WEB-INF/classes/util</util.dir>
 		<cmdline.dir>${util.dir}/taverna-command-line-${taverna.commandline.version}</cmdline.dir>
 	</properties>
@@ -586,11 +584,10 @@ limitations under the License.
 						<configuration>
 							<artifactItems>
 								<artifactItem>
-									<!-- WARNING! This needs a binary build -->
-									<groupId>org.apache.taverna.commandline</groupId>
-									<artifactId>taverna-command-line-product</artifactId>
+									<groupId>${taverna.commandline.group}</groupId>
+									<artifactId>${taverna.commandline.artifact}</artifactId>
 									<version>${taverna.commandline.version}</version>
-									<classifier>nightly</classifier>
+									<classifier>${taverna.commandline.classifier}</classifier>
 									<type>zip</type>
 									<outputDirectory>${util.dir}</outputDirectory>
 								</artifactItem>
@@ -756,57 +753,6 @@ limitations under the License.
 					<nosuffix>true</nosuffix>
 				</configuration>
 			</plugin>
-<!-- No longer needed (TAVERNA-968)
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>override-executeworkflow-scripts</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${cmdline.dir}</outputDirectory>
-							<resources>
-								<resource>
-									<directory>src/main/replacementscripts</directory>
-									<filtering>false</filtering>
-								</resource>
-							</resources>
-							<overwrite>true</overwrite>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
--->
-			<!-- <plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.2.1</version>
-				<executions>
-					<execution>
-						<id>improve-registry-coverage</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<configuration>
-							<executable>/bin/sh</executable>
-							<workingDirectory>${cmdline.dir}</workingDirectory>
-							<environmentVariables>
-								<RAVEN_APPHOME>${cmdline.dir}</RAVEN_APPHOME>
-							</environmentVariables>
-							<arguments>
-								<argument>./executeworkflow.sh</argument>
-								<argument>-help</argument>
-							</arguments>
-							<outputFile>/dev/null</outputFile>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin> -->
 		</plugins>
 		<resources>
 			<resource>
@@ -819,21 +765,6 @@ limitations under the License.
 			</resource>
 		</resources>
 	</build>
-
-	<repositories>
-		<repository>
-			<!-- FIXME: needed to get access to command line *build* -->
-			<id>apache.snapshots</id>
-			<name>Apache Snapshot Repository</name>
-			<url>http://repository.apache.org/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
 
 	<profiles>
 		<profile>
