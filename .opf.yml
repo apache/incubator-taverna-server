@@ -1,12 +1,10 @@
-name: Taverna Server
-vendor: The University of Manchester
+name: Apache Taverna Server
+vendor: Apache Software Foundation
 maintainer:
-	name: Donal Fellows
-	email: donal.k.fellows( AT )manchester.ac.uk
-platform: "Java 6+, Tomcat 6, POSIX"
-download: http://www.taverna.org.uk/download/server/
-# Really the documentation page as the overall home page is shared with the workbench but will do for now
-homepage: http://dev.mygrid.org.uk/wiki/display/taverna/Taverna+Server+2.4
-issues: http://dev.mygrid.org.uk/issues/browse/TAVSERV
-# Note, no anti-spam armouring required for this one
-support-contact: support@mygrid.org.uk
+	name: Apache Taverna (incubating)
+	email: dev@taverna.incubator.apache.org
+platform: "Java 8+, Tomcat 6, POSIX"
+download: https://taverna.incubator.apache.org/download/server/
+homepage: https://taverna.incubator.apache.org/documentation/server/
+issues: https://issues.apache.org/jira/browse/TAVERNA/component/12326813
+support-contact: users@taverna.incubator.apache.org
