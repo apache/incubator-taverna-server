@@ -1,7 +1,4 @@
 /*
- * Copyright (C) 2011 The University of Manchester
- * 
- * See the file "LICENSE" for license terms.
  */
 @XmlSchema(namespace = DATA, elementFormDefault = QUALIFIED, attributeFormDefault = QUALIFIED, xmlns = {
 		@XmlNs(prefix = "port", namespaceURI = DATA),

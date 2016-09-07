@@ -1,7 +1,4 @@
 /*
- * Copyright (C) 2011 The University of Manchester
- * 
- * See the file "LICENSE" for license terms.
  */
 /**
  * This package contains the RESTful administration interface to Taverna Server.

@@ -1,7 +1,4 @@
 /*
- * Copyright (C) 2010 The University of Manchester
- * 
- * See the file "LICENSE" for license terms.
  */
 package org.taverna.server.master.common;
 
