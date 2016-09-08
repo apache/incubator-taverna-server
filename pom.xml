@@ -417,7 +417,6 @@ executing.</description>
 		<module>taverna-server-unix-forker</module>
 		<module>taverna-server-usagerecord</module>
 		<module>taverna-server-port-description</module>
-		<!-- <module>taverna-server-execution-delegate</module> -->
 		<module>taverna-server-rmidaemon</module>
 		<module>taverna-server-client</module>
 		<module>taverna-server-distribution</module>
