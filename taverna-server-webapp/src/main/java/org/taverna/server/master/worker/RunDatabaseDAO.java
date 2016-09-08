@@ -64,7 +64,7 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 	@SuppressWarnings("unchecked")
-	private List<String> nameRuns() {
+	private List<String> names() {
 		if (log.isDebugEnabled())
 			log.debug("fetching all run names");
 		return (List<String>) namedQuery("names").execute();
@@ -77,16 +77,20 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	public int countRuns() {
 		if (log.isDebugEnabled())
 			log.debug("counting the number of runs");
+		return count();
+	}
+
+	private Integer count() {
 		return (Integer) namedQuery("count").execute();
 	}
 
 	@SuppressWarnings("unchecked")
-	private List<String> expiredRuns() {
+	private List<String> timedout() {
 		return (List<String>) namedQuery("timedout").execute();
 	}
 
 	@SuppressWarnings("unchecked")
-	private List<String> unterminatedRuns() {
+	private List<String> unterminated() {
 		return (List<String>) namedQuery("unterminated").execute();
 	}
 
@@ -122,7 +126,7 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	private List<RunConnection> allRuns() {
 		try {
 			List<RunConnection> rcs = new ArrayList<>();
-			List<String> names = nameRuns();
+			List<String> names = names();
 			for (String id : names) {
 				try {
 					if (id != null)
@@ -171,7 +175,7 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	@WithinSingleTransaction
 	public Map<String, TavernaRun> listRuns(UsernamePrincipal user, Policy p) {
 		Map<String, TavernaRun> result = new HashMap<>();
-		for (String id : nameRuns())
+		for (String id : names())
 			try {
 				RemoteRunDelegate rrd = pickRun(id).fromDBform(facade);
 				if (p.permitAccess(user, rrd))
@@ -264,7 +268,7 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	public List<String> doClean() {
 		if (log.isDebugEnabled())
 			log.debug("deleting runs that timed out before " + new Date());
-		List<String> toDelete = expiredRuns();
+		List<String> toDelete = timedout();
 		if (log.isDebugEnabled())
 			log.debug("found " + toDelete.size() + " runs to delete");
 		for (String id : toDelete) {
@@ -290,7 +294,7 @@ public class RunDatabaseDAO extends JDOSupport<RunConnection> {
 	@WithinSingleTransaction
 	public List<RemoteRunDelegate> getPotentiallyNotifiable() {
 		List<RemoteRunDelegate> toNotify = new ArrayList<>();
-		for (String id : unterminatedRuns())
+		for (String id : unterminated())
 			try {
 				RunConnection rc = getById(id);
 				toNotify.add(rc.fromDBform(facade));

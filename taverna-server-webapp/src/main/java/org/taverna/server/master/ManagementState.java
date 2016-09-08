@@ -110,9 +110,9 @@ class ManagementState extends JDOSupport<WebappState> implements
 	private static final int KEY = 42; // whatever
 
 	private WebappState get() {
-		Query q = query("id == " + KEY);
+		Query<WebappState> q = query("id == " + KEY);
 		q.setUnique(true);
-		return (WebappState) q.execute();
+		return q.executeUnique();
 	}
 
 	private boolean loadedState;

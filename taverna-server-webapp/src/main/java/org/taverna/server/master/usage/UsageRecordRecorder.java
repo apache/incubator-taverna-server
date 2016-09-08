@@ -24,7 +24,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.PreDestroy;
@@ -155,9 +154,7 @@ public class UsageRecordRecorder extends JDOSupport<UsageRecord> {
 
 	@WithinSingleTransaction
 	public List<JobUsageRecord> getUsageRecords() {
-		@SuppressWarnings("unchecked")
-		Collection<String> urs = (Collection<String>) namedQuery("allByDate")
-				.execute();
+		List<String> urs = allByDate();
 		List<JobUsageRecord> result = new ArrayList<>();
 		for (String ur : urs)
 			try {
@@ -166,6 +163,11 @@ public class UsageRecordRecorder extends JDOSupport<UsageRecord> {
 				log.warn("failed to unmarshal UR", e);
 			}
 		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	private List<String> allByDate() {
+		return (List<String>) namedQuery("allByDate").execute();
 	}
 
 	@PreDestroy

@@ -83,9 +83,7 @@ public class EventDAO extends JDOSupport<Event> implements MessageDispatcher {
 	@Nonnull
 	@WithinSingleTransaction
 	public List<Event> getEvents(@Nonnull UsernamePrincipal user) {
-		@SuppressWarnings("unchecked")
-		List<String> ids = (List<String>) namedQuery("eventsForUser").execute(
-				user.getName());
+		List<String> ids = eventsForUser(user);
 		if (log.isDebugEnabled())
 			log.debug("found " + ids.size() + " events for user " + user);
 
@@ -95,6 +93,12 @@ public class EventDAO extends JDOSupport<Event> implements MessageDispatcher {
 			result.add(detach(event));
 		}
 		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	private List<String> eventsForUser(UsernamePrincipal user) {
+		return (List<String>) namedQuery("eventsForUser").execute(
+				user.getName());
 	}
 
 	/**
@@ -109,9 +113,7 @@ public class EventDAO extends JDOSupport<Event> implements MessageDispatcher {
 	@Nonnull
 	@WithinSingleTransaction
 	public Event getEvent(@Nonnull UsernamePrincipal user, @Nonnull String id) {
-		@SuppressWarnings("unchecked")
-		List<String> ids = (List<String>) namedQuery("eventForUserAndId")
-				.execute(user.getName(), id);
+		List<String> ids = eventsForUserAndId(user, id);
 		if (log.isDebugEnabled())
 			log.debug("found " + ids.size() + " events for user " + user
 					+ " with id = " + id);
@@ -119,6 +121,12 @@ public class EventDAO extends JDOSupport<Event> implements MessageDispatcher {
 		if (ids.size() != 1)
 			throw new IllegalArgumentException("no such id");
 		return detach(getById(ids.get(0)));
+	}
+
+	@SuppressWarnings("unchecked")
+	private List<String> eventsForUserAndId(UsernamePrincipal user, String id) {
+		return (List<String>) namedQuery("eventForUserAndId").execute(
+				user.getName(), id);
 	}
 
 	/**
@@ -140,15 +148,18 @@ public class EventDAO extends JDOSupport<Event> implements MessageDispatcher {
 		Date death = new DateTime().plusDays(-expiryAgeDays).toDate();
 		death = new Timestamp(death.getTime()); // UGLY SQL HACK
 
-		@SuppressWarnings("unchecked")
-		List<String> ids = (List<String>) namedQuery("eventsFromBefore")
-				.execute(death);
+		List<String> ids = eventsFromBefore(death);
 		if (log.isDebugEnabled() && !ids.isEmpty())
 			log.debug("found " + ids.size()
 					+ " events to be squelched (older than " + death + ")");
 
 		for (String id : ids)
 			delete(getById(id));
+	}
+
+	@SuppressWarnings("unchecked")
+	private List<String> eventsFromBefore(Date death) {
+		return (List<String>) namedQuery("eventsFromBefore").execute(death);
 	}
 
 	@Override

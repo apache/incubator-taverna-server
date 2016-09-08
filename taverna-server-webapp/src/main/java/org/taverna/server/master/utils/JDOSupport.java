@@ -99,13 +99,14 @@ public abstract class JDOSupport<T> {
 	 * @return The query, which should be executed to retrieve the results.
 	 */
 	@Nonnull
-	protected Query query(@Nonnull String filter) {
+	protected Query<T> query(@Nonnull String filter) {
 		return pm().newQuery(contextClass, filter);
 	}
 
 	/**
 	 * Get an instance of a named query attached to the context class (as an
-	 * annotation).
+	 * annotation). Note that the result is a <i>raw</i> {@link Query} because
+	 * not all queries return instances of the context class.
 	 * 
 	 * @param name
 	 *            The name of the query.
@@ -113,6 +114,7 @@ public abstract class JDOSupport<T> {
 	 * @see javax.jdo.annotations.Query
 	 */
 	@Nonnull
+	@SuppressWarnings("rawtypes")
 	protected Query namedQuery(@Nonnull String name) {
 		return pm().newNamedQuery(contextClass, name);
 	}
