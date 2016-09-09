@@ -122,6 +122,16 @@ executing.</description>
 			</plugins>
 		</pluginManagement>
 		<plugins>
+				<plugin>
+					<groupId>org.apache.rat</groupId>
+					<artifactId>apache-rat-plugin</artifactId>
+					<configuration>
+						<excludes>
+							<exclude>CITATION</exclude>
+							<exclude>**/META-INF/MANIFEST.MF</exclude>
+						</excludes>
+					</configuration>
+				</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
