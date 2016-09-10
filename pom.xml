@@ -127,8 +127,15 @@ executing.</description>
 					<artifactId>apache-rat-plugin</artifactId>
 					<configuration>
 						<excludes>
+							<!-- These refer to files under the Apache license, but which have no comment syntax. -->
 							<exclude>CITATION</exclude>
 							<exclude>**/META-INF/MANIFEST.MF</exclude>
+							<exclude>**/WEB-INF/lib/*.vtmpl</exclude>
+							<exclude>**/org.apache.cxf.Logger</exclude>
+
+							<!-- Cause problems with RAT; need replacing -->
+							<exclude>**/jquery*.js</exclude>
+							<exclude>**/jquery*.css</exclude>
 						</excludes>
 					</configuration>
 				</plugin>

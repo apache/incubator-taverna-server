@@ -4,6 +4,22 @@
 	xmlns:prefix10="http://ns.taverna.org.uk/2010/port/" xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
 	xsi:schemaLocation="http://java.sun.com/xml/ns/jaxb http://java.sun.com/xml/ns/jaxb/bindingschema_2_0.xsd"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" jxb:version="2.1">
+<!-- 
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+ -->
 <grammars>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:admin="http://ns.taverna.org.uk/2010/xml/server/admin/" xmlns:feed="http://ns.taverna.org.uk/2010/xml/server/feed/" xmlns:port="http://ns.taverna.org.uk/2010/port/" xmlns:tns="http://ns.taverna.org.uk/2010/xml/server/rest/" xmlns:ts="http://ns.taverna.org.uk/2010/xml/server/" xmlns:ts-rest="http://ns.taverna.org.uk/2010/xml/server/rest/" xmlns:ts-soap="http://ns.taverna.org.uk/2010/xml/server/soap/" xmlns:xlink="http://www.w3.org/1999/xlink" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://ns.taverna.org.uk/2010/xml/server/rest/" jxb:version="2.1">
     <xs:annotation>
