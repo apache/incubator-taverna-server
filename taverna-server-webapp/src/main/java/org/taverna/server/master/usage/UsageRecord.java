@@ -93,8 +93,7 @@ public class UsageRecord {
 	private Date createDate;
 
 	@Persistent
-	@Column(name = "USAGE_RECORD", length = 32000)
-	// TODO Consider moving to BLOB (CLOB?) type
+	@Column(name = "USAGE_RECORD", jdbcType = "CLOB")
 	private String usageRecord;
 
 	public String getId() {
