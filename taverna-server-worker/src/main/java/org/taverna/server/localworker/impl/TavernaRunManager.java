@@ -34,7 +34,6 @@ import static org.taverna.server.localworker.api.Constants.UNSECURE_PROP;
 
 import java.io.ByteArrayInputStream;
 import java.net.URI;
-import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -189,7 +188,6 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 	 *             the workflow, or if we can't build the worker instance, or
 	 *             register it. Also if the arguments are wrong.
 	 */
-	@SuppressWarnings("deprecation")
 	public static void main(String[] args) throws Exception {
 		if (args.length < 2)
 			throw new Exception("wrong # args: must be \"" + usage + "\"");
@@ -198,7 +196,7 @@ public class TavernaRunManager extends UnicastRemoteObject implements
 					.getResource(SECURITY_POLICY_FILE).toExternalForm());
 			setProperty(RMI_HOST_PROP, LOCALHOST);
 		}
-		setSecurityManager(new RMISecurityManager());
+		setSecurityManager(new SecurityManager());
 		factoryName = args[args.length - 1];
 		TavernaRunManager man = new TavernaRunManager(args[0]);
 		for (int i = 1; i < args.length - 1; i++)
