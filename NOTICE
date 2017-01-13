@@ -1,5 +1,5 @@
 Apache Taverna Server
-Copyright 2014-2016 The Apache Software Foundation
+Copyright 2014-2017 The Apache Software Foundation
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
@@ -12,3 +12,4 @@ These have been licensed to the Apache Software Foundation under a software gran
 
 TODO: Copyright from *.xsd
 TODO: GPL/CDDL ./taverna-server-webapp/src/misc/xsd/persistence_1_0.xsd
+TODO ./taverna-server-usagerecord/src/main/java/org/ogf/usage/JobUsageRecord.java ? 
