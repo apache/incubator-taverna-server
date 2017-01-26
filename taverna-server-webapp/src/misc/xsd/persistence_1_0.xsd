@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- persistence.xml schema -->
+<!--
+      Apache Taverna elects to include this software in this
+      distribution under the CDDL license.
+-->
 <xsd:schema targetNamespace="http://java.sun.com/xml/ns/persistence" 
   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
   xmlns:persistence="http://java.sun.com/xml/ns/persistence"
