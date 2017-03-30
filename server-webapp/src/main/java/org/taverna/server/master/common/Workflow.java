@@ -61,7 +61,7 @@ public class Workflow implements Serializable,Externalizable {
 			marshaller = context.createMarshaller();
 			unmarshaller = context.createUnmarshaller();
 			marshaller.setProperty(JAXB_ENCODING, ENCODING);
-			marshaller.setProperty(JAXB_FORMATTED_OUTPUT, false);
+			marshaller.setProperty(JAXB_FORMATTED_OUTPUT, true);
 		} catch (JAXBException e) {
 			getLog("Taverna.Server.Webapp").fatal(
 					"failed to build JAXB context for working with "
