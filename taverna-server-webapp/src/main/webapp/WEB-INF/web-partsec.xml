@@ -19,9 +19,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  -->
-<web-app id="TAVSERV-2.5.4">
-	<display-name>Taverna 2.5.4 Server</display-name>
-	<description>This is the front-end engine for Taverna 2.5.4 Server.</description>
+<web-app id="TAVSERV-3.1.0">
+        <display-name>Apache Taverna Server 3.1.0</display-name>
+        <description>This is the front-end engine for Apache Taverna Server 3.1.0.</description>
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>WEB-INF/partsecure.xml</param-value>
