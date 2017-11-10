@@ -58,7 +58,7 @@ import org.taverna.server.master.worker.WorkerModel;
  */
 @PersistenceAware
 public class LocalWorkerState extends JDOSupport<PersistedState> implements
-		WorkerModel {
+		WorkerModel {	
 	public LocalWorkerState() {
 		super(PersistedState.class);
 	}
@@ -212,11 +212,17 @@ public class LocalWorkerState extends JDOSupport<PersistedState> implements
 			public boolean accept(File dir, String name) {
 				// Support both taverna-commandline* (2.5) and
 				// taverna-command-line* (3.1)
-				return name.startsWith("taverna-command");
+				return name.toLowerCase().startsWith("taverna-command");
 			}
 		});
-		assert dirs.length > 0;
-		return new File(dirs[0], "executeworkflow.sh").toString();
+		if (dirs.length == 0) { 
+			throw new IllegalStateException("Can't find taverna-command* distro in " + utilDir);
+		}
+		File script = new File(dirs[0], "executeworkflow.sh");
+		if (! script.isFile()) {
+			throw new IllegalStateException("Can't find launcher script " + script);
+		}
+		return script.toString();
 	}
 
 	/**
