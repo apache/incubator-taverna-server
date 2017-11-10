@@ -210,7 +210,9 @@ public class LocalWorkerState extends JDOSupport<PersistedState> implements
 		File[] dirs = utilDir.listFiles(new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {
-				return name.startsWith("taverna-commandline-");
+				// Support both taverna-commandline* (2.5) and
+				// taverna-command-line* (3.1)
+				return name.startsWith("taverna-command");
 			}
 		});
 		assert dirs.length > 0;
