@@ -14,80 +14,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-Taverna 2.5.4 Server: Usage and API Guide
-=========================================
+Apache Taverna Server: Usage and API Guide
+==========================================
 
-This document relates to the fourth public release of Taverna Server 2.5 that is based on the Taverna 2.5 Platform, from the myGrid team at the University of Manchester.
 
-About
------
-
-This release is a version of the Taverna 2.5 Server that is provided as a basis for deployments of server-ized Taverna in a multi-user environment.
-
-In addition to its improved performance, this release supports a number of new features:
-
--   *Major Feature:* Support for Taverna **Components**.
-
--   *Major Feature:* Support for the **Interaction** “service”.
-
--   *Major Feature:* Updated execution engine to Taverna 2.5.0 Enterprise release.
-
--   *Major Feature:* Workflow runs now produce a run bundle that describes the inputs and outputs of the run, together with provenance information about the outputs.
-
--   Start a workflow run by supplying a reference to a workflow document.
-
--   Set an arbitrary name for a workflow run.
-
--   Describes system capabilities, so that it is possible to determine whether a workflow can be run prior to sending that workflow to the server.
-
--   Improved resource management and logging.
-
-This is in addition to these features supported by Taverna Server 2.4.
-
--   Based on **Taverna 2.4**
-
--   **Multiple users**, with strong separation between them.
-
--   Limited **persistence over service restarts**, depending on exact deployment.
-
--   **Workflow run introspection** capabilities; clients can ask the server what inputs they should supply and what outputs were provided.
-
--   **Workflow run termination notifications** through multiple mechanisms (RSS feed, email, SMS, twitter, etc. depending on deployment).
-
--   **Security**, both of access to the service and access by the workflow runs to other services.
-
--   **Administrative REST interface** including resource accounting
-
--   Streaming of **large files** both for download and upload.
-
-And these features of Taverna Server 2.2:
-
--   **Upload and Execution of arbitrary Taverna 2 workflows**
-
--   **Access to Workflow's Interim Output Files**; no need to wait for the workflow to finish if the results are available sooner
-
-    -   **Safe File Management** for handling results; workflows cannot interfere with each others files
-
--   Simple mechanism for **Removal of Expired Workflows**
-
--   Support for both **RESTful and SOAP APIs**, for easier tooling
-
--   **JMX-based Management API**
-
-There remain a number of known-missing features; notably these include:
-
--   Support for execution on a back-end cluster, Cloud or Grid.
-
--   Access to the workflow run provenance information (other than by downloading a raw Apache Derby database).
-
--   Full access to the workflow run working directory via WebDAV.
-
-Fully surfaced workflow execution model, including to intermediate state information.
-
-Known Limitations
------------------
-
-There is a known limitation of 100MB on the size of individual atomic values that may be present on a workflow port, processor port or datalink of a Workflow. With a list, this is a restriction on the size of the elements in the list, and not on the total size of the list’s items, though it is *recommended* that lists be kept substantially smaller than this to ensure that they fit in memory. The *recommended* workaround for this is to keep large values in files on disk or in a database, and to only pass references to those files (i.e., filenames) along datalinks.
 
 Conceptual interface
 --------------------
@@ -123,7 +53,7 @@ Associated with each run are a number of listeners. This release of the server o
 The (RESTful) Usage Pattern
 ---------------------------
 
-The Taverna 2 Server supports both REST and SOAP APIs; you may use either API to access the service and any of the workflow runs hosted by the service. The full service descriptions are available at *http://«SERVER:PORT»/taverna-server/services* but to illustrate their use, here's a sample execution using the REST API.
+The Taverna Server supports both REST and SOAP APIs; you may use either API to access the service and any of the workflow runs hosted by the service. The full service descriptions are available at *http://«SERVER:PORT»/taverna-server/services* but to illustrate their use, here's a sample execution using the REST API.
 
 1.  The client starts by creating a workflow run. This is done by POSTing a T2flow document to the service at the address *http://«SERVER:PORT»/taverna-server/rest/runs* with the content type *application/vnd.taverna.t2flow+xml*.
 
@@ -1318,7 +1248,7 @@ Response codes: 204 No content
 API of the SOAP Interface
 -------------------------
 
-Taverna 2 Server supports a SOAP interface to the majority of its user-facing functionality. The operations that it supports are divided into a few groups:
+Taverna Server supports a SOAP interface to the majority of its user-facing functionality. The operations that it supports are divided into a few groups:
 
 -   Global Settings
 

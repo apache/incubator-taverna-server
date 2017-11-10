@@ -14,15 +14,9 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-Apache Taverna Server 3.1.0: Installation and Administration Guide
-==================================================================
+Apache Taverna Server Installation and Administration Guide
+===========================================================
 
-This document relates to the fourth public release of Taverna Server 3.15 that is based on the Taverna 3.1 Platform, from the Apache Taverna (incubating) project.
-
-About
------
-
-This release is a version of the Taverna Server 3.1 that is provided as a basis for deployments of server-ized Taverna in a multi-user environment.
 
 Known Limitations
 -----------------
@@ -378,7 +372,7 @@ tavserv ALL=(TAV) NOPASSWD: ALL
 
 Care should be taken as without a password specified and without permission to execute as another user, an attempt to create a workflow run will hang instead of failing.
 
-### Security in Taverna 2 Server
+### Security in Taverna Server
 
 #### General
 
