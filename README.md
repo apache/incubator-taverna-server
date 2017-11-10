@@ -26,7 +26,7 @@ workflows.
 
 (c) 2007-2014 University of Manchester
 
-(c) 2014-2015 Apache Software Foundation
+(c) 2014-2017 Apache Software Foundation
 
 This product includes software developed at The [Apache Software
 Foundation](http://www.apache.org/).
