@@ -14,6 +14,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
+
 Apache Taverna Server Installation and Administration Guide
 ===========================================================
 
@@ -28,35 +29,38 @@ Installation
 
 ### Prerequisites
 
-You will need **Unix** of some kind.
+You will need **Linux**/**Unix** of some kind.
 
-> This software was developed against Debian Linux 5.0.9, but we anticipate that these instructions will apply equally to other Unixes.
+This software was developed against Debian Linux 5.0.9, but we anticipate that these instructions will apply equally to other Unixes.
 
 You will need a **Java 7** (or later) installation.
 
-> This software was developed and tested against the Oracle JRE 1.7.0\_21, and has also been tested against OpenJDK 7; use of the current version of either of these Java implementations is *recommended*. OpenJDK 6 cannot run this version of Taverna Server, nor can *gcj*.
+This software was developed and tested against the Oracle JRE 1.7.0\_21, and has also been tested against OpenJDK 7; use of the current version of either of these Java implementations is *recommended*. OpenJDK 6 cannot run this version of Taverna Server, nor can *gcj*.
 
 You will need a suitable **servlet container**.
 
-> This software was developed using Tomcat 6.0.26 as the servlet container, but other versions of Tomcat are known to work (back to at least 6.0.20) and other containers may also function correctly as no Tomcat-specific APIs are used in the deployable code. We welcome feedback on which containers work, as well as on how to configure them (if they are not Tomcat versions). Using the current production release of Tomcat 6 is *recommended*.
+This software was developed using Tomcat 6.0.26 as the servlet container, but other versions of Tomcat are known to work (back to at least 6.0.20) and other containers may also function correctly as no Tomcat-specific APIs are used in the deployable code. We welcome feedback on which containers work, as well as on how to configure them (if they are not Tomcat versions). Using the current production release of Tomcat 6 is *recommended*.
+
 
 ### Installation into Tomcat
 
 Note that these instructions are Tomcat-specific.
 
+The rest of this text assume your tomcat is running on http://localhost:8080/ - replace with equivalent `serverhost:port` for other installations.
+
 #### Step 1. Configure Tomcat for JMX
 
-If you're going to use JMX to administer the server (good for demos; jvisualvm is recommended if you've got the JMX support plugin, and jconsole is acceptable) then you need to edit Tomcat's *«TOMCATDIR»*/bin/startup.sh script to include the setting:
+If you're going to use JMX to administer the server (good for demos; jvisualvm is recommended if you've got the JMX support plugin, and jconsole is acceptable) then you need to edit Tomcat's `$TOMCATDIR/bin/startup.sh` script to include the setting:
 
-export CATALINA\_OPTS=-Dcom.sun.management.jmxremote
+    export CATALINA_OPTS=-Dcom.sun.management.jmxremote
 
 This works around a minor bug in Spring which prevents correct registration of management beans in the default internal management service. You should also add additional options there to ensure that the JMX management layer is secure; see the Java JMX documentation for a discussion of how to do this.
 
 #### Step 2. Configure Tomcat for General Management
 
-Add a user entry in *«TOMCATDIR»*/conf/tomcat-users.xml so that the manager webapp can know who you are and that you have permission to deploy webapps (i.e., the "manager" role).
+Add a user entry in `TOMCATDIR/conf/tomcat-users.xml` so that the manager webapp can know who you are and that you have permission to deploy webapps (i.e., the "manager" role).
 
-You also *need* to configure Tomcat to support HTTPS if you are planning to use the default secure configuration; to do this, follow the instructions on the Tomcat site ([*http://tomcat.apache.org/tomcat-6.0-doc/ssl-howto.html*](http://tomcat.apache.org/tomcat-6.0-doc/ssl-howto.html)).
+You also *need* to configure Tomcat to support HTTPS if you are planning to use the default secure configuration; to do this, follow the instructions on the [Tomcat site]([http://tomcat.apache.org/tomcat-6.0-doc/ssl-howto.html)).
 
 Now start Tomcat (or restart it).
 
@@ -64,19 +68,20 @@ Now start Tomcat (or restart it).
 
 Save the text below as context.xml on the machine where you are going to install the server. This is the minimum content of that file:
 
-&lt;Context path="/taverna-server"&gt;
-
-&lt;/Context&gt;
+```xml
+<Context path="/taverna-server">
+</Context>
+```
 
 Additional configuration properties can be set in the context.xml file; see the detailed deployment description section of this document for more information.
 
 #### Step 4. Download the Webapp ARchive
 
-Make sure that the .war file is also saved to the machine on which you will be installing the server.
+Make sure that the `.war` file is also saved to the machine on which you will be installing the server.
 
 #### Step 5. Install the WebApp
 
-Navigate to http://*«SERVER:PORT»*/manager/html and go to the Deploy box. Fill in the form there with:
+Navigate to http://localhost:8080/manager/html  and go to the Deploy box. Fill in the form there with:
 
 | **Field**                   | **Value**                       |
 |-----------------------------|---------------------------------|
@@ -84,7 +89,7 @@ Navigate to http://*«SERVER:PORT»*/manager/html and go to the Deploy box. Fill
 | XML Configuration File URL: | file:/path/to/context.xml       |
 | WAR or Directory URL:       | file:/path/to/TavernaServer.war |
 
-Press the Deploy button; after a few seconds, Tomcat should respond with OK (at the top of the reloaded page) and you'll have the Taverna Server webapp installed at http://*«SERVER:PORT»*/taverna-server.
+Press the **Deploy** button; after a few seconds, Tomcat should respond with OK (at the top of the reloaded page) and you'll have the Taverna Server webapp installed at http://localhost:8080/taverna-server
 
 Note that you **should** also review the section below on impersonation via sudo, which describes a reasonable minimal approach for securing the invocation of workflows as limited-authority users. Also be aware that *many features of this server software are disabled by default*, especially in relation to the pushing of notifications through other services (e.g., email, SMS). These features would be set through the use of context parameters, as described in the next section.
 
@@ -104,21 +109,18 @@ This assumes that you installing into Tomcat 6 running on top of Java 7; this wa
 
 The configuration of the Taverna Server installation is done by writing a context descriptor document, only some parts of which can be configured afterwards via the management interface. An *example* of that XML document is below:
 
-&lt;Context path="/taverna-server"&gt;
+```xml
+<Context path="/taverna-server">
+  <!-- Sample logging configuration. -->
+  <Valve className="org.apache.catalina.valves.AccessLogValve" />
 
-*&lt;!-- Sample logging configuration. --&gt;*
+  <Parameter name="default.localusername"
+    value="localtavernauser" />
 
-&lt;Valve className="org.apache.catalina.valves.AccessLogValve" /&gt;
-
-&lt;Parameter name="default.localusername"
-
-value="localtavernauser" /&gt;
-
-*&lt;!-- For email-dispatched notifications. --&gt;*
-
-&lt;Parameter name="email.host" value="localhost" /&gt;
-
-&lt;/Context&gt;
+  <!-- For email-dispatched notifications. -->
+  <Parameter name="email.host" value="localhost" />
+</Context>
+```
 
 The context descriptor is typically in a file called context.xml and there is a sample context descriptor with this distribution, in the context.sample.xml file. There are a substantial number of properties that may be tuned during installation (see below).
 
@@ -130,173 +132,113 @@ This is a list of all the properties that are set by default in the Server (NB: 
 
 ***The majority of these properties should not be set,*** as they default to reasonable parameters. The exceptions are:
 
--   Those used to control how many runs exist and are operating at once. The default.runlimit and default.operatinglimit have reasonable initial values, but must be tuned according to the actual expected workload. They can be set at runtime via the administration web interface and via JMX.
+- Those used to control how many runs exist and are operating at once. The default.runlimit and default.operatinglimit have reasonable initial values, but must be tuned according to the actual expected workload. They can be set at runtime via the administration web interface and via JMX.
 
--   Those used to enable optional notification mechanisms; those are all disabled by default unless the required extra properties are set (see below for instructions).
+- Those used to enable optional notification mechanisms; those are all disabled by default unless the required extra properties are set (see below for instructions).
 
-*\# Script in Taverna installation to run to actually execute workflows*
+```ini
+# Script in Taverna installation to run to actually execute workflows
+executeWorkflowScript:      /usr/taverna/executeworkflow.sh
 
-executeWorkflowScript: /usr/taverna/executeworkflow.sh
+# Override the hostname, port and webapp; leave at 'NONE' if no
+# override desired. If set, set it to something like:
+#      foo.example.com:8000/tav-serv
+default.webapp:             NONE
 
-*\# Override the hostname, port and webapp; leave at 'NONE' if no*
+# User name to use by default for impersonation if nothing else
+# specified
+default.localusername:      taverna
 
-*\# override desired. If set, set it to something like:*
+# The HTTP authorization realm; should be different from all other
+# webapps on the deployment server
+http.realmName:         tavernaserver
 
-*\# foo.example.com:8000/tav-serv*
+# Force the RMI registry to only listen to connections from localhost
+# Should be true unless you have a good reason to open it up.
+rmi.localhostOnly:      true
 
-default.webapp: NONE
+# How to pick a user name out of a global identity
+localusernameregexp:	^TAVERNAUSER=(.*)$
+# Whether to log incoming workflows; noisy if enabled
+default.logworkflows:	false
+# Whether to log outgoing exceptions; noisy if enabled
+default.logexceptions:	false
+# Whether to allow workflows to be submitted; adjustable via admin
+# interfaces
+default.permitsubmit:	true
+# How long a workflow run should live by default, in seconds
+default.lifetime:		1440
+# Maximum number of simultaneous workflow runs, in any state
+default.runlimit:		100
+# Maximum number of simultaneous *operating* workflow runs (i.e.,
+# that are actually running)
+default.operatinglimit:	10
 
-*\# User name to use by default for impersonation if nothing else*
+# Location of impersonation credentials
+secureForkPasswordFile:     /usr/local/tomcat6.0/conf/sudopass.txt
 
-*\# specified*
-
-default.localusername: taverna
-
-*\# The HTTP authorization realm; should be different from all other*
-
-*\# webapps on the deployment server*
-
-http.realmName: tavernaserver
-
-*\# Force the RMI registry to only listen to connections from localhost*
-
-*\# Should be true unless you have a good reason to open it up.*
-
-rmi.localhostOnly: true
-
-*\# How to pick a user name out of a global identity*
-
-localusernameregexp: ^TAVERNAUSER=(.\*)$
-
-*\# Whether to log incoming workflows; noisy if enabled*
-
-default.logworkflows: false
-
-*\# Whether to log outgoing exceptions; noisy if enabled*
-
-default.logexceptions: false
-
-*\# Whether to allow workflows to be submitted; adjustable via admin*
-
-*\# interfaces*
-
-default.permitsubmit: true
-
-*\# How long a workflow run should live by default, in seconds*
-
-default.lifetime: 1440
-
-*\# Maximum number of simultaneous workflow runs, in any state*
-
-default.runlimit: 100
-
-*\# Maximum number of simultaneous \*operating\* workflow runs (i.e.,*
-
-*\# that are actually running)*
-
-default.operatinglimit: 10
-
-*\# Location of impersonation credentials*
-
-secureForkPasswordFile: /usr/local/tomcat6.0/conf/sudopass.txt
-
-*\# URI to server's REST interface*
-
+# URI to server's REST interface
 taverna.preferredUserUri:
-https://some.host:8443/taverna-server/rest/
+    https://some.host:8443/taverna-server/rest/
 
-*\# Delays used in the task executor, both in milliseconds *
+# Delays used in the task executor, both in milliseconds 
+purge.interval:             30000
+finish.interval:            10000
 
-purge.interval: 30000
+# Thread pool sizing
+pool.size:                  2
 
-finish.interval: 10000
+### Usage Record handling
+usage.logFile:              none
+usage.disableDB:            no
 
-*\# Thread pool sizing*
+### General configuration of messaging
+# cooldown in seconds
+message.cooldown:           300
+message.termination.subject:  Taverna workflow run finished
+message.termination.body:   Your job with ID={0} has finished with
+                            exit code {1,number,integer}.
 
-pool.size: 2
+### Email-specific options
+email.from:                 taverna.server@localhost
+email.type:                 text/plain
+email.host:                 localhost
 
-*\#\#\# Usage Record handling*
+### Jabber-specific options
+xmpp.server:                xmpp://some.host:5222
+xmpp.resource:              TavernaServer
+xmpp.user:                  taverna
+xmpp.password:              *******
 
-usage.logFile: none
+### Atom/RSS feed; lifespan in days, cleaninterval in milliseconds
+atom.language:              en
+atom.lifespan:              7
+atom.cleaninterval:         3600000
 
-usage.disableDB: no
-
-*\#\#\# General configuration of messaging*
-
-*\# cooldown in seconds*
-
-message.cooldown: 300
-
-message.termination.subject: Taverna workflow run finished
-
-message.termination.body: Your job with ID={0} has finished with
-
-exit code {1,number,integer}.
-
-*\#\#\# Email-specific options*
-
-email.from: taverna.server@localhost
-
-email.type: text/plain
-
-email.host: localhost
-
-*\#\#\# Jabber-specific options*
-
-xmpp.server: xmpp://some.host:5222
-
-xmpp.resource: TavernaServer
-
-xmpp.user: taverna
-
-xmpp.password: \*\*\*\*\*\*\*
-
-*\#\#\# Atom/RSS feed; lifespan in days, cleaninterval in milliseconds*
-
-atom.language: en
-
-atom.lifespan: 7
-
-atom.cleaninterval: 3600000
-
-*\#\#\# SMS-specific options*
-
+### SMS-specific options
 sms.service:
-https://www.intellisoftware.co.uk/smsgateway/sendmsg.aspx
+        https://www.intellisoftware.co.uk/smsgateway/sendmsg.aspx
+sms.userfield:              username
+sms.passfield:              password
+sms.destfield:              to
+sms.msgfield:               text
+sms.user:                   taverna
+sms.pass:                   *******
 
-sms.userfield: username
+### Twitter-specific options
+twitter.oauth.accessToken:        *******
+twitter.oauth.accessTokenSecret:  *******
 
-sms.passfield: password
+### Special options
+# Do detailed logging of security. The information logged is enough
+# to allow an administrator to recover arbitrary user credentials,
+# so this should be false under normal circumstances.
+log.security.details:   false
 
-sms.destfield: to
-
-sms.msgfield: text
-
-sms.user: taverna
-
-sms.pass: \*\*\*\*\*\*\*
-
-*\#\#\# Twitter-specific options*
-
-twitter.oauth.accessToken: \*\*\*\*\*\*\*
-
-twitter.oauth.accessTokenSecret: \*\*\*\*\*\*\*
-
-*\#\#\# Special options*
-
-*\# Do detailed logging of security. The information logged is enough*
-
-*\# to allow an administrator to recover arbitrary user credentials,*
-
-*\# so this should be false under normal circumstances.*
-
-log.security.details: false
-
-*\# Enables a special project-specific security setting.*
-
-*\# Leave at false unless you have been specifically told otherwise.*
-
-helio.cis.enableTokenPassing: false
+# Enables a special project-specific security setting.
+# Leave at false unless you have been specifically told otherwise.
+helio.cis.enableTokenPassing:   false
+```
 
 #### Enabling Notification Options
 
@@ -304,44 +246,17 @@ With the exception of the Atom feed, all the notification methods supported by T
 
 | Method    | “URL” Scheme | Properties                                                                                                                                                                                                                                                                                                                                                                     |
 |-----------|--------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| *General* | *N/A*        | message.cooldown — All the notification methods below *except for the Atom feed* are subject to rate limiting; this property is the minimum amount of time (in seconds) between two notifications by the same mechanism. The default is 300 seconds (5 minutes).                                                                                                               
-                                                                                                                                                                                                                                                                                                                                                                                                            
-                            message.termination.subject — Where a notification mechanism needs to attach a subject to a message, this property contains the value to use. Does not need to be changed unless the service is being adapted to use a language other than English.                                                                                                                             
-                                                                                                                                                                                                                                                                                                                                                                                                            
-                            message.termination.body — This property contains a template that is used to produce a notification message. The template itself contains {0} to indicate where the terminating run’s ID goes, and {1} (or its derivatives) to indicate where the termination code goes. Does not need to be changed unless the service is being adapted to use a language other than English.  |
-| Atom      | *N/A*[1]     | atom.language — Language to claim that the message is published in. Recommended left at default (English of unspecified locale).                                                                                                                                                                                                                                               
-                                                                                                                                                                                                                                                                                                                                                                                                            
-                            atom.lifespan — How many days will a particular notification persist in the feed.                                                                                                                                                                                                                                                                                               
-                                                                                                                                                                                                                                                                                                                                                                                                            
-                            atom.cleaninterval — How often will the code check for whether it can remove a particular notification, in milliseconds.                                                                                                                                                                                                                                                        |
-| Email     | mailto:      | email.host — Name of a machine with a suitable relaying SMTP server that all emails will be sent via. **Must be set** to enable this notification method.                                                                                                                                                                                                                      
-                                                                                                                                                                                                                                                                                                                                                                                                            
-                            email.from — What account will the message appear to be sent from. Changing from the default is *recommended*.                                                                                                                                                                                                                                                                  
-                                                                                                                                                                                                                                                                                                                                                                                                            
-                            email.type — What MIME type will be used with the message. Can be left at the default.                                                                                                                                                                                                                                                                                          |
-| Jabber    | xmpp:        | xmpp.server — Name of a machine that runs a suitably-configured XMPP server. **Must be set** to enable this notification method.                                                                                                                                                                                                                                               
-                                                                                                                                                                                                                                                                                                                                                                                                            
-                            xmpp.user — User name to use when contacting the XMPP server. **Must be set** to enable this notification method.                                                                                                                                                                                                                                                               
-                                                                                                                                                                                                                                                                                                                                                                                                            
-                            xmpp.password — Password to use when contacting the XMPP server. **Must be set** to enable this notification method.                                                                                                                                                                                                                                                            
-                                                                                                                                                                                                                                                                                                                                                                                                            
-                            xmpp.resource — Resource descriptor used to disambiguate messages sent by Taverna Server. Can be left at the default.                                                                                                                                                                                                                                                           |
-| SMS       | sms:         | sms.service — Address of a RESTful SMS service interface for sending SMS messages. **Must be set** to enable this notification method. Note that this has only ever been developed against a single service interface[2], and is not guaranteed to work with any other.                                                                                                        
-                                                                                                                                                                                                                                                                                                                                                                                                            
-                            sms.user — The user account to use with the above service. **Must be set** to enable this notification method. Note that creating such an account has some financial implications; these are out of the scope of this document.                                                                                                                                                 
-                                                                                                                                                                                                                                                                                                                                                                                                            
-                            sms.pass — The password to use with the above service. **Must be set** to enable this notification method.                                                                                                                                                                                                                                                                      
-                                                                                                                                                                                                                                                                                                                                                                                                            
-                            sms.userfield — The name of the field to use for the user name when conveying the message in the POST request. Allows for limited adaptation to other services, but may be left at the default.                                                                                                                                                                                 
-                                                                                                                                                                                                                                                                                                                                                                                                            
-                            sms.passfield — The name of the field to use for the password when conveying the message in the POST request. Allows for limited adaptation to other services, but may be left at the default.                                                                                                                                                                                  
-                                                                                                                                                                                                                                                                                                                                                                                                            
-                            sms.destfield — The name of the field to use for the destination phone number when conveying the message in the POST request. Allows for limited adaptation to other services, but may be left at the default.                                                                                                                                                                  
-                                                                                                                                                                                                                                                                                                                                                                                                            
-                            sms.msgfield — The name of the field to use for the message content when conveying the message in the POST request. Allows for limited adaptation to other services, but may be left at the default.                                                                                                                                                                            |
-| Twitter   | twitter:     | twitter.oauth.accessToken — The public part of the OAuth access token to use when authenticating a Taverna Server deployment to Twitter. **Must be set** to enable this notification method. Note that users must take additional steps to allow the ability to set status messages; this is outside the scope of this document.                                               
-                                                                                                                                                                                                                                                                                                                                                                                                            
-                            twitter.oauth.accessTokenSecret — The private part of the OAuth access token to use when authenticating a Taverna Server deployment to Twitter. **Must be set** to enable this notification method. Note that users must take additional steps to allow the ability to set status messages; this is outside the scope of this document.                                         |
+| *General* | *N/A*        | `message.cooldown` — All the notification methods below *except for the Atom feed* are subject to rate limiting; this property is the minimum amount of time (in seconds) between two notifications by the same mechanism. The default is 300 seconds (5 minutes) <br>`message.termination.subject` — Where a notification mechanism needs to attach a subject to a message, this property contains the value to use. Does not need to be changed unless the service is being adapted to use a language other than English.<br> `message.termination.body` — This property contains a template that is used to produce a notification message. The template itself contains {0} to indicate where the terminating run’s ID goes, and {1} (or its derivatives) to indicate where the termination code goes. Does not need to be changed unless the service is being adapted to use a language other than English.  |
+| Atom      | *N/A*[1]     | `atom.language` — Language to claim that the message is published in. Recommended left at default (English of unspecified locale).<br> `atom.lifespan` — How many days will a particular notification persist in the feed.<br>`atom.cleaninterval` — How often will the code check for whether it can remove a particular notification, in milliseconds.                             |
+| Email     | mailto:      | `email.host` — Name of a machine with a suitable relaying SMTP server that all emails will be sent via. **Must be set** to enable this notification method.<br>`email.from` — What account will the message appear to be sent from. Changing from the default is *recommended*.<br> `email.type` — What MIME type will be used with the message. Can be left at the default. |
+| Jabber    | xmpp:        | `xmpp.server` — Name of a machine that runs a suitably-configured XMPP server. **Must be set** to enable this notification method.<br> `xmpp.user` — User name to use when contacting the XMPP server. **Must be set** to enable this notification method.<br> `xmpp.password` — Password to use when contacting the XMPP server. **Must be set** to enable this notification method.<br> `xmpp.resource` — Resource descriptor used to disambiguate messages sent by Taverna Server. Can be left at the default.|
+| SMS       | sms:         | `sms.service` — Address of a RESTful SMS service interface for sending SMS messages. **Must be set** to enable this notification method. Note that this has only ever been developed against a [single service interface](https://www.intellisoftware.co.uk/smsgateway/sendmsg.aspx), and is not guaranteed to work with any other.<br> `sms.user` — The user account to use with the above service. **Must be set** to enable this notification method. Note that creating such an account has some financial implications; these are out of the scope of this document. <br> `sms.pass` — The password to use with the above service. **Must be set** to enable this notification method.<br> `sms.userfield` — The name of the field to use for the user name when conveying the message in the POST request. Allows for limited adaptation to other services, but may be left at the default. <br>`sms.passfield` — The name of the field to use for the password when conveying the message in the POST request. Allows for limited adaptation to other services, but may be left at the default. <br> `sms.destfield` — The name of the field to use for the destination phone number when conveying the message in the POST request. Allows for limited adaptation to other services, but may be left at the default.<br> `sms.msgfield` — The name of the field to use for the message content when conveying the message in the POST request. Allows for limited adaptation to other services, but may be left at the default. |
+| Twitter   | twitter:     | `twitter.oauth.accessToken` — The public part of the OAuth access token to use when authenticating a Taverna Server deployment to Twitter. **Must be set** to enable this notification method. Note that users must take additional steps to allow the ability to set status messages; this is outside the scope of this document.<br> `twitter.oauth.accessTokenSecret` — The private part of the OAuth access token to use when authenticating a Taverna Server deployment to Twitter. **Must be set** to enable this notification method. Note that users must take additional steps to allow the ability to set status messages; this is outside the scope of this document.|
+
+Atom notifications are always enabled; termination notifications are automatically published to a per-user Atom feed that users cannot post directly to. This feed is located at http://localhost:8080/taverna-server/feed relative to the webapp root resource.
+
+
+
 
 ### User Accounts
 
@@ -357,18 +272,17 @@ This is done by either instructing the service what password is to be used with 
 
 The second style of impersonation is done by leaving that parameter unset and instead adding some extra configuration to the system's /etc/sudoers file, as seen below (typically set with the visudo command). Note that conventionally the three parts of the configuration are in separate sections of the file, and that care should be taken during configuration as mistakes can result in a system that is broken. In the example below, we assume that the servlet container is running as the Unix user tavserv and that local user accounts that may be targets for impersonation are all members of the taverna UNIX group.
 
-*\# Flags for the tavserv user (keep things quiet)*
+```ini
+# Flags for the tavserv user (keep things quiet)
+Defaults:tavserv   !lecture, timestamp_timeout=0, passwd_tries=1
 
-Defaults:tavserv !lecture, timestamp\_timeout=0, passwd\_tries=1
+# Who can we impersonate? Manage via Unix group called 'taverna'
+Runas_Alias        TAV = %taverna
 
-*\# Who can we impersonate? Manage via Unix group called 'taverna'*
-
-Runas\_Alias TAV = %taverna
-
-*\# The actual permission to impersonate, with permission to run
-\# anything*
-
-tavserv ALL=(TAV) NOPASSWD: ALL
+# The actual permission to impersonate, with permission to run
+# anything
+tavserv            ALL=(TAV) NOPASSWD: ALL
+```
 
 Care should be taken as without a password specified and without permission to execute as another user, an attempt to create a workflow run will hang instead of failing.
 
@@ -390,11 +304,11 @@ The communication between the back end workflow executor managers and the front-
 
 Authorisation of users is done through the use of Spring Security to assign them *on each connection* a set of security authorities. In particular, the key authorities are:
 
--   ROLE\_tavernauser — allows the user to access the main operational parts of the server.
+-   `ROLE_tavernauser` — allows the user to access the main operational parts of the server.
 
--   ROLE\_tavernasuperuser — allows the user to read and write all non-security characteristics of all workflows, and also grants access to the http://*«SERVER:PORT»*/taverna-server/admin pages.
+-   `ROLE_tavernasuperuser` — allows the user to read and write all non-security characteristics of all workflows, and also grants access to the http://*«SERVER:PORT»*/taverna-server/admin pages.
 
--   LOCALUSER\_*\** (where the *\** is replaced with a local user name) — specifies what local user name the user should be executing workflows as; the prefix (LOCALUSER\_) is simply stripped and the remainder is used as a user name. If absent, the default user name (taverna in the default configuration) will be used; two users mapped to the same user name will be able to see each others workflows if they can work out where the job working directories are located, but will not be able to see them inside Taverna Server itself (unless one user grants the other authority to do so, of course).
+-   `LOCALUSER_*` (where the `*` is replaced with a local user name) — specifies what local user name the user should be executing workflows as; the prefix (`LOCALUSER_`) is simply stripped and the remainder is used as a user name. If absent, the default user name (taverna in the default configuration) will be used; two users mapped to the same user name will be able to see each others workflows if they can work out where the job working directories are located, but will not be able to see them inside Taverna Server itself (unless one user grants the other authority to do so, of course).
 
 The default source of authorities is the file WEB-INF/security/users.properties (relative to the directory which is the expanded webapp) that is used to populate the database if that is empty.
 
@@ -458,7 +372,7 @@ This is an interface for adding, deleting and otherwise managing user accounts o
 |--------------|-------------|------------------------------------------|
 | UserNames    | *Read-Only* | The list of server accounts known about. |
 
-| **Operation**                 | **Description**                                                                                                                                                                                                                                              |
+| **Operation**                 | **Description** |
 |-------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **addUser(*nm,pw,cpl*)**      | Adds the user called *nm* to the database, with password *pw*. If *cpl* is true, set the local user account to be the same as the user name, otherwise use a default set at system configuration time. The user will be a non-admin and disabled by default. |
 | **deleteUser(*nm*)**          | Remove the user called *nm* from the database.                                                                                                                                                                                                               |
@@ -468,8 +382,5 @@ This is an interface for adding, deleting and otherwise managing user accounts o
 | **setUserLocalUser(*nm,lu*)** | Set what the user called *nm* will be mapped to as a local user to *lu* (which must be the name of an account understood by the local system).                                                                                                               |
 | **setUserPassword(*nm,pw*)**  | Set the password for the user *nm* to be *pw*. This implementation stores the value directly in the database.                                                                                                                                                |
 
-The server also supports a RESTful administration interface on its http://*«SERVER:PORT»*/taverna-server/admin resource (a sibling to the main RESTful http://*«SERVER:PORT»*/taverna-server/rest resource and the Atom feed on http://*«SERVER:PORT»*/taverna-server/feed). This interface is only available to users who authenticate with admin permissions. Currently, there is no rendering of the interface in a form that is suitable for use from a normal web browser; this is expected to change in future versions.
+The server also supports a RESTful administration interface on its http://localhost:8080/taverna-server/admin resource (a sibling to the main RESTful http://localhost:8080/taverna-server/rest resource and the Atom feed on http://localhost:8080/taverna-server/feed). This interface is only available to users who authenticate with admin permissions. Currently, there is no rendering of the interface in a form that is suitable for use from a normal web browser; this is expected to change in future versions.
 
-[1] This is always enabled; termination notifications are automatically published to a per-user Atom feed that users cannot post directly to. This feed is located at http://*«SERVER:PORT»*/taverna-server/feed relative to the webapp root resource.
-
-[2] https://www.intellisoftware.co.uk/smsgateway/sendmsg.aspx
