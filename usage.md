@@ -17,32 +17,28 @@
 Apache Taverna Server: Usage and API Guide
 ==========================================
 
-
+Note: In this documentation we will assume the Taverna server is installed on http://localhost:8080/taverna-server - unless you are running the server locally you will have to replace with `localhost:8080` with the corresponding `servername:port` (and switch to `https`) accordingly.
 
 Conceptual interface
 --------------------
 
-Conceptually, an instance of Taverna Server exists to manage a collection of workflow runs, as well as some global information that is provided to all on the server’s general capabilities. The server also supports an overall Atom feed per user that allows you to find out when your workflows terminate without having to poll each one separately. This feed is at *https://«SERVER:PORT»/taverna-server/feed* (with the default web-application name). The feed is not available to anonymous users, and will only accept updates from the internal notification mechanism.
+Conceptually, an instance of Taverna Server exists to manage a collection of workflow runs, as well as some global information that is provided to all on the server’s general capabilities. The server also supports an overall Atom feed per user that allows you to find out when your workflows terminate without having to poll each one separately. This feed is at *http://localhost:8080/taverna-server/feed* (with the default web-application name). The feed is not available to anonymous users, and will only accept updates from the internal notification mechanism.
 
 Each workflow run is associated with a working directory that is specific to that run; the name of the working directory is a value that is not repeated for any other run. Within the working directory, these[1] subdirectories will be created:
 
-*conf* Contains optional additional configuration files for the Taverna execution engine; empty by default.
-
-*externaltool* Contains optional additional configuration files for the external tool plugin; empty by default.
-
-*lib* Contains additional libraries that will be made available to bean­shell scripts; empty by default.
-
-*logs* Location that logs will be written to. In particular, will eventually contain the file *detail.log*, which can be very useful when debugging a workflow.
-
-*out* Location that output files will be written to if they are not collected into a Baclava file. This directory is only created during the workflow run; it should not be made beforehand.
-
-*plugins* Contains the additional plug-in code that is to be supported for the specific workflow run.
-
-*t2-database* Contains the database working files used by the Taverna execution engine. This directory is only created during the workflow run; it should not be made beforehand.
+* `conf` Additional configuration files for the Taverna execution engine; empty by default.
+* `externaltool` Optional additional configuration files for the external tool plugin; empty by default.
+* `lib` Additional libraries that will be made available to bean­shell scripts; empty by default.
+* `logs` Where logs will be written. In particular, will eventually contain the file `detail.log`, which can be very useful when debugging a workflow.
+* `out` Where output files will be written to if they are not collected into a Baclava file. This directory is only created during the workflow run; it should not be made beforehand.
+* `plugins` Additional plug-in code that is to be supported for the specific workflow run.
+* `t2-database`  Database working files used during Taverna Engine execution. This directory is only created during the workflow run; it should not be made beforehand.
 
 All file access operations are performed on files and directories beneath the working directory. The server prevents all access to dxirectories outside of that, so as to promote proper separation of the workflow runs. (Note in particular that the credential manager configuration directory will not be accessible; it is managed directly by the server.)
 
-Associated with each workflow run is a state. The state transition diagram is this:
+Associated with each workflow run is a **state**. The state transition diagram is this:
+
+![](img/state_transitions.svg)
 
 The blue states are the initial and final states, and all states in *italic* cannot be observed in practice. The black arrows represent automatic state changes, the blue arrows are for manually-triggered transition, and the red arrows are destructions, which can be done from any state (other than the initial unobservable one) and which may be either manually or automatically triggered; automatic destruction happens when the run reaches its expiry time (which you can set but cannot remove). Note that there are two transitions from *Operating* to *Finished*; they are not equivalent. The automatic transition represents the termination of the workflow execution with such outputs produced as are going to be generated, whereas the manual transition is where the execution is killed and outputs may be not generated even if they conceptually existed at that point. Also note that it is only the transition from *Initialized* to *Operating* that represents the start of the workflow execution engine.
 
@@ -53,9 +49,9 @@ Associated with each run are a number of listeners. This release of the server o
 The (RESTful) Usage Pattern
 ---------------------------
 
-The Taverna Server supports both REST and SOAP APIs; you may use either API to access the service and any of the workflow runs hosted by the service. The full service descriptions are available at *http://«SERVER:PORT»/taverna-server/services* but to illustrate their use, here's a sample execution using the REST API.
+The Taverna Server supports both REST and SOAP APIs; you may use either API to access the service and any of the workflow runs hosted by the service. The full service descriptions are available at *http://localhost:8080/taverna-server/services* but to illustrate their use, here's a sample execution using the REST API.
 
-1.  The client starts by creating a workflow run. This is done by POSTing a T2flow document to the service at the address *http://«SERVER:PORT»/taverna-server/rest/runs* with the content type *application/vnd.taverna.t2flow+xml*.
+1.  The client starts by creating a workflow run. This is done by POSTing a T2flow document to the service at the address *http://localhost:8080/taverna-server/rest/runs* with the content type *application/vnd.taverna.t2flow+xml*.
 
 > The result of the POST is an *HTTP 201 Created* that gives the location of the created run (in a *Location* header), hereby denoted the *«RUN\_URI»* (it includes a UUID which you will need to save in order to access the run again, though the list of known UUIDs can be found above). Note that the run is not yet actually doing anything.
 
@@ -131,7 +127,7 @@ The Taverna Server supports both REST and SOAP APIs; you may use either API to a
 
 2.  If the workflow refers to a secured external service, it is necessary to supply some additional credentials. For a SOAP web-service, these credentials are associated in Taverna with the WSDL description of the web service. The credentials *must* be supplied before the workflow run starts.
 
-> To set a username and password for a service, you would POST to *«RUN\_URI»/security/credentials* a message like this (assuming that the WSDL address is “*https://host/serv.wsdl*”, that the username to use is “*fred123*”, and that the password is “*ThePassWord*”):
+> To set a username and password for a service, you would POST to *«RUN\_URI»/security/credentials* a message like this (assuming that the WSDL address is “*https://example.com/serv.wsdl*”, that the username to use is “*fred123*”, and that the password is “*ThePassWord*”):
 >
 > &lt;t2sr:credential xmlns:t2sr=
 > "http://ns.taverna.org.uk/2010/xml/server/rest/"
@@ -140,7 +136,7 @@ The Taverna Server supports both REST and SOAP APIs; you may use either API to a
 >
 > &lt;t2s:userpass&gt;
 >
-> &lt;t2s:serviceURI&gt;https://host/serv.wsdl&lt;/t2s:serviceURI&gt;
+> &lt;t2s:serviceURI&gt;https://example.com/serv.wsdl&lt;/t2s:serviceURI&gt;
 >
 > &lt;t2s:username&gt;fred123&lt;/t2s:username&gt;
 >
