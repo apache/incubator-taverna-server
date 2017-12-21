@@ -43,7 +43,7 @@ details about embedded third-party libraries and source code.
 # Contribute
 
 Please subscribe to and contact the
-[dev@taverna](http://taverna.incubator.apache.org/community/lists#dev mailing list)
+[dev@taverna](http://taverna.incubator.apache.org/community/lists#dev) mailing list
 for any questions, suggestions and discussions about
 Apache Taverna.
 
@@ -53,10 +53,11 @@ under the `TAVERNA` component _Taverna Server_. Feel free
 to add an issue!
 
 To suggest changes to this source code, feel free to raise a
-[GitHub pull request](https://github.com/apache/incubator-taverna-service/pulls).
-Any contributions received are assumed to be covered by the [Apache License
-2.0](https://www.apache.org/licenses/LICENSE-2.0). We might ask you
-to sign a [Contributor License Agreement](https://www.apache.org/licenses/#clas)
+[GitHub pull request](https://github.com/apache/incubator-taverna-server/pulls).
+Any contributions received are assumed to be covered by the 
+[Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). 
+We might ask you to sign a 
+[Contributor License Agreement](https://www.apache.org/licenses/#clas)
 before accepting a larger contribution.
 
 
@@ -77,9 +78,9 @@ fully endorsed by the ASF.
 
 
 
-## Prerequisites
+## Build prerequisites
 
-* Java 1.7 or newer (tested with OpenJDK 1.8)
+* Java 1.8
 * [Apache Maven](https://maven.apache.org/download.html) 3.2.5 or newer (older
   versions probably also work)
 
@@ -91,6 +92,9 @@ To build, use
     mvn clean install
 
 This will build each module and run their tests.
+
+You should then find the equivalent of `TavernaServer.3.1.0-incubating-SNAPSHOT.war` 
+in the folder `taverna-server-webapp/target/`
 
 
 ## Skipping tests
@@ -121,16 +125,11 @@ security. *Do not mix up installations between the two types.*
 You will need:
 
 * **Unix** (e.g., Linux, OSX). Running Linux inside a virtual machine
-  works. Running directly on Windows is not supported.
+  or in Docker works. Running directly on Windows is not supported.
 
-* **Java 7** (or later) installed. See the Java requirements on the
-  [Taverna website](http://www.taverna.org.uk/download/workbench/system-requirements/).
+* **Java 8** (or later). 
 
-* **Tomcat 6** (recent version).
-
-* **Taverna Server 2.5**. Either the "full installation" or WAR will do
-  (the "full installation" zip contains a copy of the WAR) - see the
-  [Taverna website](http://www.taverna.org.uk/download/server/2-4/) for details on downloading the file.
+* **Apache Tomcat** (use most recent version).
 
 If you are installing in secured mode (default) you will also need:
 
@@ -149,47 +148,45 @@ If you are installing in secured mode (default) you will also need:
 Stick to the Factory Defaults
 -----------------------------
 
-Taverna Server 2.5 has a long list of things that may be configured,
+Taverna Server has a long list of things that may be configured,
 but it comes with “factory” settings that are correct in the majority
 of cases. Leave them alone for your first installation.
 
-Setting up Tomcat
------------------
+Setting up Apache Tomcat
+------------------------
 
 Note that the instructions below do not describe setting up Tomcat
 users. These are not necessary for Taverna Server, as that needs
 finer-grained permission control than is normal for a webapp.
 
-You can always find further information by searching the web for
-“_install tomcat6 YourOperatingSystem_”.
 
 ### Installing on Debian Linux, Ubuntu
 
 On Debian Linux (and derivatives), you install Tomcat with:
 
-    sudo apt-get install tomcat6 tomcat6-admin tomcat6-common tomcat6-user
+    sudo apt-get install tomcat8 tomcat8-admin tomcat8-common tomcat8-user
 
 You then start Tomcat with:
 
-    sudo /etc/init.d/tomcat6 start
+    sudo /etc/init.d/tomcat8 start
 
 And stop it with:
 
-    sudo /etc/init.d/tomcat6 stop
+    sudo /etc/init.d/tomcat8 stop
 
 It's configuration file (called `conf/server.xml` in the instructions below) will be in:
 
-    /etc/tomcat6/server.xml
+    /etc/tomcat8/server.xml
 
 It's webapp directory (`webapps` below) will be in:
 
-    /var/lib/tomcat6
+    /var/lib/tomcat8/webapps/
 
 ### Installing on RedHat Linux, Fedora, CentOS, Scientific Linux
 
 On RedHat Linux (and derivatives), you install Tomcat with:
 
-    yum install tomcat6-webapps
+    yum install tomcat8-webapps
 
 You then start Tomcat with:
 
@@ -213,7 +210,7 @@ On OSX (or if otherwise installing from a standard Apache
 distribution), you install Tomcat by downloading from the distribution
 page at:
 
-* http://tomcat.apache.org/download-60.cgi
+* http://tomcat.apache.org/
 
 Both ZIP and `.tar.gz` download versions include a file `RUNNING.txt`
 that describes how to perform the installation, start the server, and
