@@ -408,7 +408,7 @@ limitations under the License.
 	</dependencyManagement>
 
 	<build>
-		<finalName>TavernaServer.${project.parent.version}</finalName>
+		<finalName>taverna-server</finalName>
 		<pluginManagement>
 			<plugins>
 				<plugin>
