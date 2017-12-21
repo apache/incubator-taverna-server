@@ -19,6 +19,21 @@ Apache Taverna Server: Usage and API Guide
 
 Note: In this documentation we will assume the Taverna server is installed on http://localhost:8080/taverna-server - unless you are running the server locally you will have to replace `localhost:8080` with the corresponding `servername:port` (optionally switch to `https`). If you have deployed the Taverna Server WAR with a different service name you will also have to replace `/taverna-server`.
 
+
+* [Conceptual interface](#conceptual-interface)
+* [The (RESTful) Usage Pattern](#the-restful-usage-pattern)
+* [API of the REST Interface](#api-of-the-rest-interface)
+   * [Main Server Resource](#main-server-resource)
+   * [Per-Workflow Run Resource](#per-workflow-run-resource)
+* [API of the SOAP Interface](#api-of-the-soap-interface)
+   * [Global Settings](#global-settings)
+   * [Basic Workflow Operations](#basic-workflow-operations)
+   * [Input and Output Control](#input-and-output-control)
+   * [File Operations](#file-operations)
+   * [Event Listeners](#event-listeners)
+   * [Per-Run Security Configuration](#per-run-security-configuration)
+
+
 Conceptual interface
 --------------------
 
@@ -214,6 +229,15 @@ It is important to use the right namespaces for their corresponding elements/att
 
 ### Main Server Resource
 
+* [Resource: /](#resource-)
+* [Resource: /runs](#resource-runs)
+* [Resource: /policy](#resource-policy)
+* [Resource: /policy/capabilities](#resource-policycapabilities)
+* [Resource: /policy/enabledNotificationFabrics](#resource-policyenablednotificationfabrics)
+* [Resource: /policy/permittedListenerTypes](#resource-policypermittedlistenertypes)
+* [Resource: /policy/permittedWorkflows](#resource-policypermittedworkflows)
+* [Resource: /policy/runLimit](#resource-policyrunlimit)
+
 #### Resource: /
 
 * * Method: GET
@@ -347,6 +371,40 @@ Gets the maximum number of simultaneous runs that the user may create. Note that
 ### Per-Workflow Run Resource
 
 Note that all of these resources require that the user be authenticated and permitted to (at least) see the run.
+
+* [Resource: /runs/{id}](#resource-runsid)
+* [Resource: /runs/{id}/expiry](#resource-runsidexpiry)
+* [Resource: /runs/{id}/createTime](#resource-runsidcreatetime)
+* [Resource: /runs/{id}/finishTime](#resource-runsidfinishtime)
+* [Resource: /runs/{id}/startTime](#resource-runsidstarttime)
+* [Resource: /runs/{id}/status](#resource-runsidstatus)
+* [Resource: /runs/{id}/workflow](#resource-runsidworkflow)
+* [Resource: /runs/{id}/input](#resource-runsidinput)
+* [Resource: /runs/{id}/input/baclava](#resource-runsidinputbaclava)
+* [Resource: /runs/{id}/input/expected](#resource-runsidinputexpected)
+* [Resource: /runs/{id}/input/input/{name}](#resource-runsidinputinputname)
+* [Resource: /runs/{id}/output](#resource-runsidoutput)
+* [Resource: /runs/{id}/run-bundle](#resource-runsidrun-bundle)
+* [Resource: /runs/{id}/generate-provenance](#resource-runsidgenerate-provenance)
+* [Resource: /runs/{id}/stdout](#resource-runsidstdout)
+* [Resource: /runs/{id}/stderr](#resource-runsidstderr)
+* [Resource: /runs/{id}/log](#resource-runsidlog)
+* [Resource: /runs/{id}/usage](#resource-runsidusage)
+* [Resource: /runs/{id}/listeners](#resource-runsidlisteners)
+* [Resource: /runs/{id}/listeners/{name}](#resource-runsidlistenersname)
+* [Resource: /runs/{id}/listeners/{name}/configuration](#resource-runsidlistenersnameconfiguration)
+* [Resource: /runs/{id}/listeners/{name}/properties](#resource-runsidlistenersnameproperties)
+* [Resource: /runs/{id}/listeners/{name}/properties/{propName}](#resource-runsidlistenersnamepropertiespropname)
+* [Resource: /runs/{id}/security](#resource-runsidsecurity)
+* [Resource: /runs/{id}/security/credentials](#resource-runsidsecuritycredentials)
+* [Resource: /runs/{id}/security/credentials/{credID}](#resource-runsidsecuritycredentialscredid)
+* [Resource: /runs/{id}/security/owner](#resource-runsidsecurityowner)
+* [Resource: /runs/{id}/security/permissions](#resource-runsidsecuritypermissions)
+* [Resource: /runs/{id}/security/permissions/{user}](#resource-runsidsecuritypermissionsuser)
+* [Resource: /runs/{id}/security/trusts](#resource-runsidsecuritytrusts)
+* [Resource: /runs/{id}/security/trusts/{trustID}](#resource-runsidsecuritytruststrustid)
+* [Resource: /runs/{id}/wd  and /runs/{id}/wd/{path…}](#resource-runsidwd--and-runsidwdpath)
+
 
 #### Resource: /runs/{id}
 
@@ -1193,12 +1251,13 @@ API of the SOAP Interface
 
 Taverna Server supports a SOAP interface to the majority of its user-facing functionality. The operations that it supports are divided into a few groups:
 
--   Global Settings
--   Basic Workflow Operations
--   Input and Output Control
--   File Operations
--   Event Listeners
--   Security Configuration
+ * [Global Settings](#global-settings)
+ * [Basic Workflow Operations](#basic-workflow-operations)
+ * [Input and Output Control](#input-and-output-control)
+ * [File Operations](#file-operations)
+ * [Event Listeners](#event-listeners)
+ * [Per-Run Security Configuration](#per-run-security-configuration)
+
 
 The connection itself is done (under recommended deployment patterns) by HTTPS, and is authenticated via Basic HTTP username and password at the connection level. All information reported is only necessarily true for a particular user; no guarantee is made that it will be the same for any other user.
 
@@ -1207,6 +1266,13 @@ Note that the information below is just a summary. The WSDL document for the ser
 ### Global Settings
 
 These operations describe things that are across all the workflow runs owned by the connecting user on the server.
+
+* [getCapabilities](#getcapabilities)
+* [getEnabledNotificationFabrics](#getenablednotificationfabrics)
+* [getMaxSimultaneousRuns](#getmaxsimultaneousruns)
+* [getPermittedWorkflows](#getpermittedworkflows)
+* [getPermittedListenerTypes](#getpermittedlistenertypes)
+* [listRuns](#listruns)
 
 #### getCapabilities
 
@@ -1234,7 +1300,25 @@ Get a list of all workflow runs on the server that the user has access to. (Work
 
 ### Basic Workflow Operations
 
-An ID string identifies every workflow run. All operations on a workflow run take the ID as one their arguments. (Implementation note: This ID is a UUID.)
+An ID string identifies every workflow run. All operations on a workflow run take the _run ID_ as one their arguments. (Implementation note: This ID is a UUID.)
+
+* [submitWorkflow](#submitworkflow)
+* [destroyRun](#destroyrun)
+* [getRunExpiry](#getrunexpiry)
+* [setRunExpiry](#setrunexpiry)
+* [getRunCreationTime](#getruncreationtime)
+* [getRunStartTime](#getrunstarttime)
+* [getRunFinishTime](#getrunfinishtime)
+* [getRunWorkflow](#getrunworkflow)
+* [getRunStatus](#getrunstatus)
+* [setRunStatus](#setrunstatus)
+* [getRunBundle](#getrunbundle)
+* [getRunGenerateProvenance](#getrungenerateprovenance)
+* [setRunGenerateProvenance](#setrungenerateprovenance)
+* [getRunStdout](#getrunstdout)
+* [getRunStderr](#getrunstderr)
+* [getRunLog](#getrunlog)
+* [getRunUsageRecord](#getrunusagerecord)
 
 #### submitWorkflow
 
@@ -1306,6 +1390,17 @@ Get the resource usage description of the execution engine, or *null* when the e
 
 ### Input and Output Control
 
+These operations are used to find and set the required workflow _inputs_, and after the run, the resulting _outputs_.
+
+* [getRunInputDescriptor](#getruninputdescriptor)
+* [getRunInputs](#getruninputs)
+* [setRunInputPortFile](#setruninputportfile)
+* [setRunInputPortValue](#setruninputportvalue)
+* [setRunInputBaclavaFile](#setruninputbaclavafile)
+* [getRunOutputDescription](#getrunoutputdescription)
+* [setRunOutputBaclavaFile](#setrunoutputbaclavafile)
+* [getRunOutputBaclavaFile](#getrunoutputbaclavafile)
+
 #### getRunInputDescriptor
 
 Returns a description of what inputs are expected by a particular workflow.
@@ -1341,6 +1436,18 @@ Get the name of the Baclava file that will have the run outputs written to it.
 ### File Operations
 
 Every workflow run has a working directory that is private to itself. That working directory will be the current directory when the workflow run is executing.
+
+* [getRunDirectoryContents](#getrundirectorycontents)
+* [destroyRunDirectoryEntry](#destroyrundirectoryentry)
+* [getRunDirectoryAsZip](#getrundirectoryaszip)
+* [makeRunDirectory](#makerundirectory)
+* [getRunFileContents](#getrunfilecontents)
+* [getRunFileContentsMTOM](#getrunfilecontentsmtom)
+* [getRunFileType](#getrunfiletype)
+* [getRunFileLength](#getrunfilelength)
+* [makeRunFile](#makerunfile)
+* [setRunFileContents](#setrunfilecontents)
+* [setRunFileContentsMTOM](#setrunfilecontentsmtom)
 
 #### getRunDirectoryContents
 
@@ -1388,9 +1495,17 @@ Set the contents of an existing file. (MTOM-enabled.)
 
 ### Event Listeners
 
+The event listeners can be set up to receive notifications on as the workflow run progresses.
+
+* [getRunListeners](#getrunlisteners)
+* [addRunListener](#addrunlistener)
+* [getRunListenerConfiguration](#getrunlistenerconfiguration)
+* [getRunListenerProperties](#getrunlistenerproperties)
+* [getRunListenerProperty / setRunListenerProperty](#getrunlistenerproperty--setrunlistenerproperty)
+
 #### getRunListeners
 
-**GET** a list of listeners attached to a particular run.
+Get a list of listeners attached to a particular run.
 
 #### addRunListener
 
@@ -1423,6 +1538,16 @@ There is one standard listener, `io`, which is attached by default. This listene
 ### Per-Run Security Configuration
 
 Note that all of the operations below are restricted to the owner of the run except for discovering the identity of the owner of the run.
+
+* [getRunOwner](#getrunowner)
+* [listRunPermissions](#listrunpermissions)
+* [setRunPermission](#setrunpermission)
+* [getRunCredentials](#getruncredentials)
+* [setRunCredential](#setruncredential)
+* [deleteRunCredential](#deleteruncredential)
+* [getRunCertificates](#getruncertificates)
+* [setRunCertificates](#setruncertificates)
+* [deleteRunCertificates](#deleteruncertificates)
 
 #### getRunOwner
 
