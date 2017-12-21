@@ -27,6 +27,8 @@ limitations under the License.
 		<fileSet>
 			<directory>${project.parent.basedir}</directory>
 			<includes>
+				<include>LICENSE</include>
+				<include>NOTICE</include>
 				<include>*.xml</include>
 				<include>*.txt</include>
 				<include>*.md</include>
