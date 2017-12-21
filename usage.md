@@ -17,24 +17,26 @@
 Apache Taverna Server: Usage and API Guide
 ==========================================
 
-Note: In this documentation we will assume the Taverna server is installed on http://localhost:8080/taverna-server - unless you are running the server locally you will have to replace with `localhost:8080` with the corresponding `servername:port` (and switch to `https`) accordingly.
+Note: In this documentation we will assume the Taverna server is installed on http://localhost:8080/taverna-server - unless you are running the server locally you will have to replace `localhost:8080` with the corresponding `servername:port` (optionally switch to `https`). If you have deployed the Taverna Server WAR with a different service name you will also have to replace `/taverna-server`.
 
 Conceptual interface
 --------------------
 
-Conceptually, an instance of Taverna Server exists to manage a collection of workflow runs, as well as some global information that is provided to all on the server’s general capabilities. The server also supports an overall Atom feed per user that allows you to find out when your workflows terminate without having to poll each one separately. This feed is at *http://localhost:8080/taverna-server/feed* (with the default web-application name). The feed is not available to anonymous users, and will only accept updates from the internal notification mechanism.
+Conceptually, an instance of Taverna Server exists to manage a collection of **workflow runs**, each corresponding to a single invocation of an uploaded Taverna workflow with some uploaded inputs and run-specific configuration. The server also list some global information on the server’s general **capabilities**. The server also supports an overall **Atom feed** per user that allows you to find out when your workflows terminate without having to poll each one separately. This feed is at `http://localhost:8080/taverna-server/feed` for authenticated users, and will only accept updates from the internal notification mechanism.
 
-Each workflow run is associated with a working directory that is specific to that run; the name of the working directory is a value that is not repeated for any other run. Within the working directory, these[1] subdirectories will be created:
+Each workflow run is associated with a **working directory** that is specific to that run; the name of the working directory is a value that is not repeated for any other run. Within the working directory, these subdirectories will be created:
 
-* `conf` Additional configuration files for the Taverna execution engine; empty by default.
-* `externaltool` Optional additional configuration files for the external tool plugin; empty by default.
-* `lib` Additional libraries that will be made available to bean­shell scripts; empty by default.
-* `logs` Where logs will be written. In particular, will eventually contain the file `detail.log`, which can be very useful when debugging a workflow.
-* `out` Where output files will be written to if they are not collected into a Baclava file. This directory is only created during the workflow run; it should not be made beforehand.
-* `plugins` Additional plug-in code that is to be supported for the specific workflow run.
-* `t2-database`  Database working files used during Taverna Engine execution. This directory is only created during the workflow run; it should not be made beforehand.
+* `conf` - Additional configuration files for the Taverna execution engine; empty by default.
+* `externaltool` - Optional additional configuration files for the external tool plugin; empty by default.
+* `lib` - Additional libraries that will be made available to bean­shell scripts; empty by default.
+* `logs` - Where logs will be written. In particular, will eventually contain the file `detail.log`, which can be very useful when debugging a workflow.
+* `out` - Where output files will be written to if they are not collected into a Baclava file. This directory is only created during the workflow run; it should not be made beforehand.
+* `plugins` - Additional plug-in code that is to be supported for the specific workflow run.
+* `repository` - _(internal use)_
+* `t2-database` - Database working files used during Taverna Engine execution. This directory is only created during the workflow run; it should not be made beforehand.
+* `var` - _(internal use)_
 
-All file access operations are performed on files and directories beneath the working directory. The server prevents all access to dxirectories outside of that, so as to promote proper separation of the workflow runs. (Note in particular that the credential manager configuration directory will not be accessible; it is managed directly by the server.)
+Taverna Server exposes some _file access operations_ which are performed on files and directories beneath the working directory. The server prevents all access to directories outside, so as to promote proper separation of the workflow runs. (Note in particular that the _credential manager_ configuration directory will not be accessible; it is managed directly by the server.)
 
 Associated with each workflow run is a **state**. The state transition diagram is this:
 
@@ -75,7 +77,7 @@ The values for an input port can also be set by means of creating a file on the 
 
 ```xml
 <t2sr:upload t2sr:name="BOO.TXT" xmlns:t2sr= "http://ns.taverna.org.uk/2010/xml/server/rest/">
-QkFS
+  QkFS
 </t2sr:upload>
 ```
 
@@ -87,7 +89,7 @@ Once you've created the file, you can then set it to be the input for the port b
 
 ```xml
 <t2sr:runInput xmlns:t2sr= "http://ns.taverna.org.uk/2010/xml/server/rest/">
-<t2sr:file>BOO.TXT</t2sr:file>
+  <t2sr:file>BOO.TXT</t2sr:file>
 </t2sr:runInput>
 ```
 
@@ -781,16 +783,14 @@ Add a new event listener to the named workflow run of the given type and under t
 **GET** the list of properties supported by a given event listener attached to a workflow run.
 
 ```xml
+<t2sr:properties>
+  <t2sr:property
+     xlink:href="xsd:anyURI"
+     t2sr:name="xsd:string">
+  <t2sr:property> *
+</t2sr:properties>
 ```
 
->
-> &lt;t2sr:properties&gt;
->
-> &lt;t2sr:property xlink:href="xsd:anyURI"
->
-> t2sr:name="xsd:string" /&gt; ***\****
->
-> &lt;/t2sr:properties&gt;
 
 #### Resource: /runs/{id}/listeners/{name}/properties/{propName}
 
@@ -798,15 +798,15 @@ Add a new event listener to the named workflow run of the given type and under t
 * Consumes: N/A
 * Produces: `text/plain`
 * Response codes: `200 OK`
-* 
-> **GET** the value of the particular property of an event listener attached to a workflow run.
+ 
+**GET** the value of the particular property of an event listener attached to a workflow run.
 
 * Method: PUT
-* Consumes: text/plain
+* Consumes: `text/plain`
 * Produces: `text/plain`
 * Response codes: `200 OK`
-* 
-> Set the value of the particular property of an event listener attached to a workflow run.
+ 
+Set the value of the particular property of an event listener attached to a workflow run.
 
 #### Resource: /runs/{id}/security
 
@@ -814,135 +814,131 @@ Add a new event listener to the named workflow run of the given type and under t
 * Consumes: N/A
 * Produces: `application/xml`, application/json
 * Response codes: `200 OK`
-* 
-> Gives a description of the security information supported by the workflow run.
->
-> &lt;t2sr:securityDescriptor
->
-> t2s:serverVersion="xsd:string"
-> t2s:serverRevision="xsd:string"
-> t2s:serverBuildTimestamp="xsd:string"&gt;
->
-> &lt;t2sr:owner&gt; xsd:string &lt;/t2sr:owner&gt;
->
-> &lt;t2sr:permissions xlink:href="xsd:anyURI" /&gt;
->
-> &lt;t2sr:credentials xlink:href="xsd:anyURI"&gt;
->
-> &lt;t2sr:credential&gt; ... &lt;/t2sr:credential&gt; ***\****
->
-> &lt;/t2sr:credentials&gt;
->
-> &lt;t2sr:trusts xlink:href="xsd:anyURI"&gt;
->
-> &lt;t2sr:trust&gt; ... &lt;/t2sr&gt; ***\****
->
-> &lt;/t2sr:trusts&gt;
->
-> &lt;/t2sr:securityDescriptor&gt;
+ 
+Gives a description of the security information supported by the workflow run.
+
+```xml
+<t2sr:securityDescriptor
+  t2s:serverVersion="xsd:string"
+  t2s:serverRevision="xsd:string"
+  t2s:serverBuildTimestamp="xsd:string">
+
+  <t2sr:owner>
+    xsd:string
+  </t2sr:owner>
+  <t2sr:permissions xlink:href="xsd:anyURI" />
+
+  <t2sr:credentials xlink:href="xsd:anyURI">
+    <t2sr:credential> ... </t2sr:credential> *
+  </t2sr:credentials>
+
+  <t2sr:trusts xlink:href="xsd:anyURI">
+    <t2sr:trust> ... </t2sr> *
+  </t2sr:trusts>
+
+</t2sr:securityDescriptor>
+```
+
 
 #### Resource: /runs/{id}/security/credentials
 
 * Method: GET
 * Consumes: N/A
-* Produces: `application/xml`, application/json
+* Produces: `application/xml`, `application/json`
 * Response codes: `200 OK`
-* 
-> Gives a list of credentials supplied to this workflow run.
->
-> &lt;t2sr:credentials
->
-> t2s:serverVersion="xsd:string"
-> t2s:serverRevision="xsd:string"
-> t2s:serverBuildTimestamp="xsd:string"&gt;
->
-> &lt;t2s:userpass xlink:href="xsd:anyURI"&gt;
->
-> ...
->
-> &lt;/t2s:userpass&gt; ***\****
->
-> &lt;t2s:keypair xlink:href="xsd:anyURI"&gt;
->
-> ...
->
-> &lt;/t2s:keypair&gt; ***\****
->
-> &lt;/t2sr:credentials&gt;
->
-> For more description of the contents of the *userpass* and *keypair* elements, see below.
+
+Gives a list of credentials supplied to this workflow run.
+
+```xml
+<t2sr:credentials
+  t2s:serverVersion="xsd:string" 
+  t2s:serverRevision="xsd:string" 
+  t2s:serverBuildTimestamp="xsd:string">
+
+  <t2s:userpass xlink:href="xsd:anyURI">
+    ..
+  </t2s:userpass> *
+
+  <t2s:keypair xlink:href="xsd:anyURI">
+    ..
+  </t2s:keypair> *
+
+</t2sr:credentials>
+```
+
+For more description of the contents of the `<t2s:userpass>` and `<t2s:keypair>` elements, see below.
 
 * Method: POST
-* Consumes: application/xml, application/json
+* Consumes: `application/xml`, `application/json`
 * Produces: N/A
-* Response codes: 201 Created
+* Response codes: `201 Created`
 * Notes: Identity of created credential is in *Location* header of response.
 
-> Creates a new credential. Multiple types supported. Note that none of these should have their *xlink:href* attributes set when they are POSTed; those will be supplied by the service. Take particular care with the *serviceURI* elements, which must define the URI as expected by the Taverna Credential Manager.
->
-> Password credential:
->
-> &lt;t2s:userpass&gt;
->
-> &lt;ts2:serviceURI&gt; xsd:anyURI &lt;/t2s:serviceURI&gt;
->
-> &lt;t2s:username&gt; xsd:string &lt;/t2s:username&gt;
->
-> &lt;t2s:password&gt; xsd:string &lt;/t2s:password&gt;
->
-> &lt;/t2s:userpass&gt;
->
-> Key credential (note that one of the *credentialFile* and *credentialBytes* elements should be supplied, but not both):
->
-> &lt;t2s:keypair&gt;
->
-> &lt;ts2:serviceURI&gt; xsd:anyURI &lt;/t2s:serviceURI&gt;
->
-> &lt;t2s:credentialName&gt; xsd:string &lt;/t2s:credentialName&gt;
->
-> &lt;t2s:credentialFile&gt; xsd:string &lt;/t2s:credentialFile&gt; ***?***
->
-> &lt;t2s:fileType&gt; xsd:string &lt;/t2s:fileType&gt; ***?***
->
-> &lt;t2s:unlockPassword&gt; xsd:string &lt;/t2s:unlockPassword&gt; ***?***
->
-> &lt;t2s:credentialBytes&gt;
->
-> xsd:base64Binary
->
-> &lt;/t2s:credentialBytes&gt; ***?***
->
-> &lt;/t2s:keypair&gt;
+Creates a new credential. Multiple types supported. Note that none of these should have their *xlink:href* attributes set when they are POSTed; those will be supplied by the service. Take particular care with the *serviceURI* elements, which must define the URI as expected by the Taverna Credential Manager.
+
+Password credential `<t2s:userpass>`:
+
+```xml
+<t2s:userpass>
+  <ts2:serviceURI>xsd:anyURI</t2s:serviceURI>
+  <t2s:username>xsd:string</t2s:username>
+  <t2s:password>xsd:string</t2s:password>
+</t2s:userpass>
+```
+
+Key credential `<t2s:keypair>`:
+
+```xml
+<t2s:keypair>
+
+  <ts2:serviceURI>xsd:anyURI</t2s:serviceURI>
+
+  <t2s:credentialName>xsd:string</t2s:credentialName>
+
+  <t2s:credentialFile>xsd:string</t2s:credentialFile> ?
+
+  <t2s:fileType>xsd:string</t2s:fileType> ?
+
+  <t2s:unlockPassword>xsd:string</t2s:unlockPassword> ?
+
+  <t2s:credentialBytes>
+    xsd:base64Binary
+  </t2s:credentialBytes> ?
+
+</t2s:keypair>
+```
+
+Note that one of the `<t2s:credentialFile>` and `<t2s:credentialBytes>` elements should be supplied, but not both.
 
 * Method: DELETE
 * Consumes: N/A
 * Produces: N/A
-* Response codes: 204 No content
-* 
-> Deletes all credentials.
+* Response codes: `204 No content`
+ 
+Deletes all credentials.
 
 #### Resource: /runs/{id}/security/credentials/{credID}
 
 * Method: GET
 * Consumes: N/A
-* Produces: `application/xml`, application/json
+* Produces: `application/xml`, `application/json`
 * Response codes: `200 OK`
-* 
-> Describes a particular credential. Will be one of the elements *userpass*, *keypair* and *cagridproxy* as outlined above.
+ 
+Describes a particular credential. Will be one of the elements `userpass`, `keypair` and `cagridproxy` as outlined above.
 
 * Method: PUT
-* Consumes: application/xml, application/json
-* Produces: `application/xml`, application/json
+* Consumes: `application/xml`, `application/json`
+* Produces: `application/xml`, `application/json`
 * Response codes: `200 OK`
-* 
-> Updates (i.e., replaces) a particular credential. Will be one of the elements *userpass*, *keypair* and *cagridproxy* as outlined above.
+
+Updates (i.e., replaces) a particular credential. Will be one of the elements `userpass`, `keypair` and `cagridproxy` as outlined above.
 
 * Method: DELETE
 * Consumes: N/A
-* Produces: `application/xml`, application/json
+* Produces: N/A
 * Response codes: 204 No content
-* 
-> Deletes a particular credential.
+
+Deletes a particular credential.
 
 #### Resource: /runs/{id}/security/owner
 
@@ -950,8 +946,8 @@ Add a new event listener to the named workflow run of the given type and under t
 * Consumes: N/A
 * Produces: `text/plain`
 * Response codes: `200 OK`
-* 
-> Gives the identity of who owns the workflow run.
+
+Gives the identity of who owns the workflow run.
 
 #### Resource: /runs/{id}/security/permissions
 
@@ -959,263 +955,238 @@ Add a new event listener to the named workflow run of the given type and under t
 * Consumes: N/A
 * Produces: `application/xml`, application/json
 * Response codes: `200 OK`
-* 
-> Gives a list of all non-default permissions associated with the enclosing workflow run. By default, nobody has any access at all except for the owner of the run.
->
-> &lt;t2sr:permissionsDescriptor
->
-> t2s:serverVersion="xsd:string"
-> t2s:serverRevision="xsd:string"
-> t2s:serverBuildTimestamp="xsd:string"&gt;
->
-> &lt;t2sr:permission xlink:href="xsd:anyURI"&gt;
->
-> &lt;t2sr:userName&gt; xsd:string &lt;/t2sr:userName&gt;
->
-> &lt;t2sr:permission&gt;
->
-> none***|***read***|***update***|***destroy
->
-> &lt;/t2sr:permission&gt;
->
-> &lt;/t2sr:permission&gt; ***\****
->
-> &lt;/t2sr:permissionsDescriptor&gt;
+
+Gives a list of all non-default permissions associated with the enclosing workflow run. By default, nobody has any access at all except for the owner of the run.
+
+
+```xml
+<t2sr:permissionsDescriptor
+  t2s:serverVersion="xsd:string"
+  t2s:serverRevision="xsd:string"
+  t2s:serverBuildTimestamp="xsd:string">
+
+  <t2sr:permission xlink:href="xsd:anyURI">
+    <t2sr:userName> xsd:string </t2sr:userName>
+    <t2sr:permission>
+      none | read | update | destroy
+    </t2sr:permission>
+  </t2sr:permission> *
+
+</t2sr:permissionsDescriptor>
+```
 
 * Method: POST
-* Consumes: application/xml, application/json
+* Consumes: `application/xml`, `application/json`
 * Produces: N/A
-* Response codes: 201 Created
-* Notes: Identity of created permission is in *Location* header of response.
+* Response codes: `201 Created`
+* Notes: Identity of created permission is in `Location` header of response.
 
-> Creates a new assignment of permissions to a particular user.
->
-> &lt;t2sr:permissionUpdate&gt;
->
-> &lt;t2sr:userName&gt; xsd:string &lt;/t2sr:userName&gt;
->
-> &lt;t2sr:permission&gt;
->
-> none***|***read***|***update***|***destroy
->
-> &lt;/t2sr:permission&gt;
->
-> &lt;/t2sr:permissionUpdate&gt;
+Creates a new assignment of permissions to a particular user.
+
+```xml
+<t2sr:permissionUpdate>
+    <t2sr:userName> xsd:string </t2sr:userName>
+    <t2sr:permission>
+        none|read|update|destroy
+    </t2sr:permission>
+</t2sr:permissionUpdate>
+```
+
 
 #### Resource: /runs/{id}/security/permissions/{user}
 
 * Method: GET
 * Consumes: N/A
-* Produces: `text/plain` (one of: *none*, *read*, *update*, *destroy*)
+* Produces: `text/plain` (one of: `none`, `read`, `update`, `destroy`)
 * Response codes: `200 OK`
-* 
-> Describes the permission granted to a particular user.
+ 
+Describes the permission granted to a particular user.
 
 * Method: PUT
-* Consumes: text/plain (one of: *none*, *read*, *update*, *destroy*)
-* Produces: `text/plain` (one of: *none*, *read*, *update*, *destroy*)
+* Consumes: text/plain (one of: `none`, `read`, `update`, `destroy`)
+* Produces: `text/plain` (one of: `none`, `read`, `update`, `destroy`)
 * Response codes: `200 OK`
-* 
-> Updates the permissions granted to a particular user.
+
+Updates the permissions granted to a particular user.
 
 * Method: DELETE
 * Consumes: N/A
 * Produces: N/A
 * Response codes: 204 No content
-* 
-> Deletes (by resetting to default, i.e., *none*) the permissions associated with a particular user.
+ 
+Deletes (by resetting to default, i.e., `none`) the permissions associated with a particular user.
 
 #### Resource: /runs/{id}/security/trusts
 
 * Method: GET
 * Consumes: N/A
-* Produces: `application/xml`, application/json
+* Produces: `application/xml`, `application/json`
 * Response codes: `200 OK`
-* 
-> Gives a list of trusted identities supplied to this workflow run.
->
-> &lt;t2sr:trustedIdentities
->
-> t2s:serverVersion="xsd:string"
-> t2s:serverRevision="xsd:string"
-> t2s:serverBuildTimestamp="xsd:string"&gt;
->
-> &lt;t2sr:trust xlink:href="xsd:anyURI"&gt;
->
-> &lt;t2s:certificateFile&gt;
->
-> xsd:string
->
-> &lt;/t2s:certificateFile&gt; ***?***
->
-> &lt;t2s:fileType&gt; xsd:string &lt;/t2s:fileType&gt; ***?***
->
-> &lt;t2s:certificateBytes&gt;
->
-> xsd:base64Binary
->
-> &lt;/t2s:certificateBytes&gt; ***?***
->
-> &lt;/t2sr:trust&gt; ***\****
->
-> &lt;/t2sr:trustedIdentities&gt;
+
+Gives a list of trusted identities supplied to this workflow run.
+
+```xml
+<t2sr:trustedIdentities
+        t2s:serverVersion="xsd:string"
+        t2s:serverRevision="xsd:string"
+        t2s:serverBuildTimestamp="xsd:string">
+    <t2sr:trust xlink:href="xsd:anyURI">
+        <t2s:certificateFile>
+            xsd:string
+        </t2s:certificateFile> ?
+        <t2s:fileType> xsd:string </t2s:fileType> ?
+        <t2s:certificateBytes>
+            xsd:base64Binary
+        </t2s:certificateBytes> ?
+    </t2sr:trust> *
+</t2sr:trustedIdentities>
+```
 
 * Method: POST
-* Consumes: application/xml, application/json
+* Consumes: `application/xml`, `application/json`
 * Produces: N/A
-* Response codes: 201 Created
-* 
-> Adds a new trusted identity. The *xlink:href* attribute of the *trust* element will be ignored if supplied, and one of *certificateFile* and *certificateBytes* should be supplied. The *fileType* can normally be omitted, as it is assumed to be X.509 by default (the only type seen in practice).
->
-> &lt;t2sr:trust&gt;
->
-> &lt;t2s:certificateFile&gt; xsd:string &lt;/t2s:certificateFile&gt; ***?***
->
-> &lt;t2s:fileType&gt; xsd:string &lt;/t2s:fileType&gt; ***?***
->
-> &lt;t2s:certificateBytes&gt;
->
-> xsd:base64Binary
->
-> &lt;/t2s:certificateBytes&gt; ***?***
->
-> &lt;/t2sr:trust&gt;
+* Response codes: `201 Created`
+ 
+Adds a new trusted identity. The `xlink:href` attribute of the `trust` element will be ignored if supplied, and one of `certificateFile` and `certificateBytes` should be supplied. The `fileType` can normally be omitted, as it is assumed to be X.509 by default (the only type seen in practice).
+
+```xml
+<t2sr:trust>
+    <t2s:certificateFile> xsd:string </t2s:certificateFile> ?
+    <t2s:fileType> xsd:string </t2s:fileType> ?
+    <t2s:certificateBytes>
+        xsd:base64Binary
+    </t2s:certificateBytes> ?
+</t2sr:trust>
+```
 
 * Method: DELETE
 * Consumes: N/A
 * Produces: N/A
 * Response codes: 204 No content
-* 
-> Deletes all trusted identities.
+ 
+Deletes all trusted identities.
 
 #### Resource: /runs/{id}/security/trusts/{trustID}
 
 * Method: GET
 * Consumes: N/A
-* Produces: `application/xml`, application/json
+* Produces: `application/xml`, `application/json`
 * Response codes: `200 OK`
-* 
-> Describes a particular trusted identity.
->
-> &lt;t2sr:trust xlink:href="xsd:anyURI"&gt;
->
-> &lt;t2s:certificateFile&gt; xsd:string &lt;/t2s:certificateFile&gt; ***?***
->
-> &lt;t2s:fileType&gt; xsd:string &lt;/t2s:fileType&gt; ***?***
->
-> &lt;t2s:certificateBytes&gt;
->
-> xsd:base64Binary
->
-> &lt;/t2s:certificateBytes&gt; ***?***
->
-> &lt;/t2sr:trust&gt;
+
+Describes a particular trusted identity.
+
+```xml
+<t2sr:trust xlink:href="xsd:anyURI">
+    <t2s:certificateFile> xsd:string </t2s:certificateFile> ?
+    <t2s:fileType> xsd:string </t2s:fileType> ?
+    <t2s:certificateBytes>
+        xsd:base64Binary
+    </t2s:certificateBytes> ?
+</t2sr:trust>
+```
 
 * Method: PUT
-* Consumes: application/xml, application/json
-* Produces: `application/xml`, application/json
+* Consumes: `application/xml`, `application/json`
+* Produces: `application/xml`, `application/json`
 * Response codes: `200 OK`
-* 
-> Updates (i.e., replaces) a particular trusted identity. The *xlink:href* attribute will be ignored if supplied. The *fileType* can normally be omitted, as it is assumed to be X.509 by default (the only type seen in practice).
->
-> &lt;t2sr:trust&gt;
->
-> &lt;t2s:certificateFile&gt; xsd:string &lt;/t2s:certificateFile&gt; ***?***
->
-> &lt;t2s:fileType&gt; xsd:string &lt;/t2s:fileType&gt; ***?***
->
-> &lt;t2s:certificateBytes&gt;
->
-> xsd:base64Binary
->
-> &lt;/t2s:certificateBytes&gt; ***?***
->
-> &lt;/t2sr:trust&gt;
+
+Updates (i.e., replaces) a particular trusted identity. The *xlink:href* attribute will be ignored if supplied. The *fileType* can normally be omitted, as it is assumed to be X.509 by default (the only type seen in practice).
+
+
+```xml
+<t2sr:trust>
+    <t2s:certificateFile> xsd:string </t2s:certificateFile> ?
+    <t2s:fileType> xsd:string </t2s:fileType> ?
+    <t2s:certificateBytes>
+        xsd:base64Binary
+    </t2s:certificateBytes> ?
+</t2sr:trust>
+```
 
 * Method: DELETE
 * Consumes: N/A
 * Produces: N/A
 * Response codes: 204 No content
-* 
-> Deletes a particular trusted identity.
+ 
+Deletes a particular trusted identity.
 
-#### Resource: /runs/{id}/wd
-Resource: /runs/{id}/wd/{path…}
+#### Resource: /runs/{id}/wd  and /runs/{id}/wd/{path…}
 
-Note that everything following the */wd* is the path beneath the working directory of the workflow run; this is mapped onto the filesystem. An empty path is the same as talking about the working directory itself.
+Note that everything following the `/wd` is the path beneath the working directory of the workflow run; this is mapped onto the filesystem. An empty path is the same as talking about the working directory itself.
 
-*Be aware!* Much of the selection between operations is done on the basis of the negotiated content type *and* the nature of the entity to which the path name matches.
+*Be aware!* Much of the selection between operations is done on the basis of the negotiated _content type_ *and* the nature of the entity to which the path name matches.
 
 * Method: GET
 * Consumes: N/A
-* Produces: `application/xml`, application/json
+* Produces: `application/xml`, `application/json`
 * Response codes: `200 OK`
 * Notes: This only applies to directories.
 
-> Gives a description of the working directory or a named directory in or beneath the working directory of the workflow run. The contents of the *dir* and *file* elements are the equivalent pathname (for use in the SOAP interface or to be appended to *…/wd* to generate a URI).
->
-> &lt;t2sr:directoryContents&gt;
->
-> &lt;t2s:dir xlink:href="xsd:anyURI" t2s:name="xsd:string"&gt;
->
-> xsd:string
-> &lt;/t2s:dir&gt; ***\****
->
-> &lt;t2s:file xlink:href="xsd:anyURI" t2s:name="xsd:string"&gt;
->
-> xsd:string
-> &lt;/t2s:file&gt; ***\****
->
-> &lt;/t2sr:directoryContents&gt;
+Gives a description of the working directory or a named directory in or beneath the working directory of the workflow run. The contents of the `dir` and `file` elements are the equivalent pathname (for use in the SOAP interface or to be appended to `…/wd` to generate a URI).
+
+
+```xml
+<t2sr:directoryContents>
+    <t2s:dir xlink:href="xsd:anyURI" t2s:name="xsd:string">
+        xsd:string
+    </t2s:dir> *
+    <t2s:file xlink:href="xsd:anyURI" t2s:name="xsd:string">
+        xsd:string
+    </t2s:file> *
+</t2sr:directoryContents>
+```
+
 
 * Method: GET
 * Consumes: N/A
-* Produces: application/zip
+* Produces: `application/zip`
 * Response codes: `200 OK`
 * Notes: This only applies to directories.
 
-> Retrieves the contents of the given directory (including all its subdirectories) as a ZIP file.
+Retrieves the contents of the given directory (including all its subdirectories) as a ZIP file.
 
 * Method: GET
 * Consumes: N/A
-* Produces: application/octet-stream, \*/\*
+* Produces: `application/octet-stream`, `*/*`
 * Response codes: `200 OK`
-* Notes: This only applies to files. Supports the *Range* header applied to bytes.
+* Notes: This only applies to files. Supports the `Range` header applied to bytes.
 
-> Retrieves the contents of a file. The actual content type retrieved will be that which is auto-detected, and the bytes delivered will be those that exist on the underlying disk file.
+Retrieves the contents of a file. The actual content type retrieved will be that which is auto-detected, and the bytes delivered will be those that exist on the underlying disk file.
 
 * Method: PUT
-* Consumes: application/octet-stream
+* Consumes: `application/octet-stream`
 * Produces: N/A
 * Response codes: `200 OK`
 * Notes: This only applies to files.
 
-> Creates a file or replaces the contents of a file with the given bytes.
+Creates a file or replaces the contents of a file with the given bytes.
 
 * Method: POST
-* Consumes: application/xml, application/json
+* Consumes: `application/xml`, `application/json`
 * Produces: N/A
-* Response codes: 201 Created
-* Notes: This only applies to directories. The *Location* header says what was made.
+* Response codes: `201 Created`
+* Notes: This only applies to directories. The `Location`*` header says what was made.
 
-> Creates a directory in the filesystem beneath the working directory of the workflow run, or creates or updates a file's contents, where that file is in or below the working directory of a workflow run. The location that this is POSTed to determines what the parent directory of the created entity is, and the *name* attribute determines its name. The operation done depends on the element passed, which should be one of these:
->
-> &lt;t2sr:mkdir t2sr:name="xsd:string" /&gt;
->
-> &lt;t2sr:upload t2sr:name="xsd:string"&gt;
->
-> xsd:base64Binary
->
-> &lt;/t2sr:upload&gt;
->
-> Note that the *upload* operation is deprecated; directly PUTting the data is preferred, as that has no size restrictions.
+Creates a directory in the filesystem beneath the working directory of the workflow run, or creates or updates a file's contents, where that file is in or below the working directory of a workflow run. The location that this is POSTed to determines what the parent directory of the created entity is, and the `name` attribute determines its name. The operation done depends on the element passed, which should be one of these:
+
+
+```xml
+<t2sr:mkdir t2sr:name="xsd:string" />
+
+<t2sr:upload t2sr:name="xsd:string">
+    xsd:base64Binary
+</t2sr:upload>
+```
+
+Note that the *upload* operation is deprecated; directly PUTting the data is preferred, as that has no size restrictions.
 
 * Method: DELETE
 * Consumes: N/A
 * Produces: N/A
 * Response codes: 204 No content
-* 
-> Deletes a file or directory that is in or below the working directory of a workflow run. The working directory itself cannot be deleted (other than by destroying the whole run).
+ 
+Deletes a file or directory that is in or below the working directory of a workflow run. The working directory itself cannot be deleted (other than by destroying the whole run).
+
 
 API of the SOAP Interface
 -------------------------
@@ -1223,15 +1194,10 @@ API of the SOAP Interface
 Taverna Server supports a SOAP interface to the majority of its user-facing functionality. The operations that it supports are divided into a few groups:
 
 -   Global Settings
-
 -   Basic Workflow Operations
-
 -   Input and Output Control
-
 -   File Operations
-
 -   Event Listeners
-
 -   Security Configuration
 
 The connection itself is done (under recommended deployment patterns) by HTTPS, and is authenticated via Basic HTTP username and password at the connection level. All information reported is only necessarily true for a particular user; no guarantee is made that it will be the same for any other user.
@@ -1242,267 +1208,256 @@ Note that the information below is just a summary. The WSDL document for the ser
 
 These operations describe things that are across all the workflow runs owned by the connecting user on the server.
 
-*getCapabilities*
+#### getCapabilities
 
-> This obtains the description of the abstract capabilities (and their versions) of the execution engine that is hosted inside the service.
+This obtains the description of the abstract capabilities (and their versions) of the execution engine that is hosted inside the service.
 
-*getEnabledNotificationFabrics*
+#### getEnabledNotificationFabrics
 
-> This obtains the names of the protocols supported for registration for active notification. Note that the Atom feed support is always enabled as it is built into the service itself.
+This obtains the names of the protocols supported for registration for active notification. Note that the Atom feed support is always enabled as it is built into the service itself.
 
-*getMaxSimultaneousRuns*
+#### getMaxSimultaneousRuns
 
-> This obtains the maximum number of runs that may be executed at once by the current user; note that this limit might not be reachable by any one user if it is due to a global limit on the number of runs and other users have several runs of their own.
+This obtains the maximum number of runs that may be executed at once by the current user; note that this limit might not be reachable by any one user if it is due to a global limit on the number of runs and other users have several runs of their own.
 
-*getPermittedWorkflows*
+#### getPermittedWorkflows
 
-> **GET** a list of workflows that are permitted to be instantiated; if the list is empty, there is no restriction on what workflows may have runs created of them.
+Get a list of workflows that are permitted to be instantiated; if the list is empty, there is no restriction on what workflows may have runs created of them.
 
-*getPermittedListenerTypes*
+#### getPermittedListenerTypes
 
-> **GET** a list of types of listeners that may be explicitly attached to a workflow run.
+Get a list of types of listeners that may be explicitly attached to a workflow run.
 
-*listRuns*
+#### listRuns
 
-> **GET** a list of all workflow runs on the server that the user has access to. (Workflows that they do not have permission to access even for reading will be not returned by this operation.)
+Get a list of all workflow runs on the server that the user has access to. (Workflows that they do not have permission to access even for reading will be not returned by this operation.)
 
 ### Basic Workflow Operations
 
 An ID string identifies every workflow run. All operations on a workflow run take the ID as one their arguments. (Implementation note: This ID is a UUID.)
 
-*submitWorkflow*
+#### submitWorkflow
 
-> Submit a workflow to create a run, returning the ID of the run. Newly submitted workflows start in the *Initializing* state so that you can upload all the required support files before starting the run.
+Submit a workflow to create a run, returning the ID of the run. Newly submitted workflows start in the *Initializing* state so that you can upload all the required support files before starting the run.
 
-*destroyRun*
+#### destroyRun
 
-> Destroy the given workflow run. This kills the workflow execution if the run was in the *Operating* state removes all files associated with a run.
+Destroy the given workflow run. This kills the workflow execution if the run was in the *Operating* state removes all files associated with a run.
 
-*getRunExpiry*
+#### getRunExpiry
 
-> **GET** the time that a workflow run will become eligible for automated destruction. The default lifespan of a workflow run is 24 hours.
+Get the time that a workflow run will become eligible for automated destruction. The default lifespan of a workflow run is 24 hours.
 
-*setRunExpiry*
+#### setRunExpiry
 
-> Set the time that a workflow run will become eligible for automated destruction.
+Set the time that a workflow run will become eligible for automated destruction.
 
-*getRunCreationTime*
+#### getRunCreationTime
 
-> **GET** the time that a workflow run was created (by the *submitWorkflow* operation).
+Get the time that a workflow run was created (by the *submitWorkflow* operation).
 
-*getRunStartTime*
+#### getRunStartTime
 
-> **GET** the time that a workflow run started executing (i.e., transitioned to the *Operating* state) or null if that has not yet occurred.
+Get the time that a workflow run started executing (i.e., transitioned to the *Operating* state) or null if that has not yet occurred.
 
-*getRunFinishTime*
+#### getRunFinishTime
 
-> **GET** the time that a workflow run stopped executing (i.e., transitioned to the *Finished* state) or null if that has not yet occurred.
+Get the time that a workflow run stopped executing (i.e., transitioned to the *Finished* state) or null if that has not yet occurred.
 
-*getRunWorkflow*
+#### getRunWorkflow
 
-> **GET** the workflow document that was used to create a workflow run.
+Get the workflow document that was used to create a workflow run.
 
-*getRunStatus*
+#### getRunStatus
 
-> **GET** the current state of a workflow run. In the current implementation, this is one of *Initializing*, *Operating* and *Finished*. (Technically, there's also a *Stopped* state but no run implementation currently supports it, and there's conceptually a *Destroyed* state too, but the service cannot say so as it will instead give a fault stating that the run does not exist.)
+Get the current state of a workflow run. In the current implementation, this is one of *Initializing*, *Operating* and *Finished*. (Technically, there's also a *Stopped* state but no run implementation currently supports it, and there's conceptually a *Destroyed* state too, but the service cannot say so as it will instead give a fault stating that the run does not exist.)
 
-*setRunStatus*
+#### setRunStatus
 
-> Set the current state of a workflow run, which is necessary to start it *Operating*. The execution can be finished early by manually moving it to *Finished*, though the run will automatically progress to that state once it terminates naturally. It's always legal to set a run to its current state, and it's always legal to set the state to *Finished*.
+Set the current state of a workflow run, which is necessary to start it *Operating*. The execution can be finished early by manually moving it to *Finished*, though the run will automatically progress to that state once it terminates naturally. It's always legal to set a run to its current state, and it's always legal to set the state to *Finished*.
 
-*getRunBundle*
+#### getRunBundle
 
-> **GET** the run bundle for a workflow run, which is only present if provenance generation is enabled (see *getRunGenerateProvenance*). Note that this method uses a transfer format that supports the use of MTOM.
+Get the run bundle for a workflow run, which is only present if provenance generation is enabled (see *getRunGenerateProvenance*). Note that this method uses a transfer format that supports the use of MTOM.
 
-*getRunGenerateProvenance*
+#### getRunGenerateProvenance
 
-> **GET** whether the run bundle for a workflow run (which contains the provenance information) will be generated. Note that the system administrator can set the default value of this abstract property.
+Get whether the run bundle for a workflow run (which contains the provenance information) will be generated. Note that the system administrator can set the default value of this abstract property.
 
-*setRunGenerateProvenance*
+#### setRunGenerateProvenance
 
-> Set whether the run bundle for a workflow run (which contains the provenance information) will be generated. There is no point in setting this abstract property after setting the workflow run operating.
+Set whether the run bundle for a workflow run (which contains the provenance information) will be generated. There is no point in setting this abstract property after setting the workflow run operating.
 
-*getRunStdout*
+#### getRunStdout
 
-> **GET** the standard output from the execution engine. An empty string when the execution engine has not yet started.
+Get the standard output from the execution engine. An empty string when the execution engine has not yet started.
 
-*getRunStderr*
+#### getRunStderr
 
-> **GET** the standard error from the execution engine. An empty string when the execution engine has not yet started.
+Get the standard error from the execution engine. An empty string when the execution engine has not yet started.
 
-*getRunLog*
+#### getRunLog
 
-> **GET** the detailed log contents from the execution engine. An empty string when the execution engine has not yet started.
+Get the detailed log contents from the execution engine. An empty string when the execution engine has not yet started.
 
-*getRunUsageRecord*
+#### getRunUsageRecord
 
-> **GET** the resource usage description of the execution engine, or *null* when the execution engine has not yet finished.
+Get the resource usage description of the execution engine, or *null* when the execution engine has not yet finished.
 
 ### Input and Output Control
 
-*getRunInputDescriptor*
+#### getRunInputDescriptor
 
-> Returns a description of what inputs are expected by a particular workflow.
+Returns a description of what inputs are expected by a particular workflow.
 
-*getRunInputs*
+#### getRunInputs
 
-> Returns a list of what inputs have been configured on a particular workflow, including what file they are to be taken from or what value they are to use.
+Returns a list of what inputs have been configured on a particular workflow, including what file they are to be taken from or what value they are to use.
 
-*setRunInputPortFile*
+#### setRunInputPortFile
 
-> Configure an input to take its value from a file in/beneath the job's working directory.
+Configure an input to take its value from a file in/beneath the job's working directory.
 
-*setRunInputPortValue*
+#### setRunInputPortValue
 
-> Configure an input to take its value directly from the supplied string. (Implementation note: Not all values work well when provided this way due to a known issue in the Apache command line library.)
+Configure an input to take its value directly from the supplied string. (Implementation note: Not all values work well when provided this way due to a known issue in the Apache Command Line library.)
 
-*setRunInputBaclavaFile*
+#### setRunInputBaclavaFile
 
-> Configure a run to take all its inputs from a Baclava file. The Baclava file should be uploaded to the run’s working directory prior to the state being set to *Operating*.
+Configure a run to take all its inputs from a Baclava file. The Baclava file should be uploaded to the run’s working directory prior to the state being set to `Operating`.
 
-*getRunOutputDescription*
+#### getRunOutputDescription
 
-> **GET** a description of what outputs have been provided.
+Get a description of what outputs have been provided.
 
-*setRunOutputBaclavaFile*
+#### setRunOutputBaclavaFile
 
-> Arrange for the run outputs to be written as a Baclava file. If this is not called, outputs will be written into files in the *out* subdirectory of the workflow run's working directory.
+Arrange for the run outputs to be written as a Baclava file. If this is not called, outputs will be written into files in the *out* subdirectory of the workflow run's working directory.
 
-*getRunOutputBaclavaFile*
+#### getRunOutputBaclavaFile
 
-> **GET** the name of the Baclava file that will have the run outputs written to it.
+Get the name of the Baclava file that will have the run outputs written to it.
 
 ### File Operations
 
 Every workflow run has a working directory that is private to itself. That working directory will be the current directory when the workflow run is executing.
 
-*getRunDirectoryContents*
+#### getRunDirectoryContents
 
-> List the contents of a directory. The workflow run's working directory is denoted by the empty filename, and only that directory or its subdirectories may be listed.
+List the contents of a directory. The workflow run's working directory is denoted by the empty filename, and only that directory or its subdirectories may be listed.
 
-*destroyRunDirectoryEntry*
+#### destroyRunDirectoryEntry
 
-> *DELETE* a subdirectory or file.
+Delete a subdirectory or file.
 
-*getRunDirectoryAsZip*
+#### getRunDirectoryAsZip
 
-> Given a directory, return that directory plus all its contents (files, subdirectories) as a ZIP file.
+Given a directory, return that directory plus all its contents (files, subdirectories) as a ZIP file.
 
-*makeRunDirectory*
+#### makeRunDirectory
 
-> Create a subdirectory of a directory. Note, you should not create the out subdirectory; that will be created by the workflow engine.
+Create a subdirectory of a directory. Note, you should not create the out subdirectory; that will be created by the workflow engine.
 
-*getRunFileContents*
+#### getRunFileContents
 
-> **GET** the contents of a file, as XML-wrapped base-64 encoded data. (Implementation note: Consider fetching large files by the REST interface, which can handle much more data by virtue of using data streaming, or via the MTOM-enabled operation.)
+Get the contents of a file, as XML-wrapped base-64 encoded data. (Implementation note: Consider fetching large files by the REST interface, which can handle much more data by virtue of using data streaming, or via the MTOM-enabled operation.)
 
-*getRunFileContentsMTOM*
+#### getRunFileContentsMTOM
 
-> **GET** the contents of a file. (MTOM-enabled.)
+Get the contents of a file. (MTOM-enabled.)
 
-*getRunFileType*
+#### getRunFileType
 
-> **GET** an estimate of the content type of a file.
+Get an estimate of the _content type_ of a file.
 
-*getRunFileLength*
+#### getRunFileLength
 
-> **GET** the length of the contents of a file.
+Getthe length of the contents of a file.
 
-*makeRunFile*
+#### makeRunFile
 
-> Create an empty file.
+Create an empty file.
 
-*setRunFileContents*
+#### setRunFileContents
 
-> Set the contents of an existing file from XML-wrapped base-64 encoded data. (Implementation note: Consider uploading large files by the REST interface, which can handle much more data by virtue of using data streaming, or via the MTOM-enabled operation.)
+Set the contents of an existing file from XML-wrapped base-64 encoded data. (Implementation note: Consider uploading large files by the REST interface, which can handle much more data by virtue of using data streaming, or via the MTOM-enabled operation.)
 
-*setRunFileContentsMTOM*
+#### setRunFileContentsMTOM
 
-> Set the contents of an existing file. (MTOM-enabled.)
+Set the contents of an existing file. (MTOM-enabled.)
 
 ### Event Listeners
 
-*getRunListeners*
+#### getRunListeners
 
-> **GET** a list of listeners attached to a particular run.
+**GET** a list of listeners attached to a particular run.
 
-*addRunListener*
+#### addRunListener
 
-> Attach a new listener to a particular run. The listener must be of a recognised type.
+Attach a new listener to a particular run. The listener must be of a recognised type.
 
-*getRunListenerConfiguration*
+#### getRunListenerConfiguration
 
-> **GET** the configuration document of a particular listener. The configuration document can only be read, not written.
+Get the configuration document of a particular listener. The configuration document can only be read, not written.
 
-*getRunListenerProperties*
+#### getRunListenerProperties
 
-> **GET** the list of properties supported by a particular listener.
+Get the list of properties supported by a particular listener.
 
-*getRunListenerProperty*
-*setRunListenerProperty*
+#### getRunListenerProperty / setRunListenerProperty
 
-> **GET** and set the values of individual properties; properties are always strings.
+Get and set the values of individual properties; properties are always strings.
 
-There is one standard listener, *io*, which is attached by default. This listener has an empty configuration document, and provides access to a number of properties. The properties are:
+There is one standard listener, `io`, which is attached by default. This listener has an empty configuration document, and provides access to a number of properties. The properties are:
 
-> *stdout*
->
-> The standard output stream from the workflow executor process.
->
-> *stderr*
->
-> The standard error stream from the workflow executor process.
->
-> *exitcode*
->
-> The exit code of the workflow executor process. Empty if not yet exited.
->
-> *notificationAddress*
->
-> The URI to push termination notifications to. If empty, no notifications are pushed (but they are always made available by the Atom stream).
->
-> *usageRecord*
->
-> If non-empty, a UR1.0-format usage record describing resources consumed during the execution of the workflow.
+`stdout` -  The standard output stream from the workflow executor process.
+
+`stderr` - The standard error stream from the workflow executor process.
+
+`exitcode` - The exit code of the workflow executor process. Empty if not yet exited.
+
+`notificationAddress` - The URI to push termination notifications to. If empty, no notifications are pushed (but they are always made available by the Atom stream)
+
+`usageRecord` - If non-empty, a UR1.0-format usage record describing resources consumed during the execution of the workflow.
 
 ### Per-Run Security Configuration
 
 Note that all of the operations below are restricted to the owner of the run except for discovering the identity of the owner of the run.
 
-*getRunOwner*
+#### getRunOwner
 
-> **GET** the identity of the owner of the run. Note that the owner always has full permission to modify and read the run.
+Get the identity of the owner of the run. Note that the owner always has full permission to modify and read the run.
 
-*listRunPermissions*
+#### listRunPermissions
 
-> List the non-deny permissions granted by the owner.
+List the non-deny permissions granted by the owner.
 
-*setRunPermission*
+#### setRunPermission
 
-> Grant a particular permission to a user.
+Grant a particular permission to a user.
 
-*getRunCredentials*
+####  getRunCredentials
 
-> List the credentials given to a run to use when contacting other services.
+List the credentials given to a run to use when contacting other services.
 
-*setRunCredential*
+#### setRunCredential
 
-> Give a credential to a run to use when contacting other services.
+Give a credential to a run to use when contacting other services.
 
-*deleteRunCredential*
+#### deleteRunCredential
 
-> Stop a run from using a particular credential when contacting other services.
+Stop a run from using a particular credential when contacting other services.
 
-*getRunCertificates*
+#### getRunCertificates
 
-> List the server certificates that will be trusted when contacting other services.
+List the server certificates that will be trusted when contacting other services.
 
-*setRunCertificates*
+#### setRunCertificates
 
-> Add to/update the server certificates that will be trusted when contacting other services.
+Add to/update the server certificates that will be trusted when contacting other services.
 
-*deleteRunCertificates*
+#### deleteRunCertificates
 
-> Remove from the server certificates that will be trusted when contacting other services.
+Remove from the server certificates that will be trusted when contacting other services.
 
-[1] Each run also has *repository* and *var* directories created for it; their purpose is not documented and they are initially empty.
+
