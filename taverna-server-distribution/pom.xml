@@ -40,7 +40,7 @@ limitations under the License.
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
-					<finalName>TavernaServer-${project.parent.version}</finalName>
+					<finalName>apache-taverna-server-${project.parent.version}</finalName>
 					<descriptors>
 						<descriptor>src/assemble/dist.xml</descriptor>
 					</descriptors>
