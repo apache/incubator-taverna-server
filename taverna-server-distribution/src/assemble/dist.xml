@@ -29,6 +29,7 @@ limitations under the License.
 			<includes>
 				<include>*.xml</include>
 				<include>*.txt</include>
+				<include>*.md</include>
 				<include>*.pdf</include>
 			</includes>
 			<excludes>
@@ -38,7 +39,7 @@ limitations under the License.
 			<outputDirectory>.</outputDirectory>
 		</fileSet>
 		<fileSet>
-			<directory>${project.parent.basedir}/server-webapp/target</directory>
+			<directory>${project.parent.basedir}/taverna-server-webapp/target</directory>
 			<includes>
 				<include>*.war</include>
 			</includes>
