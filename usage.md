@@ -240,11 +240,11 @@ It is important to use the right namespaces for their corresponding elements/att
 
 #### Resource: /
 
-* * Method: GET
-* * Consumes: N/A
-* * Produces: `application/xml`, `application/json`
-* * Response codes: `200 OK`
-* * Notes: not secured
+* Method: GET
+* Consumes: N/A
+* Produces: `application/xml`, `application/json`
+* Response codes: `200 OK`
+* Notes: not secured
 
 Retrieves a description of the server as either XML or JSON (determined by content negotiation) that indicates other locations to find sub-resources.
 
@@ -264,11 +264,11 @@ The `<t2sr:feed>` element is a pointer to the location of the Atom feed for even
 
 #### Resource: /runs
 
-* * Method: GET
-* * Consumes: N/A
-* * Produces: `application/xml`, `application/json`
-* * Response codes: `200 OK`
-* 
+* Method: GET
+* Consumes: N/A
+* Produces: `application/xml`, `application/json`
+* Response codes: `200 OK`
+
 Retrieve a list of all runs that the current user can see, as XML or JSON. Note that the user will not be told about runs that they are not permitted to see (i.e., that they didn’t create and haven’t been given permission to see). Deleted runs will also not be present.
 
 ```xml
@@ -277,11 +277,11 @@ Retrieve a list of all runs that the current user can see, as XML or JSON. Note 
 </t2sr:runList>
 ```
 
-* * Method: POST
-* * Consumes: `application/vnd.taverna.t2flow+xml`, `application/xml`
-* * Produces: `text/plain`
-* * Response codes: `201 Created`
-* 
+* Method: POST
+* Consumes: `application/vnd.taverna.t2flow+xml`, `application/xml`
+* Produces: `text/plain`
+* Response codes: `201 Created`
+
 Accepts (or not) a request to create a new run executing the given workflow. **The content should normally be a t2flow workflow document with the t2flow content type** `application/vnd.taverna.t2flow+xml`, but when the content type is `application/xml`, the workflow must be wrapped (in an XML infoset sense) inside an `<t2s:workflow>` element.
 
 ```xml
@@ -296,11 +296,11 @@ The result will be a HTTP `201 Created` redirect (via `Location` HTML header) to
 
 #### Resource: /policy
 
-* * Method: GET
-* * Consumes: N/A
-* * Produces: `application/xml`, `application/json`
-* * Response codes: `200 OK`
-* * Notes: not secured
+* Method: GET
+* Consumes: N/A
+* Produces: `application/xml`, `application/json`
+* Response codes: `200 OK`
+* Notes: not secured
 
 Describe the (public) parts of the policies of this server, as XML or JSON.
 
