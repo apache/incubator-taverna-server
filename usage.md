@@ -68,15 +68,15 @@ The (RESTful) Usage Pattern
 
 The Taverna Server supports both REST and SOAP APIs; you may use either API to access the service and any of the workflow runs hosted by the service. The full service descriptions are available at the equivalent of http://localhost:8080/taverna-server/services - to illustrate their use, here's a sample execution using the REST API.
 
-1.  The client starts by creating a **workflow run**. This is done by **POST**ing a T2flow workflow definition to the service at the address equivalent to http://localhost:8080/taverna-server/rest/runs with `Content-Type` as `application/vnd.taverna.t2flow+xml`
+1.  The client starts by creating a **workflow run**. This is done by **POST**ing a T2flow workflow definition to the service at the address equivalent to http://localhost:8080/taverna-server/rest/runs with `Content-Type` header set to `application/vnd.taverna.t2flow+xml`
 
-The result of the *POST* is an `201 Created` that gives the location of the created run (in a `Location` header), hereby denoted the `{RUN_URI}` (it includes a UUID which you will need to save in order to access the run again, though the list of known UUIDs can be found above). Note that the run is not yet actually doing anything; it's remains for now in the **Initialized** state.
+The result is `201 Created` that gives the location of the created run (in a `Location` header), hereby denoted the `{RUN_URI}` (it includes a UUID which you will need to save in order to access the run again). Note that the run is not yet actually doing anything; it remains for now in the **Initialized** state.
 
-1.  Next, you need to set up the **inputs** to the workflow ports. This is done by either uploading a _file_ that is to be read from, or by directly setting the _value_.
+2.  Next, you need to set up the **inputs** to the workflow ports. This is done by either uploading a _file_ that is to be read from, or by directly setting the _value_.
 
 *Directly Setting the Value of an Input*
 
-To set the input port, `FOO`, to have the string value `BAR`, you would **PUT** a message like this to the URI `{RUN_URI}/input/input/FOO`
+To set the input port `FOO` to have the string value `BAR`, you would **PUT** to `{RUN_URI}/input/input/FOO` with `application/xml` as content-type:
 
 ```xml
 <t2sr:runInput xmlns:t2sr="http://ns.taverna.org.uk/2010/xml/server/rest/">
@@ -87,20 +87,20 @@ To set the input port, `FOO`, to have the string value `BAR`, you would **PUT** 
 
 *Uploading a File for One Input*
 
-The values for an input port can also be set by means of creating a file on the server. Thus, if you were staging the value `BAR` to input port `FOO` by means of a file `BOO.TXT` then you would first **POST** this message to `{RUN_URI}/wd` as content-type `application/xml`
+The values for an input port can also be set by first creating a file on the server. Thus, if you were staging the value `BAR` to input port `FOO` by means of a file `BOO.TXT` you would first **POST** this message to `{RUN_URI}/wd` as content-type `application/xml`
 
 
 ```xml
-<t2sr:upload t2sr:name="BOO.TXT" xmlns:t2sr= "http://ns.taverna.org.uk/2010/xml/server/rest/">
+<t2sr:upload t2sr:name="BOO.TXT" xmlns:t2sr="http://ns.taverna.org.uk/2010/xml/server/rest/">
   QkFS
 </t2sr:upload>
 ```
 
-> Note that `QkFS` is the base64-encoded form of `BAR` and that each workflow run has its own working directory into which uploaded files are placed; you are never told the name of this working directory.
+Note that `QkFS` is the base64-encoded form of `BAR` in UTF-8 encoding. Each workflow run has its own working directory on the server for  uploaded files are placed; however in the Web API you are never told the name of this working directory.
 
-You can also **PUT** the binary contents of the file (as `application/octet-stream`) directly to the virtual resource name that you want to create the file as; for the contents “BAR” in UTF-8 that would be three bytes 66, 65, 82 (with appropriate HTTP headers). This particular method supports upload of very large files if necessary; be aware of any line-feed or character set issues as the file will be saved verbatim.
+You can also **PUT** the binary contents of the file (as `application/octet-stream`) directly to the virtual resource name that you want to create the file as; for the contents `BAR` in UTF-8 that would be three bytes `66`, `65`, `82` (with appropriate HTTP headers). This particular method supports upload of very large files if necessary; be aware that the file will be saved verbatim.
 
-Once you've created the file, you can then set it to be the input for the port by PUTting this message to `{RUN_URI}/input/input/FOO`
+Once you've created the file, you can then set it's relative path as the input for the port by **PUT**ting this message to `{RUN_URI}/input/input/FOO`
 
 ```xml
 <t2sr:runInput xmlns:t2sr= "http://ns.taverna.org.uk/2010/xml/server/rest/">
@@ -110,13 +110,13 @@ Once you've created the file, you can then set it to be the input for the port b
 
 Note the similarity of the final part of this process to the previous method for setting an input, but here using `<t2sr:file>`.
 
-You can also create a **directory**, e.g., `IN`, to hold the input files. This is done by **POST**ing a different message to `{RUN_URI}/wd`
+You can also create a **directory**, e.g., `IN/`, to hold the input files. This is done by **POST**ing a different message to `{RUN_URI}/wd`
 
 ```xml
 <t2sr:mkdir t2sr:name="IN" xmlns:t2sr= "http://ns.taverna.org.uk/2010/xml/server/rest/" />
 ```
 
-With that, you can then create files in the `IN` subdirectory by sending the upload message to `{RUN_URI}/wd/IN` and you can use the files there as input by using relative paths like `IN/BOO.TXT`. You can also create nested sub-directories if required by sending the `<t2sr:mkdir>` message to the natural URI of the parent directory, just as sending an upload message to that URI creates a file in that directory.
+With that, you can then create files in the `IN` subdirectory by sending the upload message to `{RUN_URI}/wd/IN` and you can use the files there as input by using relative paths like `IN/BOO.TXT`. You can also create nested sub-directories by sending the `<t2sr:mkdir>` message to the natural URI of the parent directory, just as sending an upload message to that URI creates a file in that directory.
 
 *Referencing a File Already on the Taverna Server Installation*
 
@@ -137,9 +137,9 @@ The data will be copied across efficiently into a run-local file. This version o
 
 The final way of setting up the inputs to a workflow is to upload (using the same method as above) a Baclava file (e.g., `FOOBAR.BACLAVA`) that describes the inputs. This is then set as the provider for all inputs by **PUT**ting the name of the Baclava file (as plain text) to `{RUN_URI}/input/baclava`
 
-1.  If your workflow depends on **external libraries** (e.g., for a beanshell or API consumer service), these should be uploaded to `{RUN_URI}/wd/lib`; the name of the file that you create there should match that which you would use in a local run of the service.
+3.  If your workflow depends on **external libraries** (e.g., for a beanshell or API consumer service), these should be uploaded to `{RUN_URI}/wd/lib`; the name of the file that you create there should match that which you would use in a local run of the service.
 
-2.  If the workflow refers to a **secured external service**, it is necessary to supply some additional _credentials_. For a SOAP web-service, these credentials are associated in Taverna with the WSDL description of the web service. The credentials *must* be supplied before the workflow run starts.
+4.  If the workflow refers to a **secured external service**, it is necessary to supply some additional _credentials_. For a SOAP web-service, these credentials are associated in Taverna with the WSDL description of the web service. The credentials *must* be supplied before the workflow run starts.
 
 To set a username and password for a service, you would **POST** to `{RUN_URI}/security/credentials` a message like this (assuming that the WSDL address is `https://example.com/serv.wsdl`, that the username to use is `fred123`, and that the password is `ThePassWord`):
 
@@ -159,15 +159,15 @@ To set a username and password for a service, you would **POST** to `{RUN_URI}/s
 
 For REST services, the simplest way to find the correct security URI to use with the service is to run a short workflow against the service in the Taverna Workbench and to then look up the URI in the credential manager.
 
-1.  Now you can start the workflow running. This is done by using a PUT to set `{RUN_URI}/status` to the plain text value `Operating`.
+5.  Now you can start the workflow running. This is done by using a PUT to set `{RUN_URI}/status` to the plain text value `Operating`.
 
-2.  Now you need to poll, waiting for the workflow to finish. To discover the state of a run, you can (at any time) do a **GET** on `{RUN_URI}/status`; when the workflow has finished executing, this will return `Finished` instead of `Operating` (or `Initialized`, the starting state).
+6.  Now you need to poll, waiting for the workflow to finish. To discover the state of a run, you can (at any time) do a **GET** on `{RUN_URI}/status`; when the workflow has finished executing, this will return `Finished` instead of `Operating` (or `Initialized`, the starting state).
 
 _There is a fourth state, `Stopped`, but it is not yet supported._
 
-1.  Every workflow run has an expiry time, after which it will be destroyed and all resources (i.e., local files) associated with it cleaned up. By default in this release, this is 24 hours after initial creation. To see when a particular run is scheduled to be disposed of, do a **GET** on `{RUN_URI}/expiry`; you may set the time when the run is disposed of by PUTting a new time to that same URI. Note that this includes not just the time when the workflow is executing, but also when the input files are being created beforehand and when the results are being downloaded afterwards; you are advised to make your clients regularly advance the expiry time while the run is in use.
+7.  Every workflow run has an expiry time, after which it will be destroyed and all resources (i.e., local files) associated with it cleaned up. By default in this release, this is 24 hours after initial creation. To see when a particular run is scheduled to be disposed of, do a **GET** on `{RUN_URI}/expiry`; you may set the time when the run is disposed of by PUTting a new time to that same URI. Note that this includes not just the time when the workflow is executing, but also when the input files are being created beforehand and when the results are being downloaded afterwards; you are advised to make your clients regularly advance the expiry time while the run is in use.
 
-2.  The outputs from the workflow are files created in the out subdirectory of the run's working directory. The contents of the subdirectory can be read by doing a **GET** on `{RUN_URI}/wd/out` which will return an XML document describing the contents of the directory, with links to each of the files within it. Doing a **GET** on those links will retrieve the actual created files (as uninterpreted binary data).
+8.  The outputs from the workflow are files created in the out subdirectory of the run's working directory. The contents of the subdirectory can be read by doing a **GET** on `{RUN_URI}/wd/out` which will return an XML document describing the contents of the directory, with links to each of the files within it. Doing a **GET** on those links will retrieve the actual created files (as uninterpreted binary data).
 
 Thus, if a single output `FOO.OUT` was produced from the workflow, it would be written to the file that can be retrieved from `{RUN_URI}/wd/out/FOO.OUT` and the result of the **GET** on `{RUN_URI}/wd/out` would look something like this:
 
@@ -182,13 +182,13 @@ Thus, if a single output `FOO.OUT` was produced from the workflow, it would be w
 </t2sr:directoryContents>
 ```
 
-1.  The standard output and standard error from the T2 Command Line Executor subprocess can be read via properties of the special I/O listener. To do that, do a **GET** on `{RUN_URI}/listeners/io/properties/stdout` (or `stderr`). Once the subprocess has finished executing, the I/O listener will provide a third property containing the exit code of the subprocess, called `exitcode`.
+9.  The standard output and standard error from the T2 Command Line Executor subprocess can be read via properties of the special I/O listener. To do that, do a **GET** on `{RUN_URI}/listeners/io/properties/stdout` (or `stderr`). Once the subprocess has finished executing, the I/O listener will provide a third property containing the exit code of the subprocess, called `exitcode`.
 
 Note that the supported set of listeners and properties will be subject to change in future versions of the server, and should not be relied upon.
 
-1.  The [run bundle](https://github.com/apache/incubator-taverna-engine/blob/master/taverna-prov/README.md#structure-of-exported-provenance) for the run — a specially structured ZIP file — can be retrieved by doing a **GET** on `{RUN_URI}/run-bundle` Within the run bundle, the inputs for the run will be in the `inputs` directory, the outputs will be in the `outputs` directory, the workflow will be in `workflowrun.wfbundle` (in SCUFL2 format), and the provenance will be in `worflowrun.prov.ttl` (encoded as RDF/Turtle).
+10.  The [run bundle](https://github.com/apache/incubator-taverna-engine/blob/master/taverna-prov/README.md#structure-of-exported-provenance) for the run — a specially structured ZIP file — can be retrieved by doing a **GET** on `{RUN_URI}/run-bundle` Within the run bundle, the inputs for the run will be in the `inputs` directory, the outputs will be in the `outputs` directory, the workflow will be in `workflowrun.wfbundle` (in SCUFL2 format), and the provenance will be in `worflowrun.prov.ttl` (encoded as RDF/Turtle).
 
-2.  Once you have finished, destroy the run by doing a *DELETE* on `{RUN_URI}`. Once you have done that, none of the resources associated with the run (including both input and output files) will exist any more. If the run is still executing, this will also cause it to be stopped.
+11.  Once you have finished, destroy the run by doing a *DELETE* on `{RUN_URI}`. Once you have done that, none of the resources associated with the run (including both input and output files) will exist any more. If the run is still executing, this will also cause it to be stopped.
 
 All operations described above have equivalents in the SOAP service interface.
 
