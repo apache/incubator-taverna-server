@@ -1,6 +1,7 @@
 <application jxb:version="2.1" xmlns="http://wadl.dev.java.net/2009/02"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:rest="http://ns.taverna.org.uk/2010/xml/server/rest/"
 	xmlns:server="http://ns.taverna.org.uk/2010/xml/server/" xmlns:port="http://ns.taverna.org.uk/2010/port/"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://java.sun.com/xml/ns/jaxb http://java.sun.com/xml/ns/jaxb/bindingschema_2_0.xsd ">
 <!-- 
@@ -573,6 +574,14 @@ limitations under the License.
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
+    <xs:complexType name="TavernaRun">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute ref="xlink:href" />
+                <xs:attribute ref="ts:serverVersion" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
     <xs:complexType name="DirectoryEntry">
         <xs:simpleContent>
             <xs:extension base="xs:string">
@@ -589,14 +598,6 @@ limitations under the License.
     <xs:complexType name="FileReference">
         <xs:simpleContent>
             <xs:extension base="ts:DirectoryEntry" />
-        </xs:simpleContent>
-    </xs:complexType>
-    <xs:complexType name="TavernaRun">
-        <xs:simpleContent>
-            <xs:extension base="xs:string">
-                <xs:attribute ref="xlink:href" />
-                <xs:attribute ref="ts:serverVersion" />
-            </xs:extension>
         </xs:simpleContent>
     </xs:complexType>
     <xs:complexType name="Workflow">
