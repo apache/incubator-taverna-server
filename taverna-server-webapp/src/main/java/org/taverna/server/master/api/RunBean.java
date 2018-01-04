@@ -20,7 +20,7 @@ import org.taverna.server.master.ContentsDescriptorBuilder;
 import org.taverna.server.master.interfaces.TavernaRun;
 
 /**
- * Description of properties supported by {@link RunREST}.
+ * Description of properties supported by {@link org.taverna.server.master.RunREST}.
  * 
  * @author Donal Fellows
  */

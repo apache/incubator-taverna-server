@@ -24,7 +24,7 @@ import org.taverna.server.master.rest.TavernaServerInputREST;
 import org.taverna.server.master.utils.FilenameUtils;
 
 /**
- * Description of properties supported by {@link InputREST}.
+ * Description of properties supported by {@link org.taverna.server.master.InputREST}.
  * 
  * @author Donal Fellows
  */

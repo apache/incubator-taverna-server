@@ -32,6 +32,7 @@
  * <p>
  * The package {@link org.apache.taverna.server.usagerecord.xml.urf2} provides
  * experimental bindings for the <em>Usage Record Format 2.0</em>
+ * in namespace <code>http://schema.ogf.org/urf/2013/04/urf</code>
  * as specified by the superseding OGF specification 
  * <a href="https://www.ogf.org/documents/GFD.204.pdf">GFD-R-P.204</a>.
  * 
