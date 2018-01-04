@@ -86,7 +86,7 @@ import javax.annotation.Nullable;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.ws.Holder;
 
-import org.ogf.usage.JobUsageRecord;
+import org.apache.taverna.server.usagerecord.JobUsageRecord;
 import org.taverna.server.localworker.api.RunAccounting;
 import org.taverna.server.localworker.api.Worker;
 import org.taverna.server.localworker.impl.utils.TimingOutTask;

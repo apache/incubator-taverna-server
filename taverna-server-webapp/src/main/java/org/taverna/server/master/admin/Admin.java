@@ -76,7 +76,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.cxf.jaxrs.model.wadl.Description;
-import org.ogf.usage.JobUsageRecord;
+import org.apache.taverna.server.usagerecord.JobUsageRecord;
 import org.taverna.server.master.common.Uri;
 import org.taverna.server.master.common.VersionedElement;
 

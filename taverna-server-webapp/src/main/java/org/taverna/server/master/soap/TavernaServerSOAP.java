@@ -33,7 +33,7 @@ import javax.jws.WebService;
 import javax.xml.bind.annotation.XmlElement;
 
 import org.apache.cxf.annotations.WSDLDocumentation;
-import org.ogf.usage.JobUsageRecord;
+import org.apache.taverna.server.usagerecord.JobUsageRecord;
 import org.taverna.server.master.common.Capability;
 import org.taverna.server.master.common.Credential;
 import org.taverna.server.master.common.DirEntryReference;

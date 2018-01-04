@@ -30,7 +30,7 @@ import javax.xml.bind.JAXBException;
 
 import org.apache.commons.io.IOUtils;
 import org.joda.time.DateTime;
-import org.ogf.usage.JobUsageRecord;
+import org.apache.taverna.server.usagerecord.JobUsageRecord;
 import org.taverna.server.client.wadl.TavernaServer.Root.RunsRunName;
 import org.w3c.dom.Element;
 

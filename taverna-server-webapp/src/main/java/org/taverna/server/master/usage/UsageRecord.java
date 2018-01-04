@@ -29,7 +29,7 @@ import javax.jdo.annotations.Queries;
 import javax.jdo.annotations.Query;
 import javax.xml.bind.JAXBException;
 
-import org.ogf.usage.JobUsageRecord;
+import org.apache.taverna.server.usagerecord.JobUsageRecord;
 
 /**
  * A usage record as recorded in the database.

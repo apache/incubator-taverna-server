@@ -41,7 +41,7 @@ import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
 import org.joda.time.DateTime;
-import org.ogf.usage.JobUsageRecord;
+import org.apache.taverna.server.usagerecord.JobUsageRecord;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.api.RunBean;
 import org.taverna.server.master.common.ProfileList;

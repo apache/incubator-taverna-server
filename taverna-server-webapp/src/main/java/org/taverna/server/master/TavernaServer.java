@@ -67,7 +67,7 @@ import javax.xml.ws.WebServiceContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.cxf.annotations.WSDLDocumentation;
-import org.ogf.usage.JobUsageRecord;
+import org.apache.taverna.server.usagerecord.JobUsageRecord;
 import org.springframework.beans.factory.annotation.Required;
 import org.taverna.server.master.api.SupportAware;
 import org.taverna.server.master.api.TavernaServerBean;
