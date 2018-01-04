@@ -9,7 +9,7 @@ Portions of this software were originally based on the following:
 These have been licensed to the Apache Software Foundation under a software grant.
 
 ---------------------------------------------------------
-taverna-server-usagerecord/src/main/xsd
+taverna-server-usagerecord/src/main/xsd/urf.xsd
 
       Usage Record Working Group XML Schema definition (GFD.98)
 
