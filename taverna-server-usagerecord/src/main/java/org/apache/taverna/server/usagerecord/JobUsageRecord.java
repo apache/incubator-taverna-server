@@ -43,6 +43,7 @@ import org.apache.taverna.server.usagerecord.xml.urf.MachineName;
 import org.apache.taverna.server.usagerecord.xml.urf.Memory;
 import org.apache.taverna.server.usagerecord.xml.urf.Network;
 import org.apache.taverna.server.usagerecord.xml.urf.NodeCount;
+import org.apache.taverna.server.usagerecord.xml.urf.ObjectFactory;
 import org.apache.taverna.server.usagerecord.xml.urf.Processors;
 import org.apache.taverna.server.usagerecord.xml.urf.ProjectName;
 import org.apache.taverna.server.usagerecord.xml.urf.Queue;
@@ -60,6 +61,28 @@ import org.apache.taverna.server.usagerecord.xml.urf.UserIdentity;
 import org.apache.taverna.server.usagerecord.xml.urf.WallDuration;
 import org.w3c.dom.Element;
 
+/**
+ * Open Grid Forum GFD.98 Usage Record
+ * <p>
+ * JAXB bean for a a <em>Usage Record</em> as described by Open Grid Forum's
+ * specification <a href="https://www.ogf.org/documents/GFD.98.pdf">GFD.98</a>
+ * serialized in the namespace <code>http://schema.ogf.org/urf/2003/09/urf</code>
+ * <p>
+ * This class represents the outer <code>&lt;UsageRecord&gt;</code> element
+ * which can be serialized with {@link #marshal()} and deserialized with
+ * {@link #unmarshal(String)}). This class also provides convenience methods to
+ * set the usage record properties like {@link #setJobName(String)},
+ * {@link #addUser(String, String)} or {@link #addProcessors(int)}.
+ * <p>
+ * The underlying JAXB elements and types of the usage records are covered by
+ * the package {@link org.apache.taverna.server.usagerecord.xml.urf}, see its
+ * {@link ObjectFactory} for more.
+ * <p>
+ * This class should not be confused with the plain JAXB bean
+ * {@link org.apache.taverna.server.usagerecord.xml.urf.JobUsageRecord}.
+ * 
+ * @see <a href="https://www.ogf.org/documents/GFD.98.pdf">GFD.98</a>
+ */
 @XmlRootElement(name = "UsageRecord", namespace = "http://schema.ogf.org/urf/2003/09/urf")
 public class JobUsageRecord extends UsageRecordType {
 	private static JAXBContext context;
@@ -100,7 +123,7 @@ public class JobUsageRecord extends UsageRecordType {
 	}
 
 	/**
-	 * Create a new usage record with a random UUID as its identity.
+	 * Create a new usage record with the given name and a random UUID as its identity.
 	 * 
 	 * @param name
 	 *            The name of the job to which this record pertains.

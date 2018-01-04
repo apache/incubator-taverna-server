@@ -22,6 +22,11 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * Open Grid Forum GFD.98 Usage Record type <code>JobUsageRecord</code>
+ * <p>
+ * For constructing <code>JobUsageRecord</code>s it is recommended to use the
+ * convenience class
+ * {@link org.apache.taverna.server.usagerecord.JobUsageRecord} 
+ * instead of this class.
  * 
  * @see org.apache.taverna.server.usagerecord.JobUsageRecord
  * @see <a href="https://www.ogf.org/documents/GFD.98.pdf#page=18">GFD.98 section 8.2</a>
@@ -32,6 +37,4 @@ import javax.xml.bind.annotation.XmlType;
 public class JobUsageRecord
     extends UsageRecordType
 {
-
-
 }
