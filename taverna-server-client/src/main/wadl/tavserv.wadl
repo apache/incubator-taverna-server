@@ -20,7 +20,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
  -->
 <grammars>
-	<xs:schema 
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://www.w3.org/1999/xlink" attributeFormDefault="unqualified"
+	elementFormDefault="unqualified" targetNamespace="http://www.w3.org/1999/xlink"
+	jxb:version="2.1">
+    <xs:attribute name="href" type="xs:string" />
+</xs:schema>
+
+<xs:schema 
 		xmlns:admin="http://ns.taverna.org.uk/2010/xml/server/admin/"
 		xmlns:feed="http://ns.taverna.org.uk/2010/xml/server/feed/"
 		xmlns:port="http://ns.taverna.org.uk/2010/port/" xmlns:tns="http://ns.taverna.org.uk/2010/xml/server/rest/"
@@ -374,12 +382,6 @@ limitations under the License.
     <xs:attribute name="owner" type="xs:string" />
     <xs:attribute name="type" type="xs:string" />
 </xs:schema>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	xmlns="http://www.w3.org/1999/xlink" attributeFormDefault="unqualified"
-	elementFormDefault="unqualified" targetNamespace="http://www.w3.org/1999/xlink"
-	jxb:version="2.1">
-    <xs:attribute name="href" type="xs:string" />
-</xs:schema>
 <xs:schema xmlns="http://www.w3.org/2001/XMLSchema"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:port="http://ns.taverna.org.uk/2010/port/"
 	xmlns:run="http://ns.taverna.org.uk/2010/run/" xmlns:tns="http://ns.taverna.org.uk/2010/port/"
@@ -625,7 +627,7 @@ limitations under the License.
     <xs:attribute name="serverRevision" type="xs:string" />
     <xs:attribute name="serverVersion" type="xs:string" />
     <xs:attribute name="version" type="xs:string" />
-  </xs:schema>
+</xs:schema>
 </grammars>
 	<resources base="http://example.com/taverna/rest">
 		<resource path="/">
@@ -633,7 +635,7 @@ limitations under the License.
 				<doc>Produces the description of the service.</doc>
 				<request></request>
 				<response>
-					<representation mediaType="application/xml" element="server:serverDescription"></representation>
+					<representation mediaType="application/xml" element="rest:serverDescription"></representation>
 					<representation mediaType="application/json"></representation>
 				</response>
 			</method>
@@ -648,7 +650,7 @@ limitations under the License.
 					<doc>Produces a list of all runs visible to the user.</doc>
 					<request></request>
 					<response>
-						<representation mediaType="application/xml" element="server:runList"></representation>
+						<representation mediaType="application/xml" element="rest:runList"></representation>
 						<representation mediaType="application/json"></representation>
 					</response>
 				</method>
@@ -695,7 +697,7 @@ limitations under the License.
 					<doc>Describe the parts of this policy.</doc>
 					<request></request>
 					<response>
-						<representation mediaType="application/xml" element="server:policyDescription"></representation>
+						<representation mediaType="application/xml" element="rest:policyDescription"></representation>
 						<representation mediaType="application/json"></representation>
 					</response>
 				</method>
@@ -704,7 +706,7 @@ limitations under the License.
 						<doc>Gets a description of the capabilities supported by this
 							installation of Taverna Server.</doc>
 						<response>
-							<representation mediaType="application/xml" element="server:capabilities"></representation>
+							<representation mediaType="application/xml" element="rest:capabilities"></representation>
 							<representation mediaType="application/json"></representation>
 						</response>
 					</method>
@@ -715,7 +717,7 @@ limitations under the License.
 							Each corresponds (approximately) to a protocol, e.g., email.
 						</doc>
 						<response>
-							<representation mediaType="application/xml" element="server:enabledNotificationFabrics"></representation>
+							<representation mediaType="application/xml" element="rest:enabledNotificationFabrics"></representation>
 							<representation mediaType="application/json"></representation>
 						</response>
 					</method>
@@ -742,7 +744,7 @@ limitations under the License.
 					<method name="GET">
 						<doc>Gets the list of permitted event listener types.</doc>
 						<response>
-							<representation mediaType="application/xml" element="server:permittedListeners"></representation>
+							<representation mediaType="application/xml" element="rest:permittedListeners"></representation>
 							<representation mediaType="application/json"></representation>
 						</response>
 					</method>
@@ -751,7 +753,7 @@ limitations under the License.
 					<method name="GET">
 						<doc>Gets the list of permitted workflows.</doc>
 						<response>
-							<representation mediaType="application/xml" element="server:permittedWorkflows"></representation>
+							<representation mediaType="application/xml" element="rest:permittedWorkflows"></representation>
 							<representation mediaType="application/json"></representation>
 						</response>
 					</method>
@@ -785,7 +787,7 @@ limitations under the License.
 					<doc>Describes a workflow run.</doc>
 					<request></request>
 					<response>
-						<representation mediaType="application/xml" element="server:runDescription"></representation>
+						<representation mediaType="application/xml" element="rest:runDescription"></representation>
 						<representation mediaType="application/json"></representation>
 					</response>
 				</method>
@@ -1157,7 +1159,7 @@ limitations under the License.
 					<method name="GET">
 						<doc>Describe the sub-URIs of this resource.</doc>
 						<response>
-							<representation mediaType="application/xml" element="server:runInputs"></representation>
+							<representation mediaType="application/xml" element="rest:runInputs"></representation>
 							<representation mediaType="application/json"></representation>
 						</response>
 					</method>
@@ -1229,7 +1231,7 @@ limitations under the License.
 								input.</doc>
 							<request></request>
 							<response>
-								<representation mediaType="application/xml" element="server:runInput"></representation>
+								<representation mediaType="application/xml" element="rest:runInput"></representation>
 								<representation mediaType="application/json"></representation>
 							</response>
 						</method>
@@ -1244,7 +1246,7 @@ limitations under the License.
 						<method name="PUT">
 							<doc>Sets the source for a particular input port.</doc>
 							<request>
-								<representation mediaType="application/xml" element="server:runInput">
+								<representation mediaType="application/xml" element="rest:runInput">
 									<doc>Sets the source for a particular input port.</doc>
 								</representation>
 								<representation mediaType="application/json">
@@ -1252,7 +1254,7 @@ limitations under the License.
 								</representation>
 							</request>
 							<response>
-								<representation mediaType="application/xml" element="server:runInput"></representation>
+								<representation mediaType="application/xml" element="rest:runInput"></representation>
 								<representation mediaType="application/json"></representation>
 							</response>
 						</method>
@@ -1321,7 +1323,7 @@ limitations under the License.
 						<doc>Get the listeners installed in the workflow run.</doc>
 						<request></request>
 						<response>
-							<representation mediaType="application/xml" element="server:listeners"></representation>
+							<representation mediaType="application/xml" element="rest:listeners"></representation>
 							<representation mediaType="application/json"></representation>
 						</response>
 					</method>
@@ -1335,7 +1337,7 @@ limitations under the License.
 					<method name="POST">
 						<doc>Add a new event listener to the named workflow run.</doc>
 						<request>
-							<representation mediaType="application/xml" element="server:listenerDefinition">
+							<representation mediaType="application/xml" element="rest:listenerDefinition">
 								<doc>Add a new event listener to the named workflow run.</doc>
 							</representation>
 							<representation mediaType="application/json">
@@ -1354,7 +1356,7 @@ limitations under the License.
 							<doc>Get the description of this listener.</doc>
 							<request></request>
 							<response>
-								<representation mediaType="application/xml" element="server:listenerDescription"></representation>
+								<representation mediaType="application/xml" element="rest:listenerDescription"></representation>
 								<representation mediaType="application/json"></representation>
 							</response>
 						</method>
@@ -1392,7 +1394,7 @@ limitations under the License.
 									listener attached to a workflow run.</doc>
 								<request></request>
 								<response>
-									<representation mediaType="application/xml" element="server:properties"></representation>
+									<representation mediaType="application/xml" element="rest:properties"></representation>
 									<representation mediaType="application/json"></representation>
 								</response>
 							</method>
@@ -1458,7 +1460,7 @@ limitations under the License.
 							the workflow run.</doc>
 						<request></request>
 						<response>
-							<representation mediaType="application/xml" element="server:securityDescriptor"></representation>
+							<representation mediaType="application/xml" element="rest:securityDescriptor"></representation>
 							<representation mediaType="application/json"></representation>
 						</response>
 					</method>
@@ -1480,7 +1482,7 @@ limitations under the License.
 							<doc>Gives a list of credentials supplied to this workflow run.
 							</doc>
 							<response>
-								<representation mediaType="application/xml" element="server:credentials"></representation>
+								<representation mediaType="application/xml" element="rest:credentials"></representation>
 								<representation mediaType="application/json"></representation>
 							</response>
 						</method>
@@ -1494,7 +1496,7 @@ limitations under the License.
 						<method name="POST">
 							<doc>Creates a new credential.</doc>
 							<request>
-								<representation mediaType="application/xml" element="server:credential">
+								<representation mediaType="application/xml" element="rest:credential">
 									<doc>Creates a new credential.</doc>
 								</representation>
 								<representation mediaType="application/json">
@@ -1519,7 +1521,7 @@ limitations under the License.
 							<doc>Describes a particular credential.</doc>
 							<request></request>
 							<response>
-								<representation mediaType="application/xml" element="server:credential"></representation>
+								<representation mediaType="application/xml" element="rest:credential"></representation>
 								<representation mediaType="application/json"></representation>
 							</response>
 						</method>
@@ -1534,7 +1536,7 @@ limitations under the License.
 						<method name="PUT">
 							<doc>Updates a particular credential.</doc>
 							<request>
-								<representation mediaType="application/xml" element="server:credential">
+								<representation mediaType="application/xml" element="rest:credential">
 									<doc>Updates a particular credential.</doc>
 								</representation>
 								<representation mediaType="application/json">
@@ -1542,7 +1544,7 @@ limitations under the License.
 								</representation>
 							</request>
 							<response>
-								<representation mediaType="application/xml" element="server:credential"></representation>
+								<representation mediaType="application/xml" element="rest:credential"></representation>
 								<representation mediaType="application/json"></representation>
 							</response>
 						</method>
@@ -1572,7 +1574,7 @@ limitations under the License.
 								all except for the owner of the run.</doc>
 							<request></request>
 							<response>
-								<representation mediaType="application/xml" element="server:permissionsDescriptor"></representation>
+								<representation mediaType="application/xml" element="rest:permissionsDescriptor"></representation>
 								<representation mediaType="application/json"></representation>
 							</response>
 						</method>
@@ -1587,7 +1589,7 @@ limitations under the License.
 							<doc>Creates a new assignment of permissions to a particular
 								user.</doc>
 							<request>
-								<representation mediaType="application/xml" element="server:permissionUpdate">
+								<representation mediaType="application/xml" element="rest:permissionUpdate">
 									<doc>Creates a new assignment of permissions to a particular
 										user.</doc>
 								</representation>
@@ -1651,7 +1653,7 @@ limitations under the License.
 							<doc>Gives a list of trusted identities supplied to this workflow
 								run.</doc>
 							<response>
-								<representation mediaType="application/xml" element="server:trustedIdentities"></representation>
+								<representation mediaType="application/xml" element="rest:trustedIdentities"></representation>
 								<representation mediaType="application/json"></representation>
 							</response>
 						</method>
@@ -1726,7 +1728,7 @@ limitations under the License.
 						<doc>Describes the working directory of the workflow run.</doc>
 						<request></request>
 						<response>
-							<representation mediaType="application/xml" element="server:directoryContents"></representation>
+							<representation mediaType="application/xml" element="rest:directoryContents"></representation>
 							<representation mediaType="application/json"></representation>
 						</response>
 					</method>
@@ -1793,7 +1795,7 @@ limitations under the License.
 								file&apos;s contents, where that file is in or below the working
 								directory of a workflow run.</doc>
 							<request>
-								<representation mediaType="application/xml" element="server:filesystemOperation">
+								<representation mediaType="application/xml" element="rest:filesystemOperation">
 									<doc>Creates a directory in the filesystem beneath the working
 										directory of the workflow run, or creates or updates a
 										file&apos;s contents, where that file is in or below the
