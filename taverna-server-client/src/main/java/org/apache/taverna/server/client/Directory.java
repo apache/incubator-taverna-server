@@ -1,4 +1,4 @@
-package uk.org.taverna.server.client;
+package org.apache.taverna.server.client;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -28,16 +28,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipFile;
 
-import org.taverna.server.client.wadl.TavernaServer.Root.RunsRunName.Wd;
-
-import uk.org.taverna.server.client.TavernaServer.ClientException;
-import uk.org.taverna.server.client.TavernaServer.ServerException;
-import uk.org.taverna.server.client.generic.DirectoryEntry;
-import uk.org.taverna.server.client.generic.DirectoryReference;
-import uk.org.taverna.server.client.generic.FileReference;
-import uk.org.taverna.server.client.rest.DirectoryContents;
-import uk.org.taverna.server.client.rest.MakeDirectory;
-import uk.org.taverna.server.client.rest.UploadFile;
+import org.apache.taverna.server.client.TavernaServer.ClientException;
+import org.apache.taverna.server.client.TavernaServer.ServerException;
+import org.apache.taverna.server.client.generic.DirectoryEntry;
+import org.apache.taverna.server.client.generic.DirectoryReference;
+import org.apache.taverna.server.client.generic.FileReference;
+import org.apache.taverna.server.client.rest.DirectoryContents;
+import org.apache.taverna.server.client.rest.MakeDirectory;
+import org.apache.taverna.server.client.rest.UploadFile;
+import org.apache.taverna.server.client.wadl.TavernaServer.Root.RunsRunName.Wd;
 
 import com.sun.jersey.api.client.ClientResponse;
 

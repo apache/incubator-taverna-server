@@ -1,4 +1,4 @@
-package uk.org.taverna.server.client;
+package org.apache.taverna.server.client;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,8 +16,8 @@ package uk.org.taverna.server.client;
  * limitations under the License.
  */
 
-import uk.org.taverna.server.client.TavernaServer.ClientException;
-import uk.org.taverna.server.client.TavernaServer.ServerException;
+import org.apache.taverna.server.client.TavernaServer.ClientException;
+import org.apache.taverna.server.client.TavernaServer.ServerException;
 
 import com.sun.jersey.api.client.ClientResponse;
 

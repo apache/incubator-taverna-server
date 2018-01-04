@@ -32,7 +32,7 @@ limitations under the License.
     <xs:annotation>
     	<xs:appinfo>
 			<jxb:schemaBindings>
-				<jxb:package name="org.apache.taverna.server.client.xml.rest" />
+				<jxb:package name="org.apache.taverna.server.client.rest" />
 			</jxb:schemaBindings>
     	</xs:appinfo>
     </xs:annotation>
@@ -389,7 +389,7 @@ limitations under the License.
     <xs:annotation>
     	<xs:appinfo>
 			<jxb:schemaBindings>
-				<jxb:package name="org.apache.taverna.server.client.xml.port" />
+				<jxb:package name="org.apache.taverna.server.client.port" />
 			</jxb:schemaBindings>
     	</xs:appinfo>
     </xs:annotation>
@@ -514,7 +514,7 @@ limitations under the License.
     <xs:annotation>
     	<xs:appinfo>
 			<jxb:schemaBindings>
-				<jxb:package name="org.apache.taverna.server.client.xml" />
+				<jxb:package name="org.apache.taverna.server.client.generic" />
 			</jxb:schemaBindings>
     	</xs:appinfo>
     </xs:annotation>

@@ -2,7 +2,7 @@
  * Implementation of a basic client for Taverna Server.
  * @author Donal Fellows
  */
-package uk.org.taverna.server.client;
+package org.apache.taverna.server.client;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with

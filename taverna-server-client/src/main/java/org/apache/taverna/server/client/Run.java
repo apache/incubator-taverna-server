@@ -1,4 +1,4 @@
-package uk.org.taverna.server.client;
+package org.apache.taverna.server.client;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -29,19 +29,18 @@ import java.util.List;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.io.IOUtils;
-import org.joda.time.DateTime;
+import org.apache.taverna.server.client.TavernaServer.ClientException;
+import org.apache.taverna.server.client.TavernaServer.ServerException;
+import org.apache.taverna.server.client.generic.KeyPairCredential;
+import org.apache.taverna.server.client.generic.PasswordCredential;
+import org.apache.taverna.server.client.port.InputPort;
+import org.apache.taverna.server.client.port.OutputPort;
+import org.apache.taverna.server.client.rest.InputDescription;
+import org.apache.taverna.server.client.rest.InputDescription.Value;
+import org.apache.taverna.server.client.wadl.TavernaServer.Root.RunsRunName;
 import org.apache.taverna.server.usagerecord.JobUsageRecord;
-import org.taverna.server.client.wadl.TavernaServer.Root.RunsRunName;
+import org.joda.time.DateTime;
 import org.w3c.dom.Element;
-
-import uk.org.taverna.server.client.TavernaServer.ClientException;
-import uk.org.taverna.server.client.TavernaServer.ServerException;
-import uk.org.taverna.server.client.generic.KeyPairCredential;
-import uk.org.taverna.server.client.generic.PasswordCredential;
-import uk.org.taverna.server.client.generic.port.InputPort;
-import uk.org.taverna.server.client.generic.port.OutputPort;
-import uk.org.taverna.server.client.rest.InputDescription;
-import uk.org.taverna.server.client.rest.InputDescription.Value;
 
 import com.sun.jersey.api.client.ClientResponse;
 

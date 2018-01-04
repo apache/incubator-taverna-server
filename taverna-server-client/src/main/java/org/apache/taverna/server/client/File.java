@@ -1,4 +1,4 @@
-package uk.org.taverna.server.client;
+package org.apache.taverna.server.client;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -28,11 +28,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
+import org.apache.taverna.server.client.TavernaServer.ClientException;
+import org.apache.taverna.server.client.TavernaServer.ServerException;
+import org.apache.taverna.server.client.wadl.TavernaServer.Root.RunsRunName.Wd;
 import org.apache.tika.mime.MimeTypeException;
-import org.taverna.server.client.wadl.TavernaServer.Root.RunsRunName.Wd;
-
-import uk.org.taverna.server.client.TavernaServer.ClientException;
-import uk.org.taverna.server.client.TavernaServer.ServerException;
 
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;

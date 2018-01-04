@@ -1,4 +1,4 @@
-package uk.org.taverna.server.client;
+package org.apache.taverna.server.client;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -17,8 +17,8 @@ package uk.org.taverna.server.client;
  */
 
 import static java.nio.file.Files.readAllBytes;
-import static org.taverna.server.client.wadl.TavernaServer.createClient;
-import static org.taverna.server.client.wadl.TavernaServer.root;
+import static org.apache.taverna.server.client.wadl.TavernaServer.createClient;
+import static org.apache.taverna.server.client.wadl.TavernaServer.root;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,11 +26,10 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.taverna.server.client.wadl.TavernaServer.Root;
-
-import uk.org.taverna.server.client.generic.Capability;
-import uk.org.taverna.server.client.generic.TavernaRun;
-import uk.org.taverna.server.client.generic.VersionedElement;
+import org.apache.taverna.server.client.generic.Capability;
+import org.apache.taverna.server.client.generic.TavernaRun;
+import org.apache.taverna.server.client.generic.VersionedElement;
+import org.apache.taverna.server.client.wadl.TavernaServer.Root;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;

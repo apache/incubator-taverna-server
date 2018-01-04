@@ -61,8 +61,8 @@ limitations under the License.
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
-						<Export-Package>uk.org.taverna.server.client</Export-Package>
-						<Private-Package>uk.org.taverna.server.client.*</Private-Package>
+						<Export-Package>org.apache.taverna.server.client</Export-Package>
+						<Private-Package>org.apache.taverna.server.client.xml.*</Private-Package>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -100,7 +100,7 @@ limitations under the License.
 					</execution>
 				</executions>
 				<configuration>
-					<packageName>org.taverna.server.client.wadl</packageName>
+					<packageName>org.apache.taverna.server.client.wadl</packageName>
 					<includes>*.wadl</includes>
 					<customClassNames>
 						<property>
