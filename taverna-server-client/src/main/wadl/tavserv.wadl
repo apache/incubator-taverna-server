@@ -20,7 +20,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
  -->
 <grammars>
-	<xs:schema xmlns="http://www.w3.org/2001/XMLSchema"
+	<xs:schema 
 		xmlns:admin="http://ns.taverna.org.uk/2010/xml/server/admin/"
 		xmlns:feed="http://ns.taverna.org.uk/2010/xml/server/feed/"
 		xmlns:port="http://ns.taverna.org.uk/2010/port/" xmlns:tns="http://ns.taverna.org.uk/2010/xml/server/rest/"
@@ -32,7 +32,7 @@ limitations under the License.
     <xs:annotation>
     	<xs:appinfo>
 			<jxb:schemaBindings>
-				<jxb:package name="uk.org.taverna.server.client.rest" />
+				<jxb:package name="org.apache.taverna.server.client.xml.rest" />
 			</jxb:schemaBindings>
     	</xs:appinfo>
     </xs:annotation>
@@ -374,13 +374,13 @@ limitations under the License.
     <xs:attribute name="owner" type="xs:string" />
     <xs:attribute name="type" type="xs:string" />
 </xs:schema>
-<xs:schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xmlns="http://www.w3.org/1999/xlink" attributeFormDefault="unqualified"
 	elementFormDefault="unqualified" targetNamespace="http://www.w3.org/1999/xlink"
 	jxb:version="2.1">
     <xs:attribute name="href" type="xs:string" />
 </xs:schema>
-<xs:schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns="http://www.w3.org/2001/XMLSchema"
+<xs:schema xmlns="http://www.w3.org/2001/XMLSchema"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:port="http://ns.taverna.org.uk/2010/port/"
 	xmlns:run="http://ns.taverna.org.uk/2010/run/" xmlns:tns="http://ns.taverna.org.uk/2010/port/"
 	xmlns:xlink="http://www.w3.org/1999/xlink" attributeFormDefault="qualified"
@@ -389,7 +389,7 @@ limitations under the License.
     <xs:annotation>
     	<xs:appinfo>
 			<jxb:schemaBindings>
-				<jxb:package name="uk.org.taverna.server.client.generic.port" />
+				<jxb:package name="org.apache.taverna.server.client.xml.port" />
 			</jxb:schemaBindings>
     	</xs:appinfo>
     </xs:annotation>
@@ -503,7 +503,7 @@ limitations under the License.
     <xs:attribute name="workflowRun" type="xs:anyURI" />
     <xs:attribute name="workflowRunId" type="xs:string" />
 </xs:schema>
-<xs:schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xmlns:admin="http://ns.taverna.org.uk/2010/xml/server/admin/"
 	xmlns:feed="http://ns.taverna.org.uk/2010/xml/server/feed/" xmlns:tns="http://ns.taverna.org.uk/2010/xml/server/"
 	xmlns:ts="http://ns.taverna.org.uk/2010/xml/server/" xmlns:ts-rest="http://ns.taverna.org.uk/2010/xml/server/rest/"
@@ -514,7 +514,7 @@ limitations under the License.
     <xs:annotation>
     	<xs:appinfo>
 			<jxb:schemaBindings>
-				<jxb:package name="uk.org.taverna.server.client.generic" />
+				<jxb:package name="org.apache.taverna.server.client.xml" />
 			</jxb:schemaBindings>
     	</xs:appinfo>
     </xs:annotation>
