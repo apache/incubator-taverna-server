@@ -18,15 +18,10 @@
 <jaxb:bindings version="2.1" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	>
-	<jaxb:bindings scd="x-schema::dsig" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#">
+	<jaxb:bindings scd="x-schema::dsig"
+		xmlns:dsig="http://www.w3.org/2000/09/xmldsig#">
 		<jaxb:schemaBindings>
 			<jaxb:package name="org.apache.taverna.server.usagerecord.xml.dsig" />
-		</jaxb:schemaBindings>
-	</jaxb:bindings>
-	<jaxb:bindings scd="x-schema::urf"
-		xmlns:urf="http://schema.ogf.org/urf/2003/09/urf">
-		<jaxb:schemaBindings>
-			<jaxb:package name="org.apache.taverna.server.usagerecord.xml.urf" />
 		</jaxb:schemaBindings>
 	</jaxb:bindings>
 </jaxb:bindings>

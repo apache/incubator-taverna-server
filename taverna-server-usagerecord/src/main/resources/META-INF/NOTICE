@@ -9,7 +9,9 @@ Portions of this software were originally based on the following:
 These have been licensed to the Apache Software Foundation under a software grant.
 
 ---------------------------------------------------------
-taverna-server-usagerecord/src/main/xsd/urf.xsd
+org.apache.taverna.server.usagerecord.xml.urf classes are
+derived from https://www.ogf.org/documents/GFD.98.pdf
+and http://schemas.ogf.org/urf/2003/09/url
 
       Usage Record Working Group XML Schema definition (GFD.98)
 
