@@ -35,8 +35,14 @@
     </xsd:documentation>
   </xsd:annotation>
 
+  <!--
   <xsd:import namespace="http://www.w3.org/2000/09/xmldsig#"
           schemaLocation="http://www.w3.org/TR/xmldsig-core/xmldsig-core-schema.xsd" />
+
+  Changed for Apache Taverna: imported locally instead to avoid w3.org "tar-pit"
+  -->
+  <xsd:import namespace="http://www.w3.org/2000/09/xmldsig#"
+          schemaLocation="xmlds.xsd" />
 
   <xsd:complexType name="UsageRecordType">
     <xsd:sequence>
