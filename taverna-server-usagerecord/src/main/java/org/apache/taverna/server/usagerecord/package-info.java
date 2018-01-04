@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 /**
- * Open Grid Forum GFD.98 Usage Record
+ * Open Grid Forum GFD.98 Usage Record Format
  * <p>
- * JAXB bean for a a <em>Usage Record</em> as described by Open Grid Forum's
- * specification <a href="https://www.ogf.org/documents/GFD.98.pdf">GFD.98</a>.
+ * JAXB bean for the <em>Usage Record Format 1.0</em> as described by Open Grid Forum (OGF)
+ * specification <a href="https://www.ogf.org/documents/GFD.98.pdf">GFD-R-P.098</a>.
  * <p>
  * The main class {@link org.apache.taverna.server.usagerecord.JobUsageRecord} 
  * represents the outer <code>&lt;UsageRecord&gt;</code> element
@@ -28,9 +28,15 @@
  * the packages {@link org.apache.taverna.server.usagerecord.xml.urf} representing
  * the namespace <code>http://schema.ogf.org/urf/2003/09/urf</code> and  
  * {@link org.apache.taverna.server.usagerecord.xml.dsig} representing
- * the namespace <code>http://www.w3.org/2000/09/xmldsig#</code>
+ * the namespace <code>http://www.w3.org/2000/09/xmldsig#</code>.
+ * <p>
+ * The package {@link org.apache.taverna.server.usagerecord.xml.urf2} provides
+ * experimental bindings for the <em>Usage Record Format 2.0</em>
+ * as specified by the superseding OGF specification 
+ * <a href="https://www.ogf.org/documents/GFD.204.pdf">GFD-R-P.204</a>.
  * 
- * @see <a href="https://www.ogf.org/documents/GFD.98.pdf">Open Grid Forum specification GFD.98 (Usage Record)</a>
+ * @see <a href="https://www.ogf.org/documents/GFD.98.pdf">Open Grid Forum specification GFD.98</a>
+ * @see <a href="https://www.ogf.org/documents/GFD.204.pdf">Open Grid Forum specification GFD.204</a>
  * @see <a href="https://www.w3.org/TR/xmldsig-core1/">W3C Recommendation XML Signature Syntax and Processing Version 1.1</a> 
  */
 @javax.xml.bind.annotation.XmlSchema(namespace = "http://schema.ogf.org/urf/2003/09/urf", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
