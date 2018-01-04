@@ -20,9 +20,28 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Connect to a Taverna Server.
+ * <p>
+ * To create a connected {@link TavernaServer} instance,use
+ * {@link #connectNoAuth(URI)} for anonymous connection, or
+ * {@link #connectAuth(URI, String, String)}) for authenticated access.
+ *
+ */
 public class TavernaServerConnectionFactory {
 	private Map<URI, TavernaServer> cache = new HashMap<>();
 
+	/**
+	 * Connect to the Taverna Server without authentication.
+	 * <p>
+	 * The connection will be anonymous, but can later be made authenticated using
+	 * {@link TavernaServer#upgradeToAuth(String, String)}.
+	 * 
+	 * @param uri
+	 *            URI of Taverna Server REST endpoint, e.g.
+	 *            <code>http://localhost:8080/taverna-server/rest</code>
+	 * @return A configured {@link TavernaServer} instance
+	 */
 	public synchronized TavernaServer connectNoAuth(URI uri) {
 		TavernaServer conn = cache.get(uri);
 		if (conn == null)
@@ -30,6 +49,16 @@ public class TavernaServerConnectionFactory {
 		return conn;
 	}
 
+	/**
+	 * Connect to the Taverna Server with the given authentication.
+	 * 
+	 * @param uri
+	 *            URI of Taverna Server REST endpoint, e.g.
+	 *            <code>http://localhost:8080/taverna-server/rest</code>
+	 * @param username Username
+	 * @param password Password
+	 * @return A configured {@link TavernaServer} instance
+	 */
 	public TavernaServer connectAuth(URI uri, String username, String password) {
 		TavernaServer conn = new TavernaServer(uri, username, password);
 		// Force a check of the credentials by getting the server version
