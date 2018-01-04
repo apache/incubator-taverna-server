@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ogf.usage;
+package org.apache.taverna.server.usagerecord;
 
 import static java.util.UUID.randomUUID;
 
@@ -32,35 +32,57 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.transform.dom.DOMSource;
 
-import org.ogf.usage.v1_0.Charge;
-import org.ogf.usage.v1_0.ConsumableResourceType;
-import org.ogf.usage.v1_0.CpuDuration;
-import org.ogf.usage.v1_0.Disk;
-import org.ogf.usage.v1_0.EndTime;
-import org.ogf.usage.v1_0.Host;
-import org.ogf.usage.v1_0.JobName;
-import org.ogf.usage.v1_0.MachineName;
-import org.ogf.usage.v1_0.Memory;
-import org.ogf.usage.v1_0.Network;
-import org.ogf.usage.v1_0.NodeCount;
-import org.ogf.usage.v1_0.Processors;
-import org.ogf.usage.v1_0.ProjectName;
-import org.ogf.usage.v1_0.Queue;
-import org.ogf.usage.v1_0.RecordIdentity;
-import org.ogf.usage.v1_0.ResourceType;
-import org.ogf.usage.v1_0.ServiceLevel;
-import org.ogf.usage.v1_0.StartTime;
-import org.ogf.usage.v1_0.Status;
-import org.ogf.usage.v1_0.SubmitHost;
-import org.ogf.usage.v1_0.Swap;
-import org.ogf.usage.v1_0.TimeDuration;
-import org.ogf.usage.v1_0.TimeInstant;
-import org.ogf.usage.v1_0.UserIdentity;
-import org.ogf.usage.v1_0.WallDuration;
+import org.apache.taverna.server.usagerecord.xml.urf.Charge;
+import org.apache.taverna.server.usagerecord.xml.urf.ConsumableResourceType;
+import org.apache.taverna.server.usagerecord.xml.urf.CpuDuration;
+import org.apache.taverna.server.usagerecord.xml.urf.Disk;
+import org.apache.taverna.server.usagerecord.xml.urf.EndTime;
+import org.apache.taverna.server.usagerecord.xml.urf.Host;
+import org.apache.taverna.server.usagerecord.xml.urf.JobName;
+import org.apache.taverna.server.usagerecord.xml.urf.MachineName;
+import org.apache.taverna.server.usagerecord.xml.urf.Memory;
+import org.apache.taverna.server.usagerecord.xml.urf.Network;
+import org.apache.taverna.server.usagerecord.xml.urf.NodeCount;
+import org.apache.taverna.server.usagerecord.xml.urf.Processors;
+import org.apache.taverna.server.usagerecord.xml.urf.ProjectName;
+import org.apache.taverna.server.usagerecord.xml.urf.Queue;
+import org.apache.taverna.server.usagerecord.xml.urf.RecordIdentity;
+import org.apache.taverna.server.usagerecord.xml.urf.ResourceType;
+import org.apache.taverna.server.usagerecord.xml.urf.ServiceLevel;
+import org.apache.taverna.server.usagerecord.xml.urf.StartTime;
+import org.apache.taverna.server.usagerecord.xml.urf.Status;
+import org.apache.taverna.server.usagerecord.xml.urf.SubmitHost;
+import org.apache.taverna.server.usagerecord.xml.urf.Swap;
+import org.apache.taverna.server.usagerecord.xml.urf.TimeDuration;
+import org.apache.taverna.server.usagerecord.xml.urf.TimeInstant;
+import org.apache.taverna.server.usagerecord.xml.urf.UsageRecordType;
+import org.apache.taverna.server.usagerecord.xml.urf.UserIdentity;
+import org.apache.taverna.server.usagerecord.xml.urf.WallDuration;
 import org.w3c.dom.Element;
 
 @XmlRootElement(name = "UsageRecord", namespace = "http://schema.ogf.org/urf/2003/09/urf")
-public class JobUsageRecord extends org.ogf.usage.v1_0.UsageRecordType {
+public class JobUsageRecord extends UsageRecordType {
+	private static JAXBContext context;
+	static {
+		try {
+			context = JAXBContext.newInstance(JobUsageRecord.class);
+		} catch (JAXBException e) {
+			throw new RuntimeException("failed to handle JAXB annotated class",
+					e);
+		}
+	}
+
+	public static JobUsageRecord unmarshal(String s) throws JAXBException {
+		return (JobUsageRecord) context.createUnmarshaller().unmarshal(
+				new StringReader(s));
+	}
+
+	public static JobUsageRecord unmarshal(Element elem) throws JAXBException {
+		return context.createUnmarshaller()
+				.unmarshal(new DOMSource(elem), JobUsageRecord.class)
+				.getValue();
+	}
+	
 	/**
 	 * Create a new usage record with a random UUID as its identity.
 	 * 
@@ -288,27 +310,6 @@ public class JobUsageRecord extends org.ogf.usage.v1_0.UsageRecordType {
 		JAXBContext.newInstance(getClass()).createMarshaller()
 				.marshal(this, writer);
 		return writer.toString();
-	}
-
-	private static JAXBContext context;
-	static {
-		try {
-			context = JAXBContext.newInstance(JobUsageRecord.class);
-		} catch (JAXBException e) {
-			throw new RuntimeException("failed to handle JAXB annotated class",
-					e);
-		}
-	}
-
-	public static JobUsageRecord unmarshal(String s) throws JAXBException {
-		return (JobUsageRecord) context.createUnmarshaller().unmarshal(
-				new StringReader(s));
-	}
-
-	public static JobUsageRecord unmarshal(Element elem) throws JAXBException {
-		return context.createUnmarshaller()
-				.unmarshal(new DOMSource(elem), JobUsageRecord.class)
-				.getValue();
 	}
 
 	// TODO: Add signing support

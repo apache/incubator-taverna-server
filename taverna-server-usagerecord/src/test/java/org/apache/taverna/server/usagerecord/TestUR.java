@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.taverna.server.usagerecord;
 import static java.lang.Runtime.getRuntime;
 
 import java.io.IOException;
@@ -27,36 +28,35 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.transform.Result;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.taverna.server.usagerecord.xml.urf.Charge;
+import org.apache.taverna.server.usagerecord.xml.urf.CpuDuration;
+import org.apache.taverna.server.usagerecord.xml.urf.Disk;
+import org.apache.taverna.server.usagerecord.xml.urf.EndTime;
+import org.apache.taverna.server.usagerecord.xml.urf.Host;
+import org.apache.taverna.server.usagerecord.xml.urf.JobIdentity;
+import org.apache.taverna.server.usagerecord.xml.urf.JobName;
+import org.apache.taverna.server.usagerecord.xml.urf.MachineName;
+import org.apache.taverna.server.usagerecord.xml.urf.Memory;
+import org.apache.taverna.server.usagerecord.xml.urf.Network;
+import org.apache.taverna.server.usagerecord.xml.urf.NodeCount;
+import org.apache.taverna.server.usagerecord.xml.urf.PhaseResource;
+import org.apache.taverna.server.usagerecord.xml.urf.Processors;
+import org.apache.taverna.server.usagerecord.xml.urf.ProjectName;
+import org.apache.taverna.server.usagerecord.xml.urf.Queue;
+import org.apache.taverna.server.usagerecord.xml.urf.RecordIdentity;
+import org.apache.taverna.server.usagerecord.xml.urf.ServiceLevel;
+import org.apache.taverna.server.usagerecord.xml.urf.StartTime;
+import org.apache.taverna.server.usagerecord.xml.urf.Status;
+import org.apache.taverna.server.usagerecord.xml.urf.SubmitHost;
+import org.apache.taverna.server.usagerecord.xml.urf.Swap;
+import org.apache.taverna.server.usagerecord.xml.urf.TimeDuration;
+import org.apache.taverna.server.usagerecord.xml.urf.TimeInstant;
+import org.apache.taverna.server.usagerecord.xml.urf.UserIdentity;
+import org.apache.taverna.server.usagerecord.xml.urf.VolumeResource;
+import org.apache.taverna.server.usagerecord.xml.urf.WallDuration;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.ogf.usage.JobUsageRecord;
-import org.ogf.usage.v1_0.Charge;
-import org.ogf.usage.v1_0.CpuDuration;
-import org.ogf.usage.v1_0.Disk;
-import org.ogf.usage.v1_0.EndTime;
-import org.ogf.usage.v1_0.Host;
-import org.ogf.usage.v1_0.JobIdentity;
-import org.ogf.usage.v1_0.JobName;
-import org.ogf.usage.v1_0.MachineName;
-import org.ogf.usage.v1_0.Memory;
-import org.ogf.usage.v1_0.Network;
-import org.ogf.usage.v1_0.NodeCount;
-import org.ogf.usage.v1_0.PhaseResource;
-import org.ogf.usage.v1_0.Processors;
-import org.ogf.usage.v1_0.ProjectName;
-import org.ogf.usage.v1_0.Queue;
-import org.ogf.usage.v1_0.RecordIdentity;
-import org.ogf.usage.v1_0.ServiceLevel;
-import org.ogf.usage.v1_0.StartTime;
-import org.ogf.usage.v1_0.Status;
-import org.ogf.usage.v1_0.SubmitHost;
-import org.ogf.usage.v1_0.Swap;
-import org.ogf.usage.v1_0.TimeDuration;
-import org.ogf.usage.v1_0.TimeInstant;
-import org.ogf.usage.v1_0.UserIdentity;
-import org.ogf.usage.v1_0.VolumeResource;
-import org.ogf.usage.v1_0.WallDuration;
 
 public class TestUR {
 	SchemaOutputResolver sink;
