@@ -62,7 +62,7 @@ limitations under the License.
 				<configuration>
 					<instructions>
 						<Export-Package>org.apache.taverna.server.client</Export-Package>
-						<Private-Package>org.apache.taverna.server.client.xml.*</Private-Package>
+						<Private-Package>org.apache.taverna.server.client.*</Private-Package>
 					</instructions>
 				</configuration>
 			</plugin>
