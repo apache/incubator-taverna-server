@@ -20,7 +20,7 @@
 	<parent>
 		<groupId>org.apache.taverna</groupId>
 		<artifactId>apache-taverna-parent</artifactId>
-		<version>2-incubating</version>
+		<version>3-incubating-SNAPSHOT</version>
 	</parent>
 	<groupId>org.apache.taverna.server</groupId>
 	<artifactId>apache-taverna-server</artifactId>
@@ -256,7 +256,7 @@ executing.</description>
 				<groupId>org.apache.rat</groupId>
 				<artifactId>apache-rat-plugin</artifactId>
 				<configuration>
-					<excludes>
+					<excludes combine.children="append">
 						<!-- These refer to files under the Apache license, but which have no comment syntax. -->
 						<exclude>CITATION</exclude>
 						<exclude>**/META-INF/MANIFEST.MF</exclude>
@@ -361,7 +361,7 @@ executing.</description>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.8</version>
+				<version>3.0.0</version>
 				<configuration>
 					<show>protected</show>
 					<nohelp>true</nohelp>
@@ -415,7 +415,7 @@ executing.</description>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-changelog-plugin</artifactId>
-				<version>2.2</version>
+				<version>2.3</version>
 				<configuration>
 					<issueLinkUrl>https://issues.apache.org/jira/browse/%ISSUE%</issueLinkUrl>
 				</configuration>
@@ -423,7 +423,7 @@ executing.</description>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>2.4</version>
+				<version>2.9</version>
 			</plugin>
 		</plugins>
 	</reporting>
@@ -442,7 +442,6 @@ executing.</description>
 						<plugin>
 							<groupId>org.apache.maven.plugins</groupId>
 							<artifactId>maven-site-plugin</artifactId>
-							<version>3.0</version>
 						</plugin>
 					</plugins>
 				</pluginManagement>
@@ -455,7 +454,6 @@ executing.</description>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>2.8</version>
 						<configuration>
 							<show>private</show>
 							<nohelp>true</nohelp>
@@ -506,31 +504,17 @@ executing.</description>
 					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-changes-plugin</artifactId>
-						<version>2.6</version>
-						<reportSets>
-							<reportSet>
-								<id>jira-report</id>
-								<reports>
-									<report>jira-report</report>
-								</reports>
-							</reportSet>
-						</reportSets>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-checkstyle-plugin</artifactId>
-						<version>2.7</version>
 					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-pmd-plugin</artifactId>
-						<version>2.5</version>
+						<version>3.8</version>
 					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-surefire-report-plugin</artifactId>
-						<version>2.9</version>
+						<version>2.20.1</version>
 					</plugin>
 				</plugins>
 			</reporting>
