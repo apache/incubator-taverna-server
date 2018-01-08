@@ -114,12 +114,7 @@ limitations under the License.
 			<artifactId>spring-test</artifactId>
 			<version>${version.spring}</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId><!--$NO-MVN-MAN-VER$-->
-			<scope>test</scope>
-		</dependency>
+		</dependency>		
 		<dependency>
 			<groupId>${project.parent.groupId}</groupId>
 			<artifactId>taverna-server-port-description</artifactId>
