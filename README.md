@@ -93,8 +93,8 @@ To build, use
 
 This will build each module and run their tests.
 
-You should then find the equivalent of `TavernaServer.3.1.0-incubating-SNAPSHOT.war` 
-in the folder `taverna-server-webapp/target/`
+You should then find `taverna-server.war` in the folder
+`taverna-server-webapp/target/`
 
 
 ## Skipping tests
@@ -114,7 +114,7 @@ that enforces Apache headers in every source file - to disable it, try:
 
 ## A Beginner's Installation Guide to Taverna Server
 
-When installing Taverna Server 2.5, you *need* to decide whether to
+When installing Taverna Server, you *need* to decide whether to
 install in secure or insecure mode. In secure mode, the server
 enforces logins, ensures that they are done over HTTPS, and applies
 strong restrictions to what users can see of other users'
@@ -190,19 +190,19 @@ On RedHat Linux (and derivatives), you install Tomcat with:
 
 You then start Tomcat with:
 
-    sudo service tomcat6 start
+    sudo service tomcat8 start
 
 And stop it with:
 
-    sudo service tomcat6 stop
+    sudo service tomcat8 stop
 
 It's configuration file (called `conf/server.xml` in the instructions below) will be in:
 
-    /etc/tomcat6/server.xml
+    /etc/tomcat8/server.xml
 
 It's webapp directory (`webapps` below) will be in:
 
-    /var/lib/tomcat6
+    /var/lib/tomcat8
 
 ### Installing on MacOS X, and using a baseline Apache distribution
 
@@ -237,9 +237,9 @@ The insecure version is installed by:
 
 ### First, place the WAR into Tomcat's webapps directory
 
-Use a filename that relates to what URL you want Taverna Server to
-appear at within Tomcat (e.g., if you want it to be at
-`/tavernaserver`, use the filename `webapps/tavernaserver.war`).
+You may use a filename that relates to what URL you want Taverna Server to
+appear at within Tomcat (e.g., if you want it to be at `/taverna`, use the
+filename `webapps/taverna.war`).
 
 ### Next, start Tomcat (if stopped), and shut it down again once it has unpacked the WAR.
 
@@ -327,8 +327,12 @@ to do the delegation even when running as a user that can't log in.
 
 ### Now, place the WAR into Tomcat's `webapps` directory.
 
-Use a filename that relates to what URL you want Taverna Server to
-appear at within Tomcat (e.g., if you want it to be at
-`/tavernaserver`, use the filename `webapps/tavernaserver.war`).
+You may use a filename that relates to what URL you want Taverna Server to
+appear at within Tomcat (e.g., if you want it to be deployed at
+`/taverna`, rename the WAR to a filename like `webapps/taverna.war`).
 
 ### Finally, start Tomcat.
+
+Taverna Server should then become available at
+the equivalent of http://localhost:8080/taverna-server/
+
