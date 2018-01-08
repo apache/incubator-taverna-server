@@ -20,11 +20,11 @@
 	<parent>
 		<groupId>org.apache.taverna</groupId>
 		<artifactId>apache-taverna-parent</artifactId>
-		<version>3-incubating</version>
+		<version>3-incubating-SNAPSHOT</version>
 	</parent>
 	<groupId>org.apache.taverna.server</groupId>
 	<artifactId>apache-taverna-server</artifactId>
-	<version>3.1.0-incubating</version>
+	<version>3.1.0-incubating-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Apache Taverna Server</name>
 	<description>Apache Taverna Server is a service that provides execution of
@@ -514,7 +514,7 @@ executing.</description>
 		<connection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-taverna-server.git</connection>
 		<developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-taverna-server.git</developerConnection>
 		<url>https://github.com/apache/incubator-taverna-server</url>
-		<tag>3.1.0-incubating-RC2</tag>
+		<tag>trunk</tag>
 	</scm>
 
 	<repositories>
