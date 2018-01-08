@@ -20,7 +20,7 @@ limitations under the License.
 	<parent>
 		<groupId>org.apache.taverna.server</groupId>
 		<artifactId>apache-taverna-server</artifactId>
-		<version>3.1.0-incubating-SNAPSHOT</version>
+		<version>3.1.0-incubating</version>
 	</parent>
 	<artifactId>taverna-server-webapp</artifactId>
 	<packaging>war</packaging>
@@ -41,9 +41,9 @@ limitations under the License.
 		<!-- Default values in case .git/ does not exists, otherwise
 		     overriden by git-commit-id-plugin
 		-->
-		<git.commit.id.describe></git.commit.id.describe>
-		<git.branch></git.branch>
-		<git.build.time></git.build.time>
+		<git.commit.id.describe />
+		<git.branch />
+		<git.build.time />
 
 	</properties>
 
