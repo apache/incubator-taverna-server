@@ -38,6 +38,13 @@ limitations under the License.
 		<forker.module>taverna-server-unix-forker</forker.module>
 		<util.dir>${project.build.directory}/${project.build.finalName}/WEB-INF/classes/util</util.dir>
 		<cmdline.dir>${util.dir}/taverna-command-line-${taverna.commandline.version}</cmdline.dir>
+		<!-- Default values in case .git/ does not exists, otherwise
+		     overriden by git-commit-id-plugin
+		-->
+		<git.commit.id.describe></git.commit.id.describe>
+		<git.branch></git.branch>
+		<git.build.time></git.build.time>
+
 	</properties>
 
 	<dependencies>
@@ -577,6 +584,8 @@ limitations under the License.
 					</execution>
 				</executions>
 				<configuration>
+					<dateFormat>yyyy-MM-dd'T'HH:mm:ssZ</dateFormat>
+					<dateFormatTimeZone>UTC</dateFormatTimeZone>
 					<dotGitDirectory>${project.basedir}/../.git</dotGitDirectory>
 					<prefix>git</prefix>
 					<verbose>true</verbose>
