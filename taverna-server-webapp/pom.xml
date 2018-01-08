@@ -20,7 +20,7 @@ limitations under the License.
 	<parent>
 		<groupId>org.apache.taverna.server</groupId>
 		<artifactId>apache-taverna-server</artifactId>
-		<version>3.1.0-incubating</version>
+		<version>3.1.0-incubating-SNAPSHOT</version>
 	</parent>
 	<artifactId>taverna-server-webapp</artifactId>
 	<packaging>war</packaging>
