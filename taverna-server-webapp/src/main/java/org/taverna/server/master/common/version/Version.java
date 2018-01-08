@@ -38,9 +38,9 @@ public interface Version {
  * @author Donal Fellows
  */
 interface Constants {
-	static final String MAJOR = "2";
-	static final String MINOR = "5";
-	static final String PATCH = "4";
+	static final String MAJOR = "3";
+	static final String MINOR = "1";
+	static final String PATCH = "0";
 
 	static final char alphaChar = '\u03b1';
 	static final char betaChar = '\u03b2';
