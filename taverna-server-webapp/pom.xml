@@ -580,6 +580,8 @@ limitations under the License.
 					<dotGitDirectory>${project.basedir}/../.git</dotGitDirectory>
 					<prefix>git</prefix>
 					<verbose>true</verbose>
+					<!-- .git is not included in -source releases -->
+					<failOnNoGitDirectory>false</failOnNoGitDirectory>
 				</configuration>
 			</plugin>
 			<plugin>
