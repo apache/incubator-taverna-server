@@ -2,7 +2,7 @@
  * This package contains information about the various default values supported by the server.
  * @author Donal Fellows
  */
-package org.taverna.server.master.defaults;
+package org.apache.taverna.server.master.defaults;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with

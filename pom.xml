@@ -319,39 +319,39 @@ executing.</description>
 					<groups>
 						<group>
 							<title>Server Core WebService</title>
-							<packages>org.taverna.server.master:org.taverna.server.master.common:org.taverna.server.master.facade:org.taverna.server.master.rest:org.taverna.server.master.rest.handler:org.taverna.server.master.soap</packages>
+							<packages>org.apache.taverna.server.master:org.apache.taverna.server.master.common:org.apache.taverna.server.master.facade:org.apache.taverna.server.master.rest:org.apache.taverna.server.master.rest.handler:org.apache.taverna.server.master.soap</packages>
 						</group>
 						<group>
 							<title>Default Values and Administration</title>
-							<packages>org.taverna.server.master.admin:org.taverna.server.master.defaults</packages>
+							<packages>org.apache.taverna.server.master.admin:org.apache.taverna.server.master.defaults</packages>
 						</group>
 						<group>
 							<title>Server SPI</title>
-							<packages>org.taverna.server.master.exceptions:org.taverna.server.master.factories:org.taverna.server.master.interfaces</packages>
+							<packages>org.apache.taverna.server.master.exceptions:org.apache.taverna.server.master.factories:org.apache.taverna.server.master.interfaces</packages>
 						</group>
 						<group>
 							<title>Notification and Accounting</title>
-							<packages>org.taverna.server.master.interaction:org.taverna.server.master.notification:org.taverna.server.master.notification.atom:org.taverna.server.master.usage</packages>
+							<packages>org.apache.taverna.server.master.interaction:org.apache.taverna.server.master.notification:org.apache.taverna.server.master.notification.atom:org.apache.taverna.server.master.usage</packages>
 						</group>
 						<group>
 							<title>Server Coupling to RMI Back End</title>
-							<packages>org.taverna.server.master.identity:org.taverna.server.master.localworker:org.taverna.server.master.worker</packages>
+							<packages>org.apache.taverna.server.master.identity:org.apache.taverna.server.master.localworker:org.apache.taverna.server.master.worker</packages>
 						</group>
 						<group>
 							<title>Server RMI Interface to Back End</title>
-							<packages>org.taverna.server.localworker.remote:org.taverna.server.localworker.server</packages>
+							<packages>org.apache.taverna.server.localworker.remote:org.apache.taverna.server.localworker.server</packages>
 						</group>
 						<group>
 							<title>Externally-Defined Document Formats</title>
-							<packages>org.taverna.server.port_description:org.apache.taverna.server.usagerecord:org.apache.taverna.server.usagerecord.xml.urf:org.apache.taverna.server.usagerecord.xml.dsig</packages>
+							<packages>org.apache.taverna.server.port_description:org.apache.taverna.server.usagerecord:org.apache.taverna.server.usagerecord.xml.urf:org.apache.taverna.server.usagerecord.xml.dsig</packages>
 						</group>
 						<group>
 							<title>Server Back End Factory Coupling to Command Line Executor</title>
-							<packages>org.taverna.server.localworker.impl:org.taverna.server.unixforker:org.taverna.server.winforker</packages>
+							<packages>org.apache.taverna.server.localworker.impl:org.apache.taverna.server.unixforker:org.apache.taverna.server.winforker</packages>
 						</group>
 						<group>
 							<title>Utilities</title>
-							<packages>org.taverna.server.master.utils:org.taverna.server.localworker.impl.utils</packages>
+							<packages>org.apache.taverna.server.master.utils:org.apache.taverna.server.localworker.impl.utils</packages>
 						</group>
 					</groups>
 					<detectJavaApiLink>true</detectJavaApiLink>
@@ -410,39 +410,39 @@ executing.</description>
 							<groups>
 								<group>
 									<title>Server Core WebService</title>
-									<packages>org.taverna.server.master:org.taverna.server.master.common:org.taverna.server.master.facade:org.taverna.server.master.rest:org.taverna.server.master.rest.handler:org.taverna.server.master.soap</packages>
+									<packages>org.apache.taverna.server.master:org.apache.taverna.server.master.common:org.apache.taverna.server.master.facade:org.apache.taverna.server.master.rest:org.apache.taverna.server.master.rest.handler:org.apache.taverna.server.master.soap</packages>
 								</group>
 								<group>
 									<title>Default Values and Administration</title>
-									<packages>org.taverna.server.master.admin:org.taverna.server.master.defaults</packages>
+									<packages>org.apache.taverna.server.master.admin:org.apache.taverna.server.master.defaults</packages>
 								</group>
 								<group>
 									<title>Server SPI</title>
-									<packages>org.taverna.server.master.exceptions:org.taverna.server.master.factories:org.taverna.server.master.interfaces</packages>
+									<packages>org.apache.taverna.server.master.exceptions:org.apache.taverna.server.master.factories:org.apache.taverna.server.master.interfaces</packages>
 								</group>
 								<group>
 									<title>Notification and Accounting</title>
-									<packages>org.taverna.server.master.interaction:org.taverna.server.master.notification:org.taverna.server.master.notification.atom:org.taverna.server.master.usage</packages>
+									<packages>org.apache.taverna.server.master.interaction:org.apache.taverna.server.master.notification:org.apache.taverna.server.master.notification.atom:org.apache.taverna.server.master.usage</packages>
 								</group>
 								<group>
 									<title>Server Coupling to RMI Back End</title>
-									<packages>org.taverna.server.master.identity:org.taverna.server.master.localworker:org.taverna.server.master.worker</packages>
+									<packages>org.apache.taverna.server.master.identity:org.apache.taverna.server.master.localworker:org.apache.taverna.server.master.worker</packages>
 								</group>
 								<group>
 									<title>Server RMI Interface to Back End</title>
-									<packages>org.taverna.server.localworker.remote:org.taverna.server.localworker.server</packages>
+									<packages>org.apache.taverna.server.localworker.remote:org.apache.taverna.server.localworker.server</packages>
 								</group>
 								<group>
 									<title>Externally-Defined Document Formats</title>
-									<packages>org.taverna.server.port_description:org.apache.taverna.server.usagerecord:org.apache.taverna.server.usagerecord.xml.urf:org.apache.taverna.server.usagerecord.xml.dsig</packages>
+									<packages>org.apache.taverna.server.port_description:org.apache.taverna.server.usagerecord:org.apache.taverna.server.usagerecord.xml.urf:org.apache.taverna.server.usagerecord.xml.dsig</packages>
 								</group>
 								<group>
 									<title>Server Back End Factory Coupling to Command Line Executor</title>
-									<packages>org.taverna.server.localworker.impl:org.taverna.server.unixforker:org.taverna.server.winforker</packages>
+									<packages>org.apache.taverna.server.localworker.impl:org.apache.taverna.server.unixforker:org.apache.taverna.server.winforker</packages>
 								</group>
 								<group>
 									<title>Utilities</title>
-									<packages>org.taverna.server.master.utils:org.taverna.server.localworker.impl.utils</packages>
+									<packages>org.apache.taverna.server.master.utils:org.apache.taverna.server.localworker.impl.utils</packages>
 								</group>
 							</groups>
 							<detectJavaApiLink>true</detectJavaApiLink>

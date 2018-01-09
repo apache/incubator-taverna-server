@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.soap;
+package org.apache.taverna.server.master.soap;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,7 +18,7 @@ package org.taverna.server.master.soap;
  * limitations under the License.
  */
 
-import static org.taverna.server.master.common.Namespaces.XLINK;
+import static org.apache.taverna.server.master.common.Namespaces.XLINK;
 
 import java.net.URI;
 
@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 
-import org.taverna.server.master.common.DirEntryReference;
+import org.apache.taverna.server.master.common.DirEntryReference;
 
 /**
  * A more Taverna-friendly version of the directory entry descriptor classes.

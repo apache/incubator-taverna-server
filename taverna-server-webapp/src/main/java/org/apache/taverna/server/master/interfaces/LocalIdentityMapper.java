@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.interfaces;
+package org.apache.taverna.server.master.interfaces;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,7 +18,7 @@ package org.taverna.server.master.interfaces;
  * limitations under the License.
  */
 
-import org.taverna.server.master.utils.UsernamePrincipal;
+import org.apache.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * This interface describes how to map from the identity understood by the

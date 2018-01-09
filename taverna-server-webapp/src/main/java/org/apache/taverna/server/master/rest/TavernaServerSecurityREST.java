@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.rest;
+package org.apache.taverna.server.master.rest;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,20 +19,20 @@ package org.taverna.server.master.rest;
  */
 
 import static java.util.Collections.emptyList;
-import static org.taverna.server.master.common.Namespaces.SERVER;
-import static org.taverna.server.master.common.Namespaces.XLINK;
-import static org.taverna.server.master.common.Roles.USER;
-import static org.taverna.server.master.rest.ContentTypes.JSON;
-import static org.taverna.server.master.rest.ContentTypes.TEXT;
-import static org.taverna.server.master.rest.ContentTypes.XML;
-import static org.taverna.server.master.rest.TavernaServerSecurityREST.PathNames.CREDS;
-import static org.taverna.server.master.rest.TavernaServerSecurityREST.PathNames.ONE_CRED;
-import static org.taverna.server.master.rest.TavernaServerSecurityREST.PathNames.ONE_PERM;
-import static org.taverna.server.master.rest.TavernaServerSecurityREST.PathNames.ONE_TRUST;
-import static org.taverna.server.master.rest.TavernaServerSecurityREST.PathNames.OWNER;
-import static org.taverna.server.master.rest.TavernaServerSecurityREST.PathNames.PERMS;
-import static org.taverna.server.master.rest.TavernaServerSecurityREST.PathNames.ROOT;
-import static org.taverna.server.master.rest.TavernaServerSecurityREST.PathNames.TRUSTS;
+import static org.apache.taverna.server.master.common.Namespaces.SERVER;
+import static org.apache.taverna.server.master.common.Namespaces.XLINK;
+import static org.apache.taverna.server.master.common.Roles.USER;
+import static org.apache.taverna.server.master.rest.ContentTypes.JSON;
+import static org.apache.taverna.server.master.rest.ContentTypes.TEXT;
+import static org.apache.taverna.server.master.rest.ContentTypes.XML;
+import static org.apache.taverna.server.master.rest.TavernaServerSecurityREST.PathNames.CREDS;
+import static org.apache.taverna.server.master.rest.TavernaServerSecurityREST.PathNames.ONE_CRED;
+import static org.apache.taverna.server.master.rest.TavernaServerSecurityREST.PathNames.ONE_PERM;
+import static org.apache.taverna.server.master.rest.TavernaServerSecurityREST.PathNames.ONE_TRUST;
+import static org.apache.taverna.server.master.rest.TavernaServerSecurityREST.PathNames.OWNER;
+import static org.apache.taverna.server.master.rest.TavernaServerSecurityREST.PathNames.PERMS;
+import static org.apache.taverna.server.master.rest.TavernaServerSecurityREST.PathNames.ROOT;
+import static org.apache.taverna.server.master.rest.TavernaServerSecurityREST.PathNames.TRUSTS;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -64,14 +64,14 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.cxf.jaxrs.model.wadl.Description;
-import org.taverna.server.master.common.Credential;
-import org.taverna.server.master.common.Permission;
-import org.taverna.server.master.common.Trust;
-import org.taverna.server.master.common.Uri;
-import org.taverna.server.master.common.VersionedElement;
-import org.taverna.server.master.exceptions.BadStateChangeException;
-import org.taverna.server.master.exceptions.InvalidCredentialException;
-import org.taverna.server.master.exceptions.NoCredentialException;
+import org.apache.taverna.server.master.common.Credential;
+import org.apache.taverna.server.master.common.Permission;
+import org.apache.taverna.server.master.common.Trust;
+import org.apache.taverna.server.master.common.Uri;
+import org.apache.taverna.server.master.common.VersionedElement;
+import org.apache.taverna.server.master.exceptions.BadStateChangeException;
+import org.apache.taverna.server.master.exceptions.InvalidCredentialException;
+import org.apache.taverna.server.master.exceptions.NoCredentialException;
 
 /**
  * Manages the security of the workflow run. In general, only the owner of a run

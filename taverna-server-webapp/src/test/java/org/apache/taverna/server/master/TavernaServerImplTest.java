@@ -1,4 +1,4 @@
-package org.taverna.server.master;
+package org.apache.taverna.server.master;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -23,18 +23,18 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.taverna.server.master.api.ManagementModel;
-import org.taverna.server.master.common.RunReference;
-import org.taverna.server.master.exceptions.BadPropertyValueException;
-import org.taverna.server.master.exceptions.NoListenerException;
-import org.taverna.server.master.exceptions.NoUpdateException;
-import org.taverna.server.master.exceptions.UnknownRunException;
-import org.taverna.server.master.interfaces.Listener;
-import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.mocks.ExampleRun;
-import org.taverna.server.master.mocks.MockPolicy;
-import org.taverna.server.master.mocks.SimpleListenerFactory;
-import org.taverna.server.master.mocks.SimpleNonpersistentRunStore;
+import org.apache.taverna.server.master.api.ManagementModel;
+import org.apache.taverna.server.master.common.RunReference;
+import org.apache.taverna.server.master.exceptions.BadPropertyValueException;
+import org.apache.taverna.server.master.exceptions.NoListenerException;
+import org.apache.taverna.server.master.exceptions.NoUpdateException;
+import org.apache.taverna.server.master.exceptions.UnknownRunException;
+import org.apache.taverna.server.master.interfaces.Listener;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.mocks.ExampleRun;
+import org.apache.taverna.server.master.mocks.MockPolicy;
+import org.apache.taverna.server.master.mocks.SimpleListenerFactory;
+import org.apache.taverna.server.master.mocks.SimpleNonpersistentRunStore;
 
 public class TavernaServerImplTest {
 	private TavernaServer server;

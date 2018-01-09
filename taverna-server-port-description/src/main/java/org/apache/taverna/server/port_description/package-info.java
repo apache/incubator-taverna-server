@@ -4,7 +4,7 @@
 		@XmlNs(prefix = "port", namespaceURI = DATA),
 		@XmlNs(prefix = "xlink", namespaceURI = XLINK),
 		@XmlNs(prefix = "run", namespaceURI = RUN) })
-package org.taverna.server.port_description;
+package org.apache.taverna.server.port_description;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -23,9 +23,9 @@ package org.taverna.server.port_description;
  */
 
 import static javax.xml.bind.annotation.XmlNsForm.QUALIFIED;
-import static org.taverna.server.port_description.Namespaces.DATA;
-import static org.taverna.server.port_description.Namespaces.RUN;
-import static org.taverna.server.port_description.Namespaces.XLINK;
+import static org.apache.taverna.server.port_description.Namespaces.DATA;
+import static org.apache.taverna.server.port_description.Namespaces.RUN;
+import static org.apache.taverna.server.port_description.Namespaces.XLINK;
 
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlSchema;

@@ -4,7 +4,7 @@
  * The notification fabric and implementations of notification dispatchers
  * that support subscription.
  */
-package org.taverna.server.master.notification;
+package org.apache.taverna.server.master.notification;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with

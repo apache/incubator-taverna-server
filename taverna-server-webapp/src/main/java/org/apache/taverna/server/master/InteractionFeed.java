@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master;
+package org.apache.taverna.server.master;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,9 +18,9 @@ package org.taverna.server.master;
  * limitations under the License.
  */
 
-import static org.taverna.server.master.common.Roles.SELF;
-import static org.taverna.server.master.common.Roles.USER;
-import static org.taverna.server.master.utils.RestUtils.opt;
+import static org.apache.taverna.server.master.common.Roles.SELF;
+import static org.apache.taverna.server.master.common.Roles.USER;
+import static org.apache.taverna.server.master.utils.RestUtils.opt;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -31,15 +31,15 @@ import javax.ws.rs.core.Response;
 
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
-import org.taverna.server.master.api.FeedBean;
-import org.taverna.server.master.exceptions.FilesystemAccessException;
-import org.taverna.server.master.exceptions.NoDirectoryEntryException;
-import org.taverna.server.master.exceptions.NoUpdateException;
-import org.taverna.server.master.interaction.InteractionFeedSupport;
-import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.rest.InteractionFeedREST;
-import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
-import org.taverna.server.master.utils.InvocationCounter.CallCounted;
+import org.apache.taverna.server.master.api.FeedBean;
+import org.apache.taverna.server.master.exceptions.FilesystemAccessException;
+import org.apache.taverna.server.master.exceptions.NoDirectoryEntryException;
+import org.apache.taverna.server.master.exceptions.NoUpdateException;
+import org.apache.taverna.server.master.interaction.InteractionFeedSupport;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.rest.InteractionFeedREST;
+import org.apache.taverna.server.master.utils.CallTimeLogger.PerfLogged;
+import org.apache.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 /**
  * How to connect an interaction feed to the webapp.

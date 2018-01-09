@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.exceptions;
+package org.apache.taverna.server.master.exceptions;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,7 +18,7 @@ package org.taverna.server.master.exceptions;
  * limitations under the License.
  */
 
-import static org.taverna.server.master.common.Namespaces.SERVER_SOAP;
+import static org.apache.taverna.server.master.common.Namespaces.SERVER_SOAP;
 
 import javax.xml.ws.WebFault;
 

@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.worker;
+package org.apache.taverna.server.master.worker;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -20,12 +20,12 @@ package org.taverna.server.master.worker;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static org.taverna.server.master.worker.RunConnection.COUNT_QUERY;
-import static org.taverna.server.master.worker.RunConnection.NAMES_QUERY;
-import static org.taverna.server.master.worker.RunConnection.SCHEMA;
-import static org.taverna.server.master.worker.RunConnection.TABLE;
-import static org.taverna.server.master.worker.RunConnection.TIMEOUT_QUERY;
-import static org.taverna.server.master.worker.RunConnection.UNTERMINATED_QUERY;
+import static org.apache.taverna.server.master.worker.RunConnection.COUNT_QUERY;
+import static org.apache.taverna.server.master.worker.RunConnection.NAMES_QUERY;
+import static org.apache.taverna.server.master.worker.RunConnection.SCHEMA;
+import static org.apache.taverna.server.master.worker.RunConnection.TABLE;
+import static org.apache.taverna.server.master.worker.RunConnection.TIMEOUT_QUERY;
+import static org.apache.taverna.server.master.worker.RunConnection.UNTERMINATED_QUERY;
 
 import java.io.IOException;
 import java.rmi.MarshalledObject;
@@ -42,12 +42,12 @@ import javax.jdo.annotations.PrimaryKey;
 import javax.jdo.annotations.Queries;
 import javax.jdo.annotations.Query;
 
-import org.taverna.server.localworker.remote.RemoteSingleRun;
-import org.taverna.server.master.common.Credential;
-import org.taverna.server.master.common.Trust;
-import org.taverna.server.master.common.Workflow;
-import org.taverna.server.master.interfaces.SecurityContextFactory;
-import org.taverna.server.master.utils.UsernamePrincipal;
+import org.apache.taverna.server.localworker.remote.RemoteSingleRun;
+import org.apache.taverna.server.master.common.Credential;
+import org.apache.taverna.server.master.common.Trust;
+import org.apache.taverna.server.master.common.Workflow;
+import org.apache.taverna.server.master.interfaces.SecurityContextFactory;
+import org.apache.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * The representation of the connections to the runs that actually participates
@@ -228,7 +228,7 @@ public class RunConnection {
 			run = new MarshalledObject<>(rrd.run);
 			securityContextFactory = rrd.getSecurityContext().getFactory();
 			owner = rrd.getSecurityContext().getOwner().getName();
-			securityToken = ((org.taverna.server.master.worker.SecurityContextFactory) securityContextFactory)
+			securityToken = ((org.apache.taverna.server.master.worker.SecurityContextFactory) securityContextFactory)
 					.issueNewPassword();
 		}
 		// Properties that are set multiple times

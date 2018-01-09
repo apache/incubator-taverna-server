@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.utils;
+package org.apache.taverna.server.master.utils;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,7 +21,7 @@ package org.taverna.server.master.utils;
 import static java.lang.Thread.currentThread;
 import static java.sql.DriverManager.deregisterDriver;
 import static java.sql.DriverManager.getDrivers;
-import static org.taverna.server.master.utils.Contextualizer.ROOT_PLACEHOLDER;
+import static org.apache.taverna.server.master.utils.Contextualizer.ROOT_PLACEHOLDER;
 
 import java.io.PrintWriter;
 import java.sql.Connection;

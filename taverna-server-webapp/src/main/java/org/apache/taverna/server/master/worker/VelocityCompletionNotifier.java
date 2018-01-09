@@ -1,4 +1,4 @@
-package org.taverna.server.master.worker;
+package org.apache.taverna.server.master.worker;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -22,10 +22,10 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.common.version.Version;
-import org.taverna.server.master.exceptions.NoListenerException;
-import org.taverna.server.master.interfaces.Listener;
-import org.taverna.server.master.interfaces.UriBuilderFactory;
+import org.apache.taverna.server.master.common.version.Version;
+import org.apache.taverna.server.master.exceptions.NoListenerException;
+import org.apache.taverna.server.master.interfaces.Listener;
+import org.apache.taverna.server.master.interfaces.UriBuilderFactory;
 
 public class VelocityCompletionNotifier implements CompletionNotifier {
 	private String subject;

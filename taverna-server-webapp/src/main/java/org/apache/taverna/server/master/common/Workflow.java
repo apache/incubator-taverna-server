@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.common;
+package org.apache.taverna.server.master.common;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -22,10 +22,10 @@ import static javax.xml.bind.Marshaller.JAXB_ENCODING;
 import static javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT;
 import static javax.xml.bind.annotation.XmlAccessType.NONE;
 import static org.apache.commons.logging.LogFactory.getLog;
-import static org.taverna.server.master.rest.handler.Scufl2DocumentHandler.SCUFL2;
-import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
-import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW_NS;
-import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW_ROOTNAME;
+import static org.apache.taverna.server.master.rest.handler.Scufl2DocumentHandler.SCUFL2;
+import static org.apache.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
+import static org.apache.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW_NS;
+import static org.apache.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW_ROOTNAME;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -52,8 +52,8 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.taverna.server.master.rest.handler.Scufl2DocumentHandler;
-import org.taverna.server.master.rest.handler.T2FlowDocumentHandler;
+import org.apache.taverna.server.master.rest.handler.Scufl2DocumentHandler;
+import org.apache.taverna.server.master.rest.handler.T2FlowDocumentHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;

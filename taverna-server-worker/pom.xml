@@ -29,7 +29,7 @@ limitations under the License.
     This is the implementation of the factory process that is started up by the web application to manage executing Taverna Workflow executeworkflow.sh calls. Also provides per-user access to filestore.</description>
 
 	<properties>
-		<workerMainClass>org.taverna.server.localworker.impl.TavernaRunManager</workerMainClass>
+		<workerMainClass>org.apache.taverna.server.localworker.impl.TavernaRunManager</workerMainClass>
 	</properties>
 
 	<dependencies>

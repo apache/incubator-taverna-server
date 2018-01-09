@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.identity;
+package org.apache.taverna.server.master.identity;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -25,8 +25,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.taverna.server.master.interfaces.LocalIdentityMapper;
-import org.taverna.server.master.utils.UsernamePrincipal;
+import org.apache.taverna.server.master.interfaces.LocalIdentityMapper;
+import org.apache.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * A trivial identity mapper that just uses the name out of the

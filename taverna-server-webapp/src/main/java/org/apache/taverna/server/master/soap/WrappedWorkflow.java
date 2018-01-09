@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.soap;
+package org.apache.taverna.server.master.soap;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlMimeType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-import org.taverna.server.master.common.Workflow;
+import org.apache.taverna.server.master.common.Workflow;
 
 import org.apache.taverna.scufl2.api.io.ReaderException;
 import org.apache.taverna.scufl2.api.io.WorkflowBundleIO;

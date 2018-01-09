@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.rest;
+package org.apache.taverna.server.master.rest;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -20,12 +20,12 @@ package org.taverna.server.master.rest;
 
 import static java.util.Collections.unmodifiableList;
 import static javax.ws.rs.core.MediaType.WILDCARD;
-import static org.taverna.server.master.common.Roles.USER;
-import static org.taverna.server.master.rest.ContentTypes.BYTES;
-import static org.taverna.server.master.rest.ContentTypes.JSON;
-import static org.taverna.server.master.rest.ContentTypes.URI_LIST;
-import static org.taverna.server.master.rest.ContentTypes.XML;
-import static org.taverna.server.master.rest.ContentTypes.ZIP;
+import static org.apache.taverna.server.master.common.Roles.USER;
+import static org.apache.taverna.server.master.rest.ContentTypes.BYTES;
+import static org.apache.taverna.server.master.rest.ContentTypes.JSON;
+import static org.apache.taverna.server.master.rest.ContentTypes.URI_LIST;
+import static org.apache.taverna.server.master.rest.ContentTypes.XML;
+import static org.apache.taverna.server.master.rest.ContentTypes.ZIP;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -50,11 +50,11 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
 
 import org.apache.cxf.jaxrs.model.wadl.Description;
-import org.taverna.server.master.exceptions.FilesystemAccessException;
-import org.taverna.server.master.exceptions.NoDirectoryEntryException;
-import org.taverna.server.master.exceptions.NoUpdateException;
-import org.taverna.server.master.interfaces.Directory;
-import org.taverna.server.master.interfaces.File;
+import org.apache.taverna.server.master.exceptions.FilesystemAccessException;
+import org.apache.taverna.server.master.exceptions.NoDirectoryEntryException;
+import org.apache.taverna.server.master.exceptions.NoUpdateException;
+import org.apache.taverna.server.master.interfaces.Directory;
+import org.apache.taverna.server.master.interfaces.File;
 
 /**
  * Representation of how a workflow run's working directory tree looks.

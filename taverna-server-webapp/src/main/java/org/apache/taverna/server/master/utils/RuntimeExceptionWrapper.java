@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.utils;
+package org.apache.taverna.server.master.utils;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -20,7 +20,7 @@ package org.taverna.server.master.utils;
 
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
-import org.taverna.server.master.exceptions.GeneralFailureException;
+import org.apache.taverna.server.master.exceptions.GeneralFailureException;
 
 /**
  * Aspect used to convert {@linkplain RuntimeException runtime exceptions} into
@@ -39,7 +39,7 @@ public class RuntimeExceptionWrapper {
 	 * @throws GeneralFailureException
 	 *             The known exception type that it is mapped to.
 	 */
-	@AfterThrowing(pointcut = "execution(* org.taverna.server.master.rest..*(..)) && !bean(*Provider.*)", throwing = "exn")
+	@AfterThrowing(pointcut = "execution(* org.apache.taverna.server.master.rest..*(..)) && !bean(*Provider.*)", throwing = "exn")
 	public void wrapRuntimeException(RuntimeException exn)
 			throws GeneralFailureException {
 		// Exclude security-related exceptions

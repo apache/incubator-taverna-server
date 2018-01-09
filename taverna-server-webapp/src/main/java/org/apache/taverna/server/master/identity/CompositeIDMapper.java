@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.identity;
+package org.apache.taverna.server.master.identity;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -27,8 +27,8 @@ import org.apache.commons.logging.Log;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.taverna.server.master.interfaces.LocalIdentityMapper;
-import org.taverna.server.master.utils.UsernamePrincipal;
+import org.apache.taverna.server.master.interfaces.LocalIdentityMapper;
+import org.apache.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * An identity mapper that composes the results from other mappers, using the

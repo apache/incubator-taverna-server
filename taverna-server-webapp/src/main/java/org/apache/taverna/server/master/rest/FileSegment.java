@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.rest;
+package org.apache.taverna.server.master.rest;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -26,8 +26,8 @@ import java.util.regex.Pattern;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.taverna.server.master.exceptions.FilesystemAccessException;
-import org.taverna.server.master.interfaces.File;
+import org.apache.taverna.server.master.exceptions.FilesystemAccessException;
+import org.apache.taverna.server.master.interfaces.File;
 
 /**
  * Representation of a segment of a file to be read by JAX-RS.

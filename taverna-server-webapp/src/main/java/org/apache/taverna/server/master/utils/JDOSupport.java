@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.utils;
+package org.apache.taverna.server.master.utils;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -187,7 +187,7 @@ public abstract class JDOSupport<T> {
 		private Log log = getLog("Taverna.Server.Utils");
 		private volatile int txid;
 
-		@Around(value = "@annotation(org.taverna.server.master.utils.JDOSupport.WithinSingleTransaction) && target(support)", argNames = "support")
+		@Around(value = "@annotation(org.apache.taverna.server.master.utils.JDOSupport.WithinSingleTransaction) && target(support)", argNames = "support")
 		Object applyTransaction(ProceedingJoinPoint pjp, JDOSupport<?> support)
 				throws Throwable {
 			synchronized (lock) {

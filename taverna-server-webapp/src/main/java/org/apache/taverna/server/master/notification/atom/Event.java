@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.notification.atom;
+package org.apache.taverna.server.master.notification.atom;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -34,7 +34,7 @@ import javax.jdo.annotations.Query;
 import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Entry;
 import org.joda.time.DateTime;
-import org.taverna.server.master.utils.UsernamePrincipal;
+import org.apache.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * Parent class of all events that may appear on the feed for a workflow run.

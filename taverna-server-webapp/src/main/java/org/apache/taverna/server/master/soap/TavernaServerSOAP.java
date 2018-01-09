@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.soap;
+package org.apache.taverna.server.master.soap;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,8 +18,8 @@ package org.taverna.server.master.soap;
  * limitations under the License.
  */
 
-import static org.taverna.server.master.common.Namespaces.SERVER_SOAP;
-import static org.taverna.server.master.common.Roles.USER;
+import static org.apache.taverna.server.master.common.Namespaces.SERVER_SOAP;
+import static org.apache.taverna.server.master.common.Roles.USER;
 
 import java.net.URI;
 import java.util.Date;
@@ -34,30 +34,30 @@ import javax.xml.bind.annotation.XmlElement;
 
 import org.apache.cxf.annotations.WSDLDocumentation;
 import org.apache.taverna.server.usagerecord.JobUsageRecord;
-import org.taverna.server.master.common.Capability;
-import org.taverna.server.master.common.Credential;
-import org.taverna.server.master.common.DirEntryReference;
-import org.taverna.server.master.common.InputDescription;
-import org.taverna.server.master.common.Permission;
-import org.taverna.server.master.common.ProfileList;
-import org.taverna.server.master.common.RunReference;
-import org.taverna.server.master.common.Status;
-import org.taverna.server.master.common.Trust;
-import org.taverna.server.master.common.Workflow;
-import org.taverna.server.master.common.version.Version;
-import org.taverna.server.master.exceptions.BadPropertyValueException;
-import org.taverna.server.master.exceptions.BadStateChangeException;
-import org.taverna.server.master.exceptions.FilesystemAccessException;
-import org.taverna.server.master.exceptions.InvalidCredentialException;
-import org.taverna.server.master.exceptions.NoCreateException;
-import org.taverna.server.master.exceptions.NoCredentialException;
-import org.taverna.server.master.exceptions.NoDirectoryEntryException;
-import org.taverna.server.master.exceptions.NoListenerException;
-import org.taverna.server.master.exceptions.NoUpdateException;
-import org.taverna.server.master.exceptions.NotOwnerException;
-import org.taverna.server.master.exceptions.UnknownRunException;
-import org.taverna.server.master.rest.TavernaServerREST;
-import org.taverna.server.port_description.OutputDescription;
+import org.apache.taverna.server.master.common.Capability;
+import org.apache.taverna.server.master.common.Credential;
+import org.apache.taverna.server.master.common.DirEntryReference;
+import org.apache.taverna.server.master.common.InputDescription;
+import org.apache.taverna.server.master.common.Permission;
+import org.apache.taverna.server.master.common.ProfileList;
+import org.apache.taverna.server.master.common.RunReference;
+import org.apache.taverna.server.master.common.Status;
+import org.apache.taverna.server.master.common.Trust;
+import org.apache.taverna.server.master.common.Workflow;
+import org.apache.taverna.server.master.common.version.Version;
+import org.apache.taverna.server.master.exceptions.BadPropertyValueException;
+import org.apache.taverna.server.master.exceptions.BadStateChangeException;
+import org.apache.taverna.server.master.exceptions.FilesystemAccessException;
+import org.apache.taverna.server.master.exceptions.InvalidCredentialException;
+import org.apache.taverna.server.master.exceptions.NoCreateException;
+import org.apache.taverna.server.master.exceptions.NoCredentialException;
+import org.apache.taverna.server.master.exceptions.NoDirectoryEntryException;
+import org.apache.taverna.server.master.exceptions.NoListenerException;
+import org.apache.taverna.server.master.exceptions.NoUpdateException;
+import org.apache.taverna.server.master.exceptions.NotOwnerException;
+import org.apache.taverna.server.master.exceptions.UnknownRunException;
+import org.apache.taverna.server.master.rest.TavernaServerREST;
+import org.apache.taverna.server.port_description.OutputDescription;
 
 /**
  * The SOAP service interface to Taverna 3 Server.
@@ -309,7 +309,7 @@ public interface TavernaServerSOAP {
 	 */
 	@WebResult(name = "RunInputDescriptor")
 	@WSDLDocumentation("Get a description of what inputs the given workflow run expects to receive.")
-	org.taverna.server.port_description.InputDescription getRunInputDescriptor(
+	org.apache.taverna.server.port_description.InputDescription getRunInputDescriptor(
 			@WebParam(name = "runName") @XmlElement(required = true) String runName)
 			throws UnknownRunException;
 

@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.soap;
+package org.apache.taverna.server.master.soap;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -31,8 +31,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlMimeType;
 import javax.xml.bind.annotation.XmlType;
 
-import org.taverna.server.master.exceptions.FilesystemAccessException;
-import org.taverna.server.master.interfaces.File;
+import org.apache.taverna.server.master.exceptions.FilesystemAccessException;
+import org.apache.taverna.server.master.interfaces.File;
 
 /**
  * An MTOM-capable description of how to transfer the contents of a file.

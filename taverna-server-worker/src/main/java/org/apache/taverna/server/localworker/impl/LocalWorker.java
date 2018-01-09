@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.localworker.impl;
+package org.apache.taverna.server.localworker.impl;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -30,19 +30,19 @@ import static org.apache.commons.io.FileUtils.forceDelete;
 import static org.apache.commons.io.FileUtils.forceMkdir;
 import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
 import static org.apache.commons.io.FileUtils.writeLines;
-import static org.taverna.server.localworker.api.Constants.HELIO_TOKEN_NAME;
-import static org.taverna.server.localworker.api.Constants.KEYSTORE_FILE;
-import static org.taverna.server.localworker.api.Constants.KEYSTORE_PASSWORD;
-import static org.taverna.server.localworker.api.Constants.SECURITY_DIR_NAME;
-import static org.taverna.server.localworker.api.Constants.SHARED_DIR_PROP;
-import static org.taverna.server.localworker.api.Constants.SUBDIR_LIST;
-import static org.taverna.server.localworker.api.Constants.SYSTEM_ENCODING;
-import static org.taverna.server.localworker.api.Constants.TRUSTSTORE_FILE;
-import static org.taverna.server.localworker.impl.utils.FilenameVerifier.getValidatedFile;
-import static org.taverna.server.localworker.remote.RemoteStatus.Finished;
-import static org.taverna.server.localworker.remote.RemoteStatus.Initialized;
-import static org.taverna.server.localworker.remote.RemoteStatus.Operating;
-import static org.taverna.server.localworker.remote.RemoteStatus.Stopped;
+import static org.apache.taverna.server.localworker.api.Constants.HELIO_TOKEN_NAME;
+import static org.apache.taverna.server.localworker.api.Constants.KEYSTORE_FILE;
+import static org.apache.taverna.server.localworker.api.Constants.KEYSTORE_PASSWORD;
+import static org.apache.taverna.server.localworker.api.Constants.SECURITY_DIR_NAME;
+import static org.apache.taverna.server.localworker.api.Constants.SHARED_DIR_PROP;
+import static org.apache.taverna.server.localworker.api.Constants.SUBDIR_LIST;
+import static org.apache.taverna.server.localworker.api.Constants.SYSTEM_ENCODING;
+import static org.apache.taverna.server.localworker.api.Constants.TRUSTSTORE_FILE;
+import static org.apache.taverna.server.localworker.impl.utils.FilenameVerifier.getValidatedFile;
+import static org.apache.taverna.server.localworker.remote.RemoteStatus.Finished;
+import static org.apache.taverna.server.localworker.remote.RemoteStatus.Initialized;
+import static org.apache.taverna.server.localworker.remote.RemoteStatus.Operating;
+import static org.apache.taverna.server.localworker.remote.RemoteStatus.Stopped;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,18 +59,18 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-import org.taverna.server.localworker.api.Worker;
-import org.taverna.server.localworker.api.WorkerFactory;
-import org.taverna.server.localworker.remote.IllegalStateTransitionException;
-import org.taverna.server.localworker.remote.ImplementationException;
-import org.taverna.server.localworker.remote.RemoteDirectory;
-import org.taverna.server.localworker.remote.RemoteInput;
-import org.taverna.server.localworker.remote.RemoteListener;
-import org.taverna.server.localworker.remote.RemoteSecurityContext;
-import org.taverna.server.localworker.remote.RemoteSingleRun;
-import org.taverna.server.localworker.remote.RemoteStatus;
-import org.taverna.server.localworker.remote.StillWorkingOnItException;
-import org.taverna.server.localworker.server.UsageRecordReceiver;
+import org.apache.taverna.server.localworker.api.Worker;
+import org.apache.taverna.server.localworker.api.WorkerFactory;
+import org.apache.taverna.server.localworker.remote.IllegalStateTransitionException;
+import org.apache.taverna.server.localworker.remote.ImplementationException;
+import org.apache.taverna.server.localworker.remote.RemoteDirectory;
+import org.apache.taverna.server.localworker.remote.RemoteInput;
+import org.apache.taverna.server.localworker.remote.RemoteListener;
+import org.apache.taverna.server.localworker.remote.RemoteSecurityContext;
+import org.apache.taverna.server.localworker.remote.RemoteSingleRun;
+import org.apache.taverna.server.localworker.remote.RemoteStatus;
+import org.apache.taverna.server.localworker.remote.StillWorkingOnItException;
+import org.apache.taverna.server.localworker.server.UsageRecordReceiver;
 
 /**
  * This class implements one side of the connection between the Taverna Server

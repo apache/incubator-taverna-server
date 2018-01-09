@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.identity;
+package org.apache.taverna.server.master.identity;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,10 +19,10 @@ package org.taverna.server.master.identity;
  */
 
 import static org.apache.commons.logging.LogFactory.getLog;
-import static org.taverna.server.master.TavernaServer.JMX_ROOT;
-import static org.taverna.server.master.common.Roles.ADMIN;
-import static org.taverna.server.master.common.Roles.USER;
-import static org.taverna.server.master.defaults.Default.AUTHORITY_PREFIX;
+import static org.apache.taverna.server.master.TavernaServer.JMX_ROOT;
+import static org.apache.taverna.server.master.common.Roles.ADMIN;
+import static org.apache.taverna.server.master.common.Roles.USER;
+import static org.apache.taverna.server.master.defaults.Default.AUTHORITY_PREFIX;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,8 +50,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.core.userdetails.memory.UserAttribute;
 import org.springframework.security.core.userdetails.memory.UserAttributeEditor;
-import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
-import org.taverna.server.master.utils.JDOSupport;
+import org.apache.taverna.server.master.utils.CallTimeLogger.PerfLogged;
+import org.apache.taverna.server.master.utils.JDOSupport;
 
 /**
  * The bean class that is responsible for managing the users in the database.

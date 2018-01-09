@@ -1,4 +1,4 @@
-package org.taverna.server.master.api;
+package org.apache.taverna.server.master.api;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,11 +16,11 @@ package org.taverna.server.master.api;
  * limitations under the License.
  */
 
-import org.taverna.server.master.ContentsDescriptorBuilder;
-import org.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.ContentsDescriptorBuilder;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
 
 /**
- * Description of properties supported by {@link org.taverna.server.master.RunREST}.
+ * Description of properties supported by {@link org.apache.taverna.server.master.RunREST}.
  * 
  * @author Donal Fellows
  */

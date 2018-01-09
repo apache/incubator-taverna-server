@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.rest.handler;
+package org.apache.taverna.server.master.rest.handler;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,7 +19,7 @@ package org.taverna.server.master.rest.handler;
  */
 
 import static javax.ws.rs.core.Response.status;
-import static org.taverna.server.master.rest.handler.URIListHandler.URI_LIST;
+import static org.apache.taverna.server.master.rest.handler.URIListHandler.URI_LIST;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

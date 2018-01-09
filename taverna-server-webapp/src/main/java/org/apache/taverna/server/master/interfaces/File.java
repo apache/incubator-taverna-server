@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.interfaces;
+package org.apache.taverna.server.master.interfaces;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,7 +18,7 @@ package org.taverna.server.master.interfaces;
  * limitations under the License.
  */
 
-import org.taverna.server.master.exceptions.FilesystemAccessException;
+import org.apache.taverna.server.master.exceptions.FilesystemAccessException;
 
 /**
  * Represents a file in the working directory of a workflow instance run, or in

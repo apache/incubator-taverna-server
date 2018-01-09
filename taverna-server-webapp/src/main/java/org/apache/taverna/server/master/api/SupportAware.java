@@ -1,4 +1,4 @@
-package org.taverna.server.master.api;
+package org.apache.taverna.server.master.api;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -17,7 +17,7 @@ package org.taverna.server.master.api;
  */
 
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.TavernaServerSupport;
+import org.apache.taverna.server.master.TavernaServerSupport;
 
 /**
  * Indicates that this is a class that wants to be told by Spring about the

@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.worker;
+package org.apache.taverna.server.master.worker;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,10 +21,10 @@ package org.taverna.server.master.worker;
 import static java.lang.String.format;
 import static java.util.Arrays.fill;
 import static java.util.UUID.randomUUID;
-import static org.taverna.server.master.defaults.Default.CERTIFICATE_FIELD_NAMES;
-import static org.taverna.server.master.defaults.Default.CERTIFICATE_TYPE;
-import static org.taverna.server.master.defaults.Default.CREDENTIAL_FILE_SIZE_LIMIT;
-import static org.taverna.server.master.identity.WorkflowInternalAuthProvider.PREFIX;
+import static org.apache.taverna.server.master.defaults.Default.CERTIFICATE_FIELD_NAMES;
+import static org.apache.taverna.server.master.defaults.Default.CERTIFICATE_TYPE;
+import static org.apache.taverna.server.master.defaults.Default.CREDENTIAL_FILE_SIZE_LIMIT;
+import static org.apache.taverna.server.master.identity.WorkflowInternalAuthProvider.PREFIX;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -56,16 +56,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
-import org.taverna.server.localworker.remote.ImplementationException;
-import org.taverna.server.localworker.remote.RemoteSecurityContext;
-import org.taverna.server.master.common.Credential;
-import org.taverna.server.master.common.Trust;
-import org.taverna.server.master.exceptions.FilesystemAccessException;
-import org.taverna.server.master.exceptions.InvalidCredentialException;
-import org.taverna.server.master.exceptions.NoDirectoryEntryException;
-import org.taverna.server.master.interfaces.File;
-import org.taverna.server.master.interfaces.TavernaSecurityContext;
-import org.taverna.server.master.utils.UsernamePrincipal;
+import org.apache.taverna.server.localworker.remote.ImplementationException;
+import org.apache.taverna.server.localworker.remote.RemoteSecurityContext;
+import org.apache.taverna.server.master.common.Credential;
+import org.apache.taverna.server.master.common.Trust;
+import org.apache.taverna.server.master.exceptions.FilesystemAccessException;
+import org.apache.taverna.server.master.exceptions.InvalidCredentialException;
+import org.apache.taverna.server.master.exceptions.NoDirectoryEntryException;
+import org.apache.taverna.server.master.interfaces.File;
+import org.apache.taverna.server.master.interfaces.TavernaSecurityContext;
+import org.apache.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * Implementation of a security context.

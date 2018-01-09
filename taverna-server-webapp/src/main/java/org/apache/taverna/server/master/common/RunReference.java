@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.common;
+package org.apache.taverna.server.master.common;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,9 +18,9 @@ package org.taverna.server.master.common;
  * limitations under the License.
  */
 
-import static org.taverna.server.master.common.Namespaces.SERVER;
-import static org.taverna.server.master.common.Namespaces.XLINK;
-import static org.taverna.server.master.common.VersionedElement.VERSION;
+import static org.apache.taverna.server.master.common.Namespaces.SERVER;
+import static org.apache.taverna.server.master.common.Namespaces.XLINK;
+import static org.apache.taverna.server.master.common.VersionedElement.VERSION;
 
 import java.net.URI;
 
@@ -36,7 +36,7 @@ import javax.xml.bind.annotation.XmlValue;
  * A reference to a single workflow run, described using JAXB.
  * 
  * @author Donal Fellows
- * @see org.taverna.server.master.interfaces.TavernaRun TavernaRun
+ * @see org.apache.taverna.server.master.interfaces.TavernaRun TavernaRun
  */
 @XmlRootElement
 @XmlType(name = "TavernaRun")

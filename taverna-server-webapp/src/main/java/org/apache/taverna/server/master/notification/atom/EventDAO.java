@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.notification.atom;
+package org.apache.taverna.server.master.notification.atom;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -37,11 +37,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.interfaces.MessageDispatcher;
-import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.interfaces.UriBuilderFactory;
-import org.taverna.server.master.utils.JDOSupport;
-import org.taverna.server.master.utils.UsernamePrincipal;
+import org.apache.taverna.server.master.interfaces.MessageDispatcher;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.interfaces.UriBuilderFactory;
+import org.apache.taverna.server.master.utils.JDOSupport;
+import org.apache.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * The database interface that supports the event feed.

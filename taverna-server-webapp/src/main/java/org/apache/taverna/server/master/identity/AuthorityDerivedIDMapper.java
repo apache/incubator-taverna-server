@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.identity;
+package org.apache.taverna.server.master.identity;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,13 +18,13 @@ package org.taverna.server.master.identity;
  * limitations under the License.
  */
 
-import static org.taverna.server.master.defaults.Default.AUTHORITY_PREFIX;
+import static org.apache.taverna.server.master.defaults.Default.AUTHORITY_PREFIX;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.taverna.server.master.interfaces.LocalIdentityMapper;
-import org.taverna.server.master.utils.UsernamePrincipal;
+import org.apache.taverna.server.master.interfaces.LocalIdentityMapper;
+import org.apache.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * Extracts the local user id from the set of Spring Security authorities

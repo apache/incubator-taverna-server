@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.worker;
+package org.apache.taverna.server.master.worker;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -43,11 +43,11 @@ import javax.xml.ws.handler.MessageContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.taverna.server.localworker.remote.RemoteSecurityContext;
-import org.taverna.server.master.common.Credential;
-import org.taverna.server.master.exceptions.InvalidCredentialException;
-import org.taverna.server.master.utils.UsernamePrincipal;
-import org.taverna.server.master.utils.X500Utils;
+import org.apache.taverna.server.localworker.remote.RemoteSecurityContext;
+import org.apache.taverna.server.master.common.Credential;
+import org.apache.taverna.server.master.exceptions.InvalidCredentialException;
+import org.apache.taverna.server.master.utils.UsernamePrincipal;
+import org.apache.taverna.server.master.utils.X500Utils;
 
 /**
  * Factoring out of the part of the security context handling that actually

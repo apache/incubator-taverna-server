@@ -4,7 +4,7 @@
  * These interfaces define the principal way for the <i>factories</i> of
  * worker classes to be invoked.
  */
-package org.taverna.server.master.factories;
+package org.apache.taverna.server.master.factories;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with

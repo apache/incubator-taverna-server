@@ -1,4 +1,4 @@
-package org.taverna.server.master.api;
+package org.apache.taverna.server.master.api;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,9 +16,9 @@ package org.taverna.server.master.api;
  * limitations under the License.
  */
 
-import org.taverna.server.master.rest.TavernaServerDirectoryREST;
-import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.utils.FilenameUtils;
+import org.apache.taverna.server.master.rest.TavernaServerDirectoryREST;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.utils.FilenameUtils;
 
 /**
  * Description of properties supported by {@link DirectoryREST}.

@@ -1,4 +1,4 @@
-package org.taverna.server.master.api;
+package org.apache.taverna.server.master.api;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,13 +18,13 @@ package org.taverna.server.master.api;
 
 import javax.ws.rs.core.UriInfo;
 
-import org.taverna.server.master.ContentsDescriptorBuilder;
-import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.rest.TavernaServerInputREST;
-import org.taverna.server.master.utils.FilenameUtils;
+import org.apache.taverna.server.master.ContentsDescriptorBuilder;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.rest.TavernaServerInputREST;
+import org.apache.taverna.server.master.utils.FilenameUtils;
 
 /**
- * Description of properties supported by {@link org.taverna.server.master.InputREST}.
+ * Description of properties supported by {@link org.apache.taverna.server.master.InputREST}.
  * 
  * @author Donal Fellows
  */

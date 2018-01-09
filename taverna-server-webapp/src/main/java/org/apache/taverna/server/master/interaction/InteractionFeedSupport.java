@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.interaction;
+package org.apache.taverna.server.master.interaction;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -52,16 +52,16 @@ import org.apache.abdera.model.Feed;
 import org.apache.abdera.parser.Parser;
 import org.apache.abdera.writer.Writer;
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.TavernaServerSupport;
-import org.taverna.server.master.exceptions.FilesystemAccessException;
-import org.taverna.server.master.exceptions.NoDirectoryEntryException;
-import org.taverna.server.master.exceptions.NoUpdateException;
-import org.taverna.server.master.interfaces.Directory;
-import org.taverna.server.master.interfaces.DirectoryEntry;
-import org.taverna.server.master.interfaces.File;
-import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.interfaces.UriBuilderFactory;
-import org.taverna.server.master.utils.FilenameUtils;
+import org.apache.taverna.server.master.TavernaServerSupport;
+import org.apache.taverna.server.master.exceptions.FilesystemAccessException;
+import org.apache.taverna.server.master.exceptions.NoDirectoryEntryException;
+import org.apache.taverna.server.master.exceptions.NoUpdateException;
+import org.apache.taverna.server.master.interfaces.Directory;
+import org.apache.taverna.server.master.interfaces.DirectoryEntry;
+import org.apache.taverna.server.master.interfaces.File;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.interfaces.UriBuilderFactory;
+import org.apache.taverna.server.master.utils.FilenameUtils;
 
 /**
  * Bean that supports interaction feeds. This glues together the Abdera

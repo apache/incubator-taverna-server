@@ -539,12 +539,12 @@ limitations under the License.
 				<configuration>
 					<fork>false</fork>
 					<metadataIncludes>
-						org/taverna/server/master/*.class,
-						org/taverna/server/master/identity/*.class,
-						org/taverna/server/master/localworker/*.class,
-						org/taverna/server/master/notification/atom/*.class,
-						org/taverna/server/master/usage/*.class,
-						org/taverna/server/master/worker/*.class
+						org.apache.taverna/server/master/*.class,
+						org.apache.taverna/server/master/identity/*.class,
+						org.apache.taverna/server/master/localworker/*.class,
+						org.apache.taverna/server/master/notification/atom/*.class,
+						org.apache.taverna/server/master/usage/*.class,
+						org.apache.taverna/server/master/worker/*.class
 					</metadataIncludes>
 				</configuration>
 				<executions>

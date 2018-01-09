@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.worker;
+package org.apache.taverna.server.master.worker;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -23,7 +23,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.taverna.server.master.notification.NotificationEngine;
+import org.apache.taverna.server.master.notification.NotificationEngine;
 
 /**
  * The interface to the database of runs.

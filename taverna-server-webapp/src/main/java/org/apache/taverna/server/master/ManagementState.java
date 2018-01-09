@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master;
+package org.apache.taverna.server.master;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -26,8 +26,8 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.api.ManagementModel;
-import org.taverna.server.master.utils.JDOSupport;
+import org.apache.taverna.server.master.api.ManagementModel;
+import org.apache.taverna.server.master.utils.JDOSupport;
 
 /** The persistent, manageable state of the Taverna Server web application. */
 @PersistenceAware

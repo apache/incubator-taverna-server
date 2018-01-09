@@ -1,7 +1,7 @@
 /*
  */
 
-package org.taverna.server.master.notification;
+package org.apache.taverna.server.master.notification;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -29,8 +29,8 @@ import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Message;
-import org.taverna.server.master.interfaces.MessageDispatcher;
-import org.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.interfaces.MessageDispatcher;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
 
 /**
  * Send notifications by Jabber/XMPP.

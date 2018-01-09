@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.interfaces;
+package org.apache.taverna.server.master.interfaces;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,9 +21,9 @@ package org.taverna.server.master.interfaces;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.taverna.server.master.common.Status;
-import org.taverna.server.master.exceptions.BadStateChangeException;
-import org.taverna.server.master.exceptions.FilesystemAccessException;
+import org.apache.taverna.server.master.common.Status;
+import org.apache.taverna.server.master.exceptions.BadStateChangeException;
+import org.apache.taverna.server.master.exceptions.FilesystemAccessException;
 
 /**
  * This represents the assignment of inputs to input ports of the workflow. Note

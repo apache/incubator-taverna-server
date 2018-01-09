@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.common;
+package org.apache.taverna.server.master.common;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,7 +18,7 @@ package org.taverna.server.master.common;
  * limitations under the License.
  */
 
-import static org.taverna.server.master.common.Namespaces.XLINK;
+import static org.apache.taverna.server.master.common.Namespaces.XLINK;
 
 import java.net.URI;
 
@@ -30,8 +30,8 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
-import org.taverna.server.master.interfaces.Directory;
-import org.taverna.server.master.interfaces.DirectoryEntry;
+import org.apache.taverna.server.master.interfaces.Directory;
+import org.apache.taverna.server.master.interfaces.DirectoryEntry;
 
 /**
  * A reference to something that is in a directory below the working directory

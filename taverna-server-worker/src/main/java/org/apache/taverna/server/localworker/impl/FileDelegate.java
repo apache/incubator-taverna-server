@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.localworker.impl;
+package org.apache.taverna.server.localworker.impl;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -34,8 +34,8 @@ import java.util.Date;
 
 import javax.annotation.Nonnull;
 
-import org.taverna.server.localworker.remote.RemoteDirectory;
-import org.taverna.server.localworker.remote.RemoteFile;
+import org.apache.taverna.server.localworker.remote.RemoteDirectory;
+import org.apache.taverna.server.localworker.remote.RemoteFile;
 
 /**
  * This class acts as a remote-aware delegate for the files in a workflow run's

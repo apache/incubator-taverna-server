@@ -1,4 +1,4 @@
-package org.taverna.server.master.rest.handler;
+package org.apache.taverna.server.master.rest.handler;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -26,9 +26,9 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.FileConcatenation;
-import org.taverna.server.master.exceptions.FilesystemAccessException;
-import org.taverna.server.master.interfaces.File;
+import org.apache.taverna.server.master.FileConcatenation;
+import org.apache.taverna.server.master.exceptions.FilesystemAccessException;
+import org.apache.taverna.server.master.interfaces.File;
 
 public class FileConcatenationHandler implements
 		MessageBodyWriter<FileConcatenation> {

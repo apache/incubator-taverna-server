@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.rest.handler;
+package org.apache.taverna.server.master.rest.handler;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,7 +19,7 @@ package org.taverna.server.master.rest.handler;
  */
 
 import static org.apache.commons.io.IOUtils.copy;
-import static org.taverna.server.master.api.ContentTypes.APPLICATION_ZIP_TYPE;
+import static org.apache.taverna.server.master.api.ContentTypes.APPLICATION_ZIP_TYPE;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -33,7 +33,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
-import org.taverna.server.master.interfaces.Directory.ZipStream;
+import org.apache.taverna.server.master.interfaces.Directory.ZipStream;
 
 /**
  * How to write a ZIP file as the result entity of a request.

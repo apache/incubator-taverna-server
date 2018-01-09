@@ -13,7 +13,7 @@
 		@XmlNs(prefix = "admin", namespaceURI = ADMIN),
 		@XmlNs(prefix = "ur", namespaceURI = UR),
 		@XmlNs(prefix = "ds", namespaceURI = XSIG) })
-package org.taverna.server.master.admin;
+package org.apache.taverna.server.master.admin;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -32,14 +32,14 @@ package org.taverna.server.master.admin;
  */
 
 import static javax.xml.bind.annotation.XmlNsForm.QUALIFIED;
-import static org.taverna.server.master.common.Namespaces.ADMIN;
-import static org.taverna.server.master.common.Namespaces.FEED;
-import static org.taverna.server.master.common.Namespaces.SERVER;
-import static org.taverna.server.master.common.Namespaces.SERVER_REST;
-import static org.taverna.server.master.common.Namespaces.SERVER_SOAP;
-import static org.taverna.server.master.common.Namespaces.UR;
-import static org.taverna.server.master.common.Namespaces.XLINK;
-import static org.taverna.server.master.common.Namespaces.XSIG;
+import static org.apache.taverna.server.master.common.Namespaces.ADMIN;
+import static org.apache.taverna.server.master.common.Namespaces.FEED;
+import static org.apache.taverna.server.master.common.Namespaces.SERVER;
+import static org.apache.taverna.server.master.common.Namespaces.SERVER_REST;
+import static org.apache.taverna.server.master.common.Namespaces.SERVER_SOAP;
+import static org.apache.taverna.server.master.common.Namespaces.UR;
+import static org.apache.taverna.server.master.common.Namespaces.XLINK;
+import static org.apache.taverna.server.master.common.Namespaces.XSIG;
 
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlSchema;

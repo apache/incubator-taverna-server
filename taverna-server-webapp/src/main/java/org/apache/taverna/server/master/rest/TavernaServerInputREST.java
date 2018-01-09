@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.rest;
+package org.apache.taverna.server.master.rest;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,13 +18,13 @@ package org.taverna.server.master.rest;
  * limitations under the License.
  */
 
-import static org.taverna.server.master.common.Roles.USER;
-import static org.taverna.server.master.rest.ContentTypes.JSON;
-import static org.taverna.server.master.rest.ContentTypes.TEXT;
-import static org.taverna.server.master.rest.ContentTypes.XML;
-import static org.taverna.server.master.rest.TavernaServerInputREST.PathNames.BACLAVA;
-import static org.taverna.server.master.rest.TavernaServerInputREST.PathNames.EXPECTED;
-import static org.taverna.server.master.rest.TavernaServerInputREST.PathNames.ONE_INPUT;
+import static org.apache.taverna.server.master.common.Roles.USER;
+import static org.apache.taverna.server.master.rest.ContentTypes.JSON;
+import static org.apache.taverna.server.master.rest.ContentTypes.TEXT;
+import static org.apache.taverna.server.master.rest.ContentTypes.XML;
+import static org.apache.taverna.server.master.rest.TavernaServerInputREST.PathNames.BACLAVA;
+import static org.apache.taverna.server.master.rest.TavernaServerInputREST.PathNames.EXPECTED;
+import static org.apache.taverna.server.master.rest.TavernaServerInputREST.PathNames.ONE_INPUT;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -53,16 +53,16 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
 import org.apache.cxf.jaxrs.model.wadl.Description;
-import org.taverna.server.master.common.Uri;
-import org.taverna.server.master.common.VersionedElement;
-import org.taverna.server.master.exceptions.BadInputPortNameException;
-import org.taverna.server.master.exceptions.BadPropertyValueException;
-import org.taverna.server.master.exceptions.BadStateChangeException;
-import org.taverna.server.master.exceptions.FilesystemAccessException;
-import org.taverna.server.master.exceptions.NoUpdateException;
-import org.taverna.server.master.interfaces.Input;
-import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.port_description.InputDescription;
+import org.apache.taverna.server.master.common.Uri;
+import org.apache.taverna.server.master.common.VersionedElement;
+import org.apache.taverna.server.master.exceptions.BadInputPortNameException;
+import org.apache.taverna.server.master.exceptions.BadPropertyValueException;
+import org.apache.taverna.server.master.exceptions.BadStateChangeException;
+import org.apache.taverna.server.master.exceptions.FilesystemAccessException;
+import org.apache.taverna.server.master.exceptions.NoUpdateException;
+import org.apache.taverna.server.master.interfaces.Input;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.port_description.InputDescription;
 
 /**
  * This represents how a Taverna Server workflow run's inputs looks to a RESTful

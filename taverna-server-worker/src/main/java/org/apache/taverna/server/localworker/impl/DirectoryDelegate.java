@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.localworker.impl;
+package org.apache.taverna.server.localworker.impl;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,7 +21,7 @@ package org.taverna.server.localworker.impl;
 import static org.apache.commons.io.FileUtils.forceDelete;
 import static org.apache.commons.io.FileUtils.forceMkdir;
 import static org.apache.commons.io.FileUtils.touch;
-import static org.taverna.server.localworker.impl.utils.FilenameVerifier.getValidatedNewFile;
+import static org.apache.taverna.server.localworker.impl.utils.FilenameVerifier.getValidatedNewFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,9 +36,9 @@ import javax.annotation.Nonnull;
 
 import org.apache.commons.collections.MapIterator;
 import org.apache.commons.collections.map.ReferenceMap;
-import org.taverna.server.localworker.remote.RemoteDirectory;
-import org.taverna.server.localworker.remote.RemoteDirectoryEntry;
-import org.taverna.server.localworker.remote.RemoteFile;
+import org.apache.taverna.server.localworker.remote.RemoteDirectory;
+import org.apache.taverna.server.localworker.remote.RemoteDirectoryEntry;
+import org.apache.taverna.server.localworker.remote.RemoteFile;
 
 /**
  * This class acts as a remote-aware delegate for the workflow run's working

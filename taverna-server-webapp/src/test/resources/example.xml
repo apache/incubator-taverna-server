@@ -19,7 +19,7 @@ limitations under the License.
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
 
-	<bean id="policy" class="org.taverna.server.master.mocks.SimpleServerPolicy"
+	<bean id="policy" class="org.apache.taverna.server.master.mocks.SimpleServerPolicy"
 		lazy-init="false" scope="singleton">
 		<property name="maxRuns" value="1">
 			<description>
@@ -33,16 +33,16 @@ limitations under the License.
 		</property>
 	</bean>
 
-	<bean id="runFactory" class="org.taverna.server.master.mocks.ExampleRun$Builder">
+	<bean id="runFactory" class="org.apache.taverna.server.master.mocks.ExampleRun$Builder">
 		<constructor-arg type="int" value="10" /> <!-- "initialLifetimeMinutes" -->
 	</bean>
 
 	<bean id="runCatalog" scope="singleton"
-		class="org.taverna.server.master.mocks.SimpleNonpersistentRunStore">
+		class="org.apache.taverna.server.master.mocks.SimpleNonpersistentRunStore">
 		<property name="policy" ref="policy" />
 	</bean>
 
-	<bean id="listenerFactory" class="org.taverna.server.master.mocks.SimpleListenerFactory">
+	<bean id="listenerFactory" class="org.apache.taverna.server.master.mocks.SimpleListenerFactory">
 		<property name="builders">
 			<description>
 				This map describes how to build each type of supported
@@ -50,7 +50,7 @@ limitations under the License.
 				a listeners should be installed using its properties, as shown. The
 				"key" is the type, the "class" is the builder for actual instances
 				(which must be an instance of
-				org.taverna.server.master.factories.SimpleListenerFactory.Builder)
+				org.apache.taverna.server.master.factories.SimpleListenerFactory.Builder)
 				and any policies and installation-specific configurations are
 				characterised by properties such as "sitePolicy" below.
 			</description>
@@ -58,7 +58,7 @@ limitations under the License.
 				<!--						<entry key="exampleListener">-->
 				<!--
 					<bean
-					class="org.taverna.server.master.example.ExampleListener$Builder">
+					class="org.apache.taverna.server.master.example.ExampleListener$Builder">
 				-->
 				<!--								<property name="sitePolicy">-->
 				<!--									<value>Just an example!</value>-->

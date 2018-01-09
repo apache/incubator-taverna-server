@@ -1,4 +1,4 @@
-package org.taverna.server.master.worker;
+package org.apache.taverna.server.master.worker;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,7 +18,7 @@ package org.taverna.server.master.worker;
 
 import static org.springframework.jmx.support.MetricType.COUNTER;
 import static org.springframework.jmx.support.MetricType.GAUGE;
-import static org.taverna.server.master.TavernaServer.JMX_ROOT;
+import static org.apache.taverna.server.master.TavernaServer.JMX_ROOT;
 
 import java.util.List;
 
@@ -33,8 +33,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedMetric;
 import org.springframework.jmx.export.annotation.ManagedResource;
-import org.taverna.server.master.factories.ConfigurableRunFactory;
-import org.taverna.server.master.localworker.LocalWorkerState;
+import org.apache.taverna.server.master.factories.ConfigurableRunFactory;
+import org.apache.taverna.server.master.localworker.LocalWorkerState;
 
 @ManagedResource(objectName = JMX_ROOT + "Factory", description = "The factory for runs.")
 public abstract class RunFactoryConfiguration implements ConfigurableRunFactory {
@@ -386,7 +386,7 @@ public abstract class RunFactoryConfiguration implements ConfigurableRunFactory 
 
 	/**
 	 * @return A count of the number of runs believed to actually be in the
-	 *         {@linkplain uk.org.taverna.server.master.common.Status#Operating
+	 *         {@linkplain uk.org.apache.taverna.server.master.common.Status#Operating
 	 *         operating} state.
 	 * @throws Exception
 	 *             If anything goes wrong.

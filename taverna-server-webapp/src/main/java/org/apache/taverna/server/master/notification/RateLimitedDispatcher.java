@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.notification;
+package org.apache.taverna.server.master.notification;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -24,8 +24,8 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
-import org.taverna.server.master.interfaces.MessageDispatcher;
-import org.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.interfaces.MessageDispatcher;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
 
 /**
  * Rate-limiting support. Some message fabrics simply should not be used to send

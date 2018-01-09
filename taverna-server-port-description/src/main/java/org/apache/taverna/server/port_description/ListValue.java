@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.port_description;
+package org.apache.taverna.server.port_description;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-import org.taverna.server.port_description.utils.IntAdapter;
+import org.apache.taverna.server.port_description.utils.IntAdapter;
 
 @XmlType(name = "ListValue")
 public class ListValue extends AbstractValue {

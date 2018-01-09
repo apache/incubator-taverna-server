@@ -3,7 +3,7 @@
 /**
  * A Taverna Server back-end that works by forking off workflow executors.
  */
-package org.taverna.server.master.worker;
+package org.apache.taverna.server.master.worker;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with

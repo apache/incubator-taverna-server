@@ -4,7 +4,7 @@
  * The core of the implementation of Taverna Server, including the
  * implementations of the SOAP and REST interfaces.
  */
-package org.taverna.server.master;
+package org.apache.taverna.server.master;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with

@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.worker;
+package org.apache.taverna.server.master.worker;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,7 +18,7 @@ package org.taverna.server.master.worker;
  * limitations under the License.
  */
 
-import static org.taverna.server.master.identity.WorkflowInternalAuthProvider.PREFIX;
+import static org.apache.taverna.server.master.identity.WorkflowInternalAuthProvider.PREFIX;
 
 import java.net.URI;
 import java.util.List;
@@ -29,15 +29,15 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.taverna.server.master.common.Roles;
-import org.taverna.server.master.common.Workflow;
-import org.taverna.server.master.exceptions.NoCreateException;
-import org.taverna.server.master.exceptions.NoDestroyException;
-import org.taverna.server.master.exceptions.NoUpdateException;
-import org.taverna.server.master.interfaces.Policy;
-import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.interfaces.TavernaSecurityContext;
-import org.taverna.server.master.utils.UsernamePrincipal;
+import org.apache.taverna.server.master.common.Roles;
+import org.apache.taverna.server.master.common.Workflow;
+import org.apache.taverna.server.master.exceptions.NoCreateException;
+import org.apache.taverna.server.master.exceptions.NoDestroyException;
+import org.apache.taverna.server.master.exceptions.NoUpdateException;
+import org.apache.taverna.server.master.interfaces.Policy;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.interfaces.TavernaSecurityContext;
+import org.apache.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * Basic policy implementation that allows any workflow to be instantiated by

@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.defaults;
+package org.apache.taverna.server.master.defaults;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,8 +18,8 @@ package org.taverna.server.master.defaults;
  * limitations under the License.
  */
 
-import org.taverna.server.master.common.Status;
-import org.taverna.server.master.localworker.LocalWorkerState;
+import org.apache.taverna.server.master.common.Status;
+import org.apache.taverna.server.master.localworker.LocalWorkerState;
 
 /**
  * This defines a collection of default values, collecting them from various

@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master;
+package org.apache.taverna.server.master;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -22,7 +22,7 @@ import static eu.medsea.util.MimeUtil.getMimeType;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.apache.commons.logging.LogFactory.getLog;
-import static org.taverna.server.master.common.Uri.secure;
+import static org.apache.taverna.server.master.common.Uri.secure;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -36,24 +36,24 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.exceptions.FilesystemAccessException;
-import org.taverna.server.master.exceptions.NoDirectoryEntryException;
-import org.taverna.server.master.interfaces.Directory;
-import org.taverna.server.master.interfaces.DirectoryEntry;
-import org.taverna.server.master.interfaces.File;
-import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.interfaces.UriBuilderFactory;
-import org.taverna.server.master.utils.FilenameUtils;
-import org.taverna.server.port_description.AbsentValue;
-import org.taverna.server.port_description.AbstractPortDescription;
-import org.taverna.server.port_description.AbstractValue;
-import org.taverna.server.port_description.ErrorValue;
-import org.taverna.server.port_description.InputDescription;
-import org.taverna.server.port_description.InputDescription.InputPort;
-import org.taverna.server.port_description.LeafValue;
-import org.taverna.server.port_description.ListValue;
-import org.taverna.server.port_description.OutputDescription;
-import org.taverna.server.port_description.OutputDescription.OutputPort;
+import org.apache.taverna.server.master.exceptions.FilesystemAccessException;
+import org.apache.taverna.server.master.exceptions.NoDirectoryEntryException;
+import org.apache.taverna.server.master.interfaces.Directory;
+import org.apache.taverna.server.master.interfaces.DirectoryEntry;
+import org.apache.taverna.server.master.interfaces.File;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.interfaces.UriBuilderFactory;
+import org.apache.taverna.server.master.utils.FilenameUtils;
+import org.apache.taverna.server.port_description.AbsentValue;
+import org.apache.taverna.server.port_description.AbstractPortDescription;
+import org.apache.taverna.server.port_description.AbstractValue;
+import org.apache.taverna.server.port_description.ErrorValue;
+import org.apache.taverna.server.port_description.InputDescription;
+import org.apache.taverna.server.port_description.InputDescription.InputPort;
+import org.apache.taverna.server.port_description.LeafValue;
+import org.apache.taverna.server.port_description.ListValue;
+import org.apache.taverna.server.port_description.OutputDescription;
+import org.apache.taverna.server.port_description.OutputDescription.OutputPort;
 
 import org.apache.taverna.scufl2.api.container.WorkflowBundle;
 import org.apache.taverna.scufl2.api.core.Workflow;

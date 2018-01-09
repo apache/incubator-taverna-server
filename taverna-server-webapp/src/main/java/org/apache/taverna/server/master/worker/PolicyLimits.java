@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.worker;
+package org.apache.taverna.server.master.worker;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,7 +21,7 @@ package org.taverna.server.master.worker;
 import java.net.URI;
 import java.util.List;
 
-import org.taverna.server.master.common.Status;
+import org.apache.taverna.server.master.common.Status;
 
 /**
  * The worker policy delegates certain limits to the state model of the

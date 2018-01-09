@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.common;
+package org.apache.taverna.server.master.common;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlType;
 /**
  * Description of a permission to access a particular workflow run. Note that
  * users always have full access to their own runs, as does any user with the "
- * <tt>{@value org.taverna.server.master.common.Roles#ADMIN}</tt>" ability.
+ * <tt>{@value org.apache.taverna.server.master.common.Roles#ADMIN}</tt>" ability.
  * 
  * @author Donal Fellows
  */

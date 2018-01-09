@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.interfaces;
+package org.apache.taverna.server.master.interfaces;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -20,7 +20,7 @@ package org.taverna.server.master.interfaces;
 
 import java.io.Serializable;
 
-import org.taverna.server.master.utils.UsernamePrincipal;
+import org.apache.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * How to create instances of a security context.

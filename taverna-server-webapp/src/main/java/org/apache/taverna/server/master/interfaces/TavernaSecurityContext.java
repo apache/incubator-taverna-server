@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.interfaces;
+package org.apache.taverna.server.master.interfaces;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -27,11 +27,11 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.xml.ws.handler.MessageContext;
 
 import org.springframework.security.core.context.SecurityContext;
-import org.taverna.server.localworker.remote.ImplementationException;
-import org.taverna.server.master.common.Credential;
-import org.taverna.server.master.common.Trust;
-import org.taverna.server.master.exceptions.InvalidCredentialException;
-import org.taverna.server.master.utils.UsernamePrincipal;
+import org.apache.taverna.server.localworker.remote.ImplementationException;
+import org.apache.taverna.server.master.common.Credential;
+import org.apache.taverna.server.master.common.Trust;
+import org.apache.taverna.server.master.exceptions.InvalidCredentialException;
+import org.apache.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * Security context for a workflow run.

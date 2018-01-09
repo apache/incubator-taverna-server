@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.notification;
+package org.apache.taverna.server.master.notification;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,7 +18,7 @@ package org.taverna.server.master.notification;
  * limitations under the License.
  */
 
-import static org.taverna.server.master.defaults.Default.SMS_GATEWAY_URL;
+import static org.apache.taverna.server.master.defaults.Default.SMS_GATEWAY_URL;
 
 import java.io.BufferedReader;
 import java.io.IOException;

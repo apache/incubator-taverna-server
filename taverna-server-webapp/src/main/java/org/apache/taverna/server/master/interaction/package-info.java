@@ -4,7 +4,7 @@
  * This package contains the Atom feed implementation for interactions for a particular workflow run.
  * @author Donal Fellows
  */
-package org.taverna.server.master.interaction;
+package org.apache.taverna.server.master.interaction;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with

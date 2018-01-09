@@ -1,4 +1,4 @@
-package org.taverna.server.master;
+package org.apache.taverna.server.master;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,8 +16,8 @@ package org.taverna.server.master;
  * limitations under the License.
  */
 
-import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW_NS;
-import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW_ROOTNAME;
+import static org.apache.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW_NS;
+import static org.apache.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW_ROOTNAME;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -31,7 +31,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.taverna.server.master.common.Workflow;
+import org.apache.taverna.server.master.common.Workflow;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

@@ -1,4 +1,4 @@
-package org.taverna.server.master.mocks;
+package org.apache.taverna.server.master.mocks;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -24,12 +24,12 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.taverna.server.master.exceptions.NoDestroyException;
-import org.taverna.server.master.exceptions.UnknownRunException;
-import org.taverna.server.master.interfaces.Policy;
-import org.taverna.server.master.interfaces.RunStore;
-import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.utils.UsernamePrincipal;
+import org.apache.taverna.server.master.exceptions.NoDestroyException;
+import org.apache.taverna.server.master.exceptions.UnknownRunException;
+import org.apache.taverna.server.master.interfaces.Policy;
+import org.apache.taverna.server.master.interfaces.RunStore;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * Example of a store for Taverna Workflow Runs.

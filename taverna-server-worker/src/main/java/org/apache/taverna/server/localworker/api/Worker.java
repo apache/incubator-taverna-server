@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.localworker.api;
+package org.apache.taverna.server.localworker.api;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -22,11 +22,11 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-import org.taverna.server.localworker.impl.LocalWorker;
-import org.taverna.server.localworker.remote.ImplementationException;
-import org.taverna.server.localworker.remote.RemoteListener;
-import org.taverna.server.localworker.remote.RemoteStatus;
-import org.taverna.server.localworker.server.UsageRecordReceiver;
+import org.apache.taverna.server.localworker.impl.LocalWorker;
+import org.apache.taverna.server.localworker.remote.ImplementationException;
+import org.apache.taverna.server.localworker.remote.RemoteListener;
+import org.apache.taverna.server.localworker.remote.RemoteStatus;
+import org.apache.taverna.server.localworker.server.UsageRecordReceiver;
 
 /**
  * The interface between the connectivity layer and the thunk to the

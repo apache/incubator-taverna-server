@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.utils;
+package org.apache.taverna.server.master.utils;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -22,7 +22,7 @@ import javax.servlet.ServletContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.springframework.web.context.ServletContextAware;
-import org.taverna.server.master.common.version.Version;
+import org.apache.taverna.server.master.common.version.Version;
 
 /**
  * Convert a string (URL, etc) to a version that is contextualized to the

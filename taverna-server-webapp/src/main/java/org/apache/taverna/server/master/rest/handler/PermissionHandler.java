@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.rest.handler;
+package org.apache.taverna.server.master.rest.handler;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -34,7 +34,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 
-import org.taverna.server.master.common.Permission;
+import org.apache.taverna.server.master.common.Permission;
 
 /**
  * Handler that allows CXF to send and receive {@linkplain Permission

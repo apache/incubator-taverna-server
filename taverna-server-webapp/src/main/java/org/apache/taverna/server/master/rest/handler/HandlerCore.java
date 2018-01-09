@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.rest.handler;
+package org.apache.taverna.server.master.rest.handler;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -25,7 +25,7 @@ import static org.apache.commons.logging.LogFactory.getLog;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.logging.Log;
-import org.taverna.server.master.api.ManagementModel;
+import org.apache.taverna.server.master.api.ManagementModel;
 
 /**
  * Base class for handlers that grants Spring-enabled access to the management

@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.rest.handler;
+package org.apache.taverna.server.master.rest.handler;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -24,7 +24,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import org.taverna.server.master.exceptions.NoListenerException;
+import org.apache.taverna.server.master.exceptions.NoListenerException;
 
 @Provider
 public class NoListenerHandler extends HandlerCore implements

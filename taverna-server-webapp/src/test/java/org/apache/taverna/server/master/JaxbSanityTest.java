@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master;
+package org.apache.taverna.server.master;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -33,41 +33,41 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.taverna.server.master.admin.Admin;
-import org.taverna.server.master.common.Credential.KeyPair;
-import org.taverna.server.master.common.Credential.Password;
-import org.taverna.server.master.common.Capability;
-import org.taverna.server.master.common.DirEntryReference;
-import org.taverna.server.master.common.InputDescription;
-import org.taverna.server.master.common.Permission;
-import org.taverna.server.master.common.ProfileList;
-import org.taverna.server.master.common.RunReference;
-import org.taverna.server.master.common.Status;
-import org.taverna.server.master.common.Trust;
-import org.taverna.server.master.common.Uri;
-import org.taverna.server.master.common.Workflow;
-import org.taverna.server.master.rest.DirectoryContents;
-import org.taverna.server.master.rest.ListenerDefinition;
-import org.taverna.server.master.rest.MakeOrUpdateDirEntry;
-import org.taverna.server.master.rest.TavernaServerInputREST.InDesc;
-import org.taverna.server.master.rest.TavernaServerInputREST.InputsDescriptor;
-import org.taverna.server.master.rest.TavernaServerListenersREST.ListenerDescription;
-import org.taverna.server.master.rest.TavernaServerListenersREST.Listeners;
-import org.taverna.server.master.rest.TavernaServerListenersREST.Properties;
-import org.taverna.server.master.rest.TavernaServerListenersREST.PropertyDescription;
-import org.taverna.server.master.rest.TavernaServerREST.EnabledNotificationFabrics;
-import org.taverna.server.master.rest.TavernaServerREST.PermittedListeners;
-import org.taverna.server.master.rest.TavernaServerREST.PermittedWorkflows;
-import org.taverna.server.master.rest.TavernaServerREST.PolicyView.CapabilityList;
-import org.taverna.server.master.rest.TavernaServerREST.PolicyView.PolicyDescription;
-import org.taverna.server.master.rest.TavernaServerREST.RunList;
-import org.taverna.server.master.rest.TavernaServerREST.ServerDescription;
-import org.taverna.server.master.rest.TavernaServerRunREST.RunDescription;
-import org.taverna.server.master.rest.TavernaServerSecurityREST;
-import org.taverna.server.master.rest.TavernaServerSecurityREST.CredentialHolder;
-import org.taverna.server.master.soap.DirEntry;
-import org.taverna.server.master.soap.FileContents;
-import org.taverna.server.master.soap.PermissionList;
+import org.apache.taverna.server.master.admin.Admin;
+import org.apache.taverna.server.master.common.Credential.KeyPair;
+import org.apache.taverna.server.master.common.Credential.Password;
+import org.apache.taverna.server.master.common.Capability;
+import org.apache.taverna.server.master.common.DirEntryReference;
+import org.apache.taverna.server.master.common.InputDescription;
+import org.apache.taverna.server.master.common.Permission;
+import org.apache.taverna.server.master.common.ProfileList;
+import org.apache.taverna.server.master.common.RunReference;
+import org.apache.taverna.server.master.common.Status;
+import org.apache.taverna.server.master.common.Trust;
+import org.apache.taverna.server.master.common.Uri;
+import org.apache.taverna.server.master.common.Workflow;
+import org.apache.taverna.server.master.rest.DirectoryContents;
+import org.apache.taverna.server.master.rest.ListenerDefinition;
+import org.apache.taverna.server.master.rest.MakeOrUpdateDirEntry;
+import org.apache.taverna.server.master.rest.TavernaServerInputREST.InDesc;
+import org.apache.taverna.server.master.rest.TavernaServerInputREST.InputsDescriptor;
+import org.apache.taverna.server.master.rest.TavernaServerListenersREST.ListenerDescription;
+import org.apache.taverna.server.master.rest.TavernaServerListenersREST.Listeners;
+import org.apache.taverna.server.master.rest.TavernaServerListenersREST.Properties;
+import org.apache.taverna.server.master.rest.TavernaServerListenersREST.PropertyDescription;
+import org.apache.taverna.server.master.rest.TavernaServerREST.EnabledNotificationFabrics;
+import org.apache.taverna.server.master.rest.TavernaServerREST.PermittedListeners;
+import org.apache.taverna.server.master.rest.TavernaServerREST.PermittedWorkflows;
+import org.apache.taverna.server.master.rest.TavernaServerREST.PolicyView.CapabilityList;
+import org.apache.taverna.server.master.rest.TavernaServerREST.PolicyView.PolicyDescription;
+import org.apache.taverna.server.master.rest.TavernaServerREST.RunList;
+import org.apache.taverna.server.master.rest.TavernaServerREST.ServerDescription;
+import org.apache.taverna.server.master.rest.TavernaServerRunREST.RunDescription;
+import org.apache.taverna.server.master.rest.TavernaServerSecurityREST;
+import org.apache.taverna.server.master.rest.TavernaServerSecurityREST.CredentialHolder;
+import org.apache.taverna.server.master.soap.DirEntry;
+import org.apache.taverna.server.master.soap.FileContents;
+import org.apache.taverna.server.master.soap.PermissionList;
 
 /**
  * This test file ensures that the JAXB bindings will work once deployed instead

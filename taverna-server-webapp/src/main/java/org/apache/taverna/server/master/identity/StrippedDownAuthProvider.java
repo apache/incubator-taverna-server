@@ -1,4 +1,4 @@
-package org.taverna.server.master.identity;
+package org.apache.taverna.server.master.identity;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -38,7 +38,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
+import org.apache.taverna.server.master.utils.CallTimeLogger.PerfLogged;
 
 /**
  * A stripped down version of a

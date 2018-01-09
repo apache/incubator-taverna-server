@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.identity;
+package org.apache.taverna.server.master.identity;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,8 +18,8 @@ package org.taverna.server.master.identity;
  * limitations under the License.
  */
 
-import org.taverna.server.master.interfaces.LocalIdentityMapper;
-import org.taverna.server.master.utils.UsernamePrincipal;
+import org.apache.taverna.server.master.interfaces.LocalIdentityMapper;
+import org.apache.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * A trivial principal to user mapper that always uses the same ID.

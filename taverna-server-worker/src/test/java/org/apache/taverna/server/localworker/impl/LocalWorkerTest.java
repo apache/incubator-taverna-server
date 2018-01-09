@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.localworker.impl;
+package org.apache.taverna.server.localworker.impl;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -25,7 +25,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
-import static org.taverna.server.localworker.impl.LocalWorker.DO_MKDIR;
+import static org.apache.taverna.server.localworker.impl.LocalWorker.DO_MKDIR;
 
 import java.io.File;
 import java.rmi.RemoteException;
@@ -40,15 +40,15 @@ import java.util.TreeMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.taverna.server.localworker.api.Worker;
-import org.taverna.server.localworker.api.WorkerFactory;
-import org.taverna.server.localworker.remote.IllegalStateTransitionException;
-import org.taverna.server.localworker.remote.ImplementationException;
-import org.taverna.server.localworker.remote.RemoteDirectory;
-import org.taverna.server.localworker.remote.RemoteInput;
-import org.taverna.server.localworker.remote.RemoteListener;
-import org.taverna.server.localworker.remote.RemoteStatus;
-import org.taverna.server.localworker.server.UsageRecordReceiver;
+import org.apache.taverna.server.localworker.api.Worker;
+import org.apache.taverna.server.localworker.api.WorkerFactory;
+import org.apache.taverna.server.localworker.remote.IllegalStateTransitionException;
+import org.apache.taverna.server.localworker.remote.ImplementationException;
+import org.apache.taverna.server.localworker.remote.RemoteDirectory;
+import org.apache.taverna.server.localworker.remote.RemoteInput;
+import org.apache.taverna.server.localworker.remote.RemoteListener;
+import org.apache.taverna.server.localworker.remote.RemoteStatus;
+import org.apache.taverna.server.localworker.server.UsageRecordReceiver;
 
 public class LocalWorkerTest {
 	LocalWorker lw;

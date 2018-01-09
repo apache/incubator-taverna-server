@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.common;
+package org.apache.taverna.server.master.common;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -20,7 +20,7 @@ package org.taverna.server.master.common;
 
 import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.apache.commons.logging.LogFactory.getLog;
-import static org.taverna.server.master.common.Namespaces.XLINK;
+import static org.apache.taverna.server.master.common.Namespaces.XLINK;
 
 import java.lang.reflect.Method;
 import java.net.URI;

@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master;
+package org.apache.taverna.server.master;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -28,16 +28,16 @@ import static javax.xml.ws.handler.MessageContext.HTTP_REQUEST_HEADERS;
 import static javax.xml.ws.handler.MessageContext.PATH_INFO;
 import static org.apache.commons.io.IOUtils.toByteArray;
 import static org.apache.commons.logging.LogFactory.getLog;
-import static org.taverna.server.master.TavernaServerSupport.PROV_BUNDLE;
-import static org.taverna.server.master.common.DirEntryReference.newInstance;
-import static org.taverna.server.master.common.Namespaces.SERVER_SOAP;
-import static org.taverna.server.master.common.Roles.ADMIN;
-import static org.taverna.server.master.common.Roles.SELF;
-import static org.taverna.server.master.common.Roles.USER;
-import static org.taverna.server.master.common.Status.Initialized;
-import static org.taverna.server.master.common.Uri.secure;
-import static org.taverna.server.master.soap.DirEntry.convert;
-import static org.taverna.server.master.utils.RestUtils.opt;
+import static org.apache.taverna.server.master.TavernaServerSupport.PROV_BUNDLE;
+import static org.apache.taverna.server.master.common.DirEntryReference.newInstance;
+import static org.apache.taverna.server.master.common.Namespaces.SERVER_SOAP;
+import static org.apache.taverna.server.master.common.Roles.ADMIN;
+import static org.apache.taverna.server.master.common.Roles.SELF;
+import static org.apache.taverna.server.master.common.Roles.USER;
+import static org.apache.taverna.server.master.common.Status.Initialized;
+import static org.apache.taverna.server.master.common.Uri.secure;
+import static org.apache.taverna.server.master.soap.DirEntry.convert;
+import static org.apache.taverna.server.master.utils.RestUtils.opt;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -69,59 +69,59 @@ import org.apache.commons.logging.Log;
 import org.apache.cxf.annotations.WSDLDocumentation;
 import org.apache.taverna.server.usagerecord.JobUsageRecord;
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.api.SupportAware;
-import org.taverna.server.master.api.TavernaServerBean;
-import org.taverna.server.master.common.Capability;
-import org.taverna.server.master.common.Credential;
-import org.taverna.server.master.common.DirEntryReference;
-import org.taverna.server.master.common.InputDescription;
-import org.taverna.server.master.common.Permission;
-import org.taverna.server.master.common.ProfileList;
-import org.taverna.server.master.common.RunReference;
-import org.taverna.server.master.common.Status;
-import org.taverna.server.master.common.Trust;
-import org.taverna.server.master.common.Workflow;
-import org.taverna.server.master.common.version.Version;
-import org.taverna.server.master.exceptions.BadPropertyValueException;
-import org.taverna.server.master.exceptions.BadStateChangeException;
-import org.taverna.server.master.exceptions.FilesystemAccessException;
-import org.taverna.server.master.exceptions.InvalidCredentialException;
-import org.taverna.server.master.exceptions.NoCreateException;
-import org.taverna.server.master.exceptions.NoCredentialException;
-import org.taverna.server.master.exceptions.NoDirectoryEntryException;
-import org.taverna.server.master.exceptions.NoListenerException;
-import org.taverna.server.master.exceptions.NoUpdateException;
-import org.taverna.server.master.exceptions.NotOwnerException;
-import org.taverna.server.master.exceptions.OverloadedException;
-import org.taverna.server.master.exceptions.UnknownRunException;
-import org.taverna.server.master.factories.ListenerFactory;
-import org.taverna.server.master.interfaces.Directory;
-import org.taverna.server.master.interfaces.DirectoryEntry;
-import org.taverna.server.master.interfaces.File;
-import org.taverna.server.master.interfaces.Input;
-import org.taverna.server.master.interfaces.Listener;
-import org.taverna.server.master.interfaces.Policy;
-import org.taverna.server.master.interfaces.RunStore;
-import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.interfaces.TavernaSecurityContext;
-import org.taverna.server.master.notification.NotificationEngine;
-import org.taverna.server.master.notification.atom.EventDAO;
-import org.taverna.server.master.rest.TavernaServerREST;
-import org.taverna.server.master.rest.TavernaServerREST.EnabledNotificationFabrics;
-import org.taverna.server.master.rest.TavernaServerREST.PermittedListeners;
-import org.taverna.server.master.rest.TavernaServerREST.PermittedWorkflows;
-import org.taverna.server.master.rest.TavernaServerREST.PolicyView;
-import org.taverna.server.master.rest.TavernaServerRunREST;
-import org.taverna.server.master.soap.DirEntry;
-import org.taverna.server.master.soap.FileContents;
-import org.taverna.server.master.soap.PermissionList;
-import org.taverna.server.master.soap.TavernaServerSOAP;
-import org.taverna.server.master.soap.WrappedWorkflow;
-import org.taverna.server.master.soap.ZippedDirectory;
-import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
-import org.taverna.server.master.utils.FilenameUtils;
-import org.taverna.server.master.utils.InvocationCounter.CallCounted;
-import org.taverna.server.port_description.OutputDescription;
+import org.apache.taverna.server.master.api.SupportAware;
+import org.apache.taverna.server.master.api.TavernaServerBean;
+import org.apache.taverna.server.master.common.Capability;
+import org.apache.taverna.server.master.common.Credential;
+import org.apache.taverna.server.master.common.DirEntryReference;
+import org.apache.taverna.server.master.common.InputDescription;
+import org.apache.taverna.server.master.common.Permission;
+import org.apache.taverna.server.master.common.ProfileList;
+import org.apache.taverna.server.master.common.RunReference;
+import org.apache.taverna.server.master.common.Status;
+import org.apache.taverna.server.master.common.Trust;
+import org.apache.taverna.server.master.common.Workflow;
+import org.apache.taverna.server.master.common.version.Version;
+import org.apache.taverna.server.master.exceptions.BadPropertyValueException;
+import org.apache.taverna.server.master.exceptions.BadStateChangeException;
+import org.apache.taverna.server.master.exceptions.FilesystemAccessException;
+import org.apache.taverna.server.master.exceptions.InvalidCredentialException;
+import org.apache.taverna.server.master.exceptions.NoCreateException;
+import org.apache.taverna.server.master.exceptions.NoCredentialException;
+import org.apache.taverna.server.master.exceptions.NoDirectoryEntryException;
+import org.apache.taverna.server.master.exceptions.NoListenerException;
+import org.apache.taverna.server.master.exceptions.NoUpdateException;
+import org.apache.taverna.server.master.exceptions.NotOwnerException;
+import org.apache.taverna.server.master.exceptions.OverloadedException;
+import org.apache.taverna.server.master.exceptions.UnknownRunException;
+import org.apache.taverna.server.master.factories.ListenerFactory;
+import org.apache.taverna.server.master.interfaces.Directory;
+import org.apache.taverna.server.master.interfaces.DirectoryEntry;
+import org.apache.taverna.server.master.interfaces.File;
+import org.apache.taverna.server.master.interfaces.Input;
+import org.apache.taverna.server.master.interfaces.Listener;
+import org.apache.taverna.server.master.interfaces.Policy;
+import org.apache.taverna.server.master.interfaces.RunStore;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.interfaces.TavernaSecurityContext;
+import org.apache.taverna.server.master.notification.NotificationEngine;
+import org.apache.taverna.server.master.notification.atom.EventDAO;
+import org.apache.taverna.server.master.rest.TavernaServerREST;
+import org.apache.taverna.server.master.rest.TavernaServerREST.EnabledNotificationFabrics;
+import org.apache.taverna.server.master.rest.TavernaServerREST.PermittedListeners;
+import org.apache.taverna.server.master.rest.TavernaServerREST.PermittedWorkflows;
+import org.apache.taverna.server.master.rest.TavernaServerREST.PolicyView;
+import org.apache.taverna.server.master.rest.TavernaServerRunREST;
+import org.apache.taverna.server.master.soap.DirEntry;
+import org.apache.taverna.server.master.soap.FileContents;
+import org.apache.taverna.server.master.soap.PermissionList;
+import org.apache.taverna.server.master.soap.TavernaServerSOAP;
+import org.apache.taverna.server.master.soap.WrappedWorkflow;
+import org.apache.taverna.server.master.soap.ZippedDirectory;
+import org.apache.taverna.server.master.utils.CallTimeLogger.PerfLogged;
+import org.apache.taverna.server.master.utils.FilenameUtils;
+import org.apache.taverna.server.master.utils.InvocationCounter.CallCounted;
+import org.apache.taverna.server.port_description.OutputDescription;
 
 /**
  * The core implementation of the web application.
@@ -130,7 +130,7 @@ import org.taverna.server.port_description.OutputDescription;
  */
 @Path("/")
 @DeclareRoles({ USER, ADMIN })
-@WebService(endpointInterface = "org.taverna.server.master.soap.TavernaServerSOAP", serviceName = "TavernaServer", targetNamespace = SERVER_SOAP)
+@WebService(endpointInterface = "org.apache.taverna.server.master.soap.TavernaServerSOAP", serviceName = "TavernaServer", targetNamespace = SERVER_SOAP)
 @WSDLDocumentation("An instance of Taverna " + Version.JAVA + " Server.")
 public abstract class TavernaServer implements TavernaServerSOAP,
 		TavernaServerREST, TavernaServerBean {
@@ -1245,7 +1245,7 @@ public abstract class TavernaServer implements TavernaServerSOAP,
 	@CallCounted
 	@PerfLogged
 	@RolesAllowed(USER)
-	public org.taverna.server.port_description.InputDescription getRunInputDescriptor(
+	public org.apache.taverna.server.port_description.InputDescription getRunInputDescriptor(
 			String runName) throws UnknownRunException {
 		return cdBuilder.makeInputDescriptor(support.getRun(runName), null);
 	}

@@ -1,4 +1,4 @@
-package org.taverna.server.master.api;
+package org.apache.taverna.server.master.api;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,8 +16,8 @@ package org.taverna.server.master.api;
  * limitations under the License.
  */
 
-import org.taverna.server.master.InteractionFeed;
-import org.taverna.server.master.interaction.InteractionFeedSupport;
+import org.apache.taverna.server.master.InteractionFeed;
+import org.apache.taverna.server.master.interaction.InteractionFeedSupport;
 
 /**
  * Description of properties supported by {@link InteractionFeed}.

@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.rest;
+package org.apache.taverna.server.master.rest;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,7 +18,7 @@ package org.taverna.server.master.rest;
  * limitations under the License.
  */
 
-import static org.taverna.server.master.rest.ContentTypes.ATOM;
+import static org.apache.taverna.server.master.rest.ContentTypes.ATOM;
 
 import java.net.MalformedURLException;
 
@@ -35,9 +35,9 @@ import javax.ws.rs.core.Response;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.apache.cxf.jaxrs.model.wadl.Description;
-import org.taverna.server.master.exceptions.FilesystemAccessException;
-import org.taverna.server.master.exceptions.NoDirectoryEntryException;
-import org.taverna.server.master.exceptions.NoUpdateException;
+import org.apache.taverna.server.master.exceptions.FilesystemAccessException;
+import org.apache.taverna.server.master.exceptions.NoDirectoryEntryException;
+import org.apache.taverna.server.master.exceptions.NoUpdateException;
 
 /**
  * A very stripped down ATOM feed for the interaction service.

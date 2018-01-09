@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.notification.atom;
+package org.apache.taverna.server.master.notification.atom;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +21,8 @@ package org.taverna.server.master.notification.atom;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
 import static javax.ws.rs.core.UriBuilder.fromUri;
-import static org.taverna.server.master.common.Roles.USER;
-import static org.taverna.server.master.common.Uri.secure;
+import static org.apache.taverna.server.master.common.Roles.USER;
+import static org.apache.taverna.server.master.common.Uri.secure;
 
 import java.net.URI;
 import java.util.Date;
@@ -37,11 +37,11 @@ import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.web.context.ServletContextAware;
-import org.taverna.server.master.TavernaServerSupport;
-import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.interfaces.UriBuilderFactory;
-import org.taverna.server.master.rest.TavernaServerREST.EventFeed;
-import org.taverna.server.master.utils.InvocationCounter.CallCounted;
+import org.apache.taverna.server.master.TavernaServerSupport;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.interfaces.UriBuilderFactory;
+import org.apache.taverna.server.master.rest.TavernaServerREST.EventFeed;
+import org.apache.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 /**
  * Simple REST handler that allows an Atom feed to be served up of events

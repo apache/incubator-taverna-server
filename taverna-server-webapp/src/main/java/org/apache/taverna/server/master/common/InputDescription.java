@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.common;
+package org.apache.taverna.server.master.common;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -27,8 +27,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
-import org.taverna.server.master.interfaces.Input;
-import org.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.interfaces.Input;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
 
 /**
  * A description of the inputs to a workflow, described using JAXB.

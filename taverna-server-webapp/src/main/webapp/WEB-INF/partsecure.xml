@@ -36,7 +36,7 @@ limitations under the License.
 	<context:property-placeholder order="0" ignore-unresolvable="true"
 		 properties-ref="security.override.properties" />
 	<util:properties id="security.override.properties">
-		<prop key="backEndFactory">org.taverna.server.master.localworker.ForkRunFactory</prop>
+		<prop key="backEndFactory">org.apache.taverna.server.master.localworker.ForkRunFactory</prop>
 		<prop key="fetchCertificateChain">true</prop>
 		<prop key="suppressRewriteEngine">false</prop>
 		<prop key="requiredChannel">https</prop>

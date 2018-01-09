@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.rest;
+package org.apache.taverna.server.master.rest;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,22 +18,22 @@ package org.taverna.server.master.rest;
  * limitations under the License.
  */
 
-import static org.taverna.server.master.common.Namespaces.SERVER;
-import static org.taverna.server.master.common.Roles.USER;
-import static org.taverna.server.master.rest.ContentTypes.JSON;
-import static org.taverna.server.master.rest.ContentTypes.URI_LIST;
-import static org.taverna.server.master.rest.ContentTypes.XML;
-import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL;
-import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_CAPABILITIES;
-import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_NOTIFIERS;
-import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_OP_LIMIT;
-import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_PERM_LIST;
-import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_PERM_WF;
-import static org.taverna.server.master.rest.TavernaServerREST.PathNames.POL_RUN_LIMIT;
-import static org.taverna.server.master.rest.TavernaServerREST.PathNames.ROOT;
-import static org.taverna.server.master.rest.TavernaServerREST.PathNames.RUNS;
-import static org.taverna.server.master.rest.handler.Scufl2DocumentHandler.SCUFL2;
-import static org.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
+import static org.apache.taverna.server.master.common.Namespaces.SERVER;
+import static org.apache.taverna.server.master.common.Roles.USER;
+import static org.apache.taverna.server.master.rest.ContentTypes.JSON;
+import static org.apache.taverna.server.master.rest.ContentTypes.URI_LIST;
+import static org.apache.taverna.server.master.rest.ContentTypes.XML;
+import static org.apache.taverna.server.master.rest.TavernaServerREST.PathNames.POL;
+import static org.apache.taverna.server.master.rest.TavernaServerREST.PathNames.POL_CAPABILITIES;
+import static org.apache.taverna.server.master.rest.TavernaServerREST.PathNames.POL_NOTIFIERS;
+import static org.apache.taverna.server.master.rest.TavernaServerREST.PathNames.POL_OP_LIMIT;
+import static org.apache.taverna.server.master.rest.TavernaServerREST.PathNames.POL_PERM_LIST;
+import static org.apache.taverna.server.master.rest.TavernaServerREST.PathNames.POL_PERM_WF;
+import static org.apache.taverna.server.master.rest.TavernaServerREST.PathNames.POL_RUN_LIMIT;
+import static org.apache.taverna.server.master.rest.TavernaServerREST.PathNames.ROOT;
+import static org.apache.taverna.server.master.rest.TavernaServerREST.PathNames.RUNS;
+import static org.apache.taverna.server.master.rest.handler.Scufl2DocumentHandler.SCUFL2;
+import static org.apache.taverna.server.master.rest.handler.T2FlowDocumentHandler.T2FLOW;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -62,17 +62,17 @@ import javax.xml.bind.annotation.XmlValue;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.apache.cxf.jaxrs.model.wadl.Description;
-import org.taverna.server.master.common.Capability;
-import org.taverna.server.master.common.RunReference;
-import org.taverna.server.master.common.Uri;
-import org.taverna.server.master.common.VersionedElement;
-import org.taverna.server.master.common.Workflow;
-import org.taverna.server.master.common.version.Version;
-import org.taverna.server.master.exceptions.NoCreateException;
-import org.taverna.server.master.exceptions.NoUpdateException;
-import org.taverna.server.master.exceptions.UnknownRunException;
-import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.soap.TavernaServerSOAP;
+import org.apache.taverna.server.master.common.Capability;
+import org.apache.taverna.server.master.common.RunReference;
+import org.apache.taverna.server.master.common.Uri;
+import org.apache.taverna.server.master.common.VersionedElement;
+import org.apache.taverna.server.master.common.Workflow;
+import org.apache.taverna.server.master.common.version.Version;
+import org.apache.taverna.server.master.exceptions.NoCreateException;
+import org.apache.taverna.server.master.exceptions.NoUpdateException;
+import org.apache.taverna.server.master.exceptions.UnknownRunException;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.soap.TavernaServerSOAP;
 
 /**
  * The REST service interface to Taverna 3 Server.
@@ -307,7 +307,7 @@ public interface TavernaServerREST {
 
 		/**
 		 * Gets the maximum number of simultaneous
-		 * {@linkplain org.taverna.server.master.common.Status.Operating
+		 * {@linkplain org.apache.taverna.server.master.common.Status.Operating
 		 * operating} runs that the user may create. The <i>actual</i> number
 		 * they can start may be lower than this. If this number is lower than
 		 * the number they currently have, they will be unable to start any runs

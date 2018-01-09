@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.facade;
+package org.apache.taverna.server.master.facade;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -35,7 +35,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.utils.Contextualizer;
+import org.apache.taverna.server.master.utils.Contextualizer;
 
 /**
  * This is a simple class that is used to serve up a file (with a simple

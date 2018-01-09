@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.notification;
+package org.apache.taverna.server.master.notification;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -28,8 +28,8 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.interfaces.MessageDispatcher;
-import org.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.interfaces.MessageDispatcher;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
 
 /**
  * A common object for handling dispatch of event-driven messages.

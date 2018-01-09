@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.localworker;
+package org.apache.taverna.server.master.localworker;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -27,7 +27,7 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
-import org.taverna.server.master.worker.WorkerModel;
+import org.apache.taverna.server.master.worker.WorkerModel;
 
 /**
  * The actual database connector for persisted local worker state.

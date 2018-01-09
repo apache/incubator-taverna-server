@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.worker;
+package org.apache.taverna.server.master.worker;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -33,12 +33,12 @@ import org.apache.commons.logging.Log;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
-import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.interfaces.UriBuilderFactory;
-import org.taverna.server.master.utils.CertificateChainFetcher;
-import org.taverna.server.master.utils.FilenameUtils;
-import org.taverna.server.master.utils.UsernamePrincipal;
-import org.taverna.server.master.utils.X500Utils;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.interfaces.UriBuilderFactory;
+import org.apache.taverna.server.master.utils.CertificateChainFetcher;
+import org.apache.taverna.server.master.utils.FilenameUtils;
+import org.apache.taverna.server.master.utils.UsernamePrincipal;
+import org.apache.taverna.server.master.utils.X500Utils;
 
 /**
  * Singleton factory. Really is a singleton (and is also very trivial); the
@@ -49,7 +49,7 @@ import org.taverna.server.master.utils.X500Utils;
  * @author Donal Fellows
  */
 public class SecurityContextFactory implements
-		org.taverna.server.master.interfaces.SecurityContextFactory {
+		org.apache.taverna.server.master.interfaces.SecurityContextFactory {
 	private static final long serialVersionUID = 12345678987654321L;
 	private static SecurityContextFactory instance;
 	transient RunDBSupport db;

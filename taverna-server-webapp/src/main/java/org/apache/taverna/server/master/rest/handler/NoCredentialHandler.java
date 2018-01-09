@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.rest.handler;
+package org.apache.taverna.server.master.rest.handler;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -23,7 +23,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
-import org.taverna.server.master.exceptions.NoCredentialException;
+import org.apache.taverna.server.master.exceptions.NoCredentialException;
 
 public class NoCredentialHandler extends HandlerCore implements
 		ExceptionMapper<NoCredentialException> {

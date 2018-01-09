@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.rest;
+package org.apache.taverna.server.master.rest;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,7 +18,7 @@ package org.taverna.server.master.rest;
  * limitations under the License.
  */
 
-import static org.taverna.server.master.common.Uri.secure;
+import static org.apache.taverna.server.master.common.Uri.secure;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,8 +31,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 
-import org.taverna.server.master.common.DirEntryReference;
-import org.taverna.server.master.interfaces.DirectoryEntry;
+import org.apache.taverna.server.master.common.DirEntryReference;
+import org.apache.taverna.server.master.interfaces.DirectoryEntry;
 
 /**
  * The result of a RESTful operation to list the contents of a directory. Done

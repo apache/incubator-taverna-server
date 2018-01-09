@@ -2,7 +2,7 @@
  * RMI daemon implementation. A variation of an RMI registry.
  * @author Donal Fellows
  */
-package org.taverna.server.rmidaemon;
+package org.apache.taverna.server.rmidaemon;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with

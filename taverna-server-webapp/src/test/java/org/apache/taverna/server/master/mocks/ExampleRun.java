@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.mocks;
+package org.apache.taverna.server.master.mocks;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,7 +21,7 @@ package org.taverna.server.master.mocks;
 import static java.util.Calendar.MINUTE;
 import static java.util.Collections.unmodifiableList;
 import static java.util.UUID.randomUUID;
-import static org.taverna.server.master.common.Status.Initialized;
+import static org.apache.taverna.server.master.common.Status.Initialized;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -38,23 +38,23 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.xml.ws.handler.MessageContext;
 
 import org.springframework.security.core.context.SecurityContext;
-import org.taverna.server.master.common.Credential;
-import org.taverna.server.master.common.Status;
-import org.taverna.server.master.common.Trust;
-import org.taverna.server.master.common.Workflow;
-import org.taverna.server.master.exceptions.BadStateChangeException;
-import org.taverna.server.master.exceptions.FilesystemAccessException;
-import org.taverna.server.master.exceptions.InvalidCredentialException;
-import org.taverna.server.master.exceptions.NoListenerException;
-import org.taverna.server.master.exceptions.UnknownRunException;
-import org.taverna.server.master.factories.RunFactory;
-import org.taverna.server.master.interfaces.Directory;
-import org.taverna.server.master.interfaces.Input;
-import org.taverna.server.master.interfaces.Listener;
-import org.taverna.server.master.interfaces.SecurityContextFactory;
-import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.interfaces.TavernaSecurityContext;
-import org.taverna.server.master.utils.UsernamePrincipal;
+import org.apache.taverna.server.master.common.Credential;
+import org.apache.taverna.server.master.common.Status;
+import org.apache.taverna.server.master.common.Trust;
+import org.apache.taverna.server.master.common.Workflow;
+import org.apache.taverna.server.master.exceptions.BadStateChangeException;
+import org.apache.taverna.server.master.exceptions.FilesystemAccessException;
+import org.apache.taverna.server.master.exceptions.InvalidCredentialException;
+import org.apache.taverna.server.master.exceptions.NoListenerException;
+import org.apache.taverna.server.master.exceptions.UnknownRunException;
+import org.apache.taverna.server.master.factories.RunFactory;
+import org.apache.taverna.server.master.interfaces.Directory;
+import org.apache.taverna.server.master.interfaces.Input;
+import org.apache.taverna.server.master.interfaces.Listener;
+import org.apache.taverna.server.master.interfaces.SecurityContextFactory;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.interfaces.TavernaSecurityContext;
+import org.apache.taverna.server.master.utils.UsernamePrincipal;
 
 @SuppressWarnings("serial")
 public class ExampleRun implements TavernaRun, TavernaSecurityContext {

@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.worker;
+package org.apache.taverna.server.master.worker;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,7 +18,7 @@ package org.taverna.server.master.worker;
  * limitations under the License.
  */
 
-import org.taverna.server.master.notification.atom.EventDAO;
+import org.apache.taverna.server.master.notification.atom.EventDAO;
 
 /**
  * What the remote run really needs of its factory.

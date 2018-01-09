@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.admin;
+package org.apache.taverna.server.master.admin;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,40 +18,40 @@ package org.taverna.server.master.admin;
  * limitations under the License.
  */
 
-import static org.taverna.server.master.admin.Paths.ALLOW_NEW;
-import static org.taverna.server.master.admin.Paths.ARGS;
-import static org.taverna.server.master.admin.Paths.EXEC_WF;
-import static org.taverna.server.master.admin.Paths.EXITCODE;
-import static org.taverna.server.master.admin.Paths.FACTORIES;
-import static org.taverna.server.master.admin.Paths.GEN_PROV;
-import static org.taverna.server.master.admin.Paths.INVOKES;
-import static org.taverna.server.master.admin.Paths.JAR_FORKER;
-import static org.taverna.server.master.admin.Paths.JAR_WORKER;
-import static org.taverna.server.master.admin.Paths.JAVA;
-import static org.taverna.server.master.admin.Paths.LIFE;
-import static org.taverna.server.master.admin.Paths.LOG_EXN;
-import static org.taverna.server.master.admin.Paths.LOG_WFS;
-import static org.taverna.server.master.admin.Paths.OPERATING;
-import static org.taverna.server.master.admin.Paths.OP_LIMIT;
-import static org.taverna.server.master.admin.Paths.PASSFILE;
-import static org.taverna.server.master.admin.Paths.PERM_WF;
-import static org.taverna.server.master.admin.Paths.REG_HOST;
-import static org.taverna.server.master.admin.Paths.REG_JAR;
-import static org.taverna.server.master.admin.Paths.REG_POLL;
-import static org.taverna.server.master.admin.Paths.REG_PORT;
-import static org.taverna.server.master.admin.Paths.REG_WAIT;
-import static org.taverna.server.master.admin.Paths.ROOT;
-import static org.taverna.server.master.admin.Paths.RUNS;
-import static org.taverna.server.master.admin.Paths.RUN_LIMIT;
-import static org.taverna.server.master.admin.Paths.STARTUP;
-import static org.taverna.server.master.admin.Paths.TOTAL_RUNS;
-import static org.taverna.server.master.admin.Paths.URS;
-import static org.taverna.server.master.admin.Paths.UR_FILE;
-import static org.taverna.server.master.admin.Paths.USER;
-import static org.taverna.server.master.admin.Paths.USERS;
-import static org.taverna.server.master.admin.Types.JSON;
-import static org.taverna.server.master.admin.Types.PLAIN;
-import static org.taverna.server.master.admin.Types.XML;
+import static org.apache.taverna.server.master.admin.Paths.ALLOW_NEW;
+import static org.apache.taverna.server.master.admin.Paths.ARGS;
+import static org.apache.taverna.server.master.admin.Paths.EXEC_WF;
+import static org.apache.taverna.server.master.admin.Paths.EXITCODE;
+import static org.apache.taverna.server.master.admin.Paths.FACTORIES;
+import static org.apache.taverna.server.master.admin.Paths.GEN_PROV;
+import static org.apache.taverna.server.master.admin.Paths.INVOKES;
+import static org.apache.taverna.server.master.admin.Paths.JAR_FORKER;
+import static org.apache.taverna.server.master.admin.Paths.JAR_WORKER;
+import static org.apache.taverna.server.master.admin.Paths.JAVA;
+import static org.apache.taverna.server.master.admin.Paths.LIFE;
+import static org.apache.taverna.server.master.admin.Paths.LOG_EXN;
+import static org.apache.taverna.server.master.admin.Paths.LOG_WFS;
+import static org.apache.taverna.server.master.admin.Paths.OPERATING;
+import static org.apache.taverna.server.master.admin.Paths.OP_LIMIT;
+import static org.apache.taverna.server.master.admin.Paths.PASSFILE;
+import static org.apache.taverna.server.master.admin.Paths.PERM_WF;
+import static org.apache.taverna.server.master.admin.Paths.REG_HOST;
+import static org.apache.taverna.server.master.admin.Paths.REG_JAR;
+import static org.apache.taverna.server.master.admin.Paths.REG_POLL;
+import static org.apache.taverna.server.master.admin.Paths.REG_PORT;
+import static org.apache.taverna.server.master.admin.Paths.REG_WAIT;
+import static org.apache.taverna.server.master.admin.Paths.ROOT;
+import static org.apache.taverna.server.master.admin.Paths.RUNS;
+import static org.apache.taverna.server.master.admin.Paths.RUN_LIMIT;
+import static org.apache.taverna.server.master.admin.Paths.STARTUP;
+import static org.apache.taverna.server.master.admin.Paths.TOTAL_RUNS;
+import static org.apache.taverna.server.master.admin.Paths.URS;
+import static org.apache.taverna.server.master.admin.Paths.UR_FILE;
+import static org.apache.taverna.server.master.admin.Paths.USER;
+import static org.apache.taverna.server.master.admin.Paths.USERS;
+import static org.apache.taverna.server.master.admin.Types.JSON;
+import static org.apache.taverna.server.master.admin.Types.PLAIN;
+import static org.apache.taverna.server.master.admin.Types.XML;
 
 import java.io.IOException;
 import java.net.URI;
@@ -77,8 +77,8 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.apache.cxf.jaxrs.model.wadl.Description;
 import org.apache.taverna.server.usagerecord.JobUsageRecord;
-import org.taverna.server.master.common.Uri;
-import org.taverna.server.master.common.VersionedElement;
+import org.apache.taverna.server.master.common.Uri;
+import org.apache.taverna.server.master.common.VersionedElement;
 
 /**
  * The administration interface for Taverna Server.

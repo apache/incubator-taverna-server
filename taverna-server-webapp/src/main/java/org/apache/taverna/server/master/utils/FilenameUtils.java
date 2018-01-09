@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.utils;
+package org.apache.taverna.server.master.utils;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -22,13 +22,13 @@ import java.util.List;
 
 import javax.ws.rs.core.PathSegment;
 
-import org.taverna.server.master.common.DirEntryReference;
-import org.taverna.server.master.exceptions.FilesystemAccessException;
-import org.taverna.server.master.exceptions.NoDirectoryEntryException;
-import org.taverna.server.master.interfaces.Directory;
-import org.taverna.server.master.interfaces.DirectoryEntry;
-import org.taverna.server.master.interfaces.File;
-import org.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.common.DirEntryReference;
+import org.apache.taverna.server.master.exceptions.FilesystemAccessException;
+import org.apache.taverna.server.master.exceptions.NoDirectoryEntryException;
+import org.apache.taverna.server.master.interfaces.Directory;
+import org.apache.taverna.server.master.interfaces.DirectoryEntry;
+import org.apache.taverna.server.master.interfaces.File;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
 
 /**
  * Utility functions for getting entries from directories.

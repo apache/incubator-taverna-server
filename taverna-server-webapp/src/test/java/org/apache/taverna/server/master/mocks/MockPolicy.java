@@ -1,4 +1,4 @@
-package org.taverna.server.master.mocks;
+package org.apache.taverna.server.master.mocks;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,12 +19,12 @@ package org.taverna.server.master.mocks;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.taverna.server.master.common.Workflow;
-import org.taverna.server.master.exceptions.NoCreateException;
-import org.taverna.server.master.exceptions.NoDestroyException;
-import org.taverna.server.master.exceptions.NoUpdateException;
-import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.utils.UsernamePrincipal;
+import org.apache.taverna.server.master.common.Workflow;
+import org.apache.taverna.server.master.exceptions.NoCreateException;
+import org.apache.taverna.server.master.exceptions.NoDestroyException;
+import org.apache.taverna.server.master.exceptions.NoUpdateException;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.utils.UsernamePrincipal;
 
 public class MockPolicy extends SimpleServerPolicy {
 	public MockPolicy() {

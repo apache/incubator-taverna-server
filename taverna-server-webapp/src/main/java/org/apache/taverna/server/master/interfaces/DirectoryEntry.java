@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.interfaces;
+package org.apache.taverna.server.master.interfaces;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -20,7 +20,7 @@ package org.taverna.server.master.interfaces;
 
 import java.util.Date;
 
-import org.taverna.server.master.exceptions.FilesystemAccessException;
+import org.apache.taverna.server.master.exceptions.FilesystemAccessException;
 
 /**
  * An entry in a {@link Directory} representing a file or sub-directory.

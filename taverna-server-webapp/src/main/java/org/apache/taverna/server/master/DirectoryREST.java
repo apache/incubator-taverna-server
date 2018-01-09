@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master;
+package org.apache.taverna.server.master;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -25,13 +25,13 @@ import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.seeOther;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.logging.LogFactory.getLog;
-import static org.taverna.server.master.api.ContentTypes.APPLICATION_ZIP_TYPE;
-import static org.taverna.server.master.api.ContentTypes.DIRECTORY_VARIANTS;
-import static org.taverna.server.master.api.ContentTypes.INITIAL_FILE_VARIANTS;
-import static org.taverna.server.master.common.Roles.SELF;
-import static org.taverna.server.master.common.Roles.USER;
-import static org.taverna.server.master.common.Uri.secure;
-import static org.taverna.server.master.utils.RestUtils.opt;
+import static org.apache.taverna.server.master.api.ContentTypes.APPLICATION_ZIP_TYPE;
+import static org.apache.taverna.server.master.api.ContentTypes.DIRECTORY_VARIANTS;
+import static org.apache.taverna.server.master.api.ContentTypes.INITIAL_FILE_VARIANTS;
+import static org.apache.taverna.server.master.common.Roles.SELF;
+import static org.apache.taverna.server.master.common.Roles.USER;
+import static org.apache.taverna.server.master.common.Uri.secure;
+import static org.apache.taverna.server.master.utils.RestUtils.opt;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,22 +52,22 @@ import javax.xml.ws.Holder;
 
 import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Required;
-import org.taverna.server.master.api.DirectoryBean;
-import org.taverna.server.master.exceptions.FilesystemAccessException;
-import org.taverna.server.master.exceptions.NoDirectoryEntryException;
-import org.taverna.server.master.exceptions.NoUpdateException;
-import org.taverna.server.master.interfaces.Directory;
-import org.taverna.server.master.interfaces.DirectoryEntry;
-import org.taverna.server.master.interfaces.File;
-import org.taverna.server.master.interfaces.TavernaRun;
-import org.taverna.server.master.rest.DirectoryContents;
-import org.taverna.server.master.rest.FileSegment;
-import org.taverna.server.master.rest.MakeOrUpdateDirEntry;
-import org.taverna.server.master.rest.MakeOrUpdateDirEntry.MakeDirectory;
-import org.taverna.server.master.rest.TavernaServerDirectoryREST;
-import org.taverna.server.master.utils.FilenameUtils;
-import org.taverna.server.master.utils.CallTimeLogger.PerfLogged;
-import org.taverna.server.master.utils.InvocationCounter.CallCounted;
+import org.apache.taverna.server.master.api.DirectoryBean;
+import org.apache.taverna.server.master.exceptions.FilesystemAccessException;
+import org.apache.taverna.server.master.exceptions.NoDirectoryEntryException;
+import org.apache.taverna.server.master.exceptions.NoUpdateException;
+import org.apache.taverna.server.master.interfaces.Directory;
+import org.apache.taverna.server.master.interfaces.DirectoryEntry;
+import org.apache.taverna.server.master.interfaces.File;
+import org.apache.taverna.server.master.interfaces.TavernaRun;
+import org.apache.taverna.server.master.rest.DirectoryContents;
+import org.apache.taverna.server.master.rest.FileSegment;
+import org.apache.taverna.server.master.rest.MakeOrUpdateDirEntry;
+import org.apache.taverna.server.master.rest.MakeOrUpdateDirEntry.MakeDirectory;
+import org.apache.taverna.server.master.rest.TavernaServerDirectoryREST;
+import org.apache.taverna.server.master.utils.FilenameUtils;
+import org.apache.taverna.server.master.utils.CallTimeLogger.PerfLogged;
+import org.apache.taverna.server.master.utils.InvocationCounter.CallCounted;
 
 /**
  * RESTful access to the filesystem.

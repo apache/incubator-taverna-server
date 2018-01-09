@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.interfaces;
+package org.apache.taverna.server.master.interfaces;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -20,8 +20,8 @@ package org.taverna.server.master.interfaces;
 
 import java.util.Map;
 
-import org.taverna.server.master.exceptions.UnknownRunException;
-import org.taverna.server.master.utils.UsernamePrincipal;
+import org.apache.taverna.server.master.exceptions.UnknownRunException;
+import org.apache.taverna.server.master.utils.UsernamePrincipal;
 
 /**
  * Interface to the mechanism that looks after the mapping of names to runs.

@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.utils;
+package org.apache.taverna.server.master.utils;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -39,7 +39,7 @@ import org.aspectj.lang.annotation.Before;
 public class InvocationCounter {
 	private int count;
 
-	@Before("@annotation(org.taverna.server.master.utils.InvocationCounter.CallCounted)")
+	@Before("@annotation(org.apache.taverna.server.master.utils.InvocationCounter.CallCounted)")
 	public synchronized void count() {
 		count++;
 	}

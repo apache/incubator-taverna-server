@@ -1,6 +1,6 @@
 /*
  */
-package org.taverna.server.master.utils;
+package org.apache.taverna.server.master.utils;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -23,7 +23,7 @@ import static java.lang.System.nanoTime;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.apache.commons.logging.LogFactory.getLog;
-import static org.taverna.server.master.TavernaServer.JMX_ROOT;
+import static org.apache.taverna.server.master.TavernaServer.JMX_ROOT;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -35,7 +35,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
-import org.taverna.server.master.common.version.Version;
+import org.apache.taverna.server.master.common.version.Version;
 
 /**
  * This class is responsible for timing all invocations of publicly-exposed
@@ -73,7 +73,7 @@ public class CallTimeLogger {
 	 *             If anything goes wrong with the wrapped call.
 	 * @see System#nanoTime()
 	 */
-	@Around("@annotation(org.taverna.server.master.utils.CallTimeLogger.PerfLogged)")
+	@Around("@annotation(org.apache.taverna.server.master.utils.CallTimeLogger.PerfLogged)")
 	public Object time(ProceedingJoinPoint call) throws Throwable {
 		long fore = nanoTime();
 		try {

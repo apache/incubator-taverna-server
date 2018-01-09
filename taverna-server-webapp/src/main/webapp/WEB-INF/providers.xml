@@ -23,88 +23,88 @@ limitations under the License.
 
 	<import resource="beans.xml" />
 
-	<bean id="ExceptionProvider.BadInputPortName" class="org.taverna.server.master.rest.handler.BadInputPortNameHandler">
+	<bean id="ExceptionProvider.BadInputPortName" class="org.apache.taverna.server.master.rest.handler.BadInputPortNameHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
-	<bean id="ExceptionProvider.BadPropertyValue" class="org.taverna.server.master.rest.handler.BadPropertyValueHandler">
+	<bean id="ExceptionProvider.BadPropertyValue" class="org.apache.taverna.server.master.rest.handler.BadPropertyValueHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
-	<bean id="ExceptionProvider.BadStateChange" class="org.taverna.server.master.rest.handler.BadStateChangeHandler">
+	<bean id="ExceptionProvider.BadStateChange" class="org.apache.taverna.server.master.rest.handler.BadStateChangeHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
-	<bean id="ExceptionProvider.FilesystemAccess" class="org.taverna.server.master.rest.handler.FilesystemAccessHandler">
+	<bean id="ExceptionProvider.FilesystemAccess" class="org.apache.taverna.server.master.rest.handler.FilesystemAccessHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
-	<bean id="ExceptionProvider.GeneralFailure" class="org.taverna.server.master.rest.handler.GeneralFailureHandler">
+	<bean id="ExceptionProvider.GeneralFailure" class="org.apache.taverna.server.master.rest.handler.GeneralFailureHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
-	<bean id="ExceptionProvider.IllegalArgument" class="org.taverna.server.master.rest.handler.IllegalArgumentHandler">
+	<bean id="ExceptionProvider.IllegalArgument" class="org.apache.taverna.server.master.rest.handler.IllegalArgumentHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
 	<bean id="ExceptionProvider.ImplementationProblem"
-		class="org.taverna.server.master.rest.handler.ImplementationProblemHandler">
+		class="org.apache.taverna.server.master.rest.handler.ImplementationProblemHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
-	<bean id="ExceptionProvider.InvalidCredential" class="org.taverna.server.master.rest.handler.InvalidCredentialHandler">
+	<bean id="ExceptionProvider.InvalidCredential" class="org.apache.taverna.server.master.rest.handler.InvalidCredentialHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
-	<bean id="ExceptionProvider.NoCreate" class="org.taverna.server.master.rest.handler.NoCreateHandler">
+	<bean id="ExceptionProvider.NoCreate" class="org.apache.taverna.server.master.rest.handler.NoCreateHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
-	<bean id="ExceptionProvider.Overloaded" class="org.taverna.server.master.rest.handler.OverloadedHandler">
+	<bean id="ExceptionProvider.Overloaded" class="org.apache.taverna.server.master.rest.handler.OverloadedHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
-	<bean id="ExceptionProvider.NoCredential" class="org.taverna.server.master.rest.handler.NoCredentialHandler">
+	<bean id="ExceptionProvider.NoCredential" class="org.apache.taverna.server.master.rest.handler.NoCredentialHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
-	<bean id="ExceptionProvider.NoDestroy" class="org.taverna.server.master.rest.handler.NoDestroyHandler">
+	<bean id="ExceptionProvider.NoDestroy" class="org.apache.taverna.server.master.rest.handler.NoDestroyHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
-	<bean id="ExceptionProvider.NoDirectoryEntry" class="org.taverna.server.master.rest.handler.NoDirectoryEntryHandler">
+	<bean id="ExceptionProvider.NoDirectoryEntry" class="org.apache.taverna.server.master.rest.handler.NoDirectoryEntryHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
-	<bean id="ExceptionProvider.NoListener" class="org.taverna.server.master.rest.handler.NoListenerHandler">
+	<bean id="ExceptionProvider.NoListener" class="org.apache.taverna.server.master.rest.handler.NoListenerHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
-	<bean id="ExceptionProvider.NoUpdate" class="org.taverna.server.master.rest.handler.NoUpdateHandler">
+	<bean id="ExceptionProvider.NoUpdate" class="org.apache.taverna.server.master.rest.handler.NoUpdateHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
-	<bean id="ExceptionProvider.NotOwner" class="org.taverna.server.master.rest.handler.NotOwnerHandler">
+	<bean id="ExceptionProvider.NotOwner" class="org.apache.taverna.server.master.rest.handler.NotOwnerHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
-	<bean id="ExceptionProvider.UnknownRun" class="org.taverna.server.master.rest.handler.UnknownRunHandler">
+	<bean id="ExceptionProvider.UnknownRun" class="org.apache.taverna.server.master.rest.handler.UnknownRunHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
-	<bean id="ExceptionProvider.JAXBException" class="org.taverna.server.master.rest.handler.JAXBExceptionHandler">
+	<bean id="ExceptionProvider.JAXBException" class="org.apache.taverna.server.master.rest.handler.JAXBExceptionHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
-	<bean id="ExceptionProvider.AccessDenied" class="org.taverna.server.master.rest.handler.AccessDeniedHandler">
+	<bean id="ExceptionProvider.AccessDenied" class="org.apache.taverna.server.master.rest.handler.AccessDeniedHandler">
 		<property name="managementModel" ref="webapp.state" />
 	</bean>
-    <bean id="ExceptionProvider.NegotiationFailed" class="org.taverna.server.master.rest.handler.NegotiationFailedHandler">
+    <bean id="ExceptionProvider.NegotiationFailed" class="org.apache.taverna.server.master.rest.handler.NegotiationFailedHandler">
     </bean>
-	<bean id="MessagingProvider.File" class="org.taverna.server.master.rest.handler.FileMessageHandler">
+	<bean id="MessagingProvider.File" class="org.apache.taverna.server.master.rest.handler.FileMessageHandler">
 		<property name="maxChunkSize" value="${default.messageSize}" />
 	</bean>
-	<bean id="MessagingProvider.FileConcatenation" class="org.taverna.server.master.rest.handler.FileConcatenationHandler">
+	<bean id="MessagingProvider.FileConcatenation" class="org.apache.taverna.server.master.rest.handler.FileConcatenationHandler">
 		<property name="maxChunkSize" value="${default.messageSize}" />
 	</bean>
-	<bean id="MessagingProvider.FileSegment" class="org.taverna.server.master.rest.handler.FileSegmentHandler">
+	<bean id="MessagingProvider.FileSegment" class="org.apache.taverna.server.master.rest.handler.FileSegmentHandler">
 		<property name="maxChunkSize" value="${default.messageSize}" />
 	</bean>
 	<bean id="MessagingProvider.InputStream"
-		class="org.taverna.server.master.rest.handler.InputStreamMessageHandler">
+		class="org.apache.taverna.server.master.rest.handler.InputStreamMessageHandler">
 	</bean>
-	<bean id="MessagingProvider.T2flow" class="org.taverna.server.master.rest.handler.T2FlowDocumentHandler">
+	<bean id="MessagingProvider.T2flow" class="org.apache.taverna.server.master.rest.handler.T2FlowDocumentHandler">
 	</bean>
-	<bean id="MessagingProvider.Permission" class="org.taverna.server.master.rest.handler.PermissionHandler">
+	<bean id="MessagingProvider.Permission" class="org.apache.taverna.server.master.rest.handler.PermissionHandler">
 	</bean>
 
-	<bean id="Provider.RuntimeExceptionRemapping" class="org.taverna.server.master.utils.RuntimeExceptionWrapper" />
-	<bean id="MessagingProvider.ZipStream" class="org.taverna.server.master.rest.handler.ZipStreamHandler" />
-	<bean id="MessagingProvider.URIList" class="org.taverna.server.master.rest.handler.URIListHandler" />
+	<bean id="Provider.RuntimeExceptionRemapping" class="org.apache.taverna.server.master.utils.RuntimeExceptionWrapper" />
+	<bean id="MessagingProvider.ZipStream" class="org.apache.taverna.server.master.rest.handler.ZipStreamHandler" />
+	<bean id="MessagingProvider.URIList" class="org.apache.taverna.server.master.rest.handler.URIListHandler" />
 	<bean id="Interceptor.FlushThreadLocalCache"
-		class="org.taverna.server.master.utils.FlushThreadLocalCacheInterceptor"
+		class="org.apache.taverna.server.master.utils.FlushThreadLocalCacheInterceptor"
 		lazy-init="false">
 	</bean>
 </beans>
