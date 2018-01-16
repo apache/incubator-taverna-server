@@ -202,6 +202,12 @@
    limitations under the License.
 ---------------------------------------------------------
 taverna-server-usagerecord/src/main/xsd/xmlds.xsd
-is licensed by the W3C Software License
-http://www.w3.org/Consortium/Legal/copyright-software-19980720
+is licensed by the W3C Software License, see
+corresponding META-INF/LICENSE.W3C.software.txt
+---------------------------------------------------------
+taverna-server-usagerecords contains derivative work
+based on Open Grid Forum (OGF) Documents.
+
+For the original copyright notices, see the corresponding
+META-INF/LICENSE.GFD.98.txt and META-INF/LICENSE.GFD.204
 ---------------------------------------------------------
