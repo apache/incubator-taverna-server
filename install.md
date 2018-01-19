@@ -87,10 +87,8 @@ Now start Tomcat (or restart it).
 
 Save the text below as `context.xml` on the machine where you are going to install the server. This is the minimum content of that file:
 
-```xml
-<Context path="/taverna-server">
-</Context>
-```
+    <Context path="/taverna-server">
+    </Context>
 
 Additional configuration properties can be set in the context.xml file; see the detailed deployment description section of this document for more information.
 
@@ -126,18 +124,16 @@ Deployment of web applications into Tomcat can be done through multiple mechanis
 
 The configuration of the Taverna Server installation is done by writing a context descriptor document, only some parts of which can be configured afterwards via the management interface. An *example* of that XML document is below:
 
-```xml
-<Context path="/taverna-server">
-  <!-- Sample logging configuration. -->
-  <Valve className="org.apache.catalina.valves.AccessLogValve" />
-
-  <Parameter name="default.localusername"
-    value="localtavernauser" />
-
-  <!-- For email-dispatched notifications. -->
-  <Parameter name="email.host" value="localhost" />
-</Context>
-```
+    <Context path="/taverna-server">
+      <!-- Sample logging configuration. -->
+      <Valve className="org.apache.catalina.valves.AccessLogValve" />
+    
+      <Parameter name="default.localusername"
+        value="localtavernauser" />
+    
+      <!-- For email-dispatched notifications. -->
+      <Parameter name="email.host" value="localhost" />
+    </Context>
 
 The context descriptor is typically in a file called context.xml and there is a sample context descriptor with this distribution, in the context.sample.xml file. There are a substantial number of properties that may be tuned during installation (see below).
 
@@ -151,110 +147,111 @@ This is a list of all the properties that are set (or empty) by default in the S
 
 - Those used to control how many runs exist and are operating at once. The default.runlimit and default.operatinglimit have reasonable initial values, but must be tuned according to the actual expected workload. They can be set at runtime via the administration web interface and via JMX.
 
-- Those used to enable optional notification mechanisms; those are all disabled by default unless the required extra properties are set (see below for instructions).
+- Those used to enable optional notification mechanisms; those are all disabled by default unless the required extra properties are set (see below).
 
-```ini
-# Script in Taverna installation to run to actually execute workflows
-executeWorkflowScript:      /usr/taverna/executeworkflow.sh
+Complete property configuration:
+     
+    # Script for Taverna command line tool to actually execute workflows
+    executeWorkflowScript:      /usr/taverna/executeworkflow.sh
+    
+    # Override the hostname, port and webapp; leave at 'NONE' if no
+    # override desired. If set, set it to something like:
+    #      foo.example.com:8000/tav-serv
+    default.webapp:             NONE
+    
+    # User name to use by default for impersonation if nothing else
+    # specified
+    default.localusername:      taverna
+    
+    # The HTTP authorization realm; should be different from all other
+    # webapps on the deployment server
+    http.realmName:         tavernaserver
+    
+    # Force the RMI registry to only listen to connections from localhost
+    # Should be true unless you have a good reason to open it up.
+    rmi.localhostOnly:      true
+    
+    # How to pick a user name out of a global identity
+    localusernameregexp:	^TAVERNAUSER=(.*)$
+    # Whether to log incoming workflows; noisy if enabled
+    default.logworkflows:	false
+    # Whether to log outgoing exceptions; noisy if enabled
+    default.logexceptions:	false
+    # Whether to allow workflows to be submitted; adjustable via admin
+    # interfaces
+    default.permitsubmit:	true
+    # How long a workflow run should live by default, in seconds
+    default.lifetime:		1440
+    # Maximum number of simultaneous workflow runs, in any state
+    default.runlimit:		100
+    # Maximum number of simultaneous *operating* workflow runs (i.e.,
+    # that are actually running)
+    default.operatinglimit:	10
+    
+    # Location of impersonation credentials
+    secureForkPasswordFile:     /usr/local/tomcat6.0/conf/sudopass.txt
+    
+    # URI to server's REST interface
+    taverna.preferredUserUri:   https://some.host:8443/taverna-server/rest/
+    
+    # Delays used in the task executor, both in milliseconds 
+    purge.interval:             30000
+    finish.interval:            10000
+    
+    # Thread pool sizing
+    pool.size:                  2
+    
+    ### Usage Record handling
+    usage.logFile:              none
+    usage.disableDB:            no
+    
+    ### General configuration of messaging
+    # cooldown in seconds
+    message.cooldown:             300
+    message.termination.subject:  Taverna workflow run finished
+    message.termination.body:     Your job with ID={0} has finished with
+                                 exit code {1,number,integer}.
+    
+    ### Email-specific options
+    email.from:                 taverna.server@localhost
+    email.type:                 text/plain
+    email.host:                 localhost
+    
+    ### Jabber-specific options
+    xmpp.server:                xmpp://some.host:5222
+    xmpp.resource:              TavernaServer
+    xmpp.user:                  taverna
+    xmpp.password:              *******
+    
+    ### Atom/RSS feed; lifespan in days, cleaninterval in milliseconds
+    atom.language:              en
+    atom.lifespan:              7
+    atom.cleaninterval:         3600000
+    
+    ### SMS-specific options
+    sms.service:
+            https://www.intellisoftware.co.uk/smsgateway/sendmsg.aspx
+    sms.userfield:              username
+    sms.passfield:              password
+    sms.destfield:              to
+    sms.msgfield:               text
+    sms.user:                   taverna
+    sms.pass:                   *******
+    
+    ### Twitter-specific options
+    twitter.oauth.accessToken:        *******
+    twitter.oauth.accessTokenSecret:  *******
+    
+    ### Special options
+    # Do detailed logging of security. The information logged is enough
+    # to allow an administrator to recover arbitrary user credentials,
+    # so this should be false under normal circumstances.
+    log.security.details:   false
+    
+    # Enables a special project-specific security setting.
+    # Leave at false unless you have been specifically told otherwise.
+    helio.cis.enableTokenPassing:   false
 
-# Override the hostname, port and webapp; leave at 'NONE' if no
-# override desired. If set, set it to something like:
-#      foo.example.com:8000/tav-serv
-default.webapp:             NONE
-
-# User name to use by default for impersonation if nothing else
-# specified
-default.localusername:      taverna
-
-# The HTTP authorization realm; should be different from all other
-# webapps on the deployment server
-http.realmName:         tavernaserver
-
-# Force the RMI registry to only listen to connections from localhost
-# Should be true unless you have a good reason to open it up.
-rmi.localhostOnly:      true
-
-# How to pick a user name out of a global identity
-localusernameregexp:	^TAVERNAUSER=(.*)$
-# Whether to log incoming workflows; noisy if enabled
-default.logworkflows:	false
-# Whether to log outgoing exceptions; noisy if enabled
-default.logexceptions:	false
-# Whether to allow workflows to be submitted; adjustable via admin
-# interfaces
-default.permitsubmit:	true
-# How long a workflow run should live by default, in seconds
-default.lifetime:		1440
-# Maximum number of simultaneous workflow runs, in any state
-default.runlimit:		100
-# Maximum number of simultaneous *operating* workflow runs (i.e.,
-# that are actually running)
-default.operatinglimit:	10
-
-# Location of impersonation credentials
-secureForkPasswordFile:     /usr/local/tomcat6.0/conf/sudopass.txt
-
-# URI to server's REST interface
-taverna.preferredUserUri:   https://some.host:8443/taverna-server/rest/
-
-# Delays used in the task executor, both in milliseconds 
-purge.interval:             30000
-finish.interval:            10000
-
-# Thread pool sizing
-pool.size:                  2
-
-### Usage Record handling
-usage.logFile:              none
-usage.disableDB:            no
-
-### General configuration of messaging
-# cooldown in seconds
-message.cooldown:             300
-message.termination.subject:  Taverna workflow run finished
-message.termination.body:     Your job with ID={0} has finished with
-                             exit code {1,number,integer}.
-
-### Email-specific options
-email.from:                 taverna.server@localhost
-email.type:                 text/plain
-email.host:                 localhost
-
-### Jabber-specific options
-xmpp.server:                xmpp://some.host:5222
-xmpp.resource:              TavernaServer
-xmpp.user:                  taverna
-xmpp.password:              *******
-
-### Atom/RSS feed; lifespan in days, cleaninterval in milliseconds
-atom.language:              en
-atom.lifespan:              7
-atom.cleaninterval:         3600000
-
-### SMS-specific options
-sms.service:
-        https://www.intellisoftware.co.uk/smsgateway/sendmsg.aspx
-sms.userfield:              username
-sms.passfield:              password
-sms.destfield:              to
-sms.msgfield:               text
-sms.user:                   taverna
-sms.pass:                   *******
-
-### Twitter-specific options
-twitter.oauth.accessToken:        *******
-twitter.oauth.accessTokenSecret:  *******
-
-### Special options
-# Do detailed logging of security. The information logged is enough
-# to allow an administrator to recover arbitrary user credentials,
-# so this should be false under normal circumstances.
-log.security.details:   false
-
-# Enables a special project-specific security setting.
-# Leave at false unless you have been specifically told otherwise.
-helio.cis.enableTokenPassing:   false
-```
 
 #### Enabling Notification Options
 
@@ -288,17 +285,15 @@ This is done by either instructing the service what password is to be used with 
 
 The second style of impersonation is done by leaving that parameter unset and instead adding some extra configuration to the system's `/etc/sudoers` file, as seen below (typically set with the `visudo` command). Note that conventionally the three parts of the configuration are in separate sections of the file, and that care should be taken during configuration as mistakes can result in a system that is broken. In the example below, we assume that the servlet container is running as the Unix user `tavserv` and that local user accounts that may be targets for impersonation are all members of the `taverna` UNIX group.
 
-```ini
-# Flags for the tavserv user (keep things quiet)
-Defaults:tavserv   !lecture, timestamp_timeout=0, passwd_tries=1
-
-# Who can we impersonate? Manage via Unix group called 'taverna'
-Runas_Alias        TAV = %taverna
-
-# The actual permission to impersonate, with permission to run
-# anything
-tavserv            ALL=(TAV) NOPASSWD: ALL
-```
+    # Flags for the tavserv user (keep things quiet)
+    Defaults:tavserv   !lecture, timestamp_timeout=0, passwd_tries=1
+    
+    # Who can we impersonate? Manage via Unix group called 'taverna'
+    Runas_Alias        TAV = %taverna
+    
+    # The actual permission to impersonate, with permission to run
+    # anything
+    tavserv            ALL=(TAV) NOPASSWD: ALL
 
 Care should be taken as without a password specified and without permission to execute as another user, an attempt to create a workflow run will hang instead of failing.
 

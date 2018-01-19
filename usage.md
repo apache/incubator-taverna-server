@@ -55,7 +55,7 @@ Taverna Server exposes some _file access operations_ which are performed on file
 
 Associated with each workflow run is a **state**. The state transition diagram is this:
 
-![](img/state_transitions.svg)
+![](/img/state_transitions.svg)
 
 The blue states are the initial and final states, and all states in *italic* cannot be observed in practice. The black arrows represent automatic state changes, the blue arrows are for manually-triggered transition, and the red arrows are destructions, which can be done from any state (other than the initial unobservable one) and which may be either manually or automatically triggered; automatic destruction happens when the run reaches its expiry time (which you can set but cannot remove). Note that there are two transitions from *Operating* to *Finished*; they are not equivalent. The automatic transition represents the termination of the workflow execution with such outputs produced as are going to be generated, whereas the manual transition is where the execution is killed and outputs may be not generated even if they conceptually existed at that point. Also note that it is only the transition from *Initialized* to *Operating* that represents the start of the workflow execution engine.
 
@@ -78,23 +78,18 @@ The result is `201 Created` that gives the location of the created run (in a `Lo
 
 To set the input port `FOO` to have the string value `BAR`, you would **PUT** to `{RUN_URI}/input/input/FOO` with `application/xml` as content-type:
 
-```xml
-<t2sr:runInput xmlns:t2sr="http://ns.taverna.org.uk/2010/xml/server/rest/">
-  <t2sr:value>BAR</t2sr:value>
-</t2sr:runInput>
-```
-
+    <t2sr:runInput xmlns:t2sr="http://ns.taverna.org.uk/2010/xml/server/rest/">
+      <t2sr:value>BAR</t2sr:value>
+    </t2sr:runInput>
 
 *Uploading a File for One Input*
 
 The values for an input port can also be set by first creating a file on the server. Thus, if you were staging the value `BAR` to input port `FOO` by means of a file `BOO.TXT` you would first **POST** this message to `{RUN_URI}/wd` as content-type `application/xml`
 
 
-```xml
-<t2sr:upload t2sr:name="BOO.TXT" xmlns:t2sr="http://ns.taverna.org.uk/2010/xml/server/rest/">
-  QkFS
-</t2sr:upload>
-```
+    <t2sr:upload t2sr:name="BOO.TXT" xmlns:t2sr="http://ns.taverna.org.uk/2010/xml/server/rest/">
+      QkFS
+    </t2sr:upload>
 
 Note that `QkFS` is the base64-encoded form of `BAR` in UTF-8 encoding. Each workflow run has its own working directory on the server for  uploaded files are placed; however in the Web API you are never told the name of this working directory.
 
@@ -102,19 +97,15 @@ You can also **PUT** the binary contents of the file (as `application/octet-stre
 
 Once you've created the file, you can then set it's relative path as the input for the port by **PUT**ting this message to `{RUN_URI}/input/input/FOO`
 
-```xml
-<t2sr:runInput xmlns:t2sr= "http://ns.taverna.org.uk/2010/xml/server/rest/">
-  <t2sr:file>BOO.TXT</t2sr:file>
-</t2sr:runInput>
-```
+    <t2sr:runInput xmlns:t2sr= "http://ns.taverna.org.uk/2010/xml/server/rest/">
+      <t2sr:file>BOO.TXT</t2sr:file>
+    </t2sr:runInput>
 
 Note the similarity of the final part of this process to the previous method for setting an input, but here using `<t2sr:file>`.
 
 You can also create a **directory**, e.g., `IN/`, to hold the input files. This is done by **POST**ing a different message to `{RUN_URI}/wd`
 
-```xml
-<t2sr:mkdir t2sr:name="IN" xmlns:t2sr= "http://ns.taverna.org.uk/2010/xml/server/rest/" />
-```
+    <t2sr:mkdir t2sr:name="IN" xmlns:t2sr= "http://ns.taverna.org.uk/2010/xml/server/rest/" />
 
 With that, you can then create files in the `IN` subdirectory by sending the upload message to `{RUN_URI}/wd/IN` and you can use the files there as input by using relative paths like `IN/BOO.TXT`. You can also create nested sub-directories by sending the `<t2sr:mkdir>` message to the natural URI of the parent directory, just as sending an upload message to that URI creates a file in that directory.
 
@@ -122,13 +113,11 @@ With that, you can then create files in the `IN` subdirectory by sending the upl
 
 You can use an existing file attached to a workflow run *on the same server*, provided you have read permission to access that run. You do this by using a **PUT** to set the input to a _reference_ (the actual URL below is just an example copying from run `78c7a1fd-f794-4db3-914a-ec70731d9928`; the must be the **full URL** to the file):
 
-```xml
-<t2sr:runInput xmlns:t2sr= "http://ns.taverna.org.uk/2010/xml/server/rest/">
-  <t2sr:reference>
-    http://localhost:8080/taverna-server/rest/runs/78c7a1fd-f794-4db3-914a-ec70731d9928/wd/file.name
-  </t2sr:reference>
-</t2sr:runInput>
-```
+    <t2sr:runInput xmlns:t2sr= "http://ns.taverna.org.uk/2010/xml/server/rest/">
+      <t2sr:reference>
+        http://localhost:8080/taverna-server/rest/runs/78c7a1fd-f794-4db3-914a-ec70731d9928/wd/file.name
+      </t2sr:reference>
+    </t2sr:runInput>
 
 
 The data will be copied across efficiently into a run-local file. This version of Taverna Server does not support accessing files stored on any other server or on the general web via this mechanism.
@@ -143,17 +132,15 @@ The final way of setting up the inputs to a workflow is to upload (using the sam
 
 To set a username and password for a service, you would **POST** to `{RUN_URI}/security/credentials` a message like this (assuming that the WSDL address is `https://example.com/serv.wsdl`, that the username to use is `fred123`, and that the password is `ThePassWord`):
 
-```xml
-<t2sr:credential 
- xmlns:t2sr= "http://ns.taverna.org.uk/2010/xml/server/rest/"
- xmlns:t2s="http://ns.taverna.org.uk/2010/xml/server/">
-  <t2s:userpass>
-    <t2s:serviceURI>https://example.com/serv.wsdl</t2s:serviceURI>
-    <t2s:username>fred123</t2s:username>
-    <t2s:password>ThePassWord</t2s:password>
-  </t2s:userpass>
-</t2sr:credential>
-```
+    <t2sr:credential 
+     xmlns:t2sr= "http://ns.taverna.org.uk/2010/xml/server/rest/"
+     xmlns:t2s="http://ns.taverna.org.uk/2010/xml/server/">
+      <t2s:userpass>
+        <t2s:serviceURI>https://example.com/serv.wsdl</t2s:serviceURI>
+        <t2s:username>fred123</t2s:username>
+        <t2s:password>ThePassWord</t2s:password>
+      </t2s:userpass>
+    </t2sr:credential>
 
 (Notice the different `t2s` namespace)
 
@@ -171,16 +158,14 @@ _There is a fourth state, `Stopped`, but it is not yet supported._
 
 Thus, if a single output `FOO.OUT` was produced from the workflow, it would be written to the file that can be retrieved from `{RUN_URI}/wd/out/FOO.OUT` and the result of the **GET** on `{RUN_URI}/wd/out` would look something like this:
 
-```xml
-<t2sr:directoryContents
-  xmlns:xlink="http://www.w3.org/1999/xlink"
-  xmlns:t2s="http://ns.taverna.org.uk/2010/xml/server/"
-  xmlns:t2sr= "http://ns.taverna.org.uk/2010/xml/server/rest/">
-  <t2s:file 
-    xlink:href="http://localhost:8080/taverna-server/rest/runs/78c7a1fd-f794-4db3-914a-ec70731d9928/wd/out/FOO.OUT"
-    t2sr:name="FOO.OUT">out/FOO.OUT</t2s:file>
-</t2sr:directoryContents>
-```
+    <t2sr:directoryContents
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      xmlns:t2s="http://ns.taverna.org.uk/2010/xml/server/"
+      xmlns:t2sr= "http://ns.taverna.org.uk/2010/xml/server/rest/">
+      <t2s:file 
+        xlink:href="http://localhost:8080/taverna-server/rest/runs/78c7a1fd-f794-4db3-914a-ec70731d9928/wd/out/FOO.OUT"
+        t2sr:name="FOO.OUT">out/FOO.OUT</t2s:file>
+    </t2sr:directoryContents>
 
 9.  The standard output and standard error from the T2 Command Line Executor subprocess can be read via properties of the special I/O listener. To do that, do a **GET** on `{RUN_URI}/listeners/io/properties/stdout` (or `stderr`). Once the subprocess has finished executing, the I/O listener will provide a third property containing the exit code of the subprocess, called `exitcode`.
 
@@ -197,18 +182,16 @@ API of the REST Interface
 
 Note that examples in this document are actually pseudo-schemas. For example, this shows how the various marks on attributes and elements indicate their cardinality and type:
 
-```xml
-<element requiredAttr="xsd:someType">
-  <requiredChildElement />
-  <zeroOrMoreChildren /> *
-  <optionalChild /> ?
-  <alternative1 /> | <alternative2 />
-  <childWithSimpleStringContent>
-    xsd:string
-  </childWithSimpleStringContent>
-  <childWithUndescribedContent ... />
-</element>
-```
+    <element requiredAttr="xsd:someType">
+      <requiredChildElement />
+      <zeroOrMoreChildren /> *
+      <optionalChild /> ?
+      <alternative1 /> | <alternative2 />
+      <childWithSimpleStringContent>
+        xsd:string
+      </childWithSimpleStringContent>
+      <childWithUndescribedContent ... />
+    </element>
 
 To be exact, a suffix of `*` marks an element that can be repeated arbitrarily often, a suffix of `?` marks an optional element or attribute (either present or absent); and otherwise exactly one of the element is required (or, for attributes, the attribute must be present). We never use cardinalities other than these, and _order_ is always respected. Where there is complex content, it will either be described inline or separately. Where there is a choice between two elements, they are separated by a `|` character.
 
@@ -248,17 +231,15 @@ It is important to use the right namespaces for their corresponding elements/att
 
 Retrieves a description of the server as either XML or JSON (determined by content negotiation) that indicates other locations to find sub-resources.
 
-```xml
-<t2sr:serverDescription
-     t2s:serverVersion="xsd:string"
-     t2s:serverRevision="xsd:string"
-     t2s:serverBuildTimestamp="xsd:string" >
-
-  <t2sr:runs xlink:href="xsd:anyURI" />
-  <t2sr:policy xlink:href="xsd:anyURI" />
-  <t2sr:feed xlink:href="xsd:anyURI" />
-</t2sr:serverDescription>
-```
+    <t2sr:serverDescription
+         t2s:serverVersion="xsd:string"
+         t2s:serverRevision="xsd:string"
+         t2s:serverBuildTimestamp="xsd:string" >
+    
+      <t2sr:runs xlink:href="xsd:anyURI" />
+      <t2sr:policy xlink:href="xsd:anyURI" />
+      <t2sr:feed xlink:href="xsd:anyURI" />
+    </t2sr:serverDescription>
 
 The `<t2sr:feed>` element is a pointer to the location of the Atom feed for events issued to the user about things like the termination of their workflows.
 
@@ -271,11 +252,9 @@ The `<t2sr:feed>` element is a pointer to the location of the Atom feed for even
 
 Retrieve a list of all runs that the current user can see, as XML or JSON. Note that the user will not be told about runs that they are not permitted to see (i.e., that they didn’t create and haven’t been given permission to see). Deleted runs will also not be present.
 
-```xml
-<t2sr:runList>
-  <t2sr:run xlink:href="xsd:anyURI" /> *
-</t2sr:runList>
-```
+    <t2sr:runList>
+      <t2sr:run xlink:href="xsd:anyURI" /> *
+    </t2sr:runList>
 
 * Method: POST
 * Consumes: `application/vnd.taverna.t2flow+xml`, `application/xml`
@@ -284,11 +263,9 @@ Retrieve a list of all runs that the current user can see, as XML or JSON. Note 
 
 Accepts (or not) a request to create a new run executing the given workflow. **The content should normally be a t2flow workflow document with the t2flow content type** `application/vnd.taverna.t2flow+xml`, but when the content type is `application/xml`, the workflow must be wrapped (in an XML infoset sense) inside an `<t2s:workflow>` element.
 
-```xml
-<t2s:workflow>
-  <t2flow:workflow ... />
-</t2s:workflow>
-```
+    <t2s:workflow>
+      <t2flow:workflow ... />
+    </t2s:workflow>
 
 Care should be taken to handle t2flow namespaces for the `application/xml` approach.
 
@@ -304,19 +281,17 @@ The result will be a HTTP `201 Created` redirect (via `Location` HTML header) to
 
 Describe the (public) parts of the policies of this server, as XML or JSON.
 
-```xml
-<t2sr:policyDescription
-    t2s:serverVersion="xsd:string"
-    t2s:serverRevision="xsd:string"
-    t2s:serverBuildTimestamp="xsd:string" >
-
-  <t2sr:runLimit xlink:href="xsd:anyURI" />
-  <t2sr:permittedWorkflows xlink:href="xsd:anyURI" />
-  <t2sr:permittedListeners xlink:href="xsd:anyURI" />
-  <t2sr:enabledNotificationFabrics xlink:href="xsd:anyURI" />
-  <t2sr:capabilities xlink:href="xsd:anyURI" />
-</t2sr:policyDescription>
-```
+    <t2sr:policyDescription
+        t2s:serverVersion="xsd:string"
+        t2s:serverRevision="xsd:string"
+        t2s:serverBuildTimestamp="xsd:string" >
+    
+      <t2sr:runLimit xlink:href="xsd:anyURI" />
+      <t2sr:permittedWorkflows xlink:href="xsd:anyURI" />
+      <t2sr:permittedListeners xlink:href="xsd:anyURI" />
+      <t2sr:enabledNotificationFabrics xlink:href="xsd:anyURI" />
+      <t2sr:capabilities xlink:href="xsd:anyURI" />
+    </t2sr:policyDescription>
 
 #### Resource: /policy/capabilities
 
@@ -415,38 +390,36 @@ Note that all of these resources require that the user be authenticated and perm
  
 Describes the sub-resources associated with this workflow run, as XML or JSON.
 
-```xml
-<t2sr:runDescription
-    t2sr:owner="xsd:string"
-    t2s:serverVersion="xsd:string"
-    t2s:serverRevision="xsd:string"
-    t2s:serverBuildTimestamp="xsd:string" >
-
-  <t2sr:expiry xlink:href="xsd:anyURI">
-     xsd:string
-  </t2sr:expiry>
-  <t2sr:creationWorkflow xlink:href="xsd:anyURI" />
-  <t2sr:createTime xlink:href="xsd:anyURI" />
-  <t2sr:startTime xlink:href="xsd:anyURI" />
-  <t2sr:finishTime xlink:href="xsd:anyURI" />
-  <t2sr:status xlink:href="xsd:anyURI" />
-  <t2sr:workingDirectory xlink:href="xsd:anyURI" />
-  <t2sr:inputs xlink:href="xsd:anyURI" />
-  <t2sr:output xlink:href="xsd:anyURI" />
-  <t2sr:securityContext xlink:href="xsd:anyURI" />
-  <t2sr:listeners xlink:href="xsd:anyURI">
-    <t2sr:listener xlink:href="xsd:anyURI" /> * 
-  </t2sr:listeners>
-  <t2sr:interaction xlink:href="xsd:anyURI" />
-  <t2sr:name xlink:href="xsd:anyURI" />
-  <t2sr:stdout xlink:href="xsd:anyURI" />
-  <t2sr:stderr xlink:href="xsd:anyURI" />
-  <t2sr:usage xlink:href="xsd:anyURI" />
-  <t2sr:log xlink:href="xsd:anyURI" />
-  <t2sr:run-bundle xlink:href="xsd:anyURI" />
-  <t2sr:generate-provenance xlink:href="xsd:anyURI" />
-</t2sr:runDescription>
-```
+    <t2sr:runDescription
+        t2sr:owner="xsd:string"
+        t2s:serverVersion="xsd:string"
+        t2s:serverRevision="xsd:string"
+        t2s:serverBuildTimestamp="xsd:string" >
+    
+      <t2sr:expiry xlink:href="xsd:anyURI">
+         xsd:string
+      </t2sr:expiry>
+      <t2sr:creationWorkflow xlink:href="xsd:anyURI" />
+      <t2sr:createTime xlink:href="xsd:anyURI" />
+      <t2sr:startTime xlink:href="xsd:anyURI" />
+      <t2sr:finishTime xlink:href="xsd:anyURI" />
+      <t2sr:status xlink:href="xsd:anyURI" />
+      <t2sr:workingDirectory xlink:href="xsd:anyURI" />
+      <t2sr:inputs xlink:href="xsd:anyURI" />
+      <t2sr:output xlink:href="xsd:anyURI" />
+      <t2sr:securityContext xlink:href="xsd:anyURI" />
+      <t2sr:listeners xlink:href="xsd:anyURI">
+        <t2sr:listener xlink:href="xsd:anyURI" /> * 
+      </t2sr:listeners>
+      <t2sr:interaction xlink:href="xsd:anyURI" />
+      <t2sr:name xlink:href="xsd:anyURI" />
+      <t2sr:stdout xlink:href="xsd:anyURI" />
+      <t2sr:stderr xlink:href="xsd:anyURI" />
+      <t2sr:usage xlink:href="xsd:anyURI" />
+      <t2sr:log xlink:href="xsd:anyURI" />
+      <t2sr:run-bundle xlink:href="xsd:anyURI" />
+      <t2sr:generate-provenance xlink:href="xsd:anyURI" />
+    </t2sr:runDescription>
 
 * Method: DELETE
 * Consumes: N/A
@@ -534,18 +507,15 @@ Gives the workflow document used to create the workflow run, as raw t2flow, wrap
 
 Describe the sub-URIs relating to workflow inputs.
 
-
-```xml
-<t2sr:runInputs
-    t2s:serverVersion="xsd:string"
-    t2s:serverRevision="xsd:string"
-    t2s:serverBuildTimestamp="xsd:string" >
-
-  <t2sr:expected xlink:href="xsd:anyURI" />
-  <t2sr:baclava xlink:href="xsd:anyURI" /> 
-  <t2sr:input xlink:href="xsd:anyURI" /> *
-</t2sr:runInputs>
-```
+    <t2sr:runInputs
+        t2s:serverVersion="xsd:string"
+        t2s:serverRevision="xsd:string"
+        t2s:serverBuildTimestamp="xsd:string" >
+    
+      <t2sr:expected xlink:href="xsd:anyURI" />
+      <t2sr:baclava xlink:href="xsd:anyURI" /> 
+      <t2sr:input xlink:href="xsd:anyURI" /> *
+    </t2sr:runInputs>
 
 #### Resource: /runs/{id}/input/baclava
 
@@ -572,20 +542,18 @@ Sets the Baclava file describing the inputs. The name is relative to the main wo
  
 Describe the *expected* inputs of this workflow run. They must be supplied by either per-input specifications or by the baclava file.
 
-```xml
-<port:inputDescription
-   port:workflowId="xsd:string"
-   port:workflowRun="xsd:anyURI"
-   port:workflowRunId="xsd:string">
-
-<port:input
-   port:name="xsd:string" 
-   port:depth="xsd:int" ?
-   xlink:href="xsd:anyURI" ?>
-</port:input> *
-
-</port:inputDescription>
-```
+    <port:inputDescription
+       port:workflowId="xsd:string"
+       port:workflowRun="xsd:anyURI"
+       port:workflowRunId="xsd:string">
+    
+    <port:input
+       port:name="xsd:string" 
+       port:depth="xsd:int" ?
+       xlink:href="xsd:anyURI" ?>
+    </port:input> *
+    
+    </port:inputDescription>
 
 #### Resource: /runs/{id}/input/input/{name}
 
@@ -596,17 +564,15 @@ Describe the *expected* inputs of this workflow run. They must be supplied by ei
 
 Gives a description of what is used to supply a particular input, which will be either a literal value or the name of a file in the working directory or a reference to a file maintained by another workflow run on the same server (which will be copied efficiently if the user has permission).
 
-```xml
-<t2sr:runInput t2sr:name="xsd:string" t2s:serverVersion="xsd:string" t2s:serverRevision="xsd:string" t2s:serverBuildTimestamp="xsd:string" >
-
-  <t2sr:file> xsd:string </t2sr:file>
-|  
-  <t2sr:reference> xsd:anyURI </t2sr:reference>
-|   
-  <t2sr:value> xsd:string </t2sr:value>
-
-</t2sr:runInput>
-```
+    <t2sr:runInput t2sr:name="xsd:string" t2s:serverVersion="xsd:string" t2s:serverRevision="xsd:string" t2s:serverBuildTimestamp="xsd:string" >
+    
+      <t2sr:file> xsd:string </t2sr:file>
+    |  
+      <t2sr:reference> xsd:anyURI </t2sr:reference>
+    |   
+      <t2sr:value> xsd:string </t2sr:value>
+    
+    </t2sr:runInput>
 
 
 * Method: PUT
@@ -627,40 +593,38 @@ Gives a description of the outputs (in XML or JSON) as currently understood. Not
 
 
 
-```xml
-<port:workflowOutputs
-   port:workflowId="xsd:string"
-   port:workflowRun="xsd:anyURI"
-   port:workflowRunId="xsd:string">
-
-  <port:output
-     port:name="xsd:string"
-     port:depth="xsd:int" ? >
-
-    <port:value
-        xlink:href="xsd:anyURI" ? 
-        port:fileName="xsd:string"
-        port:contentType="xsd:string"
-        port:byteLength="xsd:int" />
-  |
-    <port:list
-        xlink:href="xsd:anyURI" ?
-        port:length="xsd:int" ? > 
-        
-        <!-- Sequence of values, just as for a port -->
-    </port:list>
-  |
-    <port:error
-        xlink:href="xsd:anyURI" ?
-        port:depth="xsd:int" ? />
-  |
-    <port:absent
-        xlink:href="xsd:anyURI" ?  />
-
-</port:output> *
-
-</port:workflowOutputs>
-```
+    <port:workflowOutputs
+       port:workflowId="xsd:string"
+       port:workflowRun="xsd:anyURI"
+       port:workflowRunId="xsd:string">
+    
+      <port:output
+         port:name="xsd:string"
+         port:depth="xsd:int" ? >
+    
+        <port:value
+            xlink:href="xsd:anyURI" ? 
+            port:fileName="xsd:string"
+            port:contentType="xsd:string"
+            port:byteLength="xsd:int" />
+      |
+        <port:list
+            xlink:href="xsd:anyURI" ?
+            port:length="xsd:int" ? > 
+            
+            <!-- Sequence of values, just as for a port -->
+        </port:list>
+      |
+        <port:error
+            xlink:href="xsd:anyURI" ?
+            port:depth="xsd:int" ? />
+      |
+        <port:absent
+            xlink:href="xsd:anyURI" ?  />
+    
+    </port:output> *
+    
+    </port:workflowOutputs>
 
 * Method: GET
 * Consumes: N/A
@@ -748,32 +712,30 @@ The current implementation does not permit installing new listeners, and comes w
 
 **GET** a list of the listeners installed in the workflow run.
 
-```xml
-<t2sr:listeners
-   t2s:serverVersion="xsd:string"
-   t2s:serverRevision="xsd:string"
-   t2s:serverBuildTimestamp="xsd:string" >
-
-  <t2sr:listener xlink:href="xsd:anyURI"
-      t2sr:name="xsd:string"
-      t2sr:type="xsd:string"
-      t2s:serverVersion="xsd:string"
-      t2s:serverRevision="xsd:string"
-      t2s:serverBuildTimestamp="xsd:string">
-
-    <t2sr:configuration xlink:href="xsd:anyURI" />
-
-    <t2sr:properties>
-      <t2sr:property
-         xlink:href="xsd:anyURI"
-         t2sr:name="xsd:string">
-      </t2sr:property> *
-    </t2sr:properties>
-
-  </t2sr:listener> *
-
-</t2sr:listeners>
-```
+    <t2sr:listeners
+       t2s:serverVersion="xsd:string"
+       t2s:serverRevision="xsd:string"
+       t2s:serverBuildTimestamp="xsd:string" >
+    
+      <t2sr:listener xlink:href="xsd:anyURI"
+          t2sr:name="xsd:string"
+          t2sr:type="xsd:string"
+          t2s:serverVersion="xsd:string"
+          t2s:serverRevision="xsd:string"
+          t2s:serverBuildTimestamp="xsd:string">
+    
+        <t2sr:configuration xlink:href="xsd:anyURI" />
+    
+        <t2sr:properties>
+          <t2sr:property
+             xlink:href="xsd:anyURI"
+             t2sr:name="xsd:string">
+          </t2sr:property> *
+        </t2sr:properties>
+    
+      </t2sr:listener> *
+    
+    </t2sr:listeners>
 
 
 * Method: POST
@@ -784,12 +746,9 @@ The current implementation does not permit installing new listeners, and comes w
 
 Add a new event listener to the named workflow run of the given type and under the conditions imposed by the contents of the configuration document (the body of the element). Note that the configuration cannot be changed after creation.
 
-```xml
-
-<t2sr:listenerDefinition t2sr:type="xsd:string">
-  xsd:string
-</t2sr:listenerDefinition>
-```
+    <t2sr:listenerDefinition t2sr:type="xsd:string">
+      xsd:string
+    </t2sr:listenerDefinition>
 
 #### Resource: /runs/{id}/listeners/{name}
 
@@ -800,26 +759,24 @@ Add a new event listener to the named workflow run of the given type and under t
  
 **GET** the description of a particular listener attached to a workflow run.
 
-```xml
-<t2sr:listener
-    xlink:href="xsd:anyURI"
-    t2sr:name="xsd:string"
-    t2sr:type="xsd:string"
-    t2s:serverVersion="xsd:string"
-    t2s:serverRevision="xsd:string"
-    t2s:serverBuildTimestamp="xsd:string">
-
-  <t2sr:configuration xlink:href="xsd:anyURI" />
-
-  <t2sr:properties>
-    <t2sr:property
+    <t2sr:listener
         xlink:href="xsd:anyURI"
-        t2sr:name="xsd:string" />
-    </t2sr:property> *
-  </t2sr:properties>
-
-</t2sr:listener>
-```
+        t2sr:name="xsd:string"
+        t2sr:type="xsd:string"
+        t2s:serverVersion="xsd:string"
+        t2s:serverRevision="xsd:string"
+        t2s:serverBuildTimestamp="xsd:string">
+    
+      <t2sr:configuration xlink:href="xsd:anyURI" />
+    
+      <t2sr:properties>
+        <t2sr:property
+            xlink:href="xsd:anyURI"
+            t2sr:name="xsd:string" />
+        </t2sr:property> *
+      </t2sr:properties>
+    
+    </t2sr:listener>
 
 
 #### Resource: /runs/{id}/listeners/{name}/configuration
@@ -840,14 +797,12 @@ Add a new event listener to the named workflow run of the given type and under t
  
 **GET** the list of properties supported by a given event listener attached to a workflow run.
 
-```xml
-<t2sr:properties>
-  <t2sr:property
-     xlink:href="xsd:anyURI"
-     t2sr:name="xsd:string">
-  <t2sr:property> *
-</t2sr:properties>
-```
+    <t2sr:properties>
+      <t2sr:property
+         xlink:href="xsd:anyURI"
+         t2sr:name="xsd:string">
+      <t2sr:property> *
+    </t2sr:properties>
 
 
 #### Resource: /runs/{id}/listeners/{name}/properties/{propName}
@@ -870,33 +825,31 @@ Set the value of the particular property of an event listener attached to a work
 
 * Method: GET
 * Consumes: N/A
-* Produces: `application/xml`, application/json
+* Produces: `application/xml`, `application/json`
 * Response codes: `200 OK`
  
 Gives a description of the security information supported by the workflow run.
 
-```xml
-<t2sr:securityDescriptor
-  t2s:serverVersion="xsd:string"
-  t2s:serverRevision="xsd:string"
-  t2s:serverBuildTimestamp="xsd:string">
-
-  <t2sr:owner>
-    xsd:string
-  </t2sr:owner>
-  <t2sr:permissions xlink:href="xsd:anyURI" />
-
-  <t2sr:credentials xlink:href="xsd:anyURI">
-    <t2sr:credential> ... </t2sr:credential> *
-  </t2sr:credentials>
-
-  <t2sr:trusts xlink:href="xsd:anyURI">
-    <t2sr:trust> ... </t2sr> *
-  </t2sr:trusts>
-
-</t2sr:securityDescriptor>
-```
-
+    <t2sr:securityDescriptor
+      t2s:serverVersion="xsd:string"
+      t2s:serverRevision="xsd:string"
+      t2s:serverBuildTimestamp="xsd:string">
+    
+      <t2sr:owner>
+        xsd:string
+      </t2sr:owner>
+      <t2sr:permissions xlink:href="xsd:anyURI" />
+    
+      <t2sr:credentials xlink:href="xsd:anyURI">
+        <t2sr:credential> ... </t2sr:credential> *
+      </t2sr:credentials>
+    
+      <t2sr:trusts xlink:href="xsd:anyURI">
+        <t2sr:trust> ... </t2sr> *
+      </t2sr:trusts>
+    
+    </t2sr:securityDescriptor>
+    
 
 #### Resource: /runs/{id}/security/credentials
 
@@ -907,22 +860,20 @@ Gives a description of the security information supported by the workflow run.
 
 Gives a list of credentials supplied to this workflow run.
 
-```xml
-<t2sr:credentials
-  t2s:serverVersion="xsd:string" 
-  t2s:serverRevision="xsd:string" 
-  t2s:serverBuildTimestamp="xsd:string">
-
-  <t2s:userpass xlink:href="xsd:anyURI">
-    ..
-  </t2s:userpass> *
-
-  <t2s:keypair xlink:href="xsd:anyURI">
-    ..
-  </t2s:keypair> *
-
-</t2sr:credentials>
-```
+    <t2sr:credentials
+      t2s:serverVersion="xsd:string" 
+      t2s:serverRevision="xsd:string" 
+      t2s:serverBuildTimestamp="xsd:string">
+    
+      <t2s:userpass xlink:href="xsd:anyURI">
+        ..
+      </t2s:userpass> *
+    
+      <t2s:keypair xlink:href="xsd:anyURI">
+        ..
+      </t2s:keypair> *
+    
+    </t2sr:credentials>
 
 For more description of the contents of the `<t2s:userpass>` and `<t2s:keypair>` elements, see below.
 
@@ -936,35 +887,31 @@ Creates a new credential. Multiple types supported. Note that none of these shou
 
 Password credential `<t2s:userpass>`:
 
-```xml
-<t2s:userpass>
-  <ts2:serviceURI>xsd:anyURI</t2s:serviceURI>
-  <t2s:username>xsd:string</t2s:username>
-  <t2s:password>xsd:string</t2s:password>
-</t2s:userpass>
-```
+    <t2s:userpass>
+      <ts2:serviceURI>xsd:anyURI</t2s:serviceURI>
+      <t2s:username>xsd:string</t2s:username>
+      <t2s:password>xsd:string</t2s:password>
+    </t2s:userpass>
 
 Key credential `<t2s:keypair>`:
 
-```xml
-<t2s:keypair>
-
-  <ts2:serviceURI>xsd:anyURI</t2s:serviceURI>
-
-  <t2s:credentialName>xsd:string</t2s:credentialName>
-
-  <t2s:credentialFile>xsd:string</t2s:credentialFile> ?
-
-  <t2s:fileType>xsd:string</t2s:fileType> ?
-
-  <t2s:unlockPassword>xsd:string</t2s:unlockPassword> ?
-
-  <t2s:credentialBytes>
-    xsd:base64Binary
-  </t2s:credentialBytes> ?
-
-</t2s:keypair>
-```
+    <t2s:keypair>
+    
+      <ts2:serviceURI>xsd:anyURI</t2s:serviceURI>
+    
+      <t2s:credentialName>xsd:string</t2s:credentialName>
+    
+      <t2s:credentialFile>xsd:string</t2s:credentialFile> ?
+    
+      <t2s:fileType>xsd:string</t2s:fileType> ?
+    
+      <t2s:unlockPassword>xsd:string</t2s:unlockPassword> ?
+    
+      <t2s:credentialBytes>
+        xsd:base64Binary
+      </t2s:credentialBytes> ?
+    
+    </t2s:keypair>
 
 Note that one of the `<t2s:credentialFile>` and `<t2s:credentialBytes>` elements should be supplied, but not both.
 
@@ -1016,22 +963,19 @@ Gives the identity of who owns the workflow run.
 
 Gives a list of all non-default permissions associated with the enclosing workflow run. By default, nobody has any access at all except for the owner of the run.
 
-
-```xml
-<t2sr:permissionsDescriptor
-  t2s:serverVersion="xsd:string"
-  t2s:serverRevision="xsd:string"
-  t2s:serverBuildTimestamp="xsd:string">
-
-  <t2sr:permission xlink:href="xsd:anyURI">
-    <t2sr:userName> xsd:string </t2sr:userName>
-    <t2sr:permission>
-      none | read | update | destroy
-    </t2sr:permission>
-  </t2sr:permission> *
-
-</t2sr:permissionsDescriptor>
-```
+    <t2sr:permissionsDescriptor
+      t2s:serverVersion="xsd:string"
+      t2s:serverRevision="xsd:string"
+      t2s:serverBuildTimestamp="xsd:string">
+    
+      <t2sr:permission xlink:href="xsd:anyURI">
+        <t2sr:userName> xsd:string </t2sr:userName>
+        <t2sr:permission>
+          none | read | update | destroy
+        </t2sr:permission>
+      </t2sr:permission> *
+    
+    </t2sr:permissionsDescriptor>
 
 * Method: POST
 * Consumes: `application/xml`, `application/json`
@@ -1041,14 +985,12 @@ Gives a list of all non-default permissions associated with the enclosing workfl
 
 Creates a new assignment of permissions to a particular user.
 
-```xml
-<t2sr:permissionUpdate>
-    <t2sr:userName> xsd:string </t2sr:userName>
-    <t2sr:permission>
-        none|read|update|destroy
-    </t2sr:permission>
-</t2sr:permissionUpdate>
-```
+    <t2sr:permissionUpdate>
+        <t2sr:userName> xsd:string </t2sr:userName>
+        <t2sr:permission>
+            none|read|update|destroy
+        </t2sr:permission>
+    </t2sr:permissionUpdate>
 
 
 #### Resource: /runs/{id}/security/permissions/{user}
@@ -1083,22 +1025,20 @@ Deletes (by resetting to default, i.e., `none`) the permissions associated with 
 
 Gives a list of trusted identities supplied to this workflow run.
 
-```xml
-<t2sr:trustedIdentities
-        t2s:serverVersion="xsd:string"
-        t2s:serverRevision="xsd:string"
-        t2s:serverBuildTimestamp="xsd:string">
-    <t2sr:trust xlink:href="xsd:anyURI">
-        <t2s:certificateFile>
-            xsd:string
-        </t2s:certificateFile> ?
-        <t2s:fileType> xsd:string </t2s:fileType> ?
-        <t2s:certificateBytes>
-            xsd:base64Binary
-        </t2s:certificateBytes> ?
-    </t2sr:trust> *
-</t2sr:trustedIdentities>
-```
+    <t2sr:trustedIdentities
+            t2s:serverVersion="xsd:string"
+            t2s:serverRevision="xsd:string"
+            t2s:serverBuildTimestamp="xsd:string">
+        <t2sr:trust xlink:href="xsd:anyURI">
+            <t2s:certificateFile>
+                xsd:string
+            </t2s:certificateFile> ?
+            <t2s:fileType> xsd:string </t2s:fileType> ?
+            <t2s:certificateBytes>
+                xsd:base64Binary
+            </t2s:certificateBytes> ?
+        </t2sr:trust> *
+    </t2sr:trustedIdentities>
 
 * Method: POST
 * Consumes: `application/xml`, `application/json`
@@ -1107,15 +1047,13 @@ Gives a list of trusted identities supplied to this workflow run.
  
 Adds a new trusted identity. The `xlink:href` attribute of the `trust` element will be ignored if supplied, and one of `certificateFile` and `certificateBytes` should be supplied. The `fileType` can normally be omitted, as it is assumed to be X.509 by default (the only type seen in practice).
 
-```xml
-<t2sr:trust>
-    <t2s:certificateFile> xsd:string </t2s:certificateFile> ?
-    <t2s:fileType> xsd:string </t2s:fileType> ?
-    <t2s:certificateBytes>
-        xsd:base64Binary
-    </t2s:certificateBytes> ?
-</t2sr:trust>
-```
+    <t2sr:trust>
+        <t2s:certificateFile> xsd:string </t2s:certificateFile> ?
+        <t2s:fileType> xsd:string </t2s:fileType> ?
+        <t2s:certificateBytes>
+            xsd:base64Binary
+        </t2s:certificateBytes> ?
+    </t2sr:trust>
 
 * Method: DELETE
 * Consumes: N/A
@@ -1133,15 +1071,13 @@ Deletes all trusted identities.
 
 Describes a particular trusted identity.
 
-```xml
-<t2sr:trust xlink:href="xsd:anyURI">
-    <t2s:certificateFile> xsd:string </t2s:certificateFile> ?
-    <t2s:fileType> xsd:string </t2s:fileType> ?
-    <t2s:certificateBytes>
-        xsd:base64Binary
-    </t2s:certificateBytes> ?
-</t2sr:trust>
-```
+    <t2sr:trust xlink:href="xsd:anyURI">
+        <t2s:certificateFile> xsd:string </t2s:certificateFile> ?
+        <t2s:fileType> xsd:string </t2s:fileType> ?
+        <t2s:certificateBytes>
+            xsd:base64Binary
+        </t2s:certificateBytes> ?
+    </t2sr:trust>
 
 * Method: PUT
 * Consumes: `application/xml`, `application/json`
@@ -1151,15 +1087,13 @@ Describes a particular trusted identity.
 Updates (i.e., replaces) a particular trusted identity. The *xlink:href* attribute will be ignored if supplied. The *fileType* can normally be omitted, as it is assumed to be X.509 by default (the only type seen in practice).
 
 
-```xml
-<t2sr:trust>
-    <t2s:certificateFile> xsd:string </t2s:certificateFile> ?
-    <t2s:fileType> xsd:string </t2s:fileType> ?
-    <t2s:certificateBytes>
-        xsd:base64Binary
-    </t2s:certificateBytes> ?
-</t2sr:trust>
-```
+    <t2sr:trust>
+        <t2s:certificateFile> xsd:string </t2s:certificateFile> ?
+        <t2s:fileType> xsd:string </t2s:fileType> ?
+        <t2s:certificateBytes>
+            xsd:base64Binary
+        </t2s:certificateBytes> ?
+    </t2sr:trust>
 
 * Method: DELETE
 * Consumes: N/A
@@ -1183,16 +1117,14 @@ Note that everything following the `/wd` is the path beneath the working directo
 Gives a description of the working directory or a named directory in or beneath the working directory of the workflow run. The contents of the `dir` and `file` elements are the equivalent pathname (for use in the SOAP interface or to be appended to `…/wd` to generate a URI).
 
 
-```xml
-<t2sr:directoryContents>
-    <t2s:dir xlink:href="xsd:anyURI" t2s:name="xsd:string">
-        xsd:string
-    </t2s:dir> *
-    <t2s:file xlink:href="xsd:anyURI" t2s:name="xsd:string">
-        xsd:string
-    </t2s:file> *
-</t2sr:directoryContents>
-```
+    <t2sr:directoryContents>
+        <t2s:dir xlink:href="xsd:anyURI" t2s:name="xsd:string">
+            xsd:string
+        </t2s:dir> *
+        <t2s:file xlink:href="xsd:anyURI" t2s:name="xsd:string">
+            xsd:string
+        </t2s:file> *
+    </t2sr:directoryContents>
 
 
 * Method: GET
@@ -1223,18 +1155,15 @@ Creates a file or replaces the contents of a file with the given bytes.
 * Consumes: `application/xml`, `application/json`
 * Produces: N/A
 * Response codes: `201 Created`
-* Notes: This only applies to directories. The `Location`*` header says what was made.
+* Notes: This only applies to directories. The `Location` header says what was made.
 
 Creates a directory in the filesystem beneath the working directory of the workflow run, or creates or updates a file's contents, where that file is in or below the working directory of a workflow run. The location that this is POSTed to determines what the parent directory of the created entity is, and the `name` attribute determines its name. The operation done depends on the element passed, which should be one of these:
 
-
-```xml
-<t2sr:mkdir t2sr:name="xsd:string" />
-
-<t2sr:upload t2sr:name="xsd:string">
-    xsd:base64Binary
-</t2sr:upload>
-```
+    <t2sr:mkdir t2sr:name="xsd:string" />
+    
+    <t2sr:upload t2sr:name="xsd:string">
+        xsd:base64Binary
+    </t2sr:upload>
 
 Note that the *upload* operation is deprecated; directly PUTting the data is preferred, as that has no size restrictions.
 
