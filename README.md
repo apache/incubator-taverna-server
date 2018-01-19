@@ -21,6 +21,10 @@ REST/WSDL web service for executing
 workflows.
 
 
+# Download
+
+https://taverna.incubator.apache.org/download/server/
+
 
 ## License
 
@@ -110,7 +114,9 @@ that enforces Apache headers in every source file - to disable it, try:
 
     mvn clean install -Drat.skip=true
 
-More information:
+# Documentation
+
+https://taverna.incubator.apache.org/documentation/server/ 
 
  * [Introduction](introduction.md)
  * [Installing](install.md)
