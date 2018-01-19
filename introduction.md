@@ -22,8 +22,8 @@ workflows.
 
 In-depth documentation is available for:
 
-* [Installation guide](install)
-* [API User guide](usage)
+* [Installation guide](install.md)
+* [API User guide](usage.md)
 
 
 # Prerequisites
