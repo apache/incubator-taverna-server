@@ -511,8 +511,8 @@ executing.</description>
 	</modules>
 
 	<scm>
-		<connection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-taverna-server.git</connection>
-		<developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-taverna-server.git</developerConnection>
+		<connection>scm:git:https://gitbox.apache.org/repos/asf/incubator-taverna-server.git</connection>
+		<developerConnection>scm:git:git@github.com:apache/incubator-taverna-server.git</developerConnection>
 		<url>https://github.com/apache/incubator-taverna-server</url>
 		<tag>trunk</tag>
 	</scm>
