@@ -28,7 +28,7 @@ limitations under the License.
 	<description>This is the implementation of the web-app that provides the Taverna Server with its SOAP and REST faces. It relies on the worker process to handle the actual launching of workflow runs.</description>
 
 	<properties>
-		<version.cxf>2.7.7</version.cxf>
+		<version.cxf>2.7.8</version.cxf>
 		<version.spring>3.2.5.RELEASE</version.spring>
 		<version.spring-security>3.1.4.RELEASE</version.spring-security>
 		<version.asm>5.1</version.asm>
