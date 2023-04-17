@@ -29,7 +29,7 @@ limitations under the License.
 
 	<properties>
 		<version.cxf>2.7.7</version.cxf>
-		<version.spring>3.2.5.RELEASE</version.spring>
+		<version.spring>5.2.24.RELEASE</version.spring>
 		<version.spring-security>3.1.4.RELEASE</version.spring-security>
 		<version.asm>5.1</version.asm>
 		<version.smack>3.2.1</version.smack>
